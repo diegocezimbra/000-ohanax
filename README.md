@@ -1,6 +1,6 @@
 # Ohanax
 
-**Família. Tecnologia. Atitude.**
+**Tecnologia e Atitude.**
 
 Landing page institucional da Ohanax - holding de produtos SaaS.
 

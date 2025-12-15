@@ -23,7 +23,7 @@ const translations = {
       title1: 'Construímos',
       title2: 'soluções que',
       title3: 'transformam',
-      description: 'Família. Tecnologia. Atitude. A <strong>Ohanax</strong> desenvolve produtos SaaS de alto impacto para empresas que exigem excelência e performance.',
+      description: 'Tecnologia e Atitude. A <strong>Ohanax</strong> desenvolve produtos SaaS de alto impacto para empresas que exigem excelência e performance.',
       cta: 'Explorar Produtos',
       ctaSecondary: 'Fale Conosco',
       stats: {
@@ -92,7 +92,7 @@ const translations = {
 
     // Footer
     footer: {
-      slogan: 'Família. Tecnologia. Atitude.',
+      slogan: 'Tecnologia e Atitude.',
       products: 'Produtos',
       solutions: 'Soluções',
       company: 'Empresa',
@@ -121,7 +121,7 @@ const translations = {
       title1: 'We build',
       title2: 'solutions that',
       title3: 'transform',
-      description: 'Family. Technology. Attitude. <strong>Ohanax</strong> develops high-impact SaaS products for companies that demand excellence and performance.',
+      description: 'Technology and Attitude. <strong>Ohanax</strong> develops high-impact SaaS products for companies that demand excellence and performance.',
       cta: 'Explore Products',
       ctaSecondary: 'Get in Touch',
       stats: {
@@ -190,7 +190,7 @@ const translations = {
 
     // Footer
     footer: {
-      slogan: 'Family. Technology. Attitude.',
+      slogan: 'Technology and Attitude.',
       products: 'Products',
       solutions: 'Solutions',
       company: 'Company',

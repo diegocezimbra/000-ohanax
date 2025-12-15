@@ -1,6 +1,6 @@
 /**
  * OHANAX - Landing Page Scripts
- * Família. Tecnologia. Atitude.
+ * Tecnologia e Atitude.
  */
 
 (function() {
@@ -197,7 +197,7 @@
   // Console Easter Egg
   // ============================================
   console.log('%c🚀 Ohanax', 'font-size: 24px; font-weight: bold; color: #ff3366;');
-  console.log('%cFamília. Tecnologia. Atitude.', 'font-size: 14px; color: #888;');
+  console.log('%cTecnologia e Atitude.', 'font-size: 14px; color: #888;');
   console.log('%cInteressado em fazer parte? contato@ohanax.com', 'font-size: 12px; color: #666;');
 
 })();
