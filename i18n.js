@@ -46,15 +46,15 @@ const translations = {
       },
 
       billing: {
-        tagline: 'Gestão de Pagamentos SaaS',
-        description: 'Cobrança recorrente, invoices automáticos, integração com Stripe e Asaas. Controle total do seu faturamento.',
-        features: ['Subscriptions', 'Invoice Automation', 'Stripe & Asaas', 'Billing Analytics']
+        tagline: 'Billing + Métricas SaaS',
+        description: 'Cobrança recorrente com Stripe, PIX e Boleto. Dashboard completo com MRR, ARR, Churn, NRR e LTV em tempo real. Tudo que seu SaaS precisa para monetizar e crescer.',
+        features: ['Stripe + PIX + Boleto', 'Checkout White-label', 'MRR, ARR, Churn, NRR', 'Dunning Automático', 'Webhooks Real-time', 'Analytics Avançado']
       },
 
-      metrics: {
-        tagline: 'Dashboard de Métricas SaaS',
-        description: 'MRR, ARR, Churn, NRR e todas as métricas essenciais do seu SaaS em tempo real. Tome decisões baseadas em dados.',
-        features: ['MRR & ARR Tracking', 'Churn Analysis', 'Revenue by Plan', 'Historical Data']
+      defi: {
+        tagline: 'Payment Streaming & Escrow',
+        description: 'Pagamentos em streaming com blockchain. Escrow inteligente para aluguéis, hotelaria pay-per-hour e seguros por uso (UBI).',
+        features: ['Smart Contracts', 'Payment Streaming', 'Escrow Automatizado', 'Stablecoin (USDC)']
       },
 
       edifisco: {
@@ -144,15 +144,15 @@ const translations = {
       },
 
       billing: {
-        tagline: 'SaaS Payment Management',
-        description: 'Recurring billing, automatic invoices, Stripe and Asaas integration. Full control over your revenue.',
-        features: ['Subscriptions', 'Invoice Automation', 'Stripe & Asaas', 'Billing Analytics']
+        tagline: 'Billing + SaaS Metrics',
+        description: 'Recurring billing with Stripe, PIX and Boleto. Complete dashboard with MRR, ARR, Churn, NRR and LTV in real-time. Everything your SaaS needs to monetize and grow.',
+        features: ['Stripe + PIX + Boleto', 'White-label Checkout', 'MRR, ARR, Churn, NRR', 'Automatic Dunning', 'Real-time Webhooks', 'Advanced Analytics']
       },
 
-      metrics: {
-        tagline: 'SaaS Metrics Dashboard',
-        description: 'MRR, ARR, Churn, NRR and all essential SaaS metrics in real-time. Make data-driven decisions.',
-        features: ['MRR & ARR Tracking', 'Churn Analysis', 'Revenue by Plan', 'Historical Data']
+      defi: {
+        tagline: 'Payment Streaming & Escrow',
+        description: 'Streaming payments with blockchain. Smart escrow for rentals, pay-per-hour hospitality and usage-based insurance (UBI).',
+        features: ['Smart Contracts', 'Payment Streaming', 'Automated Escrow', 'Stablecoin (USDC)']
       },
 
       edifisco: {
