@@ -74,6 +74,18 @@ const translations = {
         tagline: 'Menu Digital para Restaurantes',
         description: 'Cardápio digital profissional com QR Code. Personalize cores, adicione fotos, exporte em PDF e impressione seus clientes.',
         features: ['QR Code Dinâmico', 'Temas Personalizados', 'Export PDF', 'Gestão de Itens']
+      },
+
+      secaudit: {
+        tagline: 'Plataforma DevSecOps',
+        description: 'Auditoria de segurança com IA adaptativa. 104 testes automatizados, OWASP Top 10, análise de código e compliance mapping (PCI-DSS, SOC2, ISO 27001).',
+        features: ['104 Testes Automatizados', 'OWASP Top 10', 'IA Adaptativa', '6 Frameworks Compliance']
+      },
+
+      omas: {
+        tagline: 'Automação de Marketing com IA',
+        description: 'Crie campanhas completas com um clique. Copies de alta conversão, imagens profissionais e publicação automática no Instagram, LinkedIn e Meta Ads.',
+        features: ['IA para Copywriting', 'Geração de Imagens', 'Multi-Plataforma', 'One-Click Campaigns']
       }
     },
 
@@ -172,6 +184,18 @@ const translations = {
         tagline: 'Digital Menu for Restaurants',
         description: 'Professional digital menu with QR Code. Customize colors, add photos, export to PDF and impress your customers.',
         features: ['Dynamic QR Code', 'Custom Themes', 'PDF Export', 'Item Management']
+      },
+
+      secaudit: {
+        tagline: 'DevSecOps Platform',
+        description: 'Security auditing with adaptive AI. 104 automated tests, OWASP Top 10, code analysis and compliance mapping (PCI-DSS, SOC2, ISO 27001).',
+        features: ['104 Automated Tests', 'OWASP Top 10', 'Adaptive AI', '6 Compliance Frameworks']
+      },
+
+      omas: {
+        tagline: 'AI Marketing Automation',
+        description: 'Create complete campaigns with one click. High-converting copies, professional images and automatic publishing on Instagram, LinkedIn and Meta Ads.',
+        features: ['AI Copywriting', 'Image Generation', 'Multi-Platform', 'One-Click Campaigns']
       }
     },
 
