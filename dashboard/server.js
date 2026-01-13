@@ -233,7 +233,7 @@ app.get('/api/billing/metrics', async (req, res) => {
       SELECT
         COALESCE(SUM(
           CASE
-            WHEN s.status IN ('active', 'trialing') THEN
+            WHEN s.status = 'active' THEN
               CASE pl.interval
                 WHEN 'monthly' THEN pl.price_cents
                 WHEN 'yearly' THEN pl.price_cents / 12
@@ -245,7 +245,7 @@ app.get('/api/billing/metrics', async (req, res) => {
         ), 0) / 100.0 as mrr,
         COALESCE(SUM(
           CASE
-            WHEN s.status IN ('active', 'trialing') THEN
+            WHEN s.status = 'active' THEN
               CASE pl.interval
                 WHEN 'monthly' THEN pl.price_cents * 12
                 WHEN 'yearly' THEN pl.price_cents
@@ -278,7 +278,7 @@ app.get('/api/billing/mrr-by-project', async (req, res) => {
         p.name as project_name,
         COALESCE(SUM(
           CASE
-            WHEN s.status IN ('active', 'trialing') THEN
+            WHEN s.status = 'active' THEN
               CASE pl.interval
                 WHEN 'monthly' THEN pl.price_cents
                 WHEN 'yearly' THEN pl.price_cents / 12
@@ -288,7 +288,7 @@ app.get('/api/billing/mrr-by-project', async (req, res) => {
             ELSE 0
           END
         ), 0) / 100.0 as mrr,
-        COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as active_subscriptions
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active_subscriptions
       FROM projects p
       LEFT JOIN subscriptions s ON s.project_id = p.id
       LEFT JOIN plans pl ON s.plan_id = pl.id
@@ -352,7 +352,7 @@ app.get('/api/billing/paying-users', async (req, res) => {
       FROM subscriptions s
       LEFT JOIN plans pl ON s.plan_id = pl.id
       LEFT JOIN projects p ON s.project_id = p.id
-      WHERE s.status IN ('active', 'trialing')
+      WHERE s.status = 'active'
       ORDER BY s.external_user_email, s.created_at DESC
     `);
     res.json(result.rows);
@@ -372,7 +372,7 @@ app.get('/api/billing/plans', async (req, res) => {
         pl.status,
         p.name as project_name,
         COUNT(s.id) as total_subscribers,
-        COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as active_subscribers
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active_subscribers
       FROM plans pl
       LEFT JOIN projects p ON pl.project_id = p.id
       LEFT JOIN subscriptions s ON s.plan_id = pl.id
@@ -761,7 +761,7 @@ app.get('/api/dashboard/summary', async (req, res) => {
       SELECT
         COALESCE(SUM(
           CASE
-            WHEN s.status IN ('active', 'trialing') THEN
+            WHEN s.status = 'active' THEN
               CASE pl.interval
                 WHEN 'monthly' THEN pl.price_cents
                 WHEN 'yearly' THEN pl.price_cents / 12
@@ -771,7 +771,7 @@ app.get('/api/dashboard/summary', async (req, res) => {
             ELSE 0
           END
         ), 0) / 100.0 as mrr,
-        COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as paying_customers
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as paying_customers
       FROM subscriptions s
       LEFT JOIN plans pl ON s.plan_id = pl.id
     `);
@@ -911,7 +911,7 @@ app.get('/api/metrics/subscriptions', async (req, res) => {
         ), 0) / 100.0 as mrr
       FROM subscriptions s
       LEFT JOIN plans pl ON s.plan_id = pl.id
-      WHERE s.status IN ('active', 'trialing')
+      WHERE s.status = 'active'
     `);
 
     // By project
@@ -919,10 +919,10 @@ app.get('/api/metrics/subscriptions', async (req, res) => {
       SELECT
         p.name as project_name,
         COUNT(s.id) as total,
-        COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as active,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active,
         COALESCE(SUM(
           CASE
-            WHEN s.status IN ('active', 'trialing') THEN
+            WHEN s.status = 'active' THEN
               CASE pl.interval
                 WHEN 'monthly' THEN pl.price_cents
                 WHEN 'yearly' THEN pl.price_cents / 12
@@ -947,7 +947,7 @@ app.get('/api/metrics/subscriptions', async (req, res) => {
         pl.interval,
         p.name as project_name,
         COUNT(s.id) as total,
-        COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as active
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active
       FROM plans pl
       LEFT JOIN subscriptions s ON s.plan_id = pl.id
       LEFT JOIN projects p ON pl.project_id = p.id
@@ -1017,7 +1017,7 @@ app.get('/api/overview', async (req, res) => {
       SELECT
         COALESCE(SUM(
           CASE
-            WHEN s.status IN ('active', 'trialing') THEN
+            WHEN s.status = 'active' THEN
               CASE pl.interval
                 WHEN 'monthly' THEN pl.price_cents
                 WHEN 'yearly' THEN pl.price_cents / 12
@@ -1027,7 +1027,7 @@ app.get('/api/overview', async (req, res) => {
             ELSE 0
           END
         ), 0) / 100.0 as total_mrr,
-        COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as total_active_subs
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as total_active_subs
       FROM subscriptions s
       LEFT JOIN plans pl ON s.plan_id = pl.id
     `);
@@ -1059,7 +1059,7 @@ app.get('/api/overview', async (req, res) => {
         p.name as project_name,
         COALESCE(SUM(
           CASE
-            WHEN s.status IN ('active', 'trialing') THEN
+            WHEN s.status = 'active' THEN
               CASE pl.interval
                 WHEN 'monthly' THEN pl.price_cents
                 WHEN 'yearly' THEN pl.price_cents / 12
@@ -1069,7 +1069,7 @@ app.get('/api/overview', async (req, res) => {
             ELSE 0
           END
         ), 0) / 100.0 as mrr,
-        COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as active_subs
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active_subs
       FROM projects p
       LEFT JOIN subscriptions s ON s.project_id = p.id
       LEFT JOIN plans pl ON s.plan_id = pl.id
@@ -1135,6 +1135,93 @@ app.get('/api/overview', async (req, res) => {
     });
   } catch (err) {
     console.error('Error in /api/overview:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/funnel - Dados do funil de conversao (todos os apps ou filtrado por projeto)
+app.get('/api/funnel', async (req, res) => {
+  const project = req.query.project; // opcional: 'auth', 'billing', 'security', 'oentregador'
+  const billingProjectName = project ? projectNameMapping[project] : null;
+
+  try {
+    let totalUsers = 0;
+    let registeredUsers = 0;
+
+    // Usuarios cadastrados (auth database)
+    if (!project || project !== 'oentregador') {
+      const authProjectName = project === 'auth' ? 'app-auth' :
+                              project === 'billing' ? 'app-billing' :
+                              project === 'security' ? 'security-audit' : null;
+
+      const authUsers = await db.auth.query(`
+        SELECT COUNT(*) as total
+        FROM users u
+        LEFT JOIN projects p ON u.project_id = p.id
+        ${authProjectName ? `WHERE p.name = '${authProjectName}'` : ''}
+      `);
+      registeredUsers += parseInt(authUsers.rows[0].total) || 0;
+    }
+
+    // Usuarios oEntregador (MongoDB)
+    if (!project || project === 'oentregador') {
+      try {
+        const mongoDB = await db.mongo();
+        const oeUsers = await mongoDB.collection('app_users').countDocuments();
+        registeredUsers += oeUsers;
+      } catch (e) { console.error('MongoDB error:', e.message); }
+    }
+
+    // Trial subscriptions
+    const trialQuery = billingProjectName
+      ? `SELECT COUNT(*) as total FROM subscriptions s JOIN projects p ON s.project_id = p.id WHERE s.status = 'trialing' AND p.name = $1`
+      : `SELECT COUNT(*) as total FROM subscriptions WHERE status = 'trialing'`;
+    const trialResult = billingProjectName
+      ? await db.billing.query(trialQuery, [billingProjectName])
+      : await db.billing.query(trialQuery);
+    const trialUsers = parseInt(trialResult.rows[0].total) || 0;
+
+    // Paying users (active subscriptions)
+    const payingQuery = billingProjectName
+      ? `SELECT COUNT(*) as total FROM subscriptions s JOIN projects p ON s.project_id = p.id WHERE s.status = 'active' AND p.name = $1`
+      : `SELECT COUNT(*) as total FROM subscriptions WHERE status = 'active'`;
+    const payingResult = billingProjectName
+      ? await db.billing.query(payingQuery, [billingProjectName])
+      : await db.billing.query(payingQuery);
+    const payingUsers = parseInt(payingResult.rows[0].total) || 0;
+
+    // One-time purchases (paid)
+    const purchasesQuery = billingProjectName
+      ? `SELECT COUNT(DISTINCT external_user_email) as total FROM one_time_purchases otp JOIN projects p ON otp.project_id = p.id WHERE otp.status = 'paid' AND p.name = $1`
+      : `SELECT COUNT(DISTINCT external_user_email) as total FROM one_time_purchases WHERE status = 'paid'`;
+    const purchasesResult = billingProjectName
+      ? await db.billing.query(purchasesQuery, [billingProjectName])
+      : await db.billing.query(purchasesQuery);
+    const oneTimeBuyers = parseInt(purchasesResult.rows[0].total) || 0;
+
+    // Total pagantes = assinantes ativos + compradores one-time (unique)
+    const totalPaying = payingUsers + oneTimeBuyers;
+
+    res.json({
+      funnel: [
+        { stage: 'Cadastrados', count: registeredUsers, color: '#64748b' },
+        { stage: 'Em Trial', count: trialUsers, color: '#f59e0b' },
+        { stage: 'Pagantes', count: totalPaying, color: '#22c55e' }
+      ],
+      details: {
+        registered: registeredUsers,
+        trialing: trialUsers,
+        paying_subscriptions: payingUsers,
+        paying_one_time: oneTimeBuyers,
+        total_paying: totalPaying
+      },
+      conversion: {
+        trial_to_paid: trialUsers > 0 ? ((payingUsers / (trialUsers + payingUsers)) * 100).toFixed(1) : 0,
+        registered_to_paid: registeredUsers > 0 ? ((totalPaying / registeredUsers) * 100).toFixed(1) : 0
+      }
+    });
+  } catch (err) {
+    console.error('Error in /api/funnel:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -1225,7 +1312,7 @@ app.get('/api/project/:project', async (req, res) => {
       SELECT
         COALESCE(SUM(
           CASE
-            WHEN s.status IN ('active', 'trialing') THEN
+            WHEN s.status = 'active' THEN
               CASE pl.interval
                 WHEN 'monthly' THEN pl.price_cents
                 WHEN 'yearly' THEN pl.price_cents / 12
