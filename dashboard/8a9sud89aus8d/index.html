@@ -932,26 +932,68 @@
         audioCtx.resume();
       }
 
-      // Som de moeda caindo (coin drop)
-      const playTone = (freq, startTime, duration) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.frequency.value = freq;
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0.3, startTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-        osc.start(startTime);
-        osc.stop(startTime + duration);
-      };
+      // Funcao para tocar um "cha-ching!" de caixa registradora
+      function playChaChing(startOffset) {
+        const now = audioCtx.currentTime + startOffset;
 
-      // Sequencia de tons (cash register sound)
-      const now = audioCtx.currentTime;
-      playTone(1200, now, 0.1);
-      playTone(1500, now + 0.1, 0.1);
-      playTone(1800, now + 0.2, 0.15);
-      playTone(2200, now + 0.35, 0.2);
+        // "Cha" - som metalico de abertura
+        const noise = audioCtx.createBufferSource();
+        const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.08, audioCtx.sampleRate);
+        const noiseData = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < noiseData.length; i++) {
+          noiseData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.02));
+        }
+        noise.buffer = noiseBuffer;
+        const noiseGain = audioCtx.createGain();
+        const noiseFilter = audioCtx.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.value = 3000;
+        noiseFilter.Q.value = 2;
+        noise.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(audioCtx.destination);
+        noiseGain.gain.setValueAtTime(0.3, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+        noise.start(now);
+
+        // "Ching!" - sino metalico agudo
+        const bell1 = audioCtx.createOscillator();
+        const bell2 = audioCtx.createOscillator();
+        const bellGain = audioCtx.createGain();
+        bell1.type = 'sine';
+        bell2.type = 'sine';
+        bell1.frequency.value = 2637; // E7
+        bell2.frequency.value = 3520; // A7
+        bell1.connect(bellGain);
+        bell2.connect(bellGain);
+        bellGain.connect(audioCtx.destination);
+        bellGain.gain.setValueAtTime(0.4, now + 0.05);
+        bellGain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        bell1.start(now + 0.05);
+        bell2.start(now + 0.05);
+        bell1.stop(now + 0.35);
+        bell2.stop(now + 0.35);
+
+        // Som de moedas caindo
+        for (let c = 0; c < 3; c++) {
+          const coin = audioCtx.createOscillator();
+          const coinGain = audioCtx.createGain();
+          coin.type = 'sine';
+          coin.frequency.value = 4000 + Math.random() * 1000;
+          coin.connect(coinGain);
+          coinGain.connect(audioCtx.destination);
+          const coinStart = now + 0.1 + c * 0.05;
+          coinGain.gain.setValueAtTime(0.15, coinStart);
+          coinGain.gain.exponentialRampToValueAtTime(0.01, coinStart + 0.1);
+          coin.start(coinStart);
+          coin.stop(coinStart + 0.1);
+        }
+      }
+
+      // Toca 3 vezes com intervalo
+      playChaChing(0);
+      playChaChing(0.5);
+      playChaChing(1.0);
     }
 
     // Armazenar estado anterior para detectar novos clientes PAGANTES
