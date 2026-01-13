@@ -686,6 +686,9 @@
       return new Date(date).toLocaleString('pt-BR');
     }
 
+    // API URL do backend (App Runner)
+    const API_URL = 'https://qckswdjtyh.us-east-1.awsapprunner.com';
+
     // Charts
     let charts = {};
 
@@ -710,7 +713,7 @@
     // OVERVIEW
     async function loadOverview() {
       try {
-        const data = await fetch('/api/overview').then(r => r.json());
+        const data = await fetch(`${API_URL}/api/overview`).then(r => r.json());
 
         document.getElementById('total-mrr').textContent = formatCurrency(data.totalMrr);
         document.getElementById('total-onetime').textContent = formatCurrency(data.totalOneTimeRevenue || 0);
@@ -779,7 +782,7 @@
     // PROJECT PAGE - Padronizado para todos os projetos
     async function loadProjectPage(project) {
       try {
-        const data = await fetch(`/api/project/${project}`).then(r => r.json());
+        const data = await fetch(`${API_URL}/api/project/${project}`).then(r => r.json());
 
         // Cards principais
         document.getElementById(`${project}-users`).textContent = data.users.total || 0;
@@ -892,10 +895,10 @@
     // Funcao para verificar novos clientes pagantes
     async function checkForNewCustomers() {
       try {
-        const data = await fetch('/api/overview').then(r => r.json());
+        const data = await fetch(`${API_URL}/api/overview`).then(r => r.json());
 
         // Buscar apenas assinantes pagantes (active, nao trialing)
-        const paidSubsResponse = await fetch('/api/billing/metrics').then(r => r.json());
+        const paidSubsResponse = await fetch(`${API_URL}/api/billing/metrics`).then(r => r.json());
         const currentPaidSubs = parseInt(paidSubsResponse.active_subscriptions) || 0;
         const currentPurchases = data.totalPaidPurchases || 0;
 

@@ -13,7 +13,10 @@ const PORT = process.env.PORT || 3333;
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || '@123b456ABC';
 const SECRET_ROUTE = '/8a9sud89aus8d';
 
-app.use(cors());
+app.use(cors({
+  origin: ['https://www.ohanax.com', 'https://ohanax.com', 'http://localhost:3333'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
