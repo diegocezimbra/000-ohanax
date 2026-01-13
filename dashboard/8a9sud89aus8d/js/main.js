@@ -300,7 +300,11 @@ function updateFunnel(data, prefix = '') {
   if (convVisitorReg) convVisitorReg.textContent = (data.conversion.visitor_to_registered || regPercent) + '%';
   if (convRegTrial) convRegTrial.textContent = trialPercent + '%';
   if (convTrial) convTrial.textContent = data.conversion.trial_to_paid + '%';
-  if (convTotal) convTotal.textContent = data.conversion.registered_to_paid + '%';
+  // Visitante -> Pagante (total do funil)
+  if (convTotal) {
+    const visitorToPaid = visitors > 0 ? ((paying / visitors) * 100).toFixed(1) : data.conversion.registered_to_paid;
+    convTotal.textContent = visitorToPaid + '%';
+  }
 
   // Update total summary card (bottom)
   const totalVisitors = document.getElementById(`${prefix}funnel-total-visitors`);
