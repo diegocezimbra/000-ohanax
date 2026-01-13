@@ -899,9 +899,38 @@
       } catch (err) { console.error(`Error loading ${project}:`, err); }
     }
 
+    // AudioContext global - precisa ser criado apos interacao do usuario
+    let audioCtx = null;
+    let audioUnlocked = false;
+
+    // Desbloqueia audio apos primeiro clique na pagina
+    function unlockAudio() {
+      if (audioUnlocked) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      // Toca som silencioso para desbloquear
+      const buffer = audioCtx.createBuffer(1, 1, 22050);
+      const source = audioCtx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioCtx.destination);
+      source.start(0);
+      audioUnlocked = true;
+      console.log('[Audio] Desbloqueado!');
+    }
+
+    // Adiciona listener para desbloquear audio no primeiro clique
+    document.addEventListener('click', unlockAudio, { once: true });
+    document.addEventListener('keydown', unlockAudio, { once: true });
+
     // Som de dinheiro usando Web Audio API
     function playCashSound() {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      // Resume se estiver suspenso
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
 
       // Som de moeda caindo (coin drop)
       const playTone = (freq, startTime, duration) => {
