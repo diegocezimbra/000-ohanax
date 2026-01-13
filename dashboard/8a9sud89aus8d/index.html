@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaaS Admin Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 240px;
+      height: 100vh;
+      background: #1e293b;
+      padding: 20px;
+      border-right: 1px solid #334155;
+    }
+    .sidebar h1 {
+      font-size: 18px;
+      color: #38bdf8;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #334155;
+    }
+    .nav-item {
+      display: block;
+      padding: 12px 15px;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: 8px;
+      margin-bottom: 5px;
+      transition: all 0.2s;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: #334155;
+      color: #f1f5f9;
+    }
+    .main {
+      margin-left: 240px;
+      padding: 30px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .header h2 {
+      font-size: 24px;
+      color: #f1f5f9;
+    }
+    .refresh-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .refresh-btn:hover { background: #2563eb; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    @media (max-width: 1400px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 800px) {
+      .cards { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid #334155;
+    }
+    .card-title {
+      font-size: 13px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .card-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+    .card-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 8px;
+    }
+    .card.highlight {
+      background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+      border: none;
+    }
+    .card.highlight .card-title,
+    .card.highlight .card-subtitle { color: rgba(255,255,255,0.8); }
+    .section {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 30px;
+      border: 1px solid #334155;
+    }
+    .section-title {
+      font-size: 18px;
+      color: #f1f5f9;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #334155;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    th {
+      color: #94a3b8;
+      font-weight: 500;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+    td { color: #e2e8f0; font-size: 14px; }
+    .status {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .status.active { background: #166534; color: #86efac; }
+    .status.trialing { background: #1e40af; color: #93c5fd; }
+    .status.canceled { background: #7f1d1d; color: #fca5a5; }
+    .status.past_due { background: #78350f; color: #fcd34d; }
+    .status.expired { background: #7f1d1d; color: #fca5a5; }
+    .status.pending { background: #78350f; color: #fcd34d; }
+    .chart-container { height: 300px; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    @media (max-width: 1200px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .loading { text-align: center; padding: 40px; color: #64748b; }
+    .service-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 5px;
+    }
+    .service-badge.auth { background: #7c3aed; color: white; }
+    .service-badge.billing { background: #059669; color: white; }
+    .service-badge.security { background: #dc2626; color: white; }
+    .service-badge.oentregador { background: #ea580c; color: white; }
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #334155;
+    }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-label { color: #94a3b8; }
+    .metric-value { font-weight: 600; color: #f1f5f9; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <h1>SaaS Admin</h1>
+    <a href="#" class="nav-item active" data-page="overview">Overview</a>
+    <a href="#" class="nav-item" data-page="auth">Auth</a>
+    <a href="#" class="nav-item" data-page="billing">Billing</a>
+    <a href="#" class="nav-item" data-page="security">Security</a>
+    <a href="#" class="nav-item" data-page="oentregador">oEntregador</a>
+  </nav>
+
+  <main class="main">
+    <!-- OVERVIEW PAGE -->
+    <div id="page-overview" class="page">
+      <div class="header">
+        <h2>Dashboard Overview</h2>
+        <button class="refresh-btn" onclick="loadAllData()">Atualizar Dados</button>
+      </div>
+
+      <div class="cards">
+        <div class="card highlight">
+          <div class="card-title">MRR Total</div>
+          <div class="card-value" id="total-mrr">R$ --</div>
+          <div class="card-subtitle">Receita mensal recorrente</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Receita One-Time</div>
+          <div class="card-value" id="total-onetime">R$ --</div>
+          <div class="card-subtitle">Pacotes vendidos</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Receita Total</div>
+          <div class="card-value" id="total-revenue">R$ --</div>
+          <div class="card-subtitle">MRR + One-Time</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Usuarios Total</div>
+          <div class="card-value" id="total-users">--</div>
+          <div class="card-subtitle">Todos os servicos</div>
+        </div>
+      </div>
+
+      <div class="cards" style="margin-top: -10px;">
+        <div class="card">
+          <div class="card-title">ARR Total</div>
+          <div class="card-value" id="total-arr">R$ --</div>
+          <div class="card-subtitle">Receita anual recorrente</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Assinantes Ativos</div>
+          <div class="card-value" id="active-subs">--</div>
+          <div class="card-subtitle">Pagantes + Trial</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Pacotes Vendidos</div>
+          <div class="card-value" id="total-purchases">--</div>
+          <div class="card-subtitle">One-time pagos</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Clientes Unicos</div>
+          <div class="card-value" id="total-customers">--</div>
+          <div class="card-subtitle">Assinantes + Compradores</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-title">Usuarios por Projeto</div>
+          <div id="overview-users-project"><div class="loading">Carregando...</div></div>
+        </div>
+        <div class="section">
+          <div class="section-title">MRR por Projeto</div>
+          <div id="overview-mrr-project"><div class="loading">Carregando...</div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Pacotes One-Time por Projeto</div>
+        <div id="overview-onetime-project"><div class="loading">Carregando...</div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">MRR por Projeto</div>
+        <div class="chart-container"><canvas id="overviewChart"></canvas></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Ultimos Assinantes</div>
+        <table>
+          <thead>
+            <tr><th>Email</th><th>Plano</th><th>Projeto</th><th>MRR</th><th>Status</th></tr>
+          </thead>
+          <tbody id="overview-subscribers-table"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- AUTH PAGE - PADRONIZADO -->
+    <div id="page-auth" class="page hidden">
+      <div class="header">
+        <h2><span class="service-badge auth">AUTH</span> Auth Service</h2>
+        <button class="refresh-btn" onclick="loadProjectPage('auth')">Atualizar</button>
+      </div>
+
+      <div class="cards">
+        <div class="card highlight">
+          <div class="card-title">Total Usuarios</div>
+          <div class="card-value" id="auth-users">--</div>
+          <div class="card-subtitle">Usuarios registrados</div>
+        </div>
+        <div class="card">
+          <div class="card-title">MRR</div>
+          <div class="card-value" id="auth-mrr">R$ --</div>
+          <div class="card-subtitle">Receita mensal</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Assinantes Ativos</div>
+          <div class="card-value" id="auth-subs">--</div>
+          <div class="card-subtitle">Pagantes + Trial</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Novos (30d)</div>
+          <div class="card-value" id="auth-new">--</div>
+          <div class="card-subtitle">Ultimos 30 dias</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-title">Usuarios</div>
+          <div class="metric-row">
+            <span class="metric-label">Total</span>
+            <span class="metric-value" id="auth-users-total">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Verificados</span>
+            <span class="metric-value" id="auth-users-verified">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Ativos (7d)</span>
+            <span class="metric-value" id="auth-users-active">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Novos hoje</span>
+            <span class="metric-value" id="auth-users-today">--</span>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Assinaturas</div>
+          <div class="metric-row">
+            <span class="metric-label">Ativos</span>
+            <span class="metric-value" id="auth-subs-active">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Em Trial</span>
+            <span class="metric-value" id="auth-subs-trial">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Cancelados</span>
+            <span class="metric-value" id="auth-subs-canceled">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Receita Total</span>
+            <span class="metric-value" id="auth-revenue">R$ --</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Crescimento de Usuarios</div>
+        <div class="chart-container"><canvas id="authChart"></canvas></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Assinantes Recentes</div>
+        <table>
+          <thead>
+            <tr><th>Email</th><th>Plano</th><th>MRR</th><th>Status</th><th>Data</th></tr>
+          </thead>
+          <tbody id="auth-table"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BILLING PAGE - PADRONIZADO -->
+    <div id="page-billing" class="page hidden">
+      <div class="header">
+        <h2><span class="service-badge billing">BILLING</span> Billing Service</h2>
+        <button class="refresh-btn" onclick="loadProjectPage('billing')">Atualizar</button>
+      </div>
+
+      <div class="cards">
+        <div class="card highlight">
+          <div class="card-title">Total Usuarios</div>
+          <div class="card-value" id="billing-users">--</div>
+          <div class="card-subtitle">Usuarios registrados</div>
+        </div>
+        <div class="card">
+          <div class="card-title">MRR</div>
+          <div class="card-value" id="billing-mrr">R$ --</div>
+          <div class="card-subtitle">Receita mensal</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Assinantes Ativos</div>
+          <div class="card-value" id="billing-subs">--</div>
+          <div class="card-subtitle">Pagantes + Trial</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Novos (30d)</div>
+          <div class="card-value" id="billing-new">--</div>
+          <div class="card-subtitle">Ultimos 30 dias</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-title">Usuarios</div>
+          <div class="metric-row">
+            <span class="metric-label">Total</span>
+            <span class="metric-value" id="billing-users-total">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Verificados</span>
+            <span class="metric-value" id="billing-users-verified">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Ativos (7d)</span>
+            <span class="metric-value" id="billing-users-active">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Novos hoje</span>
+            <span class="metric-value" id="billing-users-today">--</span>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Assinaturas</div>
+          <div class="metric-row">
+            <span class="metric-label">Ativos</span>
+            <span class="metric-value" id="billing-subs-active">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Em Trial</span>
+            <span class="metric-value" id="billing-subs-trial">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Cancelados</span>
+            <span class="metric-value" id="billing-subs-canceled">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Receita Total</span>
+            <span class="metric-value" id="billing-revenue">R$ --</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Crescimento de Usuarios</div>
+        <div class="chart-container"><canvas id="billingChart"></canvas></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Assinantes Recentes</div>
+        <table>
+          <thead>
+            <tr><th>Email</th><th>Plano</th><th>MRR</th><th>Status</th><th>Data</th></tr>
+          </thead>
+          <tbody id="billing-table"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECURITY PAGE - PADRONIZADO -->
+    <div id="page-security" class="page hidden">
+      <div class="header">
+        <h2><span class="service-badge security">SECURITY</span> Security Audit</h2>
+        <button class="refresh-btn" onclick="loadProjectPage('security')">Atualizar</button>
+      </div>
+
+      <div class="cards">
+        <div class="card highlight">
+          <div class="card-title">Total Usuarios</div>
+          <div class="card-value" id="security-users">--</div>
+          <div class="card-subtitle">Usuarios registrados</div>
+        </div>
+        <div class="card">
+          <div class="card-title">MRR</div>
+          <div class="card-value" id="security-mrr">R$ --</div>
+          <div class="card-subtitle">Receita mensal</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Assinantes Ativos</div>
+          <div class="card-value" id="security-subs">--</div>
+          <div class="card-subtitle">Pagantes + Trial</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Novos (30d)</div>
+          <div class="card-value" id="security-new">--</div>
+          <div class="card-subtitle">Ultimos 30 dias</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-title">Usuarios</div>
+          <div class="metric-row">
+            <span class="metric-label">Total</span>
+            <span class="metric-value" id="security-users-total">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Verificados</span>
+            <span class="metric-value" id="security-users-verified">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Ativos (7d)</span>
+            <span class="metric-value" id="security-users-active">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Novos hoje</span>
+            <span class="metric-value" id="security-users-today">--</span>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Assinaturas</div>
+          <div class="metric-row">
+            <span class="metric-label">Ativos</span>
+            <span class="metric-value" id="security-subs-active">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Em Trial</span>
+            <span class="metric-value" id="security-subs-trial">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Cancelados</span>
+            <span class="metric-value" id="security-subs-canceled">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Receita Assinaturas</span>
+            <span class="metric-value" id="security-sub-revenue">R$ --</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-title">Scans Executados</div>
+          <div class="metric-row">
+            <span class="metric-label">Total de Scans</span>
+            <span class="metric-value" id="security-scans-total">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Scans Pagos</span>
+            <span class="metric-value" id="security-scans-paid" style="color: #22c55e;">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Scans Gratuitos</span>
+            <span class="metric-value" id="security-scans-free">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Trials</span>
+            <span class="metric-value" id="security-scans-trial">--</span>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Pacotes One-Time</div>
+          <div class="metric-row">
+            <span class="metric-label">Vendas Pagas</span>
+            <span class="metric-value" id="security-onetime-paid">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Pendentes</span>
+            <span class="metric-value" id="security-onetime-pending">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Receita One-Time</span>
+            <span class="metric-value" id="security-onetime-revenue">R$ --</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-title">Receita Total</div>
+          <div class="metric-row">
+            <span class="metric-label">Assinaturas</span>
+            <span class="metric-value" id="security-revenue-subs">R$ --</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Pacotes One-Time</span>
+            <span class="metric-value" id="security-revenue-onetime">R$ --</span>
+          </div>
+          <div class="metric-row" style="border-top: 2px solid #3b82f6; padding-top: 12px;">
+            <span class="metric-label" style="font-weight: bold;">Total Geral</span>
+            <span class="metric-value" id="security-revenue" style="color: #3b82f6;">R$ --</span>
+          </div>
+        </div>
+        <div class="section" style="display: flex; align-items: center; justify-content: center;">
+          <div style="text-align: center;">
+            <div style="font-size: 48px; font-weight: bold; color: #22c55e;" id="security-paid-percentage">--%</div>
+            <div style="color: #94a3b8;">dos scans sao pagos</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Crescimento de Usuarios</div>
+        <div class="chart-container"><canvas id="securityChart"></canvas></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Assinantes Recentes</div>
+        <table>
+          <thead>
+            <tr><th>Email</th><th>Plano</th><th>MRR</th><th>Status</th><th>Data</th></tr>
+          </thead>
+          <tbody id="security-table"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- OENTREGADOR PAGE - PADRONIZADO -->
+    <div id="page-oentregador" class="page hidden">
+      <div class="header">
+        <h2><span class="service-badge oentregador">OENTREGADOR</span> oEntregador</h2>
+        <button class="refresh-btn" onclick="loadProjectPage('oentregador')">Atualizar</button>
+      </div>
+
+      <div class="cards">
+        <div class="card highlight">
+          <div class="card-title">Total Usuarios</div>
+          <div class="card-value" id="oentregador-users">--</div>
+          <div class="card-subtitle">Usuarios registrados</div>
+        </div>
+        <div class="card">
+          <div class="card-title">MRR</div>
+          <div class="card-value" id="oentregador-mrr">R$ --</div>
+          <div class="card-subtitle">Receita mensal</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Assinantes Ativos</div>
+          <div class="card-value" id="oentregador-subs">--</div>
+          <div class="card-subtitle">Pagantes + Trial</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Novos (30d)</div>
+          <div class="card-value" id="oentregador-new">--</div>
+          <div class="card-subtitle">Ultimos 30 dias</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-title">Usuarios</div>
+          <div class="metric-row">
+            <span class="metric-label">Total</span>
+            <span class="metric-value" id="oentregador-users-total">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Verificados</span>
+            <span class="metric-value" id="oentregador-users-verified">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Ativos (7d)</span>
+            <span class="metric-value" id="oentregador-users-active">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Novos hoje</span>
+            <span class="metric-value" id="oentregador-users-today">--</span>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Assinaturas</div>
+          <div class="metric-row">
+            <span class="metric-label">Ativos</span>
+            <span class="metric-value" id="oentregador-subs-active">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Em Trial</span>
+            <span class="metric-value" id="oentregador-subs-trial">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Cancelados</span>
+            <span class="metric-value" id="oentregador-subs-canceled">--</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Receita Total</span>
+            <span class="metric-value" id="oentregador-revenue">R$ --</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Crescimento de Usuarios</div>
+        <div class="chart-container"><canvas id="oentregadorChart"></canvas></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Assinantes Recentes</div>
+        <table>
+          <thead>
+            <tr><th>Email</th><th>Plano</th><th>MRR</th><th>Status</th><th>Data</th></tr>
+          </thead>
+          <tbody id="oentregador-table"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+        document.getElementById('page-' + item.dataset.page).classList.remove('hidden');
+      });
+    });
+
+    // Helpers
+    function formatCurrency(value) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+    }
+    function formatDate(date) {
+      if (!date) return '-';
+      return new Date(date).toLocaleDateString('pt-BR');
+    }
+    function formatDateTime(date) {
+      if (!date) return '-';
+      return new Date(date).toLocaleString('pt-BR');
+    }
+
+    // Charts
+    let charts = {};
+
+    // Mapeamento de projetos para billing
+    const projectMapping = {
+      'auth': 'app-auth',
+      'billing': 'app-billing',
+      'security': 'security-audit',
+      'oentregador': 'app-oentregador'
+    };
+
+    async function loadAllData() {
+      await Promise.all([
+        loadOverview(),
+        loadProjectPage('auth'),
+        loadProjectPage('billing'),
+        loadProjectPage('security'),
+        loadProjectPage('oentregador')
+      ]);
+    }
+
+    // OVERVIEW
+    async function loadOverview() {
+      try {
+        const data = await fetch('/api/overview').then(r => r.json());
+
+        document.getElementById('total-mrr').textContent = formatCurrency(data.totalMrr);
+        document.getElementById('total-onetime').textContent = formatCurrency(data.totalOneTimeRevenue || 0);
+        document.getElementById('total-revenue').textContent = formatCurrency(data.totalRevenue || data.totalMrr);
+        document.getElementById('total-arr').textContent = formatCurrency(data.totalMrr * 12);
+        document.getElementById('total-users').textContent = data.totalUsers || 0;
+        document.getElementById('active-subs').textContent = data.totalActiveSubs || 0;
+        document.getElementById('total-purchases').textContent = data.totalPaidPurchases || 0;
+        document.getElementById('total-customers').textContent = (data.totalActiveSubs || 0) + (data.totalPaidPurchases || 0);
+
+        document.getElementById('overview-users-project').innerHTML = data.usersByProject.map(p => `
+          <div class="metric-row">
+            <span class="metric-label">${p.project_name}</span>
+            <span class="metric-value">${p.total_users} usuarios</span>
+          </div>
+        `).join('') || '<div class="loading">Sem dados</div>';
+
+        document.getElementById('overview-mrr-project').innerHTML = data.mrrByProject.map(p => `
+          <div class="metric-row">
+            <span class="metric-label">${p.project_name}</span>
+            <span class="metric-value">${formatCurrency(p.mrr)} (${p.active_subs} ativos)</span>
+          </div>
+        `).join('') || '<div class="loading">Sem dados</div>';
+
+        document.getElementById('overview-onetime-project').innerHTML = (data.oneTimeByProject || []).map(p => `
+          <div class="metric-row">
+            <span class="metric-label">${p.project_name}</span>
+            <span class="metric-value">${formatCurrency(p.revenue)} (${p.paid_purchases} vendas)</span>
+          </div>
+        `).join('') || '<div class="loading">Sem vendas one-time</div>';
+
+        document.getElementById('overview-subscribers-table').innerHTML = data.recentSubscribers.map(s => `
+          <tr>
+            <td>${s.email}</td>
+            <td>${s.plan_name || '-'}</td>
+            <td>${s.project_name || '-'}</td>
+            <td>${formatCurrency(s.mrr)}</td>
+            <td><span class="status ${s.status}">${s.status}</span></td>
+          </tr>
+        `).join('') || '<tr><td colspan="5">Sem assinantes</td></tr>';
+
+        if (charts.overview) charts.overview.destroy();
+        charts.overview = new Chart(document.getElementById('overviewChart').getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: data.mrrByProject.map(p => p.project_name),
+            datasets: [{
+              label: 'MRR (R$)',
+              data: data.mrrByProject.map(p => p.mrr || 0),
+              backgroundColor: ['#7c3aed', '#059669', '#dc2626', '#ea580c']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#94a3b8' }}},
+            scales: {
+              x: { ticks: { color: '#64748b' }, grid: { color: '#334155' }},
+              y: { ticks: { color: '#64748b' }, grid: { color: '#334155' }}
+            }
+          }
+        });
+      } catch (err) { console.error('Error loading overview:', err); }
+    }
+
+    // PROJECT PAGE - Padronizado para todos os projetos
+    async function loadProjectPage(project) {
+      try {
+        const data = await fetch(`/api/project/${project}`).then(r => r.json());
+
+        // Cards principais
+        document.getElementById(`${project}-users`).textContent = data.users.total || 0;
+        document.getElementById(`${project}-mrr`).textContent = formatCurrency(data.billing.mrr);
+        document.getElementById(`${project}-subs`).textContent = (data.billing.active || 0) + (data.billing.trialing || 0);
+        document.getElementById(`${project}-new`).textContent = data.users.new_30d || 0;
+
+        // Usuarios
+        document.getElementById(`${project}-users-total`).textContent = data.users.total || 0;
+        document.getElementById(`${project}-users-verified`).textContent = data.users.verified || 0;
+        document.getElementById(`${project}-users-active`).textContent = data.users.active_7d || 0;
+        document.getElementById(`${project}-users-today`).textContent = data.users.new_today || 0;
+
+        // Assinaturas
+        document.getElementById(`${project}-subs-active`).textContent = data.billing.active || 0;
+        document.getElementById(`${project}-subs-trial`).textContent = data.billing.trialing || 0;
+        document.getElementById(`${project}-subs-canceled`).textContent = data.billing.canceled || 0;
+        document.getElementById(`${project}-revenue`).textContent = formatCurrency(data.billing.total_revenue);
+
+        // One-time (se existir)
+        if (data.one_time) {
+          const otPaid = document.getElementById(`${project}-onetime-paid`);
+          const otPending = document.getElementById(`${project}-onetime-pending`);
+          const otRevenue = document.getElementById(`${project}-onetime-revenue`);
+          const subRevenue = document.getElementById(`${project}-sub-revenue`);
+          const revSubs = document.getElementById(`${project}-revenue-subs`);
+          const revOnetime = document.getElementById(`${project}-revenue-onetime`);
+
+          if (otPaid) otPaid.textContent = data.one_time.paid_purchases || 0;
+          if (otPending) otPending.textContent = data.one_time.pending_purchases || 0;
+          if (otRevenue) otRevenue.textContent = formatCurrency(data.one_time.revenue);
+          if (subRevenue) subRevenue.textContent = formatCurrency(data.billing.subscription_revenue);
+          if (revSubs) revSubs.textContent = formatCurrency(data.billing.subscription_revenue);
+          if (revOnetime) revOnetime.textContent = formatCurrency(data.one_time.revenue);
+        }
+
+        // Scan stats (apenas para security)
+        if (project === 'security') {
+          try {
+            const scanData = await fetch('/api/security/scan-stats').then(r => r.json());
+            document.getElementById('security-scans-total').textContent = scanData.total_scans || 0;
+            document.getElementById('security-scans-paid').textContent = scanData.paid_scans || 0;
+            document.getElementById('security-scans-free').textContent = scanData.free_scans || 0;
+            document.getElementById('security-scans-trial').textContent = scanData.trial_scans || 0;
+
+            const percentage = scanData.total_scans > 0
+              ? Math.round((scanData.paid_scans / scanData.total_scans) * 100)
+              : 0;
+            document.getElementById('security-paid-percentage').textContent = percentage + '%';
+          } catch (e) { console.error('Error loading scan stats:', e); }
+        }
+
+        // Tabela
+        document.getElementById(`${project}-table`).innerHTML = data.subscribers.map(s => `
+          <tr>
+            <td>${s.email}</td>
+            <td>${s.plan_name || '-'}</td>
+            <td>${formatCurrency(s.mrr)}</td>
+            <td><span class="status ${s.status}">${s.status}</span></td>
+            <td>${formatDateTime(s.created_at)}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="5">Sem assinantes</td></tr>';
+
+        // Chart
+        if (charts[project]) charts[project].destroy();
+        const colors = { auth: '#7c3aed', billing: '#059669', security: '#dc2626', oentregador: '#ea580c' };
+        charts[project] = new Chart(document.getElementById(`${project}Chart`).getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: data.growth.map(g => formatDate(g.date)),
+            datasets: [{
+              label: 'Novos usuarios',
+              data: data.growth.map(g => g.count),
+              borderColor: colors[project],
+              backgroundColor: colors[project] + '20',
+              fill: true,
+              tension: 0.3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#94a3b8' }}},
+            scales: {
+              x: { ticks: { color: '#64748b' }, grid: { color: '#334155' }},
+              y: { ticks: { color: '#64748b' }, grid: { color: '#334155' }}
+            }
+          }
+        });
+      } catch (err) { console.error(`Error loading ${project}:`, err); }
+    }
+
+    // Som de dinheiro usando Web Audio API
+    function playCashSound() {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Som de moeda caindo (coin drop)
+      const playTone = (freq, startTime, duration) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.3, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
+
+      // Sequencia de tons (cash register sound)
+      const now = audioCtx.currentTime;
+      playTone(1200, now, 0.1);
+      playTone(1500, now + 0.1, 0.1);
+      playTone(1800, now + 0.2, 0.15);
+      playTone(2200, now + 0.35, 0.2);
+    }
+
+    // Armazenar estado anterior para detectar novos clientes PAGANTES
+    let previousData = {
+      totalPaidSubs: 0,       // apenas status 'active' (nao trialing)
+      totalPaidPurchases: 0   // apenas compras pagas
+    };
+    let isFirstLoad = true;
+
+    // Funcao para verificar novos clientes pagantes
+    async function checkForNewCustomers() {
+      try {
+        const data = await fetch('/api/overview').then(r => r.json());
+
+        // Buscar apenas assinantes pagantes (active, nao trialing)
+        const paidSubsResponse = await fetch('/api/billing/metrics').then(r => r.json());
+        const currentPaidSubs = parseInt(paidSubsResponse.active_subscriptions) || 0;
+        const currentPurchases = data.totalPaidPurchases || 0;
+
+        if (!isFirstLoad) {
+          // Verificar se houve NOVOS clientes PAGANTES
+          const newPaidSubs = currentPaidSubs - previousData.totalPaidSubs;
+          const newPurchases = currentPurchases - previousData.totalPaidPurchases;
+
+          if (newPaidSubs > 0 || newPurchases > 0) {
+            console.log(`NOVO CLIENTE PAGANTE! +${newPaidSubs} assinantes, +${newPurchases} compras`);
+            playCashSound();
+
+            // Mostrar notificacao
+            if (Notification.permission === 'granted') {
+              const msgs = [];
+              if (newPaidSubs > 0) msgs.push(`${newPaidSubs} nova(s) assinatura(s)`);
+              if (newPurchases > 0) msgs.push(`${newPurchases} nova(s) compra(s)`);
+
+              new Notification('Dinheiro Entrando!', {
+                body: msgs.join(', '),
+                icon: '💰'
+              });
+            }
+          }
+        }
+
+        // Atualizar estado anterior
+        previousData.totalPaidSubs = currentPaidSubs;
+        previousData.totalPaidPurchases = currentPurchases;
+        isFirstLoad = false;
+
+      } catch (err) {
+        console.error('Erro ao verificar novos clientes:', err);
+      }
+    }
+
+    // Pedir permissao para notificacoes
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    // Atualizar a cada 30 minutos (1800000 ms)
+    const UPDATE_INTERVAL = 30 * 60 * 1000; // 30 minutos
+
+    async function autoUpdate() {
+      console.log('Atualizando dados...', new Date().toLocaleTimeString());
+      await checkForNewCustomers();
+      await loadAllData();
+    }
+
+    // Iniciar intervalo de atualizacao
+    setInterval(autoUpdate, UPDATE_INTERVAL);
+
+    // Mostrar proximo update no header
+    function updateNextRefreshTime() {
+      const now = new Date();
+      const next = new Date(now.getTime() + UPDATE_INTERVAL);
+      const timeStr = next.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const refreshBtn = document.querySelector('.refresh-btn');
+      if (refreshBtn) {
+        refreshBtn.title = `Proxima atualizacao automatica: ${timeStr}`;
+      }
+    }
+
+    // Initial load
+    async function init() {
+      await checkForNewCustomers(); // Carrega estado inicial
+      await loadAllData();
+      updateNextRefreshTime();
+    }
+    init();
+
+    // Botao de teste do som (para debug - remover depois)
+    // window.testSound = playCashSound;
+  </script>
+</body>
+</html>

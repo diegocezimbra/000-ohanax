@@ -502,6 +502,55 @@ app.get('/api/security/stats', async (req, res) => {
   }
 });
 
+// Scan stats: total scans vs paid scans
+app.get('/api/security/scan-stats', async (req, res) => {
+  try {
+    // Total scans from security database
+    const totalScans = await db.security.query(`
+      SELECT COUNT(*) as total FROM security_audit_reports
+    `);
+
+    // Trial scans (free)
+    const trialScans = await db.security.query(`
+      SELECT COUNT(*) as total FROM security_trial_sessions
+    `);
+
+    // Paid users (active subscriptions for security-audit)
+    const paidUsers = await db.billing.query(`
+      SELECT DISTINCT s.external_user_id
+      FROM subscriptions s
+      JOIN projects p ON s.project_id = p.id
+      WHERE p.name = 'security-audit' AND s.status = 'active'
+    `);
+    const paidUserIds = paidUsers.rows.map(r => r.external_user_id);
+
+    // Get scans from paid users
+    let paidScans = 0;
+    if (paidUserIds.length > 0) {
+      const paidScansResult = await db.security.query(`
+        SELECT COUNT(*) as total
+        FROM security_audit_reports sar
+        JOIN security_projects sp ON sar.project_id = sp.id
+        WHERE sp.owner_id = ANY($1::uuid[])
+      `, [paidUserIds]);
+      paidScans = parseInt(paidScansResult.rows[0].total) || 0;
+    }
+
+    const total = parseInt(totalScans.rows[0].total) || 0;
+    const trials = parseInt(trialScans.rows[0].total) || 0;
+
+    res.json({
+      total_scans: total,
+      trial_scans: trials,
+      paid_scans: paidScans,
+      free_scans: total - paidScans
+    });
+  } catch (err) {
+    console.error('Error in scan-stats:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/security/vulnerabilities', async (req, res) => {
   try {
     const result = await db.security.query(`

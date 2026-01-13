@@ -1,18 +1,20 @@
 {
   "name": "ohanax-website",
   "version": "1.0.0",
-  "type": "module",
-  "description": "Ohanax website with admin dashboard",
-  "main": "server.js",
+  "description": "Ohanax Website + Admin Dashboard",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "deploy": "npm run deploy:all",
+    "deploy:all": "npm run git:push && npm run deploy:backend",
+    "deploy:frontend": "npm run git:push",
+    "deploy:backend": "npm run docker:build && npm run docker:push && npm run apprunner:deploy",
+    "git:push": "git add -A && git commit -m 'deploy: auto deploy' --allow-empty && git push",
+    "docker:build": "cd dashboard && docker build -t ohanax-admin .",
+    "docker:push": "docker tag ohanax-admin:latest 211125354516.dkr.ecr.us-east-1.amazonaws.com/ohanax-admin:latest && docker push 211125354516.dkr.ecr.us-east-1.amazonaws.com/ohanax-admin:latest",
+    "apprunner:deploy": "aws apprunner start-deployment --service-arn arn:aws:apprunner:us-east-1:211125354516:service/ohanax-admin/b5d644ab29814bba940f713c76bfc721 --region us-east-1",
+    "ecr:login": "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 211125354516.dkr.ecr.us-east-1.amazonaws.com"
   },
-  "dependencies": {
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "mongodb": "^6.3.0",
-    "pg": "^8.11.3"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/diegocezimbra/000-ohanax.git"
   }
 }
