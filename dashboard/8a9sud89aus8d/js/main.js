@@ -234,15 +234,22 @@ async function loadOverview() {
 // FUNNEL VISUALIZATION
 // =============================================================================
 function updateFunnel(data, prefix = '') {
+  const visitors = data.details.visitors || 0;
   const registered = data.details.registered;
   const trialing = data.details.trialing;
   const paying = data.details.total_paying;
-  const maxWidth = registered || 1;
 
-  // Calculate percentages
+  // Use visitors as max if available, otherwise registered
+  const maxWidth = visitors > 0 ? visitors : (registered || 1);
+
+  // Calculate percentages relative to previous stage
+  const regPercent = visitors > 0 ? ((registered / visitors) * 100).toFixed(1) : 100;
   const trialPercent = registered > 0 ? ((trialing / registered) * 100).toFixed(1) : 0;
-  const payingPercent = registered > 0 ? ((paying / registered) * 100).toFixed(1) : 0;
-  const regToTrialConversion = registered > 0 ? ((trialing / registered) * 100).toFixed(1) : 0;
+  const payingPercentOfReg = registered > 0 ? ((paying / registered) * 100).toFixed(1) : 0;
+
+  // Update visitors count
+  const countVisitors = document.getElementById(`${prefix}funnel-count-visitors`);
+  if (countVisitors) countVisitors.textContent = visitors.toLocaleString('pt-BR');
 
   // Update counts
   const countRegistered = document.getElementById(`${prefix}funnel-count-registered`);
@@ -253,43 +260,63 @@ function updateFunnel(data, prefix = '') {
   if (countTrial) countTrial.textContent = trialing.toLocaleString('pt-BR');
   if (countPaying) countPaying.textContent = paying.toLocaleString('pt-BR');
 
-  // Update visual funnel bars (width based on percentage)
+  // Update visual funnel bars (width based on funnel shape)
+  const visitorsBar = document.getElementById(`${prefix}funnel-bar-visitors`);
+  const registeredBar = document.getElementById(`${prefix}funnel-bar-registered`);
   const trialBar = document.getElementById(`${prefix}funnel-bar-trial`);
   const payingBar = document.getElementById(`${prefix}funnel-bar-paying`);
 
+  if (visitorsBar) {
+    visitorsBar.style.width = '100%';
+  }
+  if (registeredBar) {
+    const regWidth = visitors > 0 ? Math.max(40, (registered / maxWidth) * 100) : 70;
+    registeredBar.style.width = regWidth + '%';
+  }
   if (trialBar) {
-    const trialWidth = Math.max(30, (trialing / maxWidth) * 100);
+    const trialWidth = visitors > 0 ? Math.max(30, (trialing / maxWidth) * 100) : Math.max(30, (trialing / registered) * 70);
     trialBar.style.width = trialWidth + '%';
   }
   if (payingBar) {
-    const payingWidth = Math.max(20, (paying / maxWidth) * 100);
+    const payingWidth = visitors > 0 ? Math.max(20, (paying / maxWidth) * 100) : Math.max(20, (paying / registered) * 70);
     payingBar.style.width = payingWidth + '%';
   }
 
   // Update percentage labels on funnel bars
+  const percentRegistered = document.getElementById(`${prefix}funnel-percent-registered`);
   const percentTrial = document.getElementById(`${prefix}funnel-percent-trial`);
   const percentPaying = document.getElementById(`${prefix}funnel-percent-paying`);
 
+  if (percentRegistered) percentRegistered.textContent = regPercent + '%';
   if (percentTrial) percentTrial.textContent = trialPercent + '%';
-  if (percentPaying) percentPaying.textContent = payingPercent + '%';
+  if (percentPaying) percentPaying.textContent = payingPercentOfReg + '%';
 
   // Update conversion rates (cards on the right)
+  const convVisitorReg = document.getElementById(`${prefix}funnel-conversion-visitor-reg`);
   const convRegTrial = document.getElementById(`${prefix}funnel-conversion-reg-trial`);
   const convTrial = document.getElementById(`${prefix}funnel-conversion-trial`);
   const convTotal = document.getElementById(`${prefix}funnel-conversion-total`);
 
-  if (convRegTrial) convRegTrial.textContent = regToTrialConversion + '%';
+  if (convVisitorReg) convVisitorReg.textContent = (data.conversion.visitor_to_registered || regPercent) + '%';
+  if (convRegTrial) convRegTrial.textContent = trialPercent + '%';
   if (convTrial) convTrial.textContent = data.conversion.trial_to_paid + '%';
   if (convTotal) convTotal.textContent = data.conversion.registered_to_paid + '%';
 
   // Update total summary card (bottom)
+  const totalVisitors = document.getElementById(`${prefix}funnel-total-visitors`);
   const totalRegistered = document.getElementById(`${prefix}funnel-total-registered`);
   const totalPaying = document.getElementById(`${prefix}funnel-total-paying`);
   const totalConversion = document.getElementById(`${prefix}funnel-total-conversion`);
 
+  if (totalVisitors) totalVisitors.textContent = visitors.toLocaleString('pt-BR');
   if (totalRegistered) totalRegistered.textContent = registered.toLocaleString('pt-BR');
   if (totalPaying) totalPaying.textContent = paying.toLocaleString('pt-BR');
-  if (totalConversion) totalConversion.textContent = data.conversion.registered_to_paid + '%';
+
+  // Total conversion: visitor to paying (or registered to paying if no visitors)
+  if (totalConversion) {
+    const visitorToPaid = visitors > 0 ? ((paying / visitors) * 100).toFixed(1) : data.conversion.registered_to_paid;
+    totalConversion.textContent = visitorToPaid + '%';
+  }
 }
 
 // =============================================================================

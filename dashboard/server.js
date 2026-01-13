@@ -10,8 +10,80 @@ const app = express();
 const PORT = process.env.PORT || 3333;
 
 // Senha do dashboard via variavel de ambiente (Amplify)
-const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || '@123b456ABC';
+const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD;
 const SECRET_ROUTE = '/8a9sud89aus8d';
+
+// =============================================================================
+// UMAMI ANALYTICS CONFIG
+// =============================================================================
+const UMAMI_CONFIG = {
+  baseUrl: 'https://api.umami.is/v1',
+  tokens: {
+    // Token para security, auth, billing
+    main: 'api_qEPOgaHG9K7EeZjgUZiVyvtkYpaADJST',
+    // Token para oentregador
+    oentregador: 'api_wEDDdI2afGuX3dmR2YQf2Bd34ud58fW4'
+  },
+  websites: {
+    security: 'adecb5b8-60e1-448b-ab8c-aad0350dc2a2',
+    auth: '032c4869-3301-4d7d-869a-2e898f1f49c7',
+    billing: '2a708d6c-43ed-439e-af48-60a2c3e82f38',
+    oentregador: 'c0ec15e8-98a1-4615-b586-5de88b65eba5'
+  }
+};
+
+// Fetch visitors from Umami for a specific website
+async function getUmamiVisitors(websiteId, token, startDate, endDate) {
+  try {
+    const startAt = new Date(startDate).getTime();
+    const endAt = new Date(endDate).getTime();
+
+    const response = await fetch(
+      `${UMAMI_CONFIG.baseUrl}/websites/${websiteId}/stats?startAt=${startAt}&endAt=${endAt}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (!response.ok) {
+      console.error(`Umami API error: ${response.status}`);
+      return { visitors: 0, pageviews: 0 };
+    }
+
+    const data = await response.json();
+    return {
+      visitors: data.visitors?.value || 0,
+      pageviews: data.pageviews?.value || 0
+    };
+  } catch (err) {
+    console.error('Umami fetch error:', err.message);
+    return { visitors: 0, pageviews: 0 };
+  }
+}
+
+// Get total visitors across all websites
+async function getTotalVisitors(startDate, endDate) {
+  const results = await Promise.all([
+    getUmamiVisitors(UMAMI_CONFIG.websites.auth, UMAMI_CONFIG.tokens.main, startDate, endDate),
+    getUmamiVisitors(UMAMI_CONFIG.websites.billing, UMAMI_CONFIG.tokens.main, startDate, endDate),
+    getUmamiVisitors(UMAMI_CONFIG.websites.security, UMAMI_CONFIG.tokens.main, startDate, endDate),
+    getUmamiVisitors(UMAMI_CONFIG.websites.oentregador, UMAMI_CONFIG.tokens.oentregador, startDate, endDate)
+  ]);
+
+  return {
+    visitors: results.reduce((sum, r) => sum + r.visitors, 0),
+    pageviews: results.reduce((sum, r) => sum + r.pageviews, 0),
+    byProject: {
+      auth: results[0],
+      billing: results[1],
+      security: results[2],
+      oentregador: results[3]
+    }
+  };
+}
 
 app.use(cors({
   origin: ['https://www.ohanax.com', 'https://ohanax.com', 'http://localhost:3333'],
@@ -1145,7 +1217,6 @@ app.get('/api/funnel', async (req, res) => {
   const billingProjectName = project ? projectNameMapping[project] : null;
 
   try {
-    let totalUsers = 0;
     let registeredUsers = 0;
 
     // Usuarios cadastrados (auth database)
@@ -1202,22 +1273,49 @@ app.get('/api/funnel', async (req, res) => {
     // Total pagantes = assinantes ativos + compradores one-time (unique)
     const totalPaying = payingUsers + oneTimeBuyers;
 
+    // Get visitors from Umami (last 90 days for all-time funnel view)
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 90);
+
+    let visitors = 0;
+    let visitorsByProject = {};
+
+    if (project) {
+      // Single project
+      const websiteId = UMAMI_CONFIG.websites[project];
+      const token = project === 'oentregador' ? UMAMI_CONFIG.tokens.oentregador : UMAMI_CONFIG.tokens.main;
+      const umamiData = await getUmamiVisitors(websiteId, token, startDate, endDate);
+      visitors = umamiData.visitors;
+    } else {
+      // All projects
+      const umamiData = await getTotalVisitors(startDate, endDate);
+      visitors = umamiData.visitors;
+      visitorsByProject = umamiData.byProject;
+    }
+
     res.json({
       funnel: [
+        { stage: 'Visitantes', count: visitors, color: '#6366f1' },
         { stage: 'Cadastrados', count: registeredUsers, color: '#64748b' },
         { stage: 'Em Trial', count: trialUsers, color: '#f59e0b' },
         { stage: 'Pagantes', count: totalPaying, color: '#22c55e' }
       ],
       details: {
+        visitors: visitors,
         registered: registeredUsers,
         trialing: trialUsers,
         paying_subscriptions: payingUsers,
         paying_one_time: oneTimeBuyers,
-        total_paying: totalPaying
+        total_paying: totalPaying,
+        visitors_by_project: visitorsByProject
       },
       conversion: {
+        visitor_to_registered: visitors > 0 ? ((registeredUsers / visitors) * 100).toFixed(1) : 0,
+        registered_to_trial: registeredUsers > 0 ? ((trialUsers / registeredUsers) * 100).toFixed(1) : 0,
         trial_to_paid: trialUsers > 0 ? ((payingUsers / (trialUsers + payingUsers)) * 100).toFixed(1) : 0,
-        registered_to_paid: registeredUsers > 0 ? ((totalPaying / registeredUsers) * 100).toFixed(1) : 0
+        registered_to_paid: registeredUsers > 0 ? ((totalPaying / registeredUsers) * 100).toFixed(1) : 0,
+        visitor_to_paid: visitors > 0 ? ((totalPaying / visitors) * 100).toFixed(1) : 0
       }
     });
   } catch (err) {
