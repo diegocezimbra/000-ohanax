@@ -1,4 +1,46 @@
 // =============================================================================
+// PAGE LOADER
+// =============================================================================
+let currentPage = 'overview';
+const pageCache = {};
+
+async function loadPage(pageName) {
+  const container = document.getElementById('page-content');
+
+  // Check cache first
+  if (pageCache[pageName]) {
+    container.innerHTML = pageCache[pageName];
+    currentPage = pageName;
+    loadPageData(pageName);
+    return;
+  }
+
+  // Show loading
+  container.innerHTML = '<div class="loading">Carregando...</div>';
+
+  try {
+    const response = await fetch(`pages/${pageName}.html`);
+    if (!response.ok) throw new Error('Page not found');
+    const html = await response.text();
+    pageCache[pageName] = html;
+    container.innerHTML = html;
+    currentPage = pageName;
+    loadPageData(pageName);
+  } catch (err) {
+    console.error(`Error loading page ${pageName}:`, err);
+    container.innerHTML = '<div class="loading">Erro ao carregar pagina</div>';
+  }
+}
+
+function loadPageData(pageName) {
+  if (pageName === 'overview') {
+    loadOverview();
+  } else {
+    loadProjectPage(pageName);
+  }
+}
+
+// =============================================================================
 // NAVIGATION
 // =============================================================================
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -6,8 +48,7 @@ document.querySelectorAll('.nav-item').forEach(item => {
     e.preventDefault();
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     item.classList.add('active');
-    document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-    document.getElementById('page-' + item.dataset.page).classList.remove('hidden');
+    loadPage(item.dataset.page);
   });
 });
 
@@ -61,12 +102,7 @@ function onPeriodChange(page) {
     customDates.style.display = 'flex';
   } else {
     customDates.style.display = 'none';
-    // Reload data with new period
-    if (page === 'overview') {
-      loadAllData();
-    } else {
-      loadProjectPage(page);
-    }
+    loadPageData(page);
   }
 }
 
@@ -86,16 +122,10 @@ const projectMapping = {
 };
 
 // =============================================================================
-// LOAD ALL DATA
+// LOAD ALL DATA (reload current page)
 // =============================================================================
 async function loadAllData() {
-  await Promise.all([
-    loadOverview(),
-    loadProjectPage('auth'),
-    loadProjectPage('billing'),
-    loadProjectPage('security'),
-    loadProjectPage('oentregador')
-  ]);
+  loadPageData(currentPage);
 }
 
 // =============================================================================
@@ -105,68 +135,92 @@ async function loadOverview() {
   try {
     const data = await fetch('/api/overview').then(r => r.json());
 
-    document.getElementById('total-mrr').textContent = formatCurrency(data.totalMrr);
-    document.getElementById('total-onetime').textContent = formatCurrency(data.totalOneTimeRevenue || 0);
-    document.getElementById('total-revenue').textContent = formatCurrency(data.totalRevenue || data.totalMrr);
-    document.getElementById('total-arr').textContent = formatCurrency(data.totalMrr * 12);
-    document.getElementById('total-users').textContent = data.totalUsers || 0;
-    document.getElementById('active-subs').textContent = data.totalActiveSubs || 0;
-    document.getElementById('total-purchases').textContent = data.totalPaidPurchases || 0;
-    document.getElementById('total-customers').textContent = (data.totalActiveSubs || 0) + (data.totalPaidPurchases || 0);
+    const totalMrrEl = document.getElementById('total-mrr');
+    const totalOnetimeEl = document.getElementById('total-onetime');
+    const totalRevenueEl = document.getElementById('total-revenue');
+    const totalArrEl = document.getElementById('total-arr');
+    const totalUsersEl = document.getElementById('total-users');
+    const activeSubsEl = document.getElementById('active-subs');
+    const totalPurchasesEl = document.getElementById('total-purchases');
+    const totalCustomersEl = document.getElementById('total-customers');
 
-    document.getElementById('overview-users-project').innerHTML = data.usersByProject.map(p => `
-      <div class="metric-row">
-        <span class="metric-label">${p.project_name}</span>
-        <span class="metric-value">${p.total_users} usuarios</span>
-      </div>
-    `).join('') || '<div class="loading">Sem dados</div>';
+    if (totalMrrEl) totalMrrEl.textContent = formatCurrency(data.totalMrr);
+    if (totalOnetimeEl) totalOnetimeEl.textContent = formatCurrency(data.totalOneTimeRevenue || 0);
+    if (totalRevenueEl) totalRevenueEl.textContent = formatCurrency(data.totalRevenue || data.totalMrr);
+    if (totalArrEl) totalArrEl.textContent = formatCurrency(data.totalMrr * 12);
+    if (totalUsersEl) totalUsersEl.textContent = data.totalUsers || 0;
+    if (activeSubsEl) activeSubsEl.textContent = data.totalActiveSubs || 0;
+    if (totalPurchasesEl) totalPurchasesEl.textContent = data.totalPaidPurchases || 0;
+    if (totalCustomersEl) totalCustomersEl.textContent = (data.totalActiveSubs || 0) + (data.totalPaidPurchases || 0);
 
-    document.getElementById('overview-mrr-project').innerHTML = data.mrrByProject.map(p => `
-      <div class="metric-row">
-        <span class="metric-label">${p.project_name}</span>
-        <span class="metric-value">${formatCurrency(p.mrr)} (${p.active_subs} ativos)</span>
-      </div>
-    `).join('') || '<div class="loading">Sem dados</div>';
+    const usersProjectEl = document.getElementById('overview-users-project');
+    if (usersProjectEl) {
+      usersProjectEl.innerHTML = data.usersByProject.map(p => `
+        <div class="metric-row">
+          <span class="metric-label">${p.project_name}</span>
+          <span class="metric-value">${p.total_users} usuarios</span>
+        </div>
+      `).join('') || '<div class="loading">Sem dados</div>';
+    }
 
-    document.getElementById('overview-onetime-project').innerHTML = (data.oneTimeByProject || []).map(p => `
-      <div class="metric-row">
-        <span class="metric-label">${p.project_name}</span>
-        <span class="metric-value">${formatCurrency(p.revenue)} (${p.paid_purchases} vendas)</span>
-      </div>
-    `).join('') || '<div class="loading">Sem vendas one-time</div>';
+    const mrrProjectEl = document.getElementById('overview-mrr-project');
+    if (mrrProjectEl) {
+      mrrProjectEl.innerHTML = data.mrrByProject.map(p => `
+        <div class="metric-row">
+          <span class="metric-label">${p.project_name}</span>
+          <span class="metric-value">${formatCurrency(p.mrr)} (${p.active_subs} ativos)</span>
+        </div>
+      `).join('') || '<div class="loading">Sem dados</div>';
+    }
 
-    document.getElementById('overview-subscribers-table').innerHTML = data.recentSubscribers.map(s => `
-      <tr>
-        <td>${s.email}</td>
-        <td>${s.plan_name || '-'}</td>
-        <td>${s.project_name || '-'}</td>
-        <td>${formatCurrency(s.mrr)}</td>
-        <td><span class="status ${s.status}">${s.status}</span></td>
-      </tr>
-    `).join('') || '<tr><td colspan="5">Sem assinantes</td></tr>';
+    const onetimeProjectEl = document.getElementById('overview-onetime-project');
+    if (onetimeProjectEl) {
+      onetimeProjectEl.innerHTML = (data.oneTimeByProject || []).map(p => `
+        <div class="metric-row">
+          <span class="metric-label">${p.project_name}</span>
+          <span class="metric-value">${formatCurrency(p.revenue)} (${p.paid_purchases} vendas)</span>
+        </div>
+      `).join('') || '<div class="loading">Sem vendas one-time</div>';
+    }
+
+    const subscribersTableEl = document.getElementById('overview-subscribers-table');
+    if (subscribersTableEl) {
+      subscribersTableEl.innerHTML = data.recentSubscribers.map(s => `
+        <tr>
+          <td>${s.email}</td>
+          <td>${s.plan_name || '-'}</td>
+          <td>${s.project_name || '-'}</td>
+          <td>${formatCurrency(s.mrr)}</td>
+          <td><span class="status ${s.status}">${s.status}</span></td>
+        </tr>
+      `).join('') || '<tr><td colspan="5">Sem assinantes</td></tr>';
+    }
 
     // Chart
     if (charts.overview) charts.overview.destroy();
-    charts.overview = new Chart(document.getElementById('overviewChart').getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: data.mrrByProject.map(p => p.project_name),
-        datasets: [{
-          label: 'MRR (R$)',
-          data: data.mrrByProject.map(p => p.mrr || 0),
-          backgroundColor: ['#7c3aed', '#059669', '#dc2626', '#ea580c']
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: '#94a3b8' }}},
-        scales: {
-          x: { ticks: { color: '#64748b' }, grid: { color: '#334155' }},
-          y: { ticks: { color: '#64748b' }, grid: { color: '#334155' }}
+    const chartCanvas = document.getElementById('overviewChart');
+    if (chartCanvas) {
+      charts.overview = new Chart(chartCanvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: data.mrrByProject.map(p => p.project_name),
+          datasets: [{
+            label: 'MRR (R$)',
+            data: data.mrrByProject.map(p => p.mrr || 0),
+            backgroundColor: ['#7c3aed', '#059669', '#dc2626', '#ea580c']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#94a3b8' }}},
+          scales: {
+            x: { ticks: { color: '#64748b' }, grid: { color: '#334155' }},
+            y: { ticks: { color: '#64748b' }, grid: { color: '#334155' }}
+          }
         }
-      }
-    });
+      });
+    }
   } catch (err) { console.error('Error loading overview:', err); }
 
   // Load funnel data
@@ -219,22 +273,37 @@ async function loadProjectPage(project) {
     const data = await fetch(`/api/project/${project}`).then(r => r.json());
 
     // Cards principais
-    document.getElementById(`${project}-users`).textContent = data.users.total || 0;
-    document.getElementById(`${project}-mrr`).textContent = formatCurrency(data.billing.mrr);
-    document.getElementById(`${project}-subs`).textContent = (data.billing.active || 0) + (data.billing.trialing || 0);
-    document.getElementById(`${project}-new`).textContent = data.users.new_30d || 0;
+    const usersEl = document.getElementById(`${project}-users`);
+    const mrrEl = document.getElementById(`${project}-mrr`);
+    const subsEl = document.getElementById(`${project}-subs`);
+    const newEl = document.getElementById(`${project}-new`);
+
+    if (usersEl) usersEl.textContent = data.users.total || 0;
+    if (mrrEl) mrrEl.textContent = formatCurrency(data.billing.mrr);
+    if (subsEl) subsEl.textContent = (data.billing.active || 0) + (data.billing.trialing || 0);
+    if (newEl) newEl.textContent = data.users.new_30d || 0;
 
     // Usuarios
-    document.getElementById(`${project}-users-total`).textContent = data.users.total || 0;
-    document.getElementById(`${project}-users-verified`).textContent = data.users.verified || 0;
-    document.getElementById(`${project}-users-active`).textContent = data.users.active_7d || 0;
-    document.getElementById(`${project}-users-today`).textContent = data.users.new_today || 0;
+    const usersTotalEl = document.getElementById(`${project}-users-total`);
+    const usersVerifiedEl = document.getElementById(`${project}-users-verified`);
+    const usersActiveEl = document.getElementById(`${project}-users-active`);
+    const usersTodayEl = document.getElementById(`${project}-users-today`);
+
+    if (usersTotalEl) usersTotalEl.textContent = data.users.total || 0;
+    if (usersVerifiedEl) usersVerifiedEl.textContent = data.users.verified || 0;
+    if (usersActiveEl) usersActiveEl.textContent = data.users.active_7d || 0;
+    if (usersTodayEl) usersTodayEl.textContent = data.users.new_today || 0;
 
     // Assinaturas
-    document.getElementById(`${project}-subs-active`).textContent = data.billing.active || 0;
-    document.getElementById(`${project}-subs-trial`).textContent = data.billing.trialing || 0;
-    document.getElementById(`${project}-subs-canceled`).textContent = data.billing.canceled || 0;
-    document.getElementById(`${project}-revenue`).textContent = formatCurrency(data.billing.total_revenue);
+    const subsActiveEl = document.getElementById(`${project}-subs-active`);
+    const subsTrialEl = document.getElementById(`${project}-subs-trial`);
+    const subsCanceledEl = document.getElementById(`${project}-subs-canceled`);
+    const revenueEl = document.getElementById(`${project}-revenue`);
+
+    if (subsActiveEl) subsActiveEl.textContent = data.billing.active || 0;
+    if (subsTrialEl) subsTrialEl.textContent = data.billing.trialing || 0;
+    if (subsCanceledEl) subsCanceledEl.textContent = data.billing.canceled || 0;
+    if (revenueEl) revenueEl.textContent = formatCurrency(data.billing.total_revenue);
 
     // One-time (se existir)
     if (data.one_time) {
@@ -257,55 +326,67 @@ async function loadProjectPage(project) {
     if (project === 'security') {
       try {
         const scanData = await fetch('/api/security/scan-stats').then(r => r.json());
-        document.getElementById('security-scans-total').textContent = scanData.total_scans || 0;
-        document.getElementById('security-scans-paid').textContent = scanData.paid_scans || 0;
-        document.getElementById('security-scans-free').textContent = scanData.free_scans || 0;
-        document.getElementById('security-scans-trial').textContent = scanData.trial_scans || 0;
+        const scansTotalEl = document.getElementById('security-scans-total');
+        const scansPaidEl = document.getElementById('security-scans-paid');
+        const scansFreeEl = document.getElementById('security-scans-free');
+        const scansTrialEl = document.getElementById('security-scans-trial');
+        const paidPercentEl = document.getElementById('security-paid-percentage');
+
+        if (scansTotalEl) scansTotalEl.textContent = scanData.total_scans || 0;
+        if (scansPaidEl) scansPaidEl.textContent = scanData.paid_scans || 0;
+        if (scansFreeEl) scansFreeEl.textContent = scanData.free_scans || 0;
+        if (scansTrialEl) scansTrialEl.textContent = scanData.trial_scans || 0;
 
         const percentage = scanData.total_scans > 0
           ? Math.round((scanData.paid_scans / scanData.total_scans) * 100)
           : 0;
-        document.getElementById('security-paid-percentage').textContent = percentage + '%';
+        if (paidPercentEl) paidPercentEl.textContent = percentage + '%';
       } catch (e) { console.error('Error loading scan stats:', e); }
     }
 
     // Tabela
-    document.getElementById(`${project}-table`).innerHTML = data.subscribers.map(s => `
-      <tr>
-        <td>${s.email}</td>
-        <td>${s.plan_name || '-'}</td>
-        <td>${formatCurrency(s.mrr)}</td>
-        <td><span class="status ${s.status}">${s.status}</span></td>
-        <td>${formatDateTime(s.created_at)}</td>
-      </tr>
-    `).join('') || '<tr><td colspan="5">Sem assinantes</td></tr>';
+    const tableEl = document.getElementById(`${project}-table`);
+    if (tableEl) {
+      tableEl.innerHTML = data.subscribers.map(s => `
+        <tr>
+          <td>${s.email}</td>
+          <td>${s.plan_name || '-'}</td>
+          <td>${formatCurrency(s.mrr)}</td>
+          <td><span class="status ${s.status}">${s.status}</span></td>
+          <td>${formatDateTime(s.created_at)}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="5">Sem assinantes</td></tr>';
+    }
 
     // Chart
     if (charts[project]) charts[project].destroy();
     const colors = { auth: '#7c3aed', billing: '#059669', security: '#dc2626', oentregador: '#ea580c' };
-    charts[project] = new Chart(document.getElementById(`${project}Chart`).getContext('2d'), {
-      type: 'line',
-      data: {
-        labels: data.growth.map(g => formatDate(g.date)),
-        datasets: [{
-          label: 'Novos usuarios',
-          data: data.growth.map(g => g.count),
-          borderColor: colors[project],
-          backgroundColor: colors[project] + '20',
-          fill: true,
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { labels: { color: '#94a3b8' }}},
-        scales: {
-          x: { ticks: { color: '#64748b' }, grid: { color: '#334155' }},
-          y: { ticks: { color: '#64748b' }, grid: { color: '#334155' }}
+    const chartCanvas = document.getElementById(`${project}Chart`);
+    if (chartCanvas) {
+      charts[project] = new Chart(chartCanvas.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: data.growth.map(g => formatDate(g.date)),
+          datasets: [{
+            label: 'Novos usuarios',
+            data: data.growth.map(g => g.count),
+            borderColor: colors[project],
+            backgroundColor: colors[project] + '20',
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#94a3b8' }}},
+          scales: {
+            x: { ticks: { color: '#64748b' }, grid: { color: '#334155' }},
+            y: { ticks: { color: '#64748b' }, grid: { color: '#334155' }}
+          }
         }
-      }
-    });
+      });
+    }
 
     // Load funnel data for this project
     try {
@@ -463,8 +544,8 @@ if ('Notification' in window && Notification.permission === 'default') {
 // INITIALIZATION
 // =============================================================================
 async function init() {
+  await loadPage('overview');
   await checkForNewCustomers();
-  await loadAllData();
   updateNextRefreshTime();
 }
 

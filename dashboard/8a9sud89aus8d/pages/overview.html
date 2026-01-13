@@ -1,0 +1,136 @@
+<div class="header">
+  <h2>Dashboard Overview</h2>
+  <div class="header-actions">
+    <div class="date-filter">
+      <select id="overview-period" onchange="onPeriodChange('overview')">
+        <option value="7">Ultimos 7 dias</option>
+        <option value="30" selected>Ultimos 30 dias</option>
+        <option value="90">Ultimos 90 dias</option>
+        <option value="365">Ultimo ano</option>
+        <option value="custom">Personalizado</option>
+      </select>
+      <div class="date-range-inputs" id="overview-custom-dates" style="display: none;">
+        <input type="date" id="overview-start-date">
+        <span>ate</span>
+        <input type="date" id="overview-end-date">
+      </div>
+    </div>
+    <button class="refresh-btn" onclick="loadAllData()">Atualizar</button>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card highlight">
+    <div class="card-title">MRR Total</div>
+    <div class="card-value" id="total-mrr">R$ --</div>
+    <div class="card-subtitle">Receita mensal recorrente</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Receita One-Time</div>
+    <div class="card-value" id="total-onetime">R$ --</div>
+    <div class="card-subtitle">Pacotes vendidos</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Receita Total</div>
+    <div class="card-value" id="total-revenue">R$ --</div>
+    <div class="card-subtitle">MRR + One-Time</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Usuarios Total</div>
+    <div class="card-value" id="total-users">--</div>
+    <div class="card-subtitle">Todos os servicos</div>
+  </div>
+</div>
+
+<div class="cards" style="margin-top: -10px;">
+  <div class="card">
+    <div class="card-title">ARR Total</div>
+    <div class="card-value" id="total-arr">R$ --</div>
+    <div class="card-subtitle">Receita anual recorrente</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Assinantes Ativos</div>
+    <div class="card-value" id="active-subs">--</div>
+    <div class="card-subtitle">Assinantes pagantes</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Pacotes Vendidos</div>
+    <div class="card-value" id="total-purchases">--</div>
+    <div class="card-subtitle">One-time pagos</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Clientes Unicos</div>
+    <div class="card-value" id="total-customers">--</div>
+    <div class="card-subtitle">Assinantes + Compradores</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Funil de Conversao</div>
+  <div class="funnel-container">
+    <div class="funnel-chart">
+      <div class="funnel-stage" id="funnel-registered">
+        <div class="funnel-bar" style="width: 100%; background: #64748b;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Cadastrados</span>
+          <span class="funnel-count" id="funnel-count-registered">--</span>
+        </div>
+      </div>
+      <div class="funnel-stage" id="funnel-trial">
+        <div class="funnel-bar" style="width: 50%; background: #f59e0b;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Em Trial</span>
+          <span class="funnel-count" id="funnel-count-trial">--</span>
+        </div>
+      </div>
+      <div class="funnel-stage" id="funnel-paying">
+        <div class="funnel-bar" style="width: 25%; background: #22c55e;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Pagantes</span>
+          <span class="funnel-count" id="funnel-count-paying">--</span>
+        </div>
+      </div>
+    </div>
+    <div class="funnel-metrics">
+      <div class="funnel-metric">
+        <span class="funnel-metric-value" id="funnel-conversion-trial">--%</span>
+        <span class="funnel-metric-label">Trial → Pagante</span>
+      </div>
+      <div class="funnel-metric">
+        <span class="funnel-metric-value" id="funnel-conversion-total">--%</span>
+        <span class="funnel-metric-label">Cadastro → Pagante</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="section">
+    <div class="section-title">Usuarios por Projeto</div>
+    <div id="overview-users-project"><div class="loading">Carregando...</div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">MRR por Projeto</div>
+    <div id="overview-mrr-project"><div class="loading">Carregando...</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Pacotes One-Time por Projeto</div>
+  <div id="overview-onetime-project"><div class="loading">Carregando...</div></div>
+</div>
+
+<div class="section">
+  <div class="section-title">MRR por Projeto</div>
+  <div class="chart-container"><canvas id="overviewChart"></canvas></div>
+</div>
+
+<div class="section">
+  <div class="section-title">Ultimos Assinantes</div>
+  <table>
+    <thead>
+      <tr><th>Email</th><th>Plano</th><th>Projeto</th><th>MRR</th><th>Status</th></tr>
+    </thead>
+    <tbody id="overview-subscribers-table"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
+  </table>
+</div>

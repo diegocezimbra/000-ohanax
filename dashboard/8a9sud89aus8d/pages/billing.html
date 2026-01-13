@@ -1,0 +1,138 @@
+<div class="header">
+  <h2><span class="service-badge billing">BILLING</span> Billing Service</h2>
+  <div class="header-actions">
+    <div class="date-filter">
+      <select id="billing-period" onchange="onPeriodChange('billing')">
+        <option value="7">Ultimos 7 dias</option>
+        <option value="30" selected>Ultimos 30 dias</option>
+        <option value="90">Ultimos 90 dias</option>
+        <option value="365">Ultimo ano</option>
+        <option value="custom">Personalizado</option>
+      </select>
+      <div class="date-range-inputs" id="billing-custom-dates" style="display: none;">
+        <input type="date" id="billing-start-date">
+        <span>ate</span>
+        <input type="date" id="billing-end-date">
+      </div>
+    </div>
+    <button class="refresh-btn" onclick="loadProjectPage('billing')">Atualizar</button>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card highlight">
+    <div class="card-title">Total Usuarios</div>
+    <div class="card-value" id="billing-users">--</div>
+    <div class="card-subtitle">Usuarios registrados</div>
+  </div>
+  <div class="card">
+    <div class="card-title">MRR</div>
+    <div class="card-value" id="billing-mrr">R$ --</div>
+    <div class="card-subtitle">Receita mensal</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Assinantes Ativos</div>
+    <div class="card-value" id="billing-subs">--</div>
+    <div class="card-subtitle">Assinantes pagantes</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Novos (30d)</div>
+    <div class="card-value" id="billing-new">--</div>
+    <div class="card-subtitle">Ultimos 30 dias</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="section">
+    <div class="section-title">Usuarios</div>
+    <div class="metric-row">
+      <span class="metric-label">Total</span>
+      <span class="metric-value" id="billing-users-total">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Verificados</span>
+      <span class="metric-value" id="billing-users-verified">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Ativos (7d)</span>
+      <span class="metric-value" id="billing-users-active">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Novos hoje</span>
+      <span class="metric-value" id="billing-users-today">--</span>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Assinaturas</div>
+    <div class="metric-row">
+      <span class="metric-label">Ativos</span>
+      <span class="metric-value" id="billing-subs-active">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Em Trial</span>
+      <span class="metric-value" id="billing-subs-trial">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Cancelados</span>
+      <span class="metric-value" id="billing-subs-canceled">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Receita Total</span>
+      <span class="metric-value" id="billing-revenue">R$ --</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Funil de Conversao - Billing</div>
+  <div class="funnel-container">
+    <div class="funnel-chart">
+      <div class="funnel-stage" id="billing-funnel-registered">
+        <div class="funnel-bar" style="width: 100%; background: #64748b;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Cadastrados</span>
+          <span class="funnel-count" id="billing-funnel-count-registered">--</span>
+        </div>
+      </div>
+      <div class="funnel-stage" id="billing-funnel-trial">
+        <div class="funnel-bar" style="width: 50%; background: #f59e0b;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Em Trial</span>
+          <span class="funnel-count" id="billing-funnel-count-trial">--</span>
+        </div>
+      </div>
+      <div class="funnel-stage" id="billing-funnel-paying">
+        <div class="funnel-bar" style="width: 25%; background: #22c55e;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Pagantes</span>
+          <span class="funnel-count" id="billing-funnel-count-paying">--</span>
+        </div>
+      </div>
+    </div>
+    <div class="funnel-metrics">
+      <div class="funnel-metric">
+        <span class="funnel-metric-value" id="billing-funnel-conversion-trial">--%</span>
+        <span class="funnel-metric-label">Trial → Pagante</span>
+      </div>
+      <div class="funnel-metric">
+        <span class="funnel-metric-value" id="billing-funnel-conversion-total">--%</span>
+        <span class="funnel-metric-label">Cadastro → Pagante</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Crescimento de Usuarios</div>
+  <div class="chart-container"><canvas id="billingChart"></canvas></div>
+</div>
+
+<div class="section">
+  <div class="section-title">Assinantes Recentes</div>
+  <table>
+    <thead>
+      <tr><th>Email</th><th>Plano</th><th>MRR</th><th>Status</th><th>Data</th></tr>
+    </thead>
+    <tbody id="billing-table"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
+  </table>
+</div>

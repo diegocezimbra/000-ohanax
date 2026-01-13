@@ -1,0 +1,138 @@
+<div class="header">
+  <h2><span class="service-badge oentregador">OENTREGADOR</span> oEntregador</h2>
+  <div class="header-actions">
+    <div class="date-filter">
+      <select id="oentregador-period" onchange="onPeriodChange('oentregador')">
+        <option value="7">Ultimos 7 dias</option>
+        <option value="30" selected>Ultimos 30 dias</option>
+        <option value="90">Ultimos 90 dias</option>
+        <option value="365">Ultimo ano</option>
+        <option value="custom">Personalizado</option>
+      </select>
+      <div class="date-range-inputs" id="oentregador-custom-dates" style="display: none;">
+        <input type="date" id="oentregador-start-date">
+        <span>ate</span>
+        <input type="date" id="oentregador-end-date">
+      </div>
+    </div>
+    <button class="refresh-btn" onclick="loadProjectPage('oentregador')">Atualizar</button>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card highlight">
+    <div class="card-title">Total Usuarios</div>
+    <div class="card-value" id="oentregador-users">--</div>
+    <div class="card-subtitle">Usuarios registrados</div>
+  </div>
+  <div class="card">
+    <div class="card-title">MRR</div>
+    <div class="card-value" id="oentregador-mrr">R$ --</div>
+    <div class="card-subtitle">Receita mensal</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Assinantes Ativos</div>
+    <div class="card-value" id="oentregador-subs">--</div>
+    <div class="card-subtitle">Assinantes pagantes</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Novos (30d)</div>
+    <div class="card-value" id="oentregador-new">--</div>
+    <div class="card-subtitle">Ultimos 30 dias</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="section">
+    <div class="section-title">Usuarios</div>
+    <div class="metric-row">
+      <span class="metric-label">Total</span>
+      <span class="metric-value" id="oentregador-users-total">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Verificados</span>
+      <span class="metric-value" id="oentregador-users-verified">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Ativos (7d)</span>
+      <span class="metric-value" id="oentregador-users-active">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Novos hoje</span>
+      <span class="metric-value" id="oentregador-users-today">--</span>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Assinaturas</div>
+    <div class="metric-row">
+      <span class="metric-label">Ativos</span>
+      <span class="metric-value" id="oentregador-subs-active">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Em Trial</span>
+      <span class="metric-value" id="oentregador-subs-trial">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Cancelados</span>
+      <span class="metric-value" id="oentregador-subs-canceled">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Receita Total</span>
+      <span class="metric-value" id="oentregador-revenue">R$ --</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Funil de Conversao - oEntregador</div>
+  <div class="funnel-container">
+    <div class="funnel-chart">
+      <div class="funnel-stage" id="oentregador-funnel-registered">
+        <div class="funnel-bar" style="width: 100%; background: #64748b;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Cadastrados</span>
+          <span class="funnel-count" id="oentregador-funnel-count-registered">--</span>
+        </div>
+      </div>
+      <div class="funnel-stage" id="oentregador-funnel-trial">
+        <div class="funnel-bar" style="width: 50%; background: #f59e0b;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Em Trial</span>
+          <span class="funnel-count" id="oentregador-funnel-count-trial">--</span>
+        </div>
+      </div>
+      <div class="funnel-stage" id="oentregador-funnel-paying">
+        <div class="funnel-bar" style="width: 25%; background: #22c55e;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Pagantes</span>
+          <span class="funnel-count" id="oentregador-funnel-count-paying">--</span>
+        </div>
+      </div>
+    </div>
+    <div class="funnel-metrics">
+      <div class="funnel-metric">
+        <span class="funnel-metric-value" id="oentregador-funnel-conversion-trial">--%</span>
+        <span class="funnel-metric-label">Trial → Pagante</span>
+      </div>
+      <div class="funnel-metric">
+        <span class="funnel-metric-value" id="oentregador-funnel-conversion-total">--%</span>
+        <span class="funnel-metric-label">Cadastro → Pagante</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Crescimento de Usuarios</div>
+  <div class="chart-container"><canvas id="oentregadorChart"></canvas></div>
+</div>
+
+<div class="section">
+  <div class="section-title">Assinantes Recentes</div>
+  <table>
+    <thead>
+      <tr><th>Email</th><th>Plano</th><th>MRR</th><th>Status</th><th>Data</th></tr>
+    </thead>
+    <tbody id="oentregador-table"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
+  </table>
+</div>

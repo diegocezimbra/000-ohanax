@@ -1,0 +1,199 @@
+<div class="header">
+  <h2><span class="service-badge security">SECURITY</span> Security Audit</h2>
+  <div class="header-actions">
+    <div class="date-filter">
+      <select id="security-period" onchange="onPeriodChange('security')">
+        <option value="7">Ultimos 7 dias</option>
+        <option value="30" selected>Ultimos 30 dias</option>
+        <option value="90">Ultimos 90 dias</option>
+        <option value="365">Ultimo ano</option>
+        <option value="custom">Personalizado</option>
+      </select>
+      <div class="date-range-inputs" id="security-custom-dates" style="display: none;">
+        <input type="date" id="security-start-date">
+        <span>ate</span>
+        <input type="date" id="security-end-date">
+      </div>
+    </div>
+    <button class="refresh-btn" onclick="loadProjectPage('security')">Atualizar</button>
+  </div>
+</div>
+
+<div class="cards">
+  <div class="card highlight">
+    <div class="card-title">Total Usuarios</div>
+    <div class="card-value" id="security-users">--</div>
+    <div class="card-subtitle">Usuarios registrados</div>
+  </div>
+  <div class="card">
+    <div class="card-title">MRR</div>
+    <div class="card-value" id="security-mrr">R$ --</div>
+    <div class="card-subtitle">Receita mensal</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Assinantes Ativos</div>
+    <div class="card-value" id="security-subs">--</div>
+    <div class="card-subtitle">Assinantes pagantes</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Novos (30d)</div>
+    <div class="card-value" id="security-new">--</div>
+    <div class="card-subtitle">Ultimos 30 dias</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="section">
+    <div class="section-title">Usuarios</div>
+    <div class="metric-row">
+      <span class="metric-label">Total</span>
+      <span class="metric-value" id="security-users-total">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Verificados</span>
+      <span class="metric-value" id="security-users-verified">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Ativos (7d)</span>
+      <span class="metric-value" id="security-users-active">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Novos hoje</span>
+      <span class="metric-value" id="security-users-today">--</span>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Assinaturas</div>
+    <div class="metric-row">
+      <span class="metric-label">Ativos</span>
+      <span class="metric-value" id="security-subs-active">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Em Trial</span>
+      <span class="metric-value" id="security-subs-trial">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Cancelados</span>
+      <span class="metric-value" id="security-subs-canceled">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Receita Assinaturas</span>
+      <span class="metric-value" id="security-sub-revenue">R$ --</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="section">
+    <div class="section-title">Scans Executados</div>
+    <div class="metric-row">
+      <span class="metric-label">Total de Scans</span>
+      <span class="metric-value" id="security-scans-total">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Scans Pagos</span>
+      <span class="metric-value" id="security-scans-paid" style="color: #22c55e;">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Scans Gratuitos</span>
+      <span class="metric-value" id="security-scans-free">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Trials</span>
+      <span class="metric-value" id="security-scans-trial">--</span>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Pacotes One-Time</div>
+    <div class="metric-row">
+      <span class="metric-label">Vendas Pagas</span>
+      <span class="metric-value" id="security-onetime-paid">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Pendentes</span>
+      <span class="metric-value" id="security-onetime-pending">--</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Receita One-Time</span>
+      <span class="metric-value" id="security-onetime-revenue">R$ --</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="section">
+    <div class="section-title">Receita Total</div>
+    <div class="metric-row">
+      <span class="metric-label">Assinaturas</span>
+      <span class="metric-value" id="security-revenue-subs">R$ --</span>
+    </div>
+    <div class="metric-row">
+      <span class="metric-label">Pacotes One-Time</span>
+      <span class="metric-value" id="security-revenue-onetime">R$ --</span>
+    </div>
+    <div class="metric-row" style="border-top: 2px solid #3b82f6; padding-top: 12px;">
+      <span class="metric-label" style="font-weight: bold;">Total Geral</span>
+      <span class="metric-value" id="security-revenue" style="color: #3b82f6;">R$ --</span>
+    </div>
+  </div>
+  <div class="section" style="display: flex; align-items: center; justify-content: center;">
+    <div style="text-align: center;">
+      <div style="font-size: 48px; font-weight: bold; color: #22c55e;" id="security-paid-percentage">--%</div>
+      <div style="color: #94a3b8;">dos scans sao pagos</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Funil de Conversao - Security</div>
+  <div class="funnel-container">
+    <div class="funnel-chart">
+      <div class="funnel-stage" id="security-funnel-registered">
+        <div class="funnel-bar" style="width: 100%; background: #64748b;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Cadastrados</span>
+          <span class="funnel-count" id="security-funnel-count-registered">--</span>
+        </div>
+      </div>
+      <div class="funnel-stage" id="security-funnel-trial">
+        <div class="funnel-bar" style="width: 50%; background: #f59e0b;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Em Trial</span>
+          <span class="funnel-count" id="security-funnel-count-trial">--</span>
+        </div>
+      </div>
+      <div class="funnel-stage" id="security-funnel-paying">
+        <div class="funnel-bar" style="width: 25%; background: #22c55e;"></div>
+        <div class="funnel-info">
+          <span class="funnel-label">Pagantes</span>
+          <span class="funnel-count" id="security-funnel-count-paying">--</span>
+        </div>
+      </div>
+    </div>
+    <div class="funnel-metrics">
+      <div class="funnel-metric">
+        <span class="funnel-metric-value" id="security-funnel-conversion-trial">--%</span>
+        <span class="funnel-metric-label">Trial → Pagante</span>
+      </div>
+      <div class="funnel-metric">
+        <span class="funnel-metric-value" id="security-funnel-conversion-total">--%</span>
+        <span class="funnel-metric-label">Cadastro → Pagante</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Crescimento de Usuarios</div>
+  <div class="chart-container"><canvas id="securityChart"></canvas></div>
+</div>
+
+<div class="section">
+  <div class="section-title">Assinantes Recentes</div>
+  <table>
+    <thead>
+      <tr><th>Email</th><th>Plano</th><th>MRR</th><th>Status</th><th>Data</th></tr>
+    </thead>
+    <tbody id="security-table"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
+  </table>
+</div>
