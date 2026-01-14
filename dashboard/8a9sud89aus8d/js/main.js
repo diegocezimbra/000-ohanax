@@ -710,6 +710,65 @@ async function loadProjectPage(project) {
           : 0;
         if (paidPercentEl) paidPercentEl.textContent = percentage + '%';
       } catch (e) { console.error('Error loading scan stats:', e); }
+
+      // Scans per day chart
+      try {
+        const scansPerDay = await fetch('/api/security/scans-per-day?days=30').then(r => r.json());
+        const scansChartEl = document.getElementById('securityScansChart');
+        if (scansChartEl && scansPerDay.length > 0) {
+          if (charts['securityScans']) charts['securityScans'].destroy();
+          charts['securityScans'] = new ApexCharts(scansChartEl, {
+            chart: {
+              type: 'bar',
+              height: 280,
+              background: chartTheme.background,
+              toolbar: { show: false },
+              fontFamily: 'Inter, sans-serif'
+            },
+            series: [{
+              name: 'Scans',
+              data: scansPerDay.map(d => d.scans)
+            }],
+            colors: ['#ef4444'],
+            plotOptions: {
+              bar: {
+                borderRadius: 4,
+                columnWidth: '60%'
+              }
+            },
+            xaxis: {
+              categories: scansPerDay.map(d => {
+                const date = new Date(d.date);
+                return `${date.getDate()}/${date.getMonth() + 1}`;
+              }),
+              labels: {
+                style: { colors: chartTheme.textColor, fontSize: '10px' },
+                rotate: -45,
+                rotateAlways: scansPerDay.length > 15
+              },
+              axisBorder: { show: false },
+              axisTicks: { show: false }
+            },
+            yaxis: {
+              labels: { style: { colors: chartTheme.textColor } },
+              min: 0,
+              forceNiceScale: true
+            },
+            grid: {
+              borderColor: chartTheme.gridColor,
+              strokeDashArray: 4
+            },
+            dataLabels: { enabled: false },
+            tooltip: {
+              theme: 'dark',
+              y: {
+                formatter: (val) => val + ' scans'
+              }
+            }
+          });
+          charts['securityScans'].render();
+        }
+      } catch (e) { console.error('Error loading scans per day:', e); }
     }
 
     // Tabela

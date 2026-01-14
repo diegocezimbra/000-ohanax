@@ -626,6 +626,47 @@ app.get('/api/security/scan-stats', async (req, res) => {
   }
 });
 
+// Scans per day (last 30 days)
+app.get('/api/security/scans-per-day', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 30;
+
+    const result = await db.security.query(`
+      SELECT
+        DATE(created_at) as date,
+        COUNT(*) as scans,
+        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed,
+        COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed
+      FROM security_audit_reports
+      WHERE created_at >= NOW() - INTERVAL '${days} days'
+      GROUP BY DATE(created_at)
+      ORDER BY DATE(created_at) ASC
+    `);
+
+    // Fill missing days with zeros
+    const data = [];
+    const now = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const found = result.rows.find(r => r.date.toISOString().split('T')[0] === dateStr);
+      data.push({
+        date: dateStr,
+        scans: found ? parseInt(found.scans) : 0,
+        completed: found ? parseInt(found.completed) : 0,
+        failed: found ? parseInt(found.failed) : 0
+      });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error('Error in scans-per-day:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/security/vulnerabilities', async (req, res) => {
   try {
     const result = await db.security.query(`
