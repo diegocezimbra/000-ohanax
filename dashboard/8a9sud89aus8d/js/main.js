@@ -849,18 +849,6 @@ function playCashSound() {
     applause.volume = 0.5;
     applause.play().catch(() => {});
   }, 1500);
-
-  // 3. Fala "Nova venda!" junto com as palmas
-  setTimeout(() => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance('Nova venda!');
-      utterance.lang = 'pt-BR';
-      utterance.rate = 1.1;
-      utterance.pitch = 1.2;
-      utterance.volume = 0.8;
-      speechSynthesis.speak(utterance);
-    }
-  }, 1800);
 }
 
 // =============================================================================
