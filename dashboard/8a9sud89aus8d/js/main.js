@@ -544,95 +544,85 @@ function renderFunnelChart(data) {
 }
 
 // =============================================================================
-// FUNNEL VISUALIZATION
+// FUNNEL VISUALIZATION FOR PROJECT PAGES
 // =============================================================================
-function updateFunnel(data, prefix = '') {
+function renderProjectFunnel(data, project) {
   const visitors = data.details.visitors || 0;
-  const registered = data.details.registered;
-  const trialing = data.details.trialing;
-  const paying = data.details.total_paying;
+  const registered = data.details.registered || 0;
+  const trialing = data.details.trialing || 0;
+  const paying = data.details.total_paying || 0;
 
-  // Use visitors as max if available, otherwise registered
-  const maxWidth = visitors > 0 ? visitors : (registered || 1);
+  // Update stat cards
+  const funnelVisitors = document.getElementById(`${project}-funnel-visitors`);
+  const funnelRegistered = document.getElementById(`${project}-funnel-registered`);
+  const funnelTrial = document.getElementById(`${project}-funnel-trial`);
+  const funnelPaying = document.getElementById(`${project}-funnel-paying`);
 
-  // Calculate percentages relative to previous stage
-  const regPercent = visitors > 0 ? ((registered / visitors) * 100).toFixed(1) : 100;
-  const trialPercent = registered > 0 ? ((trialing / registered) * 100).toFixed(1) : 0;
-  const payingPercentOfReg = registered > 0 ? ((paying / registered) * 100).toFixed(1) : 0;
+  if (funnelVisitors) funnelVisitors.textContent = visitors.toLocaleString('pt-BR');
+  if (funnelRegistered) funnelRegistered.textContent = registered.toLocaleString('pt-BR');
+  if (funnelTrial) funnelTrial.textContent = trialing.toLocaleString('pt-BR');
+  if (funnelPaying) funnelPaying.textContent = paying.toLocaleString('pt-BR');
 
-  // Update visitors count
-  const countVisitors = document.getElementById(`${prefix}funnel-count-visitors`);
-  if (countVisitors) countVisitors.textContent = visitors.toLocaleString('pt-BR');
+  // Update percentages
+  const regPercent = visitors > 0 ? ((registered / visitors) * 100).toFixed(1) : '100';
+  const trialPercent = registered > 0 ? ((trialing / registered) * 100).toFixed(1) : '0';
+  const payingPercent = visitors > 0 ? ((paying / visitors) * 100).toFixed(1) : '0';
 
-  // Update counts
-  const countRegistered = document.getElementById(`${prefix}funnel-count-registered`);
-  const countTrial = document.getElementById(`${prefix}funnel-count-trial`);
-  const countPaying = document.getElementById(`${prefix}funnel-count-paying`);
+  const regPercentEl = document.getElementById(`${project}-funnel-reg-percent`);
+  const trialPercentEl = document.getElementById(`${project}-funnel-trial-percent`);
+  const payingPercentEl = document.getElementById(`${project}-funnel-paying-percent`);
 
-  if (countRegistered) countRegistered.textContent = registered.toLocaleString('pt-BR');
-  if (countTrial) countTrial.textContent = trialing.toLocaleString('pt-BR');
-  if (countPaying) countPaying.textContent = paying.toLocaleString('pt-BR');
+  if (regPercentEl) regPercentEl.textContent = regPercent + '% dos visitantes';
+  if (trialPercentEl) trialPercentEl.textContent = trialPercent + '% dos cadastros';
+  if (payingPercentEl) payingPercentEl.textContent = payingPercent + '% total';
 
-  // Update visual funnel bars (width based on funnel shape)
-  const visitorsBar = document.getElementById(`${prefix}funnel-bar-visitors`);
-  const registeredBar = document.getElementById(`${prefix}funnel-bar-registered`);
-  const trialBar = document.getElementById(`${prefix}funnel-bar-trial`);
-  const payingBar = document.getElementById(`${prefix}funnel-bar-paying`);
+  // Render funnel chart with ApexCharts
+  const funnelChartEl = document.getElementById(`${project}-funnel-chart`);
+  if (funnelChartEl) {
+    const chartKey = `${project}Funnel`;
+    if (charts[chartKey]) charts[chartKey].destroy();
 
-  if (visitorsBar) {
-    visitorsBar.style.width = '100%';
-  }
-  if (registeredBar) {
-    const regWidth = visitors > 0 ? Math.max(40, (registered / maxWidth) * 100) : 70;
-    registeredBar.style.width = regWidth + '%';
-  }
-  if (trialBar) {
-    const trialWidth = visitors > 0 ? Math.max(30, (trialing / maxWidth) * 100) : Math.max(30, (trialing / registered) * 70);
-    trialBar.style.width = trialWidth + '%';
-  }
-  if (payingBar) {
-    const payingWidth = visitors > 0 ? Math.max(20, (paying / maxWidth) * 100) : Math.max(20, (paying / registered) * 70);
-    payingBar.style.width = payingWidth + '%';
-  }
-
-  // Update percentage labels on funnel bars
-  const percentRegistered = document.getElementById(`${prefix}funnel-percent-registered`);
-  const percentTrial = document.getElementById(`${prefix}funnel-percent-trial`);
-  const percentPaying = document.getElementById(`${prefix}funnel-percent-paying`);
-
-  if (percentRegistered) percentRegistered.textContent = regPercent + '%';
-  if (percentTrial) percentTrial.textContent = trialPercent + '%';
-  if (percentPaying) percentPaying.textContent = payingPercentOfReg + '%';
-
-  // Update conversion rates (cards on the right)
-  const convVisitorReg = document.getElementById(`${prefix}funnel-conversion-visitor-reg`);
-  const convRegTrial = document.getElementById(`${prefix}funnel-conversion-reg-trial`);
-  const convTrial = document.getElementById(`${prefix}funnel-conversion-trial`);
-  const convTotal = document.getElementById(`${prefix}funnel-conversion-total`);
-
-  if (convVisitorReg) convVisitorReg.textContent = (data.conversion.visitor_to_registered || regPercent) + '%';
-  if (convRegTrial) convRegTrial.textContent = trialPercent + '%';
-  if (convTrial) convTrial.textContent = data.conversion.trial_to_paid + '%';
-  // Visitante -> Pagante (total do funil)
-  if (convTotal) {
-    const visitorToPaid = visitors > 0 ? ((paying / visitors) * 100).toFixed(1) : data.conversion.registered_to_paid;
-    convTotal.textContent = visitorToPaid + '%';
-  }
-
-  // Update total summary card (bottom)
-  const totalVisitors = document.getElementById(`${prefix}funnel-total-visitors`);
-  const totalRegistered = document.getElementById(`${prefix}funnel-total-registered`);
-  const totalPaying = document.getElementById(`${prefix}funnel-total-paying`);
-  const totalConversion = document.getElementById(`${prefix}funnel-total-conversion`);
-
-  if (totalVisitors) totalVisitors.textContent = visitors.toLocaleString('pt-BR');
-  if (totalRegistered) totalRegistered.textContent = registered.toLocaleString('pt-BR');
-  if (totalPaying) totalPaying.textContent = paying.toLocaleString('pt-BR');
-
-  // Total conversion: visitor to paying (or registered to paying if no visitors)
-  if (totalConversion) {
-    const visitorToPaid = visitors > 0 ? ((paying / visitors) * 100).toFixed(1) : data.conversion.registered_to_paid;
-    totalConversion.textContent = visitorToPaid + '%';
+    charts[chartKey] = new ApexCharts(funnelChartEl, {
+      chart: {
+        type: 'bar',
+        height: 280,
+        background: chartTheme.background,
+        toolbar: { show: false },
+        fontFamily: 'Inter, sans-serif'
+      },
+      series: [{
+        name: 'Quantidade',
+        data: [visitors, registered, trialing, paying]
+      }],
+      plotOptions: {
+        bar: {
+          borderRadius: 6,
+          horizontal: true,
+          distributed: true,
+          barHeight: '65%',
+          isFunnel: true
+        }
+      },
+      colors: ['#8b5cf6', '#71717a', '#f59e0b', '#10b981'],
+      dataLabels: {
+        enabled: true,
+        formatter: (val, opt) => {
+          const labels = ['Visitantes', 'Cadastrados', 'Trial', 'Pagantes'];
+          return labels[opt.dataPointIndex] + ': ' + val.toLocaleString('pt-BR');
+        },
+        dropShadow: { enabled: false },
+        style: { fontSize: '12px', fontWeight: 600, colors: ['#fff'] }
+      },
+      xaxis: {
+        categories: ['Visitantes', 'Cadastrados', 'Trial', 'Pagantes'],
+        labels: { show: false }
+      },
+      yaxis: { labels: { show: false } },
+      legend: { show: false },
+      grid: { show: false },
+      tooltip: { theme: 'dark', style: { fontSize: '12px' } }
+    });
+    charts[chartKey].render();
   }
 }
 
@@ -775,7 +765,7 @@ async function loadProjectPage(project) {
     // Load funnel data for this project
     try {
       const funnelData = await fetch(`/api/funnel?project=${project}`).then(r => r.json());
-      updateFunnel(funnelData, `${project}-`);
+      renderProjectFunnel(funnelData, project);
     } catch (err) { console.error(`Error loading funnel for ${project}:`, err); }
 
   } catch (err) { console.error(`Error loading ${project}:`, err); }

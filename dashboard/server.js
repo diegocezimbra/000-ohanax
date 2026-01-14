@@ -1621,9 +1621,12 @@ app.get('/api/users', async (req, res) => {
         let oeSubsMap = new Map();
 
         if (oeEmails.length > 0) {
+          // Convert emails to lowercase for case-insensitive matching
+          const oeEmailsLower = oeEmails.map(e => e.toLowerCase());
           const oeSubsQuery = `
             SELECT
               s.external_user_email as email,
+              LOWER(s.external_user_email) as email_lower,
               s.status,
               pl.name as plan_name,
               CASE pl.interval
@@ -1636,16 +1639,16 @@ app.get('/api/users', async (req, res) => {
             LEFT JOIN plans pl ON s.plan_id = pl.id
             LEFT JOIN projects p ON s.project_id = p.id
             WHERE p.name = 'oentregador'
-            AND s.external_user_email = ANY($1)
+            AND LOWER(s.external_user_email) = ANY($1)
           `;
-          const oeSubs = await db.billing.query(oeSubsQuery, [oeEmails]);
+          const oeSubs = await db.billing.query(oeSubsQuery, [oeEmailsLower]);
           oeSubs.rows.forEach(sub => {
-            oeSubsMap.set(sub.email, sub);
+            oeSubsMap.set(sub.email_lower, sub);
           });
         }
 
         const mappedOeUsers = oeUsers.map(u => {
-          const sub = oeSubsMap.get(u.userEmail);
+          const sub = oeSubsMap.get(u.userEmail?.toLowerCase());
           return {
             id: u._id.toString(),
             email: u.userEmail,
