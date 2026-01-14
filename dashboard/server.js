@@ -1505,6 +1505,442 @@ app.get('/api/project/:project', async (req, res) => {
 });
 
 // =============================================================================
+// GET /api/users - Lista completa de usuarios com filtros
+// =============================================================================
+app.get('/api/users', async (req, res) => {
+  const { project, status, plan, search, page = 1, limit = 50 } = req.query;
+  const offset = (parseInt(page) - 1) * parseInt(limit);
+
+  try {
+    let users = [];
+    let total = 0;
+
+    // Get users from auth database with subscription info
+    const authQuery = `
+      SELECT
+        u.id,
+        u.email,
+        u.email_verified,
+        u.created_at,
+        u.last_login_at,
+        p.name as project_name,
+        s.status as subscription_status,
+        pl.name as plan_name,
+        CASE pl.interval
+          WHEN 'monthly' THEN pl.price_cents
+          WHEN 'yearly' THEN pl.price_cents / 12
+          WHEN 'weekly' THEN pl.price_cents * 4
+          ELSE COALESCE(pl.price_cents, 0)
+        END / 100.0 as mrr
+      FROM users u
+      LEFT JOIN projects p ON u.project_id = p.id
+      LEFT JOIN subscriptions s ON s.external_user_email = u.email AND s.project_id = u.project_id
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      WHERE 1=1
+      ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : project !== 'oentregador' ? '' : 'AND 1=0'}
+      ${status === 'verified' ? 'AND u.email_verified = true' : status === 'unverified' ? 'AND u.email_verified = false' : ''}
+      ${plan === 'paying' ? "AND s.status = 'active'" : plan === 'trialing' ? "AND s.status = 'trialing'" : plan === 'free' ? 'AND s.id IS NULL' : ''}
+      ${search ? `AND u.email ILIKE '%${search}%'` : ''}
+      ORDER BY u.created_at DESC
+      LIMIT ${parseInt(limit)} OFFSET ${offset}
+    `;
+
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM users u
+      LEFT JOIN projects p ON u.project_id = p.id
+      LEFT JOIN subscriptions s ON s.external_user_email = u.email AND s.project_id = u.project_id
+      WHERE 1=1
+      ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : project !== 'oentregador' ? '' : 'AND 1=0'}
+      ${status === 'verified' ? 'AND u.email_verified = true' : status === 'unverified' ? 'AND u.email_verified = false' : ''}
+      ${plan === 'paying' ? "AND s.status = 'active'" : plan === 'trialing' ? "AND s.status = 'trialing'" : plan === 'free' ? 'AND s.id IS NULL' : ''}
+      ${search ? `AND u.email ILIKE '%${search}%'` : ''}
+    `;
+
+    if (!project || project !== 'oentregador') {
+      const authUsers = await db.auth.query(authQuery);
+      const authCount = await db.auth.query(countQuery);
+      users = authUsers.rows.map(u => ({ ...u, source: 'auth' }));
+      total = parseInt(authCount.rows[0].total);
+    }
+
+    // Get oEntregador users if needed
+    if (!project || project === 'oentregador') {
+      try {
+        const mongoDB = await db.mongo();
+        const mongoQuery = search ? { email: { $regex: search, $options: 'i' } } : {};
+        const oeUsers = await mongoDB.collection('app_users')
+          .find(mongoQuery)
+          .sort({ createdAt: -1 })
+          .skip(project === 'oentregador' ? offset : 0)
+          .limit(project === 'oentregador' ? parseInt(limit) : 100)
+          .toArray();
+
+        const oeCount = await mongoDB.collection('app_users').countDocuments(mongoQuery);
+
+        const mappedOeUsers = oeUsers.map(u => ({
+          id: u._id.toString(),
+          email: u.email,
+          email_verified: u.emailVerified || false,
+          created_at: u.createdAt,
+          last_login_at: u.lastLoginAt,
+          project_name: 'oentregador',
+          subscription_status: null,
+          plan_name: null,
+          mrr: 0,
+          source: 'oentregador'
+        }));
+
+        if (project === 'oentregador') {
+          users = mappedOeUsers;
+          total = oeCount;
+        } else {
+          users = [...users, ...mappedOeUsers].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, parseInt(limit));
+          total += oeCount;
+        }
+      } catch (e) {
+        console.error('MongoDB error:', e.message);
+      }
+    }
+
+    // Get summary stats
+    const statsQuery = `
+      SELECT
+        COUNT(*) as total,
+        COUNT(CASE WHEN u.email_verified = true THEN 1 END) as verified,
+        COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as with_plan,
+        COUNT(CASE WHEN s.id IS NULL THEN 1 END) as free
+      FROM users u
+      LEFT JOIN projects p ON u.project_id = p.id
+      LEFT JOIN subscriptions s ON s.external_user_email = u.email AND s.project_id = u.project_id
+      WHERE 1=1
+      ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : ''}
+    `;
+
+    let stats = { total: 0, verified: 0, with_plan: 0, free: 0 };
+    if (!project || project !== 'oentregador') {
+      const statsResult = await db.auth.query(statsQuery);
+      stats = statsResult.rows[0];
+    }
+
+    res.json({
+      users,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / parseInt(limit)),
+      stats: {
+        total: parseInt(stats.total) || total,
+        verified: parseInt(stats.verified) || 0,
+        with_plan: parseInt(stats.with_plan) || 0,
+        free: parseInt(stats.free) || 0
+      }
+    });
+  } catch (err) {
+    console.error('Error in /api/users:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /api/paying - Lista de clientes pagantes
+// =============================================================================
+app.get('/api/paying', async (req, res) => {
+  const { project, type, plan, search, startDate, endDate } = req.query;
+
+  try {
+    // Subscriptions
+    let subscriptionsQuery = `
+      SELECT
+        s.external_user_email as email,
+        p.name as project_name,
+        pl.name as plan_name,
+        'subscription' as type,
+        CASE pl.interval
+          WHEN 'monthly' THEN pl.price_cents
+          WHEN 'yearly' THEN pl.price_cents / 12
+          WHEN 'weekly' THEN pl.price_cents * 4
+          ELSE pl.price_cents
+        END / 100.0 as value,
+        s.status,
+        s.created_at,
+        pl.interval
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      LEFT JOIN projects p ON s.project_id = p.id
+      WHERE s.status = 'active'
+      ${project ? `AND p.name = '${project}'` : ''}
+      ${plan ? `AND pl.name = '${plan}'` : ''}
+      ${search ? `AND s.external_user_email ILIKE '%${search}%'` : ''}
+      ${startDate ? `AND s.created_at >= '${startDate}'` : ''}
+      ${endDate ? `AND s.created_at <= '${endDate}'` : ''}
+      ORDER BY s.created_at DESC
+    `;
+
+    // One-time purchases
+    let onetimeQuery = `
+      SELECT
+        otp.external_user_email as email,
+        p.name as project_name,
+        pk.name as plan_name,
+        'onetime' as type,
+        otp.amount_cents / 100.0 as value,
+        otp.status,
+        otp.created_at,
+        'one-time' as interval
+      FROM one_time_purchases otp
+      LEFT JOIN packages pk ON otp.package_id = pk.id
+      LEFT JOIN projects p ON otp.project_id = p.id
+      WHERE otp.status = 'paid'
+      ${project ? `AND p.name = '${project}'` : ''}
+      ${search ? `AND otp.external_user_email ILIKE '%${search}%'` : ''}
+      ${startDate ? `AND otp.created_at >= '${startDate}'` : ''}
+      ${endDate ? `AND otp.created_at <= '${endDate}'` : ''}
+      ORDER BY otp.created_at DESC
+    `;
+
+    let customers = [];
+
+    if (!type || type === 'subscription') {
+      const subs = await db.billing.query(subscriptionsQuery);
+      customers = [...customers, ...subs.rows];
+    }
+
+    if (!type || type === 'onetime') {
+      const onetime = await db.billing.query(onetimeQuery);
+      customers = [...customers, ...onetime.rows];
+    }
+
+    // Sort by date
+    customers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    // Get summary
+    const summaryQuery = `
+      SELECT
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as mrr,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active_subs
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      LEFT JOIN projects p ON s.project_id = p.id
+      WHERE 1=1
+      ${project ? `AND p.name = '${project}'` : ''}
+    `;
+
+    const onetimeSummaryQuery = `
+      SELECT
+        COUNT(DISTINCT external_user_email) as buyers,
+        COALESCE(SUM(amount_cents), 0) / 100.0 as revenue
+      FROM one_time_purchases
+      WHERE status = 'paid'
+      ${project ? `AND project_id = (SELECT id FROM projects WHERE name = '${project}')` : ''}
+    `;
+
+    const summary = await db.billing.query(summaryQuery);
+    const onetimeSummary = await db.billing.query(onetimeSummaryQuery);
+
+    // Get available plans for filter
+    const plansQuery = `SELECT DISTINCT name FROM plans WHERE status = 'active' ORDER BY name`;
+    const plans = await db.billing.query(plansQuery);
+
+    res.json({
+      customers,
+      total: customers.length,
+      summary: {
+        mrr: parseFloat(summary.rows[0].mrr) || 0,
+        active_subs: parseInt(summary.rows[0].active_subs) || 0,
+        onetime_buyers: parseInt(onetimeSummary.rows[0].buyers) || 0,
+        onetime_revenue: parseFloat(onetimeSummary.rows[0].revenue) || 0
+      },
+      plans: plans.rows.map(p => p.name)
+    });
+  } catch (err) {
+    console.error('Error in /api/paying:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /api/revenue - Receita detalhada por projeto
+// =============================================================================
+app.get('/api/revenue', async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  try {
+    // Revenue by project
+    const byProjectQuery = `
+      SELECT
+        p.name as project_name,
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as mrr,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active_subs,
+        COUNT(CASE WHEN s.status = 'trialing' THEN 1 END) as trialing,
+        COALESCE((
+          SELECT SUM(amount_cents) / 100.0
+          FROM one_time_purchases otp
+          WHERE otp.project_id = p.id AND otp.status = 'paid'
+        ), 0) as onetime_revenue,
+        COALESCE((
+          SELECT COUNT(DISTINCT external_user_email)
+          FROM one_time_purchases otp
+          WHERE otp.project_id = p.id AND otp.status = 'paid'
+        ), 0) as onetime_buyers
+      FROM projects p
+      LEFT JOIN subscriptions s ON s.project_id = p.id
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      GROUP BY p.id, p.name
+      ORDER BY mrr DESC
+    `;
+
+    const byProject = await db.billing.query(byProjectQuery);
+
+    // Total summary
+    const totalMrr = byProject.rows.reduce((sum, p) => sum + parseFloat(p.mrr), 0);
+    const totalOnetime = byProject.rows.reduce((sum, p) => sum + parseFloat(p.onetime_revenue), 0);
+
+    // Revenue by plan
+    const byPlanQuery = `
+      SELECT
+        pl.name as plan_name,
+        p.name as project_name,
+        pl.interval,
+        pl.price_cents / 100.0 as price,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active_subs,
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as mrr
+      FROM plans pl
+      LEFT JOIN subscriptions s ON s.plan_id = pl.id
+      LEFT JOIN projects p ON pl.project_id = p.id
+      WHERE pl.status = 'active'
+      GROUP BY pl.id, p.name
+      ORDER BY mrr DESC
+    `;
+
+    const byPlan = await db.billing.query(byPlanQuery);
+
+    // Recent transactions (subscriptions + one-time)
+    const recentTransactions = `
+      (
+        SELECT
+          s.external_user_email as email,
+          p.name as project_name,
+          'subscription' as type,
+          pl.name as plan_name,
+          CASE pl.interval
+            WHEN 'monthly' THEN pl.price_cents
+            WHEN 'yearly' THEN pl.price_cents / 12
+            WHEN 'weekly' THEN pl.price_cents * 4
+            ELSE pl.price_cents
+          END / 100.0 as value,
+          s.created_at
+        FROM subscriptions s
+        LEFT JOIN plans pl ON s.plan_id = pl.id
+        LEFT JOIN projects p ON s.project_id = p.id
+        WHERE s.status = 'active'
+        ORDER BY s.created_at DESC
+        LIMIT 10
+      )
+      UNION ALL
+      (
+        SELECT
+          otp.external_user_email as email,
+          p.name as project_name,
+          'onetime' as type,
+          pk.name as plan_name,
+          otp.amount_cents / 100.0 as value,
+          otp.created_at
+        FROM one_time_purchases otp
+        LEFT JOIN packages pk ON otp.package_id = pk.id
+        LEFT JOIN projects p ON otp.project_id = p.id
+        WHERE otp.status = 'paid'
+        ORDER BY otp.created_at DESC
+        LIMIT 10
+      )
+      ORDER BY created_at DESC
+      LIMIT 15
+    `;
+
+    const transactions = await db.billing.query(recentTransactions);
+
+    // MRR growth (last 30 days by counting new active subscriptions)
+    const mrrGrowthQuery = `
+      SELECT
+        DATE_TRUNC('day', s.created_at)::date as date,
+        SUM(
+          CASE pl.interval
+            WHEN 'monthly' THEN pl.price_cents
+            WHEN 'yearly' THEN pl.price_cents / 12
+            WHEN 'weekly' THEN pl.price_cents * 4
+            ELSE pl.price_cents
+          END
+        ) / 100.0 as mrr
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      WHERE s.status = 'active' AND s.created_at > NOW() - INTERVAL '30 days'
+      GROUP BY DATE_TRUNC('day', s.created_at)
+      ORDER BY date
+    `;
+
+    const mrrGrowth = await db.billing.query(mrrGrowthQuery);
+
+    res.json({
+      summary: {
+        total_revenue: totalMrr + totalOnetime,
+        mrr: totalMrr,
+        arr: totalMrr * 12,
+        onetime: totalOnetime
+      },
+      byProject: byProject.rows.map(p => ({
+        name: p.project_name,
+        mrr: parseFloat(p.mrr),
+        arr: parseFloat(p.mrr) * 12,
+        active_subs: parseInt(p.active_subs),
+        trialing: parseInt(p.trialing),
+        onetime_revenue: parseFloat(p.onetime_revenue),
+        onetime_buyers: parseInt(p.onetime_buyers),
+        total_revenue: parseFloat(p.mrr) + parseFloat(p.onetime_revenue)
+      })),
+      byPlan: byPlan.rows,
+      transactions: transactions.rows,
+      mrrGrowth: mrrGrowth.rows
+    });
+  } catch (err) {
+    console.error('Error in /api/revenue:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
 // WEBSITE ESTATICO (RAIZ)
 // =============================================================================
 
