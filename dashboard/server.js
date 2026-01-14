@@ -38,29 +38,32 @@ async function getUmamiVisitors(websiteId, token, startDate, endDate) {
     const startAt = new Date(startDate).getTime();
     const endAt = new Date(endDate).getTime();
 
-    const response = await fetch(
-      `${UMAMI_CONFIG.baseUrl}/websites/${websiteId}/stats?startAt=${startAt}&endAt=${endAt}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+    const url = `${UMAMI_CONFIG.baseUrl}/websites/${websiteId}/stats?startAt=${startAt}&endAt=${endAt}`;
+    console.log(`[Umami] Fetching: ${url.substring(0, 80)}...`);
+
+    const response = await fetch(url, {
+      headers: {
+        'x-umami-api-key': token,
+        'Content-Type': 'application/json'
       }
-    );
+    });
 
     if (!response.ok) {
-      console.error(`Umami API error: ${response.status}`);
-      return { visitors: 0, pageviews: 0 };
+      const errorText = await response.text();
+      console.error(`[Umami] API error ${response.status}: ${errorText}`);
+      return { visitors: 0, pageviews: 0, error: `${response.status}: ${errorText}` };
     }
 
     const data = await response.json();
+    console.log(`[Umami] Response for ${websiteId}:`, JSON.stringify(data).substring(0, 200));
+
     return {
-      visitors: data.visitors?.value || 0,
-      pageviews: data.pageviews?.value || 0
+      visitors: data.visitors?.value || data.uniques?.value || 0,
+      pageviews: data.pageviews?.value || data.views?.value || 0
     };
   } catch (err) {
-    console.error('Umami fetch error:', err.message);
-    return { visitors: 0, pageviews: 0 };
+    console.error('[Umami] Fetch error:', err.message);
+    return { visitors: 0, pageviews: 0, error: err.message };
   }
 }
 
@@ -2075,6 +2078,37 @@ app.get('/api/revenue', async (req, res) => {
     console.error('Error in /api/revenue:', err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// =============================================================================
+// DEBUG ENDPOINT - UMAMI TEST
+// =============================================================================
+app.get('/api/debug/umami', async (req, res) => {
+  const now = new Date();
+  const startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  const endDate = now;
+
+  const results = {};
+
+  // Test each website
+  for (const [project, websiteId] of Object.entries(UMAMI_CONFIG.websites)) {
+    const token = project === 'oentregador' ? UMAMI_CONFIG.tokens.oentregador : UMAMI_CONFIG.tokens.main;
+    const data = await getUmamiVisitors(websiteId, token, startDate, endDate);
+    results[project] = {
+      websiteId,
+      tokenPrefix: token.substring(0, 10) + '...',
+      ...data
+    };
+  }
+
+  res.json({
+    message: 'Umami debug info',
+    dateRange: {
+      start: startDate.toISOString(),
+      end: endDate.toISOString()
+    },
+    results
+  });
 });
 
 // =============================================================================
