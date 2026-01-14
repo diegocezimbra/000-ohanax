@@ -1638,7 +1638,7 @@ app.get('/api/users', async (req, res) => {
             FROM subscriptions s
             LEFT JOIN plans pl ON s.plan_id = pl.id
             LEFT JOIN projects p ON s.project_id = p.id
-            WHERE p.name = 'oentregador'
+            WHERE p.name = 'app-oentregador'
             AND LOWER(s.external_user_email) = ANY($1)
           `;
           const oeSubs = await db.billing.query(oeSubsQuery, [oeEmailsLower]);
@@ -1699,7 +1699,7 @@ app.get('/api/users', async (req, res) => {
           SELECT COUNT(*) as count
           FROM subscriptions s
           LEFT JOIN projects p ON s.project_id = p.id
-          WHERE p.name = 'oentregador' AND s.status IN ('active', 'trialing')
+          WHERE p.name = 'app-oentregador' AND s.status IN ('active', 'trialing')
         `;
         const oeSubsCount = await db.billing.query(oeSubsCountQuery);
 
