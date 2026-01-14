@@ -794,15 +794,35 @@ function unlockAudio() {
   source.start(0);
   audioUnlocked = true;
   console.log('[Audio] Desbloqueado!');
+
+  // Esconde o botão
+  const btn = document.getElementById('unlock-audio-btn');
+  if (btn) btn.classList.add('unlocked');
 }
+
+// Botão de desbloquear áudio - sempre aparece até clicar
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('unlock-audio-btn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      unlockAudio();
+      // Toca um som de teste (cha-ching)
+      setTimeout(() => {
+        const testSound = sounds.chaChing.cloneNode();
+        testSound.volume = 0.7;
+        testSound.play().catch(err => console.error('Erro ao tocar som:', err));
+      }, 100);
+    });
+  }
+});
 
 document.addEventListener('click', unlockAudio, { once: true });
 document.addEventListener('keydown', unlockAudio, { once: true });
 
-// Sound URLs
+// Sound URLs - usando fontes mais confiáveis
 const SOUND_URLS = {
-  chaChing: 'https://www.soundjay.com/misc/sounds/cash-register-1.mp3',
-  applause: 'https://www.soundjay.com/human/sounds/applause-01.mp3'
+  chaChing: 'https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a73467.mp3',
+  applause: 'https://cdn.pixabay.com/audio/2021/08/04/audio_12b0c7443c.mp3'
 };
 
 // Preload sounds
