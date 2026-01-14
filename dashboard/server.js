@@ -1117,29 +1117,32 @@ app.get('/api/overview', async (req, res) => {
       oentregadorUsers = await mongoDB.collection('app_users').countDocuments();
     } catch (e) { console.error('MongoDB error:', e.message); }
 
-    // Usuarios por projeto - apenas projetos principais
-    const mainProjects = ['app-auth', 'app-billing', 'security-audit', 'app-oentregador'];
+    // Usuarios por projeto - buscar do billing (exceto Teste)
+    const projectsFromBilling = await db.billing.query(`SELECT id, name FROM projects WHERE name != 'Teste'`);
 
-    // Para cada projeto principal, buscar quantidade de usuarios no auth
+    // Para cada projeto, buscar quantidade de usuarios no auth
     const usersByProjectData = [];
-    for (const projName of mainProjects) {
+    for (const proj of projectsFromBilling.rows) {
+      // Se for app-oentregador, usar contagem do MongoDB
+      if (proj.name === 'app-oentregador') {
+        usersByProjectData.push({
+          project_name: proj.name,
+          total_users: oentregadorUsers
+        });
+        continue;
+      }
+
       const authUsers = await db.auth.query(`
         SELECT COUNT(*) as total
         FROM users u
         JOIN projects p ON u.project_id = p.id
         WHERE p.name = $1
-      `, [projName]);
+      `, [proj.name]);
 
       usersByProjectData.push({
-        project_name: projName,
+        project_name: proj.name,
         total_users: parseInt(authUsers.rows[0]?.total || 0)
       });
-    }
-
-    // Substituir app-oentregador por usuarios do MongoDB
-    const oeIndex = usersByProjectData.findIndex(p => p.project_name === 'app-oentregador');
-    if (oeIndex !== -1) {
-      usersByProjectData[oeIndex].total_users = oentregadorUsers;
     }
 
     // Ordenar por total_users
@@ -1966,7 +1969,7 @@ app.get('/api/revenue', async (req, res) => {
       FROM projects p
       LEFT JOIN subscriptions s ON s.project_id = p.id
       LEFT JOIN plans pl ON s.plan_id = pl.id
-      WHERE p.name IN ('app-auth', 'app-billing', 'security-audit', 'app-oentregador')
+      WHERE p.name != 'Teste'
       GROUP BY p.id, p.name
       ORDER BY mrr DESC
     `;

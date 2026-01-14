@@ -207,7 +207,10 @@ function renderOverviewCharts(data) {
     'app-billing': '#10b981',
     'security-audit': '#ef4444',
     'app-oentregador': '#f59e0b',
-    'oentregador': '#f59e0b'
+    'oentregador': '#f59e0b',
+    'app-post-automation': '#06b6d4',
+    'cardapio-digital': '#ec4899',
+    'redutor-inss': '#6366f1'
   };
 
   // MRR by Project - Bar Chart
@@ -1044,6 +1047,9 @@ function getProjectClass(projectName) {
   if (projectName.includes('billing')) return 'billing';
   if (projectName.includes('security')) return 'security';
   if (projectName.includes('oentregador')) return 'oentregador';
+  if (projectName.includes('post-automation')) return 'post-automation';
+  if (projectName.includes('cardapio')) return 'cardapio';
+  if (projectName.includes('redutor')) return 'redutor';
   return '';
 }
 
@@ -1054,7 +1060,10 @@ function formatProjectName(name) {
     'app-billing': 'Billing',
     'security-audit': 'Security',
     'app-oentregador': 'oEntregador',
-    'oentregador': 'oEntregador'
+    'oentregador': 'oEntregador',
+    'app-post-automation': 'Post Automation',
+    'cardapio-digital': 'Cardapio Digital',
+    'redutor-inss': 'Redutor INSS'
   };
   return map[name] || name;
 }
@@ -1145,16 +1154,16 @@ async function loadRevenuePage() {
     const projectsEl = document.getElementById('revenue-projects');
     if (projectsEl) {
       projectsEl.innerHTML = data.byProject.map(p => `
-        <div class="project-card">
+        <div class="project-card ${getProjectClass(p.name)}">
           <div class="project-card-header">
             <span class="project-card-name">${formatProjectName(p.name)}</span>
             <span class="project-card-badge ${getProjectClass(p.name)}">${p.active_subs} ativos</span>
           </div>
+          <div class="project-card-revenue">
+            <div class="project-card-revenue-value">${formatCurrency(p.total_revenue)}</div>
+            <div class="project-card-revenue-label">Receita Total</div>
+          </div>
           <div class="project-card-metrics">
-            <div class="project-card-metric full">
-              <div class="project-card-metric-value">${formatCurrency(p.total_revenue)}</div>
-              <div class="project-card-metric-label">Receita Total</div>
-            </div>
             <div class="project-card-metric">
               <div class="project-card-metric-value">${formatCurrency(p.mrr)}</div>
               <div class="project-card-metric-label">MRR</div>
