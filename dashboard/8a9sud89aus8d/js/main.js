@@ -818,29 +818,29 @@ function preloadSounds() {
 preloadSounds();
 
 function playCashSound() {
-  // Play cha-ching
+  // 1. Som de dinheiro (cha-ching)
   const chaChing = sounds.chaChing.cloneNode();
   chaChing.volume = 0.7;
   chaChing.play().catch(() => {});
 
-  // After 0.5s play applause
+  // 2. Pausa... depois palmas de comemoração
   setTimeout(() => {
     const applause = sounds.applause.cloneNode();
     applause.volume = 0.5;
     applause.play().catch(() => {});
-  }, 500);
+  }, 1500);
 
-  // Use Speech Synthesis
+  // 3. Fala "Nova venda!" junto com as palmas
   setTimeout(() => {
     if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance('Aeee! Nova venda!');
+      const utterance = new SpeechSynthesisUtterance('Nova venda!');
       utterance.lang = 'pt-BR';
-      utterance.rate = 1.2;
-      utterance.pitch = 1.3;
+      utterance.rate = 1.1;
+      utterance.pitch = 1.2;
       utterance.volume = 0.8;
       speechSynthesis.speak(utterance);
     }
-  }, 300);
+  }, 1800);
 }
 
 // =============================================================================
