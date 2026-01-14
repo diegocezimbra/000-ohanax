@@ -1613,34 +1613,101 @@ app.get('/api/users', async (req, res) => {
 
         const oeCount = await mongoDB.collection('app_users').countDocuments(mongoQuery);
 
-        const mappedOeUsers = oeUsers.map(u => ({
-          id: u._id.toString(),
-          email: u.userEmail,
-          email_verified: u.isStep01VerifyEmailCompleted || false,
-          created_at: u.userCreatedAt,
-          last_login_at: u.userLastLoginAt,
-          project_name: 'oentregador',
-          subscription_status: null,
-          plan_name: null,
-          mrr: 0,
-          source: 'oentregador'
-        }));
+        // Get oEntregador subscriptions from billing database to merge
+        const oeEmails = oeUsers.map(u => u.userEmail).filter(Boolean);
+        let oeSubsMap = new Map();
+
+        if (oeEmails.length > 0) {
+          const oeSubsQuery = `
+            SELECT
+              s.external_user_email as email,
+              s.status,
+              pl.name as plan_name,
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END / 100.0 as mrr
+            FROM subscriptions s
+            LEFT JOIN plans pl ON s.plan_id = pl.id
+            LEFT JOIN projects p ON s.project_id = p.id
+            WHERE p.name = 'oentregador'
+            AND s.external_user_email = ANY($1)
+          `;
+          const oeSubs = await db.billing.query(oeSubsQuery, [oeEmails]);
+          oeSubs.rows.forEach(sub => {
+            oeSubsMap.set(sub.email, sub);
+          });
+        }
+
+        const mappedOeUsers = oeUsers.map(u => {
+          const sub = oeSubsMap.get(u.userEmail);
+          return {
+            id: u._id.toString(),
+            email: u.userEmail,
+            email_verified: u.isStep01VerifyEmailCompleted || false,
+            created_at: u.userCreatedAt,
+            last_login_at: u.userLastLoginAt,
+            project_name: 'oentregador',
+            subscription_status: sub?.status || null,
+            plan_name: sub?.plan_name || null,
+            mrr: sub?.mrr || 0,
+            source: 'oentregador'
+          };
+        });
+
+        // Apply plan filter for oEntregador
+        let filteredOeUsers = mappedOeUsers;
+        if (plan === 'paying') {
+          filteredOeUsers = mappedOeUsers.filter(u => u.subscription_status === 'active');
+        } else if (plan === 'trialing') {
+          filteredOeUsers = mappedOeUsers.filter(u => u.subscription_status === 'trialing');
+        } else if (plan === 'free') {
+          filteredOeUsers = mappedOeUsers.filter(u => !u.subscription_status);
+        }
 
         if (project === 'oentregador') {
-          users = mappedOeUsers;
-          total = oeCount;
+          users = filteredOeUsers;
+          total = plan ? filteredOeUsers.length : oeCount;
         } else {
-          users = [...users, ...mappedOeUsers].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, parseInt(limit));
-          total += oeCount;
+          users = [...users, ...filteredOeUsers].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, parseInt(limit));
+          total += plan ? filteredOeUsers.length : oeCount;
         }
       } catch (e) {
         console.error('MongoDB error:', e.message);
       }
     }
 
-    // Get summary stats from auth
+    // Get summary stats
     let stats = { total: 0, verified: 0, with_plan: 0, free: 0 };
-    if (!project || project !== 'oentregador') {
+    if (project === 'oentregador') {
+      // Stats for oEntregador from MongoDB + billing
+      try {
+        const mongoDB = await db.mongo();
+        const totalUsers = await mongoDB.collection('app_users').countDocuments({});
+        const verifiedUsers = await mongoDB.collection('app_users').countDocuments({ isStep01VerifyEmailCompleted: true });
+
+        // Get subscription count from billing for oentregador
+        const oeSubsCountQuery = `
+          SELECT COUNT(*) as count
+          FROM subscriptions s
+          LEFT JOIN projects p ON s.project_id = p.id
+          WHERE p.name = 'oentregador' AND s.status IN ('active', 'trialing')
+        `;
+        const oeSubsCount = await db.billing.query(oeSubsCountQuery);
+
+        stats = {
+          total: totalUsers,
+          verified: verifiedUsers,
+          with_plan: parseInt(oeSubsCount.rows[0].count) || 0,
+          free: totalUsers - parseInt(oeSubsCount.rows[0].count) || 0
+        };
+      } catch (e) {
+        console.error('Error getting oEntregador stats:', e.message);
+      }
+    } else if (!project) {
+      // Stats for all projects (auth only, oentregador handled separately in UI)
       const authStatsQuery = `
         SELECT
           COUNT(*) as total,
@@ -1648,18 +1715,42 @@ app.get('/api/users', async (req, res) => {
         FROM users u
         LEFT JOIN projects p ON u.project_id = p.id
         WHERE 1=1
-        ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : ''}
       `;
       const authStats = await db.auth.query(authStatsQuery);
 
-      // Get subscription stats from billing
       const billingStatsQuery = `
         SELECT
           COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as with_plan
         FROM subscriptions s
         LEFT JOIN projects p ON s.project_id = p.id
         WHERE 1=1
-        ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : ''}
+      `;
+      const billingStats = await db.billing.query(billingStatsQuery);
+
+      stats = {
+        total: parseInt(authStats.rows[0].total) || 0,
+        verified: parseInt(authStats.rows[0].verified) || 0,
+        with_plan: parseInt(billingStats.rows[0].with_plan) || 0,
+        free: parseInt(authStats.rows[0].total) - parseInt(billingStats.rows[0].with_plan) || 0
+      };
+    } else {
+      // Stats for specific auth project
+      const authStatsQuery = `
+        SELECT
+          COUNT(*) as total,
+          COUNT(CASE WHEN email_verified = true THEN 1 END) as verified
+        FROM users u
+        LEFT JOIN projects p ON u.project_id = p.id
+        WHERE p.name = '${project}'
+      `;
+      const authStats = await db.auth.query(authStatsQuery);
+
+      const billingStatsQuery = `
+        SELECT
+          COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as with_plan
+        FROM subscriptions s
+        LEFT JOIN projects p ON s.project_id = p.id
+        WHERE p.name = '${project}'
       `;
       const billingStats = await db.billing.query(billingStatsQuery);
 
