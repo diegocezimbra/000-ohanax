@@ -1117,30 +1117,30 @@ app.get('/api/overview', async (req, res) => {
       oentregadorUsers = await mongoDB.collection('app_users').countDocuments();
     } catch (e) { console.error('MongoDB error:', e.message); }
 
-    // Usuarios por projeto - buscar projetos do billing e contar usuarios do auth
-    const projectsFromBilling = await db.billing.query(`SELECT id, name FROM projects`);
+    // Usuarios por projeto - apenas projetos principais
+    const mainProjects = ['app-auth', 'app-billing', 'security-audit', 'app-oentregador'];
 
-    // Para cada projeto, buscar quantidade de usuarios no auth
+    // Para cada projeto principal, buscar quantidade de usuarios no auth
     const usersByProjectData = [];
-    for (const proj of projectsFromBilling.rows) {
+    for (const projName of mainProjects) {
       const authUsers = await db.auth.query(`
         SELECT COUNT(*) as total
         FROM users u
         JOIN projects p ON u.project_id = p.id
         WHERE p.name = $1
-      `, [proj.name]);
+      `, [projName]);
 
       usersByProjectData.push({
-        project_name: proj.name,
+        project_name: projName,
         total_users: parseInt(authUsers.rows[0]?.total || 0)
       });
     }
 
-    // Adicionar usuarios oEntregador (MongoDB)
-    usersByProjectData.push({
-      project_name: 'oentregador',
-      total_users: oentregadorUsers
-    });
+    // Substituir app-oentregador por usuarios do MongoDB
+    const oeIndex = usersByProjectData.findIndex(p => p.project_name === 'app-oentregador');
+    if (oeIndex !== -1) {
+      usersByProjectData[oeIndex].total_users = oentregadorUsers;
+    }
 
     // Ordenar por total_users
     usersByProjectData.sort((a, b) => b.total_users - a.total_users);
@@ -1966,6 +1966,7 @@ app.get('/api/revenue', async (req, res) => {
       FROM projects p
       LEFT JOIN subscriptions s ON s.project_id = p.id
       LEFT JOIN plans pl ON s.plan_id = pl.id
+      WHERE p.name IN ('app-auth', 'app-billing', 'security-audit', 'app-oentregador')
       GROUP BY p.id, p.name
       ORDER BY mrr DESC
     `;
