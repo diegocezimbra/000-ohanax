@@ -769,6 +769,79 @@ async function loadProjectPage(project) {
           charts['securityScans'].render();
         }
       } catch (e) { console.error('Error loading scans per day:', e); }
+
+      // Today's scans with user info
+      try {
+        const todayData = await fetch('/api/security/today').then(r => r.json());
+        const todayTotalEl = document.getElementById('security-today-total');
+        const scansByUserEl = document.getElementById('security-scans-by-user');
+        const scansListEl = document.getElementById('security-today-scans-list');
+
+        if (todayTotalEl) todayTotalEl.textContent = todayData.totalToday || 0;
+
+        // Scans by user
+        if (scansByUserEl && todayData.byUser) {
+          if (todayData.byUser.length > 0) {
+            scansByUserEl.innerHTML = todayData.byUser.map(u => `
+              <div class="metric-row" style="padding: 6px 0; border-bottom: 1px solid #334155;">
+                <span class="metric-label" style="font-size: 13px;">${u.user_name || u.user_email || 'Desconhecido'}</span>
+                <span class="metric-value" style="color: #ef4444;">${u.count}</span>
+              </div>
+            `).join('');
+          } else {
+            scansByUserEl.innerHTML = '<div style="color: #64748b; font-size: 13px;">Nenhum scan hoje</div>';
+          }
+        }
+
+        // Scans list
+        if (scansListEl && todayData.scans) {
+          if (todayData.scans.length > 0) {
+            scansListEl.innerHTML = todayData.scans.map(s => {
+              const time = new Date(s.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+              const statusColor = s.status === 'completed' ? '#22c55e' : s.status === 'running' ? '#f59e0b' : s.status === 'failed' ? '#ef4444' : '#94a3b8';
+              return `
+                <div style="padding: 8px 0; border-bottom: 1px solid #334155; font-size: 13px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #e2e8f0;">${s.project_name || 'Projeto'}</span>
+                    <span style="color: ${statusColor}; font-size: 11px;">${s.status}</span>
+                  </div>
+                  <div style="color: #64748b; font-size: 11px; margin-top: 2px;">
+                    ${s.user_name || s.user_email || 'Usuario'} - ${time}
+                  </div>
+                </div>
+              `;
+            }).join('');
+          } else {
+            scansListEl.innerHTML = '<div style="color: #64748b; font-size: 13px;">Nenhum scan hoje</div>';
+          }
+        }
+      } catch (e) { console.error('Error loading security today stats:', e); }
+    }
+
+    // oEntregador today stats (usuarios ativos e bipados)
+    if (project === 'oentregador') {
+      try {
+        const todayData = await fetch('/api/oentregador/today').then(r => r.json());
+        const todayUsersEl = document.getElementById('oentregador-today-users');
+        const todayBipadosEl = document.getElementById('oentregador-today-bipados');
+        const bipadosListEl = document.getElementById('oentregador-bipados-list');
+
+        if (todayUsersEl) todayUsersEl.textContent = todayData.activeUsers || 0;
+        if (todayBipadosEl) todayBipadosEl.textContent = todayData.bipadosToday || 0;
+
+        if (bipadosListEl && todayData.bipadosByUser) {
+          if (todayData.bipadosByUser.length > 0) {
+            bipadosListEl.innerHTML = todayData.bipadosByUser.map(u => `
+              <div class="metric-row" style="padding: 6px 0; border-bottom: 1px solid #334155;">
+                <span class="metric-label" style="font-size: 13px;">${u._id || 'Desconhecido'}</span>
+                <span class="metric-value" style="color: #22c55e;">${u.count}</span>
+              </div>
+            `).join('');
+          } else {
+            bipadosListEl.innerHTML = '<div style="color: #64748b; font-size: 13px;">Nenhum item bipado hoje</div>';
+          }
+        }
+      } catch (e) { console.error('Error loading oentregador today stats:', e); }
     }
 
     // Tabela

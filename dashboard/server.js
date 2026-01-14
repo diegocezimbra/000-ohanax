@@ -667,6 +667,54 @@ app.get('/api/security/scans-per-day', async (req, res) => {
   }
 });
 
+// Today's scans with user info
+app.get('/api/security/today', async (req, res) => {
+  try {
+    // Get scans from today with project and user info
+    const result = await db.security.query(`
+      SELECT
+        sar.id,
+        sar.status,
+        sar.created_at,
+        sar.started_at,
+        sar.completed_at,
+        sar.triggered_by,
+        sp.name as project_name,
+        sp.url as project_url,
+        sau.email as user_email,
+        sau.name as user_name
+      FROM security_audit_reports sar
+      LEFT JOIN security_projects sp ON sar.project_id = sp.id
+      LEFT JOIN security_admin_users sau ON sp.owner_id = sau.id
+      WHERE sar.created_at >= CURRENT_DATE
+      ORDER BY sar.created_at DESC
+    `);
+
+    // Count by user
+    const byUser = await db.security.query(`
+      SELECT
+        sau.email as user_email,
+        sau.name as user_name,
+        COUNT(*) as count
+      FROM security_audit_reports sar
+      LEFT JOIN security_projects sp ON sar.project_id = sp.id
+      LEFT JOIN security_admin_users sau ON sp.owner_id = sau.id
+      WHERE sar.created_at >= CURRENT_DATE
+      GROUP BY sau.email, sau.name
+      ORDER BY count DESC
+    `);
+
+    res.json({
+      totalToday: result.rows.length,
+      scans: result.rows,
+      byUser: byUser.rows
+    });
+  } catch (err) {
+    console.error('Error in security today:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/security/vulnerabilities', async (req, res) => {
   try {
     const result = await db.security.query(`
@@ -857,6 +905,61 @@ app.get('/api/oentregador/packages', async (req, res) => {
   } catch (err) {
     console.error('MongoDB error:', err);
     res.json({ total: 0, byStatus: [] });
+  }
+});
+
+// Today's activity: users who logged in + items bipados
+app.get('/api/oentregador/today', async (req, res) => {
+  try {
+    const mongoDB = await db.mongo();
+    const users = mongoDB.collection('app_users');
+    const packages = mongoDB.collection('delivery_packages');
+
+    // Start of today (UTC)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Users active today (based on userUpdatedAt as proxy for activity)
+    const activeUsersToday = await users.find({
+      userUpdatedAt: { $gte: today }
+    }).project({
+      userName: 1,
+      userEmail: 1,
+      userUpdatedAt: 1
+    }).sort({ userUpdatedAt: -1 }).toArray();
+
+    // Items bipados today (conferenceAt is when they were scanned)
+    const bipadosToday = await packages.countDocuments({
+      conferenceStatus: 'checked',
+      conferenceAt: { $gte: today }
+    });
+
+    // Get bipados by user today
+    const bipadosByUser = await packages.aggregate([
+      {
+        $match: {
+          conferenceStatus: 'checked',
+          conferenceAt: { $gte: today }
+        }
+      },
+      {
+        $group: {
+          _id: '$conferenceUserName',
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]).toArray();
+
+    res.json({
+      activeUsers: activeUsersToday.length,
+      activeUsersList: activeUsersToday.slice(0, 20),
+      bipadosToday: bipadosToday,
+      bipadosByUser: bipadosByUser
+    });
+  } catch (err) {
+    console.error('MongoDB error in today stats:', err);
+    res.json({ activeUsers: 0, activeUsersList: [], bipadosToday: 0, bipadosByUser: [] });
   }
 });
 
