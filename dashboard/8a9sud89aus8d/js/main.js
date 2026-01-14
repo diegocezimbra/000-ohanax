@@ -633,16 +633,36 @@ async function loadProjectPage(project) {
   try {
     const data = await fetch(`/api/project/${project}`).then(r => r.json());
 
-    // Cards principais
-    const usersEl = document.getElementById(`${project}-users`);
-    const mrrEl = document.getElementById(`${project}-mrr`);
-    const subsEl = document.getElementById(`${project}-subs`);
-    const newEl = document.getElementById(`${project}-new`);
+    // Cards principais - nova estrutura igual Overview
+    const mrr = data.billing.mrr || 0;
+    const oneTimeRevenue = data.one_time?.revenue || 0;
+    const totalRevenue = mrr + oneTimeRevenue;
+    const activeSubs = data.billing.active || 0;
+    const trialingSubs = data.billing.trialing || 0;
+    const oneTimeCount = data.one_time?.paid_purchases || 0;
+    const uniqueCustomers = activeSubs + oneTimeCount;
 
+    // Row 1: MRR, One-Time Revenue, Total Revenue, Users
+    const mrrEl = document.getElementById(`${project}-mrr`);
+    const oneTimeRevenueEl = document.getElementById(`${project}-onetime-revenue`);
+    const totalRevenueEl = document.getElementById(`${project}-total-revenue`);
+    const usersEl = document.getElementById(`${project}-users`);
+
+    if (mrrEl) mrrEl.textContent = formatCurrency(mrr);
+    if (oneTimeRevenueEl) oneTimeRevenueEl.textContent = formatCurrency(oneTimeRevenue);
+    if (totalRevenueEl) totalRevenueEl.textContent = formatCurrency(totalRevenue);
     if (usersEl) usersEl.textContent = data.users.total || 0;
-    if (mrrEl) mrrEl.textContent = formatCurrency(data.billing.mrr);
-    if (subsEl) subsEl.textContent = (data.billing.active || 0) + (data.billing.trialing || 0);
-    if (newEl) newEl.textContent = data.users.new_30d || 0;
+
+    // Row 2: ARR, Subs, One-Time Count, Unique Customers
+    const arrEl = document.getElementById(`${project}-arr`);
+    const subsEl = document.getElementById(`${project}-subs`);
+    const oneTimeCountEl = document.getElementById(`${project}-onetime-count`);
+    const uniqueCustomersEl = document.getElementById(`${project}-unique-customers`);
+
+    if (arrEl) arrEl.textContent = formatCurrency(mrr * 12);
+    if (subsEl) subsEl.textContent = activeSubs + trialingSubs;
+    if (oneTimeCountEl) oneTimeCountEl.textContent = oneTimeCount;
+    if (uniqueCustomersEl) uniqueCustomersEl.textContent = uniqueCustomers;
 
     // Usuarios
     const usersTotalEl = document.getElementById(`${project}-users-total`);
@@ -665,23 +685,6 @@ async function loadProjectPage(project) {
     if (subsTrialEl) subsTrialEl.textContent = data.billing.trialing || 0;
     if (subsCanceledEl) subsCanceledEl.textContent = data.billing.canceled || 0;
     if (revenueEl) revenueEl.textContent = formatCurrency(data.billing.total_revenue);
-
-    // One-time (se existir)
-    if (data.one_time) {
-      const otPaid = document.getElementById(`${project}-onetime-paid`);
-      const otPending = document.getElementById(`${project}-onetime-pending`);
-      const otRevenue = document.getElementById(`${project}-onetime-revenue`);
-      const subRevenue = document.getElementById(`${project}-sub-revenue`);
-      const revSubs = document.getElementById(`${project}-revenue-subs`);
-      const revOnetime = document.getElementById(`${project}-revenue-onetime`);
-
-      if (otPaid) otPaid.textContent = data.one_time.paid_purchases || 0;
-      if (otPending) otPending.textContent = data.one_time.pending_purchases || 0;
-      if (otRevenue) otRevenue.textContent = formatCurrency(data.one_time.revenue);
-      if (subRevenue) subRevenue.textContent = formatCurrency(data.billing.subscription_revenue);
-      if (revSubs) revSubs.textContent = formatCurrency(data.billing.subscription_revenue);
-      if (revOnetime) revOnetime.textContent = formatCurrency(data.one_time.revenue);
-    }
 
     // Scan stats (apenas para security)
     if (project === 'security') {
