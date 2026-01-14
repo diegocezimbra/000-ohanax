@@ -819,10 +819,10 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('click', unlockAudio, { once: true });
 document.addEventListener('keydown', unlockAudio, { once: true });
 
-// Sound URLs - usando fontes mais confiáveis
+// Sound URLs - DINHEIRO ENTRANDO NA CONTA!
 const SOUND_URLS = {
-  chaChing: 'https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a73467.mp3',
-  applause: 'https://cdn.pixabay.com/audio/2021/08/04/audio_12b0c7443c.mp3'
+  chaChing: 'https://www.myinstants.com/media/sounds/cash-register-sound.mp3',
+  applause: 'https://www.myinstants.com/media/sounds/applauses.mp3'
 };
 
 // Preload sounds
