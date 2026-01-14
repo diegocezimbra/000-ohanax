@@ -680,7 +680,7 @@ app.get('/api/security/today', async (req, res) => {
         sar.completed_at,
         sar.triggered_by,
         sp.name as project_name,
-        sp.url as project_url,
+        sp.frontend_url as project_url,
         sau.email as user_email,
         sau.name as user_name
       FROM security_audit_reports sar
@@ -919,18 +919,19 @@ app.get('/api/oentregador/today', async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Users active today (based on userUpdatedAt as proxy for activity)
+    // Users active today (based on userLastLoginAt)
     const activeUsersToday = await users.find({
-      userUpdatedAt: { $gte: today }
+      userLastLoginAt: { $gte: today }
     }).project({
       userName: 1,
       userEmail: 1,
-      userUpdatedAt: 1
-    }).sort({ userUpdatedAt: -1 }).toArray();
+      userLastLoginAt: 1
+    }).sort({ userLastLoginAt: -1 }).toArray();
 
     // Items bipados today (conferenceAt is when they were scanned)
+    // Includes both 'checked' (ok) and 'wrong_batch' (divergência/pendência)
     const bipadosToday = await packages.countDocuments({
-      conferenceStatus: 'checked',
+      conferenceStatus: { $in: ['checked', 'wrong_batch'] },
       conferenceAt: { $gte: today }
     });
 
@@ -938,7 +939,7 @@ app.get('/api/oentregador/today', async (req, res) => {
     const bipadosByUser = await packages.aggregate([
       {
         $match: {
-          conferenceStatus: 'checked',
+          conferenceStatus: { $in: ['checked', 'wrong_batch'] },
           conferenceAt: { $gte: today }
         }
       },
@@ -960,6 +961,66 @@ app.get('/api/oentregador/today', async (req, res) => {
   } catch (err) {
     console.error('MongoDB error in today stats:', err);
     res.json({ activeUsers: 0, activeUsersList: [], bipadosToday: 0, bipadosByUser: [] });
+  }
+});
+
+// Bipados per day (last 30 days)
+app.get('/api/oentregador/bipados-per-day', async (req, res) => {
+  try {
+    const mongoDB = await db.mongo();
+    const packages = mongoDB.collection('delivery_packages');
+
+    const days = parseInt(req.query.days) || 30;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    // Aggregate bipados by day (conferenceAt when status != pending)
+    const result = await packages.aggregate([
+      {
+        $match: {
+          conferenceStatus: { $in: ['checked', 'wrong_batch'] },
+          conferenceAt: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$conferenceAt' }
+          },
+          total: { $sum: 1 },
+          checked: {
+            $sum: { $cond: [{ $eq: ['$conferenceStatus', 'checked'] }, 1, 0] }
+          },
+          wrong_batch: {
+            $sum: { $cond: [{ $eq: ['$conferenceStatus', 'wrong_batch'] }, 1, 0] }
+          }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]).toArray();
+
+    // Fill missing days with zeros
+    const data = [];
+    const now = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const found = result.find(r => r._id === dateStr);
+      data.push({
+        date: dateStr,
+        total: found ? found.total : 0,
+        checked: found ? found.checked : 0,
+        wrong_batch: found ? found.wrong_batch : 0
+      });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error('MongoDB error in bipados-per-day:', err);
+    res.json([]);
   }
 });
 

@@ -842,6 +842,76 @@ async function loadProjectPage(project) {
           }
         }
       } catch (e) { console.error('Error loading oentregador today stats:', e); }
+
+      // Bipados per day chart
+      try {
+        const bipadosPerDay = await fetch('/api/oentregador/bipados-per-day?days=30').then(r => r.json());
+        const bipadosChartEl = document.getElementById('oentregadorBipadosChart');
+        if (bipadosChartEl && bipadosPerDay.length > 0) {
+          if (charts['oentregadorBipados']) charts['oentregadorBipados'].destroy();
+          charts['oentregadorBipados'] = new ApexCharts(bipadosChartEl, {
+            chart: {
+              type: 'bar',
+              height: 280,
+              stacked: true,
+              background: chartTheme.background,
+              toolbar: { show: false },
+              fontFamily: 'Inter, sans-serif'
+            },
+            series: [
+              {
+                name: 'Bipados OK',
+                data: bipadosPerDay.map(d => d.checked)
+              },
+              {
+                name: 'Divergencias',
+                data: bipadosPerDay.map(d => d.wrong_batch)
+              }
+            ],
+            colors: ['#22c55e', '#ef4444'],
+            plotOptions: {
+              bar: {
+                borderRadius: 4,
+                columnWidth: '60%'
+              }
+            },
+            xaxis: {
+              categories: bipadosPerDay.map(d => {
+                const date = new Date(d.date);
+                return `${date.getDate()}/${date.getMonth() + 1}`;
+              }),
+              labels: {
+                style: { colors: chartTheme.textColor, fontSize: '10px' },
+                rotate: -45,
+                rotateAlways: bipadosPerDay.length > 15
+              },
+              axisBorder: { show: false },
+              axisTicks: { show: false }
+            },
+            yaxis: {
+              labels: { style: { colors: chartTheme.textColor } },
+              min: 0,
+              forceNiceScale: true
+            },
+            grid: {
+              borderColor: chartTheme.gridColor,
+              strokeDashArray: 4
+            },
+            dataLabels: { enabled: false },
+            legend: {
+              position: 'top',
+              labels: { colors: chartTheme.textColor }
+            },
+            tooltip: {
+              theme: 'dark',
+              y: {
+                formatter: (val) => val + ' BRs'
+              }
+            }
+          });
+          charts['oentregadorBipados'].render();
+        }
+      } catch (e) { console.error('Error loading bipados per day:', e); }
     }
 
     // Tabela
