@@ -206,7 +206,8 @@ function renderOverviewCharts(data) {
     'app-auth': '#8b5cf6',
     'app-billing': '#10b981',
     'security-audit': '#ef4444',
-    'app-oentregador': '#f59e0b'
+    'app-oentregador': '#f59e0b',
+    'oentregador': '#f59e0b'
   };
 
   // MRR by Project - Bar Chart

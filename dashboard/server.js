@@ -1117,16 +1117,35 @@ app.get('/api/overview', async (req, res) => {
       oentregadorUsers = await mongoDB.collection('app_users').countDocuments();
     } catch (e) { console.error('MongoDB error:', e.message); }
 
-    // Usuarios por projeto (auth + billing)
-    const usersByProject = await db.auth.query(`
-      SELECT
-        p.name as project_name,
-        COUNT(u.id) as total_users
-      FROM projects p
-      LEFT JOIN users u ON u.project_id = p.id
-      GROUP BY p.id, p.name
-      ORDER BY total_users DESC
-    `);
+    // Usuarios por projeto - buscar projetos do billing e contar usuarios do auth
+    const projectsFromBilling = await db.billing.query(`SELECT id, name FROM projects`);
+
+    // Para cada projeto, buscar quantidade de usuarios no auth
+    const usersByProjectData = [];
+    for (const proj of projectsFromBilling.rows) {
+      const authUsers = await db.auth.query(`
+        SELECT COUNT(*) as total
+        FROM users u
+        JOIN projects p ON u.project_id = p.id
+        WHERE p.name = $1
+      `, [proj.name]);
+
+      usersByProjectData.push({
+        project_name: proj.name,
+        total_users: parseInt(authUsers.rows[0]?.total || 0)
+      });
+    }
+
+    // Adicionar usuarios oEntregador (MongoDB)
+    usersByProjectData.push({
+      project_name: 'oentregador',
+      total_users: oentregadorUsers
+    });
+
+    // Ordenar por total_users
+    usersByProjectData.sort((a, b) => b.total_users - a.total_users);
+
+    const usersByProject = { rows: usersByProjectData };
 
     // MRR por projeto
     const mrrByProject = await db.billing.query(`
