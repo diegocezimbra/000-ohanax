@@ -343,13 +343,19 @@ function renderOverviewCharts(data) {
 
   // Subscribers by Status - Radial Bar
   const subsStatusEl = document.getElementById('chart-subs-status');
-  if (subsStatusEl && data.subsByStatus) {
+  if (subsStatusEl && data.subsByStatus && data.subsByStatus.length > 0) {
     if (charts.subsStatus) charts.subsStatus.destroy();
-    const statusData = data.subsByStatus;
+
+    // Convert array to object { active: count, trialing: count, ... }
+    const statusData = {};
+    data.subsByStatus.forEach(s => {
+      statusData[s.status] = parseInt(s.count) || 0;
+    });
+
     const total = (statusData.active || 0) + (statusData.trialing || 0) + (statusData.canceled || 0);
-    const activePercent = total > 0 ? Math.round((statusData.active / total) * 100) : 0;
-    const trialPercent = total > 0 ? Math.round((statusData.trialing / total) * 100) : 0;
-    const canceledPercent = total > 0 ? Math.round((statusData.canceled / total) * 100) : 0;
+    const activePercent = total > 0 ? Math.round((statusData.active || 0) / total * 100) : 0;
+    const trialPercent = total > 0 ? Math.round((statusData.trialing || 0) / total * 100) : 0;
+    const canceledPercent = total > 0 ? Math.round((statusData.canceled || 0) / total * 100) : 0;
 
     charts.subsStatus = new ApexCharts(subsStatusEl, {
       chart: {

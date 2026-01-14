@@ -1190,6 +1190,16 @@ app.get('/api/overview', async (req, res) => {
       ORDER BY revenue DESC
     `);
 
+    // Subscribers by status for the radial chart
+    const subsByStatus = await db.billing.query(`
+      SELECT
+        status,
+        COUNT(*) as count
+      FROM subscriptions
+      GROUP BY status
+      ORDER BY count DESC
+    `);
+
     const totalMrr = parseFloat(billingMetrics.rows[0].total_mrr) || 0;
     const totalOneTimeRevenue = parseFloat(oneTimeTotal.rows[0].total_revenue) || 0;
 
@@ -1203,7 +1213,8 @@ app.get('/api/overview', async (req, res) => {
       usersByProject: usersByProject.rows,
       mrrByProject: mrrByProject.rows,
       oneTimeByProject: oneTimeByProject.rows,
-      recentSubscribers: recentSubscribers.rows
+      recentSubscribers: recentSubscribers.rows,
+      subsByStatus: subsByStatus.rows
     });
   } catch (err) {
     console.error('Error in /api/overview:', err);
@@ -1515,53 +1526,77 @@ app.get('/api/users', async (req, res) => {
     let users = [];
     let total = 0;
 
-    // Get users from auth database with subscription info
-    const authQuery = `
-      SELECT
-        u.id,
-        u.email,
-        u.email_verified,
-        u.created_at,
-        u.last_login_at,
-        p.name as project_name,
-        s.status as subscription_status,
-        pl.name as plan_name,
-        CASE pl.interval
-          WHEN 'monthly' THEN pl.price_cents
-          WHEN 'yearly' THEN pl.price_cents / 12
-          WHEN 'weekly' THEN pl.price_cents * 4
-          ELSE COALESCE(pl.price_cents, 0)
-        END / 100.0 as mrr
-      FROM users u
-      LEFT JOIN projects p ON u.project_id = p.id
-      LEFT JOIN subscriptions s ON s.external_user_email = u.email AND s.project_id = u.project_id
-      LEFT JOIN plans pl ON s.plan_id = pl.id
-      WHERE 1=1
-      ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : project !== 'oentregador' ? '' : 'AND 1=0'}
-      ${status === 'verified' ? 'AND u.email_verified = true' : status === 'unverified' ? 'AND u.email_verified = false' : ''}
-      ${plan === 'paying' ? "AND s.status = 'active'" : plan === 'trialing' ? "AND s.status = 'trialing'" : plan === 'free' ? 'AND s.id IS NULL' : ''}
-      ${search ? `AND u.email ILIKE '%${search}%'` : ''}
-      ORDER BY u.created_at DESC
-      LIMIT ${parseInt(limit)} OFFSET ${offset}
-    `;
-
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM users u
-      LEFT JOIN projects p ON u.project_id = p.id
-      LEFT JOIN subscriptions s ON s.external_user_email = u.email AND s.project_id = u.project_id
-      WHERE 1=1
-      ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : project !== 'oentregador' ? '' : 'AND 1=0'}
-      ${status === 'verified' ? 'AND u.email_verified = true' : status === 'unverified' ? 'AND u.email_verified = false' : ''}
-      ${plan === 'paying' ? "AND s.status = 'active'" : plan === 'trialing' ? "AND s.status = 'trialing'" : plan === 'free' ? 'AND s.id IS NULL' : ''}
-      ${search ? `AND u.email ILIKE '%${search}%'` : ''}
-    `;
-
+    // Get users from auth database
     if (!project || project !== 'oentregador') {
+      const authQuery = `
+        SELECT
+          u.id,
+          u.email,
+          u.email_verified,
+          u.created_at,
+          u.last_login_at,
+          p.name as project_name
+        FROM users u
+        LEFT JOIN projects p ON u.project_id = p.id
+        WHERE 1=1
+        ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : ''}
+        ${status === 'verified' ? 'AND u.email_verified = true' : status === 'unverified' ? 'AND u.email_verified = false' : ''}
+        ${search ? `AND u.email ILIKE '%${search}%'` : ''}
+        ORDER BY u.created_at DESC
+      `;
+
       const authUsers = await db.auth.query(authQuery);
-      const authCount = await db.auth.query(countQuery);
-      users = authUsers.rows.map(u => ({ ...u, source: 'auth' }));
-      total = parseInt(authCount.rows[0].total);
+
+      // Get subscriptions from billing database
+      const subsQuery = `
+        SELECT
+          s.external_user_email as email,
+          p.name as project_name,
+          s.status,
+          pl.name as plan_name,
+          CASE pl.interval
+            WHEN 'monthly' THEN pl.price_cents
+            WHEN 'yearly' THEN pl.price_cents / 12
+            WHEN 'weekly' THEN pl.price_cents * 4
+            ELSE COALESCE(pl.price_cents, 0)
+          END / 100.0 as mrr
+        FROM subscriptions s
+        LEFT JOIN plans pl ON s.plan_id = pl.id
+        LEFT JOIN projects p ON s.project_id = p.id
+      `;
+      const subsResult = await db.billing.query(subsQuery);
+
+      // Create subscription lookup by email+project
+      const subsMap = new Map();
+      subsResult.rows.forEach(s => {
+        const key = `${s.email}:${s.project_name}`;
+        subsMap.set(key, s);
+      });
+
+      // Merge users with subscription data
+      let mergedUsers = authUsers.rows.map(u => {
+        const key = `${u.email}:${u.project_name}`;
+        const sub = subsMap.get(key);
+        return {
+          ...u,
+          subscription_status: sub?.status || null,
+          plan_name: sub?.plan_name || null,
+          mrr: sub?.mrr || 0,
+          source: 'auth'
+        };
+      });
+
+      // Filter by plan status if needed
+      if (plan === 'paying') {
+        mergedUsers = mergedUsers.filter(u => u.subscription_status === 'active');
+      } else if (plan === 'trialing') {
+        mergedUsers = mergedUsers.filter(u => u.subscription_status === 'trialing');
+      } else if (plan === 'free') {
+        mergedUsers = mergedUsers.filter(u => !u.subscription_status);
+      }
+
+      total = mergedUsers.length;
+      users = mergedUsers.slice(offset, offset + parseInt(limit));
     }
 
     // Get oEntregador users if needed
@@ -1603,24 +1638,37 @@ app.get('/api/users', async (req, res) => {
       }
     }
 
-    // Get summary stats
-    const statsQuery = `
-      SELECT
-        COUNT(*) as total,
-        COUNT(CASE WHEN u.email_verified = true THEN 1 END) as verified,
-        COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as with_plan,
-        COUNT(CASE WHEN s.id IS NULL THEN 1 END) as free
-      FROM users u
-      LEFT JOIN projects p ON u.project_id = p.id
-      LEFT JOIN subscriptions s ON s.external_user_email = u.email AND s.project_id = u.project_id
-      WHERE 1=1
-      ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : ''}
-    `;
-
+    // Get summary stats from auth
     let stats = { total: 0, verified: 0, with_plan: 0, free: 0 };
     if (!project || project !== 'oentregador') {
-      const statsResult = await db.auth.query(statsQuery);
-      stats = statsResult.rows[0];
+      const authStatsQuery = `
+        SELECT
+          COUNT(*) as total,
+          COUNT(CASE WHEN email_verified = true THEN 1 END) as verified
+        FROM users u
+        LEFT JOIN projects p ON u.project_id = p.id
+        WHERE 1=1
+        ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : ''}
+      `;
+      const authStats = await db.auth.query(authStatsQuery);
+
+      // Get subscription stats from billing
+      const billingStatsQuery = `
+        SELECT
+          COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as with_plan
+        FROM subscriptions s
+        LEFT JOIN projects p ON s.project_id = p.id
+        WHERE 1=1
+        ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : ''}
+      `;
+      const billingStats = await db.billing.query(billingStatsQuery);
+
+      stats = {
+        total: parseInt(authStats.rows[0].total) || 0,
+        verified: parseInt(authStats.rows[0].verified) || 0,
+        with_plan: parseInt(billingStats.rows[0].with_plan) || 0,
+        free: parseInt(authStats.rows[0].total) - parseInt(billingStats.rows[0].with_plan) || 0
+      };
     }
 
     res.json({
@@ -1629,12 +1677,7 @@ app.get('/api/users', async (req, res) => {
       page: parseInt(page),
       limit: parseInt(limit),
       totalPages: Math.ceil(total / parseInt(limit)),
-      stats: {
-        total: parseInt(stats.total) || total,
-        verified: parseInt(stats.verified) || 0,
-        with_plan: parseInt(stats.with_plan) || 0,
-        free: parseInt(stats.free) || 0
-      }
+      stats
     });
   } catch (err) {
     console.error('Error in /api/users:', err);
@@ -1682,14 +1725,13 @@ app.get('/api/paying', async (req, res) => {
       SELECT
         otp.external_user_email as email,
         p.name as project_name,
-        pk.name as plan_name,
+        'Pacote One-Time' as plan_name,
         'onetime' as type,
         otp.amount_cents / 100.0 as value,
         otp.status,
         otp.created_at,
         'one-time' as interval
       FROM one_time_purchases otp
-      LEFT JOIN packages pk ON otp.package_id = pk.id
       LEFT JOIN projects p ON otp.project_id = p.id
       WHERE otp.status = 'paid'
       ${project ? `AND p.name = '${project}'` : ''}
@@ -1848,49 +1890,53 @@ app.get('/api/revenue', async (req, res) => {
 
     const byPlan = await db.billing.query(byPlanQuery);
 
-    // Recent transactions (subscriptions + one-time)
-    const recentTransactions = `
-      (
-        SELECT
-          s.external_user_email as email,
-          p.name as project_name,
-          'subscription' as type,
-          pl.name as plan_name,
-          CASE pl.interval
-            WHEN 'monthly' THEN pl.price_cents
-            WHEN 'yearly' THEN pl.price_cents / 12
-            WHEN 'weekly' THEN pl.price_cents * 4
-            ELSE pl.price_cents
-          END / 100.0 as value,
-          s.created_at
-        FROM subscriptions s
-        LEFT JOIN plans pl ON s.plan_id = pl.id
-        LEFT JOIN projects p ON s.project_id = p.id
-        WHERE s.status = 'active'
-        ORDER BY s.created_at DESC
-        LIMIT 10
-      )
-      UNION ALL
-      (
-        SELECT
-          otp.external_user_email as email,
-          p.name as project_name,
-          'onetime' as type,
-          pk.name as plan_name,
-          otp.amount_cents / 100.0 as value,
-          otp.created_at
-        FROM one_time_purchases otp
-        LEFT JOIN packages pk ON otp.package_id = pk.id
-        LEFT JOIN projects p ON otp.project_id = p.id
-        WHERE otp.status = 'paid'
-        ORDER BY otp.created_at DESC
-        LIMIT 10
-      )
-      ORDER BY created_at DESC
-      LIMIT 15
+    // Recent transactions (subscriptions + one-time) - separate queries to avoid UNION issues
+    const subsTransactionsQuery = `
+      SELECT
+        s.external_user_email as email,
+        p.name as project_name,
+        'subscription' as type,
+        pl.name as plan_name,
+        CASE pl.interval
+          WHEN 'monthly' THEN pl.price_cents
+          WHEN 'yearly' THEN pl.price_cents / 12
+          WHEN 'weekly' THEN pl.price_cents * 4
+          ELSE pl.price_cents
+        END / 100.0 as value,
+        s.created_at
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      LEFT JOIN projects p ON s.project_id = p.id
+      WHERE s.status = 'active'
+      ORDER BY s.created_at DESC
+      LIMIT 10
     `;
 
-    const transactions = await db.billing.query(recentTransactions);
+    const onetimeTransactionsQuery = `
+      SELECT
+        otp.external_user_email as email,
+        p.name as project_name,
+        'onetime' as type,
+        'Pacote One-Time' as plan_name,
+        otp.amount_cents / 100.0 as value,
+        otp.created_at
+      FROM one_time_purchases otp
+      LEFT JOIN projects p ON otp.project_id = p.id
+      WHERE otp.status = 'paid'
+      ORDER BY otp.created_at DESC
+      LIMIT 10
+    `;
+
+    const [subsTransactions, onetimeTransactions] = await Promise.all([
+      db.billing.query(subsTransactionsQuery),
+      db.billing.query(onetimeTransactionsQuery)
+    ]);
+
+    const transactions = {
+      rows: [...subsTransactions.rows, ...onetimeTransactions.rows]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 15)
+    };
 
     // MRR growth (last 30 days by counting new active subscriptions)
     const mrrGrowthQuery = `
