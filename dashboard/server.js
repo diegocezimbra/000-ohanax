@@ -1603,10 +1603,10 @@ app.get('/api/users', async (req, res) => {
     if (!project || project === 'oentregador') {
       try {
         const mongoDB = await db.mongo();
-        const mongoQuery = search ? { email: { $regex: search, $options: 'i' } } : {};
+        const mongoQuery = search ? { userEmail: { $regex: search, $options: 'i' } } : {};
         const oeUsers = await mongoDB.collection('app_users')
           .find(mongoQuery)
-          .sort({ createdAt: -1 })
+          .sort({ userCreatedAt: -1 })
           .skip(project === 'oentregador' ? offset : 0)
           .limit(project === 'oentregador' ? parseInt(limit) : 100)
           .toArray();
@@ -1615,10 +1615,10 @@ app.get('/api/users', async (req, res) => {
 
         const mappedOeUsers = oeUsers.map(u => ({
           id: u._id.toString(),
-          email: u.email,
-          email_verified: u.emailVerified || false,
-          created_at: u.createdAt,
-          last_login_at: u.lastLoginAt,
+          email: u.userEmail,
+          email_verified: u.isStep01VerifyEmailCompleted || false,
+          created_at: u.userCreatedAt,
+          last_login_at: u.userLastLoginAt,
           project_name: 'oentregador',
           subscription_status: null,
           plan_name: null,
