@@ -58,8 +58,8 @@ async function getUmamiVisitors(websiteId, token, startDate, endDate) {
     console.log(`[Umami] Response for ${websiteId}:`, JSON.stringify(data).substring(0, 200));
 
     return {
-      visitors: data.visitors?.value || data.uniques?.value || 0,
-      pageviews: data.pageviews?.value || data.views?.value || 0
+      visitors: typeof data.visitors === 'number' ? data.visitors : (data.visitors?.value || 0),
+      pageviews: typeof data.pageviews === 'number' ? data.pageviews : (data.pageviews?.value || 0)
     };
   } catch (err) {
     console.error('[Umami] Fetch error:', err.message);
