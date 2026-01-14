@@ -847,6 +847,71 @@ function playCashSound() {
 }
 
 // =============================================================================
+// MONEY ANIMATION
+// =============================================================================
+function playMoneyAnimation(message = 'Nova Venda!') {
+  // Remove existing animation if any
+  const existing = document.querySelector('.money-animation-container');
+  if (existing) existing.remove();
+
+  // Create container
+  const container = document.createElement('div');
+  container.className = 'money-animation-container';
+  container.innerHTML = `
+    <div class="safe-box">
+      <div class="safe-slot"></div>
+      <div class="money-bill"></div>
+      <div class="money-bill"></div>
+      <div class="money-bill"></div>
+      <div class="coin"></div>
+      <div class="coin"></div>
+      <div class="coin"></div>
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+      <div class="sparkle"></div>
+      <div class="sale-amount">${message}</div>
+    </div>
+  `;
+  document.body.appendChild(container);
+
+  const safeBox = container.querySelector('.safe-box');
+  const bills = container.querySelectorAll('.money-bill');
+  const coins = container.querySelectorAll('.coin');
+  const sparkles = container.querySelectorAll('.sparkle');
+  const saleAmount = container.querySelector('.sale-amount');
+
+  // Animate safe appearing
+  setTimeout(() => safeBox.classList.add('active'), 50);
+
+  // Animate bills falling
+  setTimeout(() => {
+    bills.forEach(bill => bill.classList.add('falling'));
+  }, 300);
+
+  // Animate coins falling
+  setTimeout(() => {
+    coins.forEach(coin => coin.classList.add('falling'));
+  }, 400);
+
+  // Animate sparkles
+  setTimeout(() => {
+    sparkles.forEach(sparkle => sparkle.classList.add('animate'));
+  }, 600);
+
+  // Show sale amount
+  setTimeout(() => {
+    saleAmount.classList.add('show');
+  }, 500);
+
+  // Remove animation after completion
+  setTimeout(() => {
+    safeBox.classList.remove('active');
+    setTimeout(() => container.remove(), 500);
+  }, 3500);
+}
+
+// =============================================================================
 // NEW CUSTOMER DETECTION
 // =============================================================================
 let previousData = {
@@ -872,11 +937,13 @@ async function checkForNewCustomers() {
         console.log(`NOVO CLIENTE PAGANTE! +${newPaidSubs} assinantes, +${newPurchases} compras`);
         playCashSound();
 
-        if (Notification.permission === 'granted') {
-          const msgs = [];
-          if (newPaidSubs > 0) msgs.push(`${newPaidSubs} nova(s) assinatura(s)`);
-          if (newPurchases > 0) msgs.push(`${newPurchases} nova(s) compra(s)`);
+        // Build message for animation
+        const msgs = [];
+        if (newPaidSubs > 0) msgs.push(`+${newPaidSubs} assinatura(s)`);
+        if (newPurchases > 0) msgs.push(`+${newPurchases} compra(s)`);
+        playMoneyAnimation(msgs.join(' '));
 
+        if (Notification.permission === 'granted') {
           new Notification('Dinheiro Entrando!', {
             body: msgs.join(', '),
             icon: '💰'
