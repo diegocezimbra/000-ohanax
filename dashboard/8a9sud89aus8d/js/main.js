@@ -822,7 +822,7 @@ document.addEventListener('keydown', unlockAudio, { once: true });
 // Sound URLs - DINHEIRO ENTRANDO NA CONTA!
 const SOUND_URLS = {
   chaChing: 'sounds/cash.mp3',
-  applause: 'https://assets.mixkit.co/active_storage/sfx/2194/2194-preview.mp3'
+  applause: 'sounds/applause.mp3'
 };
 
 // Preload sounds
