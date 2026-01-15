@@ -204,24 +204,34 @@ export async function loadProjectPage(project) {
         if (paidPercentEl) paidPercentEl.textContent = percentage + '%';
       } catch (e) { console.error('Error loading scan stats:', e); }
 
-      // Revenue section - Assinaturas e One-Time
+      // Revenue section - Assinaturas e One-Time (dados do billing)
       try {
+        // Carregar dados de pagamento do billing
+        const payingData = await fetch('/api/security/paying?limit=10').then(r => r.json());
+        const summary = payingData.summary || {};
+
+        // Usar dados do summary se disponíveis, senão usar os valores já carregados
+        const actualMrr = summary.mrr || mrr;
+        const actualActiveSubs = summary.active_subs || activeSubs;
+        const actualOnetimeRevenue = summary.onetime_revenue || oneTimeRevenue;
+        const actualOnetimeCount = summary.onetime_count || oneTimeCount;
+
         // Popular a seção de receita com dados corretos
         const subRevenueEl = document.getElementById('security-sub-revenue');
         const subsInfoEl = document.getElementById('security-subs');
+        const totalRevenueEl = document.getElementById('security-total-revenue');
 
-        if (subRevenueEl) subRevenueEl.textContent = formatCurrency(mrr);
-        if (subsInfoEl) subsInfoEl.textContent = activeSubs + ' assinantes ativos';
+        if (subRevenueEl) subRevenueEl.textContent = formatCurrency(actualMrr);
+        if (subsInfoEl) subsInfoEl.textContent = actualActiveSubs + ' assinantes ativos';
+        if (totalRevenueEl) totalRevenueEl.textContent = formatCurrency(actualMrr + actualOnetimeRevenue);
 
-        // Carregar assinantes recentes e compradores one-time
-        const payingData = await fetch('/api/security/paying?limit=5').then(r => r.json());
         const tableEl = document.getElementById('security-table');
 
         if (tableEl) {
           const subs = payingData.subscribers || [];
           const onetime = payingData.onetime_purchases || [];
 
-          // Combinar e ordenar por data
+          // Combinar assinantes e compras one-time
           const allTransactions = [
             ...subs.map(s => ({
               email: s.email,
@@ -234,11 +244,11 @@ export async function loadProjectPage(project) {
             })),
             ...onetime.map(o => ({
               email: o.email,
-              name: o.package_name || 'Pacote',
+              name: o.package_name || 'Pacote Avulso',
               value: o.amount || 0,
               type: 'One-Time',
               status: o.status,
-              created_at: o.created_at,
+              created_at: o.paid_at || o.created_at,
               isOnetime: true
             }))
           ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 10);
@@ -259,14 +269,13 @@ export async function loadProjectPage(project) {
         }
 
         // Mostrar percentual one-time sobre total
-        const totalRev = mrr + oneTimeRevenue;
+        const totalRev = actualMrr + actualOnetimeRevenue;
         if (totalRev > 0) {
-          const mrrPercent = ((mrr / totalRev) * 100).toFixed(0);
-          const oneTimePercent = ((oneTimeRevenue / totalRev) * 100).toFixed(0);
+          const oneTimePercent = ((actualOnetimeRevenue / totalRev) * 100).toFixed(0);
 
           const oneTimeCountEl = document.getElementById('security-onetime-count');
           if (oneTimeCountEl) {
-            oneTimeCountEl.textContent = `${oneTimeCount} pacotes (${oneTimePercent}% da receita)`;
+            oneTimeCountEl.textContent = `${actualOnetimeCount} pacotes (${oneTimePercent}% da receita)`;
           }
         }
       } catch (e) { console.error('Error loading revenue section:', e); }
@@ -542,12 +551,14 @@ export async function loadProjectPage(project) {
         const purchasesEl = document.getElementById('scan-funnel-purchases');
         const purchasesPctEl = document.getElementById('scan-funnel-purchases-pct');
 
-        if (pageviewsEl) pageviewsEl.textContent = funnelData.funnel?.pageViews || 0;
-        if (engagementEl) engagementEl.textContent = funnelData.funnel?.formEngagement || 0;
-        if (engagementPctEl) engagementPctEl.textContent = (funnelData.conversions?.pageToEngagement || 0) + '% engajaram';
-        if (startedEl) startedEl.textContent = funnelData.funnel?.trialStarted || 0;
-        if (startedPctEl) startedPctEl.textContent = (funnelData.conversions?.engagementToTrial || 0) + '% iniciaram';
-        if (purchasesEl) purchasesEl.textContent = funnelData.funnel?.purchaseCompleted || 0;
+        // Mapear nomes do backend para o frontend
+        const funnel = funnelData.funnel || {};
+        if (pageviewsEl) pageviewsEl.textContent = funnel.pageView || funnel.totalPageviews || 0;
+        if (engagementEl) engagementEl.textContent = funnel.formStart || 0;
+        if (engagementPctEl) engagementPctEl.textContent = (funnelData.conversions?.pageToFormStart || 0) + '% engajaram';
+        if (startedEl) startedEl.textContent = funnel.formSubmit || 0;
+        if (startedPctEl) startedPctEl.textContent = (funnelData.conversions?.formStartToSubmit || 0) + '% iniciaram';
+        if (purchasesEl) purchasesEl.textContent = funnel.checkoutSuccess || 0;
         if (purchasesPctEl) purchasesPctEl.textContent = (funnelData.conversions?.overallConversion || 0) + '% conversao';
 
         // Update details
@@ -558,12 +569,12 @@ export async function loadProjectPage(project) {
         const registerClickEl = document.getElementById('scan-funnel-register-click');
         const scanErrorsEl = document.getElementById('scan-funnel-scan-errors');
 
-        if (paymentPageEl) paymentPageEl.textContent = funnelData.funnel?.paymentPageView || 0;
-        if (checkoutEl) checkoutEl.textContent = funnelData.funnel?.initiateCheckout || 0;
-        if (emailErrorsEl) emailErrorsEl.textContent = funnelData.funnel?.emailValidationFailed || 0;
-        if (existingUsersEl) existingUsersEl.textContent = funnelData.funnel?.existingUserRedirect || 0;
-        if (registerClickEl) registerClickEl.textContent = funnelData.funnel?.registerClick || 0;
-        if (scanErrorsEl) scanErrorsEl.textContent = funnelData.funnel?.scanError || 0;
+        if (paymentPageEl) paymentPageEl.textContent = funnel.resultView || 0;
+        if (checkoutEl) checkoutEl.textContent = funnel.checkoutStart || 0;
+        if (emailErrorsEl) emailErrorsEl.textContent = 0; // Não temos esse evento específico
+        if (existingUsersEl) existingUsersEl.textContent = 0; // Não temos esse evento específico
+        if (registerClickEl) registerClickEl.textContent = funnel.clickRegister || 0;
+        if (scanErrorsEl) scanErrorsEl.textContent = funnel.scanError || 0;
 
         // Render dropouts list
         const dropoutsEl = document.getElementById('scan-funnel-dropouts');

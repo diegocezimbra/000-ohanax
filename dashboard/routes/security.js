@@ -557,37 +557,44 @@ router.get('/scan-funnel', async (req, res) => {
       WHERE created_at >= $1 AND status IN ('completed', 'claimed')
     `, [startDate]);
 
-    // Build funnel data - usando nomes corretos dos eventos do Security
+    // Build funnel data - usando nomes CORRETOS dos eventos do Security frontend
+    // Nomes reais: funnel_scan_*, funnel_result_*, funnel_payment_*
     const funnel = {
-      // Step 1: Page View - usuário acessou /scan
-      pageView: events['funnel_trial_page_view'] || events['page_view_trial'] || visitorData.pageviews || 0,
+      // Step 1: Page View - usuário acessou /scan (scan/index.html)
+      pageView: events['funnel_scan_page_view'] || events['funnel_trial_page_view'] || visitorData.pageviews || 0,
 
       // Step 2: Form Start - usuário começou a preencher o formulário
-      formStart: events['funnel_trial_form_start'] || events['form_start_trial'] || 0,
+      formStart: events['funnel_scan_form_start'] || events['funnel_trial_form_start'] || 0,
 
       // Step 3: Form Submit - usuário submeteu o formulário
-      formSubmit: events['funnel_trial_form_submit'] || parseInt(trialsStarted.rows[0]?.total) || 0,
+      formSubmit: events['funnel_scan_form_submit'] || events['funnel_trial_form_submit'] || parseInt(trialsStarted.rows[0]?.total) || 0,
 
       // Step 4: Scan Started - scan iniciou processamento
-      scanStarted: events['funnel_trial_scan_started'] || 0,
+      scanStarted: events['funnel_scan_started'] || events['funnel_trial_scan_started'] || 0,
 
-      // Step 5: Result View - usuário viu o resultado do scan
-      resultView: events['funnel_trial_result_view'] || parseInt(trialsCompleted.rows[0]?.total) || 0,
+      // Step 5: Result View - usuário viu o resultado do scan (scan/result.html)
+      resultView: events['funnel_result_page_view'] || events['funnel_trial_result_view'] || parseInt(trialsCompleted.rows[0]?.total) || 0,
 
       // Step 6a: Click Register - usuário clicou para se registrar
-      clickRegister: events['funnel_trial_click_register'] || 0,
+      clickRegister: events['cta_result_click_register'] || events['funnel_trial_click_register'] || 0,
 
       // Step 6b: Click Login - usuário clicou para fazer login
-      clickLogin: events['funnel_trial_click_login'] || 0,
+      clickLogin: events['cta_result_click_login'] || events['funnel_trial_click_login'] || 0,
 
-      // Step 7: Checkout Start - usuário iniciou checkout
-      checkoutStart: events['conversion_checkout_start'] || 0,
+      // Step 7: Payment Page View - usuário viu página de pagamento
+      paymentPageView: events['funnel_payment_page_view'] || 0,
 
-      // Step 8: Checkout Success - pagamento concluído
-      checkoutSuccess: events['conversion_checkout_success'] || parseInt(trialsPaid.rows[0]?.total) || 0,
+      // Step 8: Click Unlock - usuário clicou para desbloquear
+      clickUnlock: events['funnel_payment_click_unlock'] || 0,
+
+      // Step 9: Checkout Created - checkout foi criado
+      checkoutStart: events['funnel_payment_checkout_created'] || events['conversion_checkout_start'] || 0,
+
+      // Step 10: Checkout Success - pagamento concluído
+      checkoutSuccess: events['conversion_payment_success'] || events['conversion_checkout_success'] || parseInt(trialsPaid.rows[0]?.total) || 0,
 
       // Erros
-      scanError: events['error_scan'] || events['feature_scan_failed'] || 0,
+      scanError: events['error_scan_api'] || events['error_scan_validation'] || events['error_scan'] || 0,
 
       // Métricas gerais
       visitors: visitorData.visitors || 0,
@@ -657,15 +664,17 @@ router.get('/scan-funnel', async (req, res) => {
     };
 
     // Funil como array para facilitar visualização
+    // Nomes corretos dos eventos usados pelo Security frontend
     const funnelSteps = [
-      { step: 1, name: 'Page View', event: 'funnel_trial_page_view', count: funnel.pageView },
-      { step: 2, name: 'Form Start', event: 'funnel_trial_form_start', count: funnel.formStart },
-      { step: 3, name: 'Form Submit', event: 'funnel_trial_form_submit', count: funnel.formSubmit },
-      { step: 4, name: 'Scan Started', event: 'funnel_trial_scan_started', count: funnel.scanStarted },
-      { step: 5, name: 'Result View', event: 'funnel_trial_result_view', count: funnel.resultView },
-      { step: 6, name: 'Action (Register/Login)', event: 'funnel_trial_click_*', count: funnel.clickRegister + funnel.clickLogin },
-      { step: 7, name: 'Checkout Start', event: 'conversion_checkout_start', count: funnel.checkoutStart },
-      { step: 8, name: 'Purchase Complete', event: 'conversion_checkout_success', count: funnel.checkoutSuccess },
+      { step: 1, name: 'Page View', event: 'funnel_scan_page_view', count: funnel.pageView },
+      { step: 2, name: 'Form Start', event: 'funnel_scan_form_start', count: funnel.formStart },
+      { step: 3, name: 'Form Submit', event: 'funnel_scan_form_submit', count: funnel.formSubmit },
+      { step: 4, name: 'Scan Started', event: 'funnel_scan_started', count: funnel.scanStarted },
+      { step: 5, name: 'Result View', event: 'funnel_result_page_view', count: funnel.resultView },
+      { step: 6, name: 'Payment Page', event: 'funnel_payment_page_view', count: funnel.paymentPageView },
+      { step: 7, name: 'Click Unlock', event: 'funnel_payment_click_unlock', count: funnel.clickUnlock },
+      { step: 8, name: 'Checkout Created', event: 'funnel_payment_checkout_created', count: funnel.checkoutStart },
+      { step: 9, name: 'Purchase Complete', event: 'conversion_payment_success', count: funnel.checkoutSuccess },
     ];
 
     // Descrições para leigos entenderem cada métrica
@@ -673,14 +682,16 @@ router.get('/scan-funnel', async (req, res) => {
       _about: 'Este funil mostra a jornada do usuário desde que acessa a página de scan gratuito até efetuar o pagamento. Os dados vêm do Umami (ferramenta de analytics) que rastreia cliques e ações no site.',
 
       funnel: {
-        pageView: 'Quantas pessoas abriram a página do scan gratuito. É o ponto de entrada do funil.',
+        pageView: 'Quantas pessoas abriram a página do scan gratuito (/scan). É o ponto de entrada do funil.',
         formStart: 'Quantas pessoas começaram a preencher o formulário (clicaram em algum campo). Mostra interesse inicial.',
         formSubmit: 'Quantas pessoas enviaram o formulário completo para iniciar o scan.',
         scanStarted: 'Quantos scans efetivamente começaram a rodar no servidor.',
-        resultView: 'Quantas pessoas viram o resultado do scan (a página com as vulnerabilidades encontradas).',
+        resultView: 'Quantas pessoas viram o resultado do scan (a página /scan/result com as vulnerabilidades).',
         clickRegister: 'Quantas pessoas clicaram no botão "Criar conta gratuita" após ver o resultado.',
         clickLogin: 'Quantas pessoas clicaram em "Já tenho conta - Fazer login" após ver o resultado.',
-        checkoutStart: 'Quantas pessoas iniciaram o processo de pagamento.',
+        paymentPageView: 'Quantas pessoas viram a página de pagamento (/scan/payment).',
+        clickUnlock: 'Quantas pessoas clicaram em "Desbloquear" na página de pagamento.',
+        checkoutStart: 'Quantas pessoas iniciaram o processo de checkout (foram para a página de pagamento).',
         checkoutSuccess: 'Quantas pessoas efetivamente pagaram e concluíram a compra.',
         scanError: 'Quantos scans falharam por erro técnico.',
         visitors: 'Total de visitantes únicos na página.',
@@ -1018,7 +1029,7 @@ router.get('/all-scans', async (req, res) => {
           ts.frontend_url,
           ts.backend_url,
           ts.project_name,
-          ts.report_id,
+          ts.report_id::text as report_id,
           ts.status,
           ts.payment_status,
           CASE
@@ -1028,9 +1039,9 @@ router.get('/all-scans', async (req, res) => {
           END as payment_label,
           ts.created_at,
           NULL::timestamp as completed_at,
-          ts.claimed_by_user_id,
-          NULL as owner_email,
-          NULL as owner_name
+          ts.claimed_by_user_id::text as claimed_by_user_id,
+          NULL::text as owner_email,
+          NULL::text as owner_name
         FROM security_trial_sessions ts
         WHERE ${whereTrialClause}
       `;
@@ -1062,7 +1073,7 @@ router.get('/all-scans', async (req, res) => {
           'Usuario Pago' as payment_label,
           sar.created_at,
           sar.completed_at,
-          sau.id as claimed_by_user_id,
+          sau.id::text as claimed_by_user_id,
           sau.email as owner_email,
           sau.name as owner_name
         FROM security_audit_reports sar
@@ -1155,48 +1166,107 @@ router.get('/all-scans', async (req, res) => {
 });
 
 // =============================================================================
-// GET /api/security/paying - Assinantes e compradores one-time recentes
+// GET /api/security/paying - Dados de pagamento do projeto Security
+// Busca do banco de billing (subscriptions + one_time_purchases)
 // =============================================================================
 router.get('/paying', async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit) || 10;
 
-    // Assinantes ativos/trialing
-    const subscribersQuery = await db.security.query(`
+    // Buscar ID do projeto Security no billing
+    const projectResult = await db.billing.query(`
+      SELECT id FROM projects WHERE name = 'security-audit' LIMIT 1
+    `);
+
+    if (projectResult.rows.length === 0) {
+      return res.json({
+        subscribers: [],
+        onetime_purchases: [],
+        summary: { mrr: 0, onetime_revenue: 0, active_subs: 0, onetime_count: 0 }
+      });
+    }
+
+    const projectId = projectResult.rows[0].id;
+
+    // Assinantes ativos do Security (subscriptions)
+    const subscribersQuery = await db.billing.query(`
       SELECT
-        u.email,
-        u.name,
-        s.plan_name,
-        s.price as mrr,
+        s.external_user_email as email,
         s.status,
+        pl.name as plan_name,
+        CASE pl.interval
+          WHEN 'monthly' THEN pl.price_cents
+          WHEN 'yearly' THEN pl.price_cents / 12
+          WHEN 'weekly' THEN pl.price_cents * 4
+          ELSE pl.price_cents
+        END / 100.0 as mrr,
         s.created_at
-      FROM security_subscriptions s
-      JOIN security_admin_users u ON s.user_id = u.id
-      WHERE s.status IN ('active', 'trialing')
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      WHERE s.project_id = $1
+        AND s.status IN ('active', 'trialing')
       ORDER BY s.created_at DESC
-      LIMIT $1
-    `, [limit]);
+      LIMIT $2
+    `, [projectId, limit]);
 
-    // Compradores one-time (do security_onetime_packages)
-    const onetimeQuery = await db.security.query(`
+    // Compras avulsas do Security (one_time_purchases)
+    const onetimeQuery = await db.billing.query(`
       SELECT
-        u.email,
-        u.name,
-        op.name as package_name,
-        pu.amount,
-        pu.status,
-        pu.created_at
-      FROM security_package_purchases pu
-      JOIN security_admin_users u ON pu.user_id = u.id
-      JOIN security_onetime_packages op ON pu.package_id = op.id
-      WHERE pu.status = 'paid'
-      ORDER BY pu.created_at DESC
-      LIMIT $1
-    `, [limit]);
+        otp.external_user_email as email,
+        otp.package_name,
+        otp.amount_cents / 100.0 as amount,
+        otp.status,
+        otp.created_at,
+        otp.paid_at
+      FROM one_time_purchases otp
+      WHERE otp.project_id = $1
+        AND otp.status = 'paid'
+      ORDER BY otp.paid_at DESC NULLS LAST, otp.created_at DESC
+      LIMIT $2
+    `, [projectId, limit]);
+
+    // Resumo de receita do Security
+    const summaryQuery = await db.billing.query(`
+      SELECT
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as mrr,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active_subs,
+        COUNT(CASE WHEN s.status = 'trialing' THEN 1 END) as trialing_subs
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      WHERE s.project_id = $1
+    `, [projectId]);
+
+    const onetimeSummaryQuery = await db.billing.query(`
+      SELECT
+        COUNT(*) as onetime_count,
+        COALESCE(SUM(amount_cents), 0) / 100.0 as onetime_revenue
+      FROM one_time_purchases
+      WHERE project_id = $1 AND status = 'paid'
+    `, [projectId]);
+
+    const summary = {
+      mrr: parseFloat(summaryQuery.rows[0]?.mrr) || 0,
+      active_subs: parseInt(summaryQuery.rows[0]?.active_subs) || 0,
+      trialing_subs: parseInt(summaryQuery.rows[0]?.trialing_subs) || 0,
+      onetime_count: parseInt(onetimeSummaryQuery.rows[0]?.onetime_count) || 0,
+      onetime_revenue: parseFloat(onetimeSummaryQuery.rows[0]?.onetime_revenue) || 0
+    };
 
     res.json({
       subscribers: subscribersQuery.rows,
       onetime_purchases: onetimeQuery.rows,
+      summary
     });
   } catch (err) {
     console.error('Error fetching paying data:', err);
