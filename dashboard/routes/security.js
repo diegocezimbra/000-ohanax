@@ -1027,7 +1027,7 @@ router.get('/all-scans', async (req, res) => {
             ELSE 'Pendente'
           END as payment_label,
           ts.created_at,
-          ts.completed_at,
+          NULL::timestamp as completed_at,
           ts.claimed_by_user_id,
           NULL as owner_email,
           NULL as owner_name
