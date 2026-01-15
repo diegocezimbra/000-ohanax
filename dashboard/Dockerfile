@@ -6,6 +6,8 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 COPY server.js db.js ./
+COPY routes/ ./routes/
+COPY utils/ ./utils/
 COPY 8a9sud89aus8d/ ./8a9sud89aus8d/
 
 EXPOSE 3333
