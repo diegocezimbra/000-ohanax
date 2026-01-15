@@ -10,6 +10,7 @@ import billingRoutes from './routes/billing.js';
 import securityRoutes from './routes/security.js';
 import oentregadorRoutes from './routes/oentregador.js';
 import overviewRoutes from './routes/overview.js';
+import adsRoutes from './routes/ads.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -161,6 +162,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/security', securityRoutes);
 app.use('/api/oentregador', oentregadorRoutes);
+app.use('/api/ads', adsRoutes);
 app.use('/api', overviewRoutes);
 
 // =============================================================================

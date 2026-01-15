@@ -20,6 +20,7 @@ import {
   loadAuthAuditStats, loadAuthLoginsChart, loadAuthLogins, loadAuthSecurityEvents, loadAuthAdminActions,
   loadBillingAuditData
 } from './pages/audit.js';
+import { initAdsSecurityModule, loadAdsSecurityPage, filterAdsTable } from './pages/ads-security.js';
 
 // =============================================================================
 // GLOBAL STATE
@@ -67,6 +68,11 @@ window.debounceAllScansSearch = debounceAllScansSearch;
 // All scans list
 window.loadAllScans = loadAllScans;
 
+// Ads Security
+window.loadAdsSecurityPage = loadAdsSecurityPage;
+window.filterAdsTable = filterAdsTable;
+window.loadAdsData = loadAdsSecurityPage;
+
 // =============================================================================
 // INITIALIZE PROJECT MODULE
 // =============================================================================
@@ -85,6 +91,16 @@ initProjectModule({
   loadAuthLogins,
   loadAuthSecurityEvents,
   loadAuthAdminActions
+});
+
+// Initialize Ads Security module
+initAdsSecurityModule({
+  charts,
+  chartTheme,
+  formatCurrency,
+  formatDate,
+  formatDateTime,
+  formatNumber
 });
 
 // =============================================================================
@@ -131,6 +147,9 @@ function loadPageData(pageName) {
       break;
     case 'revenue':
       loadRevenuePage();
+      break;
+    case 'ads-security':
+      loadAdsSecurityPage();
       break;
     default:
       loadProjectPage(pageName);

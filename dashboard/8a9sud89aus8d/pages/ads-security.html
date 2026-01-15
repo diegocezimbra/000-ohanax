@@ -1,0 +1,282 @@
+<div class="header">
+  <h2><span class="service-badge ads">ADS</span> Security Ads Analysis</h2>
+  <div class="header-actions">
+    <div class="date-filter">
+      <select id="ads-security-period" onchange="onPeriodChange('ads-security')">
+        <option value="7">Ultimos 7 dias</option>
+        <option value="14">Ultimos 14 dias</option>
+        <option value="30" selected>Ultimos 30 dias</option>
+        <option value="60">Ultimos 60 dias</option>
+        <option value="90">Ultimos 90 dias</option>
+        <option value="custom">Personalizado</option>
+      </select>
+      <div class="date-range-inputs" id="ads-security-custom-dates" style="display: none;">
+        <input type="date" id="ads-security-start-date">
+        <span>ate</span>
+        <input type="date" id="ads-security-end-date">
+      </div>
+    </div>
+    <button class="refresh-btn" onclick="loadProjectPage('ads-security')">Atualizar</button>
+  </div>
+</div>
+
+<!-- ============================================================================= -->
+<!-- OVERVIEW - KPIs principais dos anuncios -->
+<!-- ============================================================================= -->
+<div class="cards">
+  <div class="card highlight">
+    <div class="card-title">Gasto Total <span class="info-tooltip" data-tooltip="Total investido em anuncios no periodo selecionado."></span></div>
+    <div class="card-value" id="ads-total-spend">R$ --</div>
+    <div class="card-subtitle">Investimento</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Impressoes <span class="info-tooltip" data-tooltip="Numero total de vezes que os anuncios foram exibidos."></span></div>
+    <div class="card-value" id="ads-total-impressions">--</div>
+    <div class="card-subtitle">Exibicoes</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Cliques <span class="info-tooltip" data-tooltip="Total de cliques nos anuncios."></span></div>
+    <div class="card-value" id="ads-total-clicks">--</div>
+    <div class="card-subtitle">Interacoes</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Leads <span class="info-tooltip tooltip-left" data-tooltip="Total de conversoes/leads gerados pelos anuncios."></span></div>
+    <div class="card-value" id="ads-total-leads" style="color: #22c55e;">--</div>
+    <div class="card-subtitle">Conversoes</div>
+  </div>
+</div>
+
+<!-- ============================================================================= -->
+<!-- METRICAS CHAVE - CTR, CPC, CPL -->
+<!-- ============================================================================= -->
+<div class="cards">
+  <div class="card">
+    <div class="card-title">CTR <span class="info-tooltip" data-tooltip="Click-Through Rate - Taxa de cliques. Cliques / Impressoes."></span></div>
+    <div class="card-value" id="ads-ctr">--%</div>
+    <div class="card-subtitle">Taxa de cliques</div>
+  </div>
+  <div class="card">
+    <div class="card-title">CPC <span class="info-tooltip" data-tooltip="Custo Por Clique - Quanto paga por cada clique."></span></div>
+    <div class="card-value" id="ads-cpc">R$ --</div>
+    <div class="card-subtitle">Custo por clique</div>
+  </div>
+  <div class="card">
+    <div class="card-title">CPM <span class="info-tooltip" data-tooltip="Custo Por Mil impressoes."></span></div>
+    <div class="card-value" id="ads-cpm">R$ --</div>
+    <div class="card-subtitle">Custo por 1000 imp</div>
+  </div>
+  <div class="card highlight">
+    <div class="card-title">CPL <span class="info-tooltip tooltip-left" data-tooltip="Custo Por Lead - Metrica mais importante! Quanto paga por cada lead."></span></div>
+    <div class="card-value" id="ads-cpl" style="color: #f59e0b;">R$ --</div>
+    <div class="card-subtitle">Custo por lead</div>
+  </div>
+</div>
+
+<!-- ============================================================================= -->
+<!-- STATUS DOS ANUNCIOS - Visao rapida da saude -->
+<!-- ============================================================================= -->
+<div class="section">
+  <div class="section-title">Status dos Anuncios <span class="info-tooltip" data-tooltip="Distribuicao dos anuncios por status do Auto-Optimizer."></span></div>
+
+  <div class="cards" style="grid-template-columns: repeat(6, 1fr);">
+    <div class="card" style="border-left: 3px solid #3b82f6;">
+      <div class="card-title" style="font-size: 11px;">Learning</div>
+      <div class="card-value" id="ads-status-learning" style="font-size: 24px;">--</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #22c55e;">
+      <div class="card-title" style="font-size: 11px;">Healthy</div>
+      <div class="card-value" id="ads-status-healthy" style="font-size: 24px; color: #22c55e;">--</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #f59e0b;">
+      <div class="card-title" style="font-size: 11px;">Warning</div>
+      <div class="card-value" id="ads-status-warning" style="font-size: 24px; color: #f59e0b;">--</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #ef4444;">
+      <div class="card-title" style="font-size: 11px;">Critical</div>
+      <div class="card-value" id="ads-status-critical" style="font-size: 24px; color: #ef4444;">--</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #8b5cf6;">
+      <div class="card-title" style="font-size: 11px;">Scaling</div>
+      <div class="card-value" id="ads-status-scaling" style="font-size: 24px; color: #8b5cf6;">--</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #6b7280;">
+      <div class="card-title" style="font-size: 11px;">Paused</div>
+      <div class="card-value" id="ads-status-paused" style="font-size: 24px; color: #6b7280;">--</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================================= -->
+<!-- RECOMENDACOES DO AUTO-OPTIMIZER -->
+<!-- ============================================================================= -->
+<div class="section">
+  <div class="section-title" style="display: flex; align-items: center; gap: 12px;">
+    <span>Recomendacoes</span>
+    <span style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;" id="ads-recommendations-high">0</span>
+    <span style="font-size: 12px; color: #94a3b8;">acoes prioritarias</span>
+    <span class="info-tooltip" data-tooltip="Recomendacoes do Auto-Optimizer baseadas nas regras de Stop Loss, Accelerator e Explorer."></span>
+  </div>
+
+  <div id="ads-recommendations-list" style="max-height: 400px; overflow-y: auto;">
+    <div style="color: #64748b; text-align: center; padding: 40px;">Carregando recomendacoes...</div>
+  </div>
+</div>
+
+<!-- ============================================================================= -->
+<!-- GRAFICO DE PERFORMANCE DIARIA -->
+<!-- ============================================================================= -->
+<div class="section">
+  <div class="section-title">Performance Diaria <span class="info-tooltip" data-tooltip="Evolucao do gasto, cliques e leads por dia."></span></div>
+  <div id="ads-daily-chart" style="height: 280px;"></div>
+</div>
+
+<!-- ============================================================================= -->
+<!-- TABELA DE ANUNCIOS -->
+<!-- ============================================================================= -->
+<div class="section">
+  <div class="section-title" style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span>Todos os Anuncios</span>
+      <span style="background: #334155; padding: 2px 8px; border-radius: 4px; font-size: 12px;" id="ads-total-count">0</span>
+      <span class="info-tooltip" data-tooltip="Lista de todos os anuncios ativos na campanha com metricas detalhadas."></span>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <select id="ads-filter-status" onchange="filterAdsTable()" style="font-size: 12px; padding: 4px 8px;">
+        <option value="">Todos Status</option>
+        <option value="LEARNING">Learning</option>
+        <option value="HEALTHY">Healthy</option>
+        <option value="WARNING">Warning</option>
+        <option value="CRITICAL">Critical</option>
+        <option value="SCALING">Scaling</option>
+        <option value="PAUSED">Paused</option>
+      </select>
+      <button class="refresh-btn" onclick="loadAdsData()">Atualizar</button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Nome do Anuncio</th>
+          <th>Gasto</th>
+          <th>Impressoes</th>
+          <th>Cliques</th>
+          <th>CTR</th>
+          <th>CPC</th>
+          <th>Leads</th>
+          <th>CPL</th>
+          <th>Recomendacao</th>
+        </tr>
+      </thead>
+      <tbody id="ads-table">
+        <tr><td colspan="10" class="loading">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================================= -->
+<!-- CAMPANHAS -->
+<!-- ============================================================================= -->
+<div class="section">
+  <div class="section-title">Campanhas <span class="info-tooltip" data-tooltip="Lista de campanhas da conta de anuncios."></span></div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Status</th>
+          <th>Objetivo</th>
+          <th>Budget Diario</th>
+          <th>Budget Restante</th>
+          <th>Criado em</th>
+        </tr>
+      </thead>
+      <tbody id="ads-campaigns-table">
+        <tr><td colspan="6" class="loading">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================================= -->
+<!-- REGRAS DO AUTO-OPTIMIZER (referencia) -->
+<!-- ============================================================================= -->
+<details class="section" style="cursor: pointer;">
+  <summary class="section-title" style="list-style: none; display: flex; align-items: center; gap: 8px;">
+    <span style="transition: transform 0.2s;">&#9654;</span>
+    <span>Regras do Auto-Optimizer</span>
+    <span style="font-size: 12px; color: #64748b; font-weight: normal;">— clique para expandir</span>
+  </summary>
+
+  <div style="margin-top: 16px;">
+    <div class="grid-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+      <!-- Stop Loss -->
+      <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 16px;">
+        <div style="font-size: 14px; font-weight: 600; color: #ef4444; margin-bottom: 12px;">Stop Loss</div>
+        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">Pausar anuncios com baixa performance</div>
+        <div style="font-size: 11px; color: #64748b;">
+          <div style="margin-bottom: 4px;">• CTR < 0.5% apos 1.000 imp</div>
+          <div style="margin-bottom: 4px;">• CPL > 3x media da campanha</div>
+          <div style="margin-bottom: 4px;">• Gasto > R$50 sem conversao</div>
+        </div>
+      </div>
+
+      <!-- Accelerator -->
+      <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; padding: 16px;">
+        <div style="font-size: 14px; font-weight: 600; color: #8b5cf6; margin-bottom: 12px;">Accelerator</div>
+        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">Escalar anuncios de alta performance</div>
+        <div style="font-size: 11px; color: #64748b;">
+          <div style="margin-bottom: 4px;">• CTR > 2%</div>
+          <div style="margin-bottom: 4px;">• CPL < 0.5x media da campanha</div>
+          <div style="margin-bottom: 4px;">• ROAS > 3x</div>
+          <div style="margin-bottom: 4px;">• Min 5 conversoes</div>
+        </div>
+      </div>
+
+      <!-- Explorer -->
+      <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 16px;">
+        <div style="font-size: 14px; font-weight: 600; color: #3b82f6; margin-bottom: 12px;">Explorer</div>
+        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">Monitorar anuncios em aprendizado</div>
+        <div style="font-size: 11px; color: #64748b;">
+          <div style="margin-bottom: 4px;">• < 500 impressoes</div>
+          <div style="margin-bottom: 4px;">• < 3 dias ativo</div>
+          <div style="margin-bottom: 4px;">• Aguardando dados</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 16px; padding: 12px; background: #1e293b; border-radius: 8px;">
+      <div style="font-size: 12px; font-weight: 600; color: #f1f5f9; margin-bottom: 8px;">Legenda de Status</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 11px;">
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 2px; background: #3b82f6;"></span>
+          <span style="color: #94a3b8;">LEARNING - Coletando dados</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 2px; background: #22c55e;"></span>
+          <span style="color: #94a3b8;">HEALTHY - Desempenho OK</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 2px; background: #f59e0b;"></span>
+          <span style="color: #94a3b8;">WARNING - Atencao necessaria</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 2px; background: #ef4444;"></span>
+          <span style="color: #94a3b8;">CRITICAL - Considerar pausar</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 2px; background: #8b5cf6;"></span>
+          <span style="color: #94a3b8;">SCALING - Candidato a escala</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 2px; background: #6b7280;"></span>
+          <span style="color: #94a3b8;">PAUSED - Pausado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</details>
