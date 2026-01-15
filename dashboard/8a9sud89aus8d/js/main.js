@@ -137,6 +137,48 @@ window.loadPage = loadPage;
 window.loadPageData = loadPageData;
 
 // =============================================================================
+// MOBILE MENU TOGGLE
+// =============================================================================
+const menuToggle = document.getElementById('menu-toggle');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+function openSidebar() {
+  sidebar.classList.add('active');
+  menuToggle.classList.add('active');
+  sidebarOverlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSidebar() {
+  sidebar.classList.remove('active');
+  menuToggle.classList.remove('active');
+  sidebarOverlay.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function toggleSidebar() {
+  if (sidebar.classList.contains('active')) {
+    closeSidebar();
+  } else {
+    openSidebar();
+  }
+}
+
+// Toggle menu ao clicar no botão hamburger
+menuToggle.addEventListener('click', toggleSidebar);
+
+// Fechar menu ao clicar no overlay
+sidebarOverlay.addEventListener('click', closeSidebar);
+
+// Fechar menu com tecla ESC
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && sidebar.classList.contains('active')) {
+    closeSidebar();
+  }
+});
+
+// =============================================================================
 // NAVIGATION
 // =============================================================================
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -145,6 +187,10 @@ document.querySelectorAll('.nav-item').forEach(item => {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     item.classList.add('active');
     loadPage(item.dataset.page);
+    // Fechar sidebar no mobile após selecionar página
+    if (window.innerWidth <= 768) {
+      closeSidebar();
+    }
   });
 });
 
