@@ -1030,8 +1030,8 @@ router.get('/all-scans', async (req, res) => {
           ts.backend_url,
           ts.project_name,
           ts.report_id::text as report_id,
-          ts.status,
-          ts.payment_status,
+          ts.status::text as status,
+          ts.payment_status::text as payment_status,
           CASE
             WHEN ts.payment_status = 'paid' THEN 'Pago'
             WHEN ts.payment_status = 'free' THEN 'Gratuito'
@@ -1213,7 +1213,6 @@ router.get('/paying', async (req, res) => {
     const onetimeQuery = await db.billing.query(`
       SELECT
         otp.external_user_email as email,
-        otp.package_name,
         otp.amount_cents / 100.0 as amount,
         otp.status,
         otp.created_at,
