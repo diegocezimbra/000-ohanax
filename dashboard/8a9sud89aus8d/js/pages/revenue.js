@@ -1,7 +1,9 @@
 // Revenue Page Module
 
-import { formatCurrency, formatDate, formatDateTime, formatProjectName, getProjectClass } from '../utils/formatters.js';
-import { charts, chartTheme } from '../charts.js';
+import { formatCurrency, formatDate, formatDateTime, formatProjectName, getProjectClass, chartTheme } from '../utils/helpers.js';
+
+// charts is a global object defined in main.js
+const charts = window.charts || {};
 
 export async function loadRevenuePage() {
   try {

@@ -1,7 +1,6 @@
 // Paying Page Module
 
-import { formatCurrency, formatDateTime } from '../utils/formatters.js';
-import { getProjectClass, formatProjectName } from '../utils/helpers.js';
+import { formatCurrency, formatDateTime, getProjectClass, formatProjectName } from '../utils/helpers.js';
 
 let payingSearchTimeout = null;
 
