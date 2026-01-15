@@ -13,6 +13,9 @@ import overviewRoutes from './routes/overview.js';
 import adsRoutes from './routes/ads.js';
 import ga4Routes from './routes/ga4.js';
 import logsRoutes from './routes/logs.js';
+import syncRoutes from './routes/sync.js';
+import influencersRoutes from './routes/influencers.js';
+import { syncService } from './services/sync.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -167,6 +170,8 @@ app.use('/api/oentregador', oentregadorRoutes);
 app.use('/api/ads', adsRoutes);
 app.use('/api/ga4', ga4Routes);
 app.use('/api/logs', logsRoutes);
+app.use('/api/sync', syncRoutes);
+app.use('/api/influencers', influencersRoutes);
 app.use('/api', overviewRoutes);
 
 // =============================================================================
@@ -187,4 +192,12 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
   console.log(`Dashboard available at http://localhost:${PORT}${SECRET_ROUTE}`);
+
+  // Iniciar auto-sync do GA4 (a cada 60 minutos)
+  if (process.env.GA4_CLIENT_ID && process.env.GA4_REFRESH_TOKEN) {
+    syncService.startAutoSync(60);
+    console.log('Auto-sync GA4 iniciado (intervalo: 60 min)');
+  } else {
+    console.log('Auto-sync GA4 desabilitado (credenciais nao configuradas)');
+  }
 });

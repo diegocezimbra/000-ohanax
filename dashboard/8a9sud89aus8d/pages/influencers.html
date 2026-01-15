@@ -1,0 +1,396 @@
+<div class="header">
+  <h2><span class="service-badge ads">INFLUENCERS</span> Gestao de Influenciadores</h2>
+  <div class="header-actions">
+    <div class="date-filter">
+      <select id="influencers-period" onchange="onPeriodChange('influencers')">
+        <option value="7">Ultimos 7 dias</option>
+        <option value="30" selected>Ultimos 30 dias</option>
+        <option value="90">Ultimos 90 dias</option>
+      </select>
+    </div>
+    <button class="refresh-btn" onclick="loadInfluencersData()">Atualizar</button>
+    <button class="refresh-btn" style="background: #22c55e;" onclick="openInfluencerModal()">+ Novo Influenciador</button>
+  </div>
+</div>
+
+<!-- RESUMO -->
+<div class="cards">
+  <div class="card highlight">
+    <div class="card-title">Total Influenciadores</div>
+    <div class="card-value" id="inf-total">--</div>
+    <div class="card-subtitle">Cadastrados</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Visitas Geradas</div>
+    <div class="card-value" id="inf-visits" style="color: #3b82f6;">--</div>
+    <div class="card-subtitle">No periodo</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Conversoes</div>
+    <div class="card-value" id="inf-conversions" style="color: #22c55e;">--</div>
+    <div class="card-subtitle">Leads convertidos</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Receita Atribuida</div>
+    <div class="card-value" id="inf-revenue" style="color: #f59e0b;">R$ --</div>
+    <div class="card-subtitle">Via influenciadores</div>
+  </div>
+</div>
+
+<!-- RANKING DE INFLUENCIADORES -->
+<div class="section">
+  <div class="section-title">Ranking de Performance</div>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Influenciador</th>
+          <th>Plataforma</th>
+          <th>Codigo</th>
+          <th>Visitas</th>
+          <th>Scans</th>
+          <th>Conversoes</th>
+          <th>Receita</th>
+          <th>Comissao</th>
+          <th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody id="inf-ranking-table">
+        <tr><td colspan="9" style="text-align: center; color: #64748b;">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- GERADOR DE LINKS -->
+<div class="section">
+  <div class="section-title">Gerador de Links</div>
+  <div class="grid-2">
+    <div>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Influenciador</label>
+        <select id="link-influencer" style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+          <option value="">Selecione um influenciador</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">URL de Destino</label>
+        <input type="text" id="link-url" placeholder="https://ohanax.com/scan" style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Campanha (opcional)</label>
+        <input type="text" id="link-campaign" placeholder="ex: black_friday" style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+      </div>
+      <button onclick="generateTrackingLink()" style="width: 100%; padding: 14px; background: #3b82f6; border: none; border-radius: 8px; color: white; font-size: 16px; cursor: pointer;">Gerar Link</button>
+    </div>
+    <div>
+      <div style="background: #1e293b; padding: 20px; border-radius: 12px; height: 100%;">
+        <div style="color: #94a3b8; font-size: 14px; margin-bottom: 12px;">Link Gerado:</div>
+        <div id="generated-link" style="word-break: break-all; color: #22c55e; font-family: monospace; background: #0f172a; padding: 12px; border-radius: 8px; min-height: 60px;">
+          Preencha os campos ao lado e clique em "Gerar Link"
+        </div>
+        <button id="copy-link-btn" onclick="copyGeneratedLink()" style="margin-top: 12px; padding: 10px 20px; background: #334155; border: none; border-radius: 6px; color: #f1f5f9; cursor: pointer; display: none;">Copiar Link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LISTA DE TODOS OS INFLUENCIADORES -->
+<div class="section">
+  <div class="section-title">Todos os Influenciadores</div>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Email</th>
+          <th>Plataforma</th>
+          <th>Codigo</th>
+          <th>Comissao</th>
+          <th>Status</th>
+          <th>Criado em</th>
+          <th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody id="inf-all-table">
+        <tr><td colspan="8" style="text-align: center; color: #64748b;">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL CRIAR/EDITAR INFLUENCIADOR -->
+<div id="influencer-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: #1e293b; padding: 30px; border-radius: 16px; width: 90%; max-width: 500px;">
+    <h3 id="modal-title" style="margin: 0 0 24px 0; color: #f1f5f9;">Novo Influenciador</h3>
+    <input type="hidden" id="modal-influencer-id">
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Nome *</label>
+      <input type="text" id="modal-name" style="width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+    </div>
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Email</label>
+      <input type="email" id="modal-email" style="width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+    </div>
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Plataforma</label>
+      <select id="modal-platform" style="width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+        <option value="linkedin">LinkedIn</option>
+        <option value="instagram">Instagram</option>
+        <option value="youtube">YouTube</option>
+        <option value="twitter">Twitter/X</option>
+        <option value="tiktok">TikTok</option>
+        <option value="other">Outro</option>
+      </select>
+    </div>
+    <div style="margin-bottom: 16px;">
+      <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Comissao (%)</label>
+      <input type="number" id="modal-commission" value="0" min="0" max="100" step="0.5" style="width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+    </div>
+    <div style="margin-bottom: 24px;">
+      <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Notas</label>
+      <textarea id="modal-notes" rows="3" style="width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; resize: vertical;"></textarea>
+    </div>
+    <div style="display: flex; gap: 12px;">
+      <button onclick="closeInfluencerModal()" style="flex: 1; padding: 14px; background: #334155; border: none; border-radius: 8px; color: #f1f5f9; cursor: pointer;">Cancelar</button>
+      <button onclick="saveInfluencer()" style="flex: 1; padding: 14px; background: #22c55e; border: none; border-radius: 8px; color: white; cursor: pointer;">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Estado local
+let influencersData = [];
+let currentInfluencerId = null;
+
+// Carregar dados
+async function loadInfluencersData() {
+  try {
+    const days = document.getElementById('influencers-period')?.value || 30;
+
+    // Buscar todos influenciadores
+    const [infResponse, summaryResponse] = await Promise.all([
+      fetch('/api/influencers'),
+      fetch(`/api/influencers/metrics/summary?days=${days}`)
+    ]);
+
+    influencersData = await infResponse.json();
+    const summary = await summaryResponse.json();
+
+    // Atualizar cards
+    document.getElementById('inf-total').textContent = influencersData.length;
+
+    // Calcular totais do summary
+    let totalVisits = 0, totalConversions = 0, totalRevenue = 0;
+    summary.influencers?.forEach(inf => {
+      totalVisits += parseInt(inf.total_visits || 0);
+      totalConversions += parseInt(inf.total_conversions || 0);
+      totalRevenue += parseFloat(inf.total_revenue || 0);
+    });
+
+    document.getElementById('inf-visits').textContent = totalVisits.toLocaleString('pt-BR');
+    document.getElementById('inf-conversions').textContent = totalConversions.toLocaleString('pt-BR');
+    document.getElementById('inf-revenue').textContent = 'R$ ' + totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+    // Preencher tabela de ranking
+    const rankingTable = document.getElementById('inf-ranking-table');
+    if (summary.influencers?.length > 0) {
+      rankingTable.innerHTML = summary.influencers.map(inf => `
+        <tr>
+          <td><strong>${inf.name}</strong></td>
+          <td><span style="background: #334155; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${inf.platform}</span></td>
+          <td><code>${inf.code}</code></td>
+          <td>${parseInt(inf.total_visits || 0).toLocaleString('pt-BR')}</td>
+          <td>${parseInt(inf.total_scans_started || 0).toLocaleString('pt-BR')}</td>
+          <td style="color: #22c55e;">${parseInt(inf.total_conversions || 0)}</td>
+          <td style="color: #f59e0b;">R$ ${parseFloat(inf.total_revenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+          <td>R$ ${(parseFloat(inf.total_revenue || 0) * parseFloat(inf.commission_percent || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+          <td>
+            <button onclick="viewInfluencerLinks(${inf.id})" style="padding: 4px 8px; background: #3b82f6; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 12px;">Links</button>
+          </td>
+        </tr>
+      `).join('');
+    } else {
+      rankingTable.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #64748b;">Nenhum dado no periodo</td></tr>';
+    }
+
+    // Preencher tabela completa
+    const allTable = document.getElementById('inf-all-table');
+    if (influencersData.length > 0) {
+      allTable.innerHTML = influencersData.map(inf => `
+        <tr>
+          <td><strong>${inf.name}</strong></td>
+          <td>${inf.email || '-'}</td>
+          <td>${inf.platform}</td>
+          <td><code style="background: #0f172a; padding: 4px 8px; border-radius: 4px;">${inf.code}</code></td>
+          <td>${inf.commission_percent}%</td>
+          <td><span style="color: ${inf.status === 'active' ? '#22c55e' : '#ef4444'};">${inf.status}</span></td>
+          <td>${new Date(inf.created_at).toLocaleDateString('pt-BR')}</td>
+          <td>
+            <button onclick="editInfluencer(${inf.id})" style="padding: 4px 8px; background: #334155; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 12px; margin-right: 4px;">Editar</button>
+            <button onclick="deleteInfluencer(${inf.id})" style="padding: 4px 8px; background: #ef4444; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 12px;">Excluir</button>
+          </td>
+        </tr>
+      `).join('');
+    } else {
+      allTable.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #64748b;">Nenhum influenciador cadastrado</td></tr>';
+    }
+
+    // Preencher select do gerador de links
+    const linkSelect = document.getElementById('link-influencer');
+    linkSelect.innerHTML = '<option value="">Selecione um influenciador</option>' +
+      influencersData.filter(i => i.status === 'active').map(inf => `<option value="${inf.code}">${inf.name} (${inf.code})</option>`).join('');
+
+  } catch (error) {
+    console.error('Erro ao carregar influenciadores:', error);
+  }
+}
+
+// Gerador de links
+async function generateTrackingLink() {
+  const code = document.getElementById('link-influencer').value;
+  const url = document.getElementById('link-url').value;
+  const campaign = document.getElementById('link-campaign').value;
+
+  if (!code || !url) {
+    alert('Selecione um influenciador e informe a URL de destino');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/influencers/generate-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        influencer_code: code,
+        destination_url: url,
+        campaign: campaign
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      alert('Erro: ' + data.error);
+      return;
+    }
+
+    document.getElementById('generated-link').textContent = data.tracking_url;
+    document.getElementById('copy-link-btn').style.display = 'inline-block';
+  } catch (error) {
+    console.error('Erro ao gerar link:', error);
+    alert('Erro ao gerar link');
+  }
+}
+
+function copyGeneratedLink() {
+  const link = document.getElementById('generated-link').textContent;
+  navigator.clipboard.writeText(link).then(() => {
+    const btn = document.getElementById('copy-link-btn');
+    btn.textContent = 'Copiado!';
+    setTimeout(() => btn.textContent = 'Copiar Link', 2000);
+  });
+}
+
+// Modal functions
+function openInfluencerModal(id = null) {
+  currentInfluencerId = id;
+  document.getElementById('modal-title').textContent = id ? 'Editar Influenciador' : 'Novo Influenciador';
+  document.getElementById('modal-influencer-id').value = id || '';
+
+  if (id) {
+    const inf = influencersData.find(i => i.id === id);
+    if (inf) {
+      document.getElementById('modal-name').value = inf.name;
+      document.getElementById('modal-email').value = inf.email || '';
+      document.getElementById('modal-platform').value = inf.platform;
+      document.getElementById('modal-commission').value = inf.commission_percent;
+      document.getElementById('modal-notes').value = inf.notes || '';
+    }
+  } else {
+    document.getElementById('modal-name').value = '';
+    document.getElementById('modal-email').value = '';
+    document.getElementById('modal-platform').value = 'linkedin';
+    document.getElementById('modal-commission').value = '0';
+    document.getElementById('modal-notes').value = '';
+  }
+
+  document.getElementById('influencer-modal').style.display = 'flex';
+}
+
+function closeInfluencerModal() {
+  document.getElementById('influencer-modal').style.display = 'none';
+  currentInfluencerId = null;
+}
+
+async function saveInfluencer() {
+  const data = {
+    name: document.getElementById('modal-name').value,
+    email: document.getElementById('modal-email').value,
+    platform: document.getElementById('modal-platform').value,
+    commission_percent: parseFloat(document.getElementById('modal-commission').value) || 0,
+    notes: document.getElementById('modal-notes').value
+  };
+
+  if (!data.name) {
+    alert('Nome e obrigatorio');
+    return;
+  }
+
+  try {
+    const url = currentInfluencerId
+      ? `/api/influencers/${currentInfluencerId}`
+      : '/api/influencers';
+
+    const response = await fetch(url, {
+      method: currentInfluencerId ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    if (result.error) {
+      alert('Erro: ' + result.error);
+      return;
+    }
+
+    closeInfluencerModal();
+    loadInfluencersData();
+  } catch (error) {
+    console.error('Erro ao salvar:', error);
+    alert('Erro ao salvar influenciador');
+  }
+}
+
+function editInfluencer(id) {
+  openInfluencerModal(id);
+}
+
+async function deleteInfluencer(id) {
+  if (!confirm('Tem certeza que deseja excluir este influenciador?')) return;
+
+  try {
+    const response = await fetch(`/api/influencers/${id}`, { method: 'DELETE' });
+    const result = await response.json();
+
+    if (result.error) {
+      alert('Erro: ' + result.error);
+      return;
+    }
+
+    loadInfluencersData();
+  } catch (error) {
+    console.error('Erro ao excluir:', error);
+    alert('Erro ao excluir influenciador');
+  }
+}
+
+async function viewInfluencerLinks(id) {
+  // TODO: Implementar visualizacao de links
+  alert('Funcionalidade em desenvolvimento');
+}
+
+// Inicializar ao carregar pagina
+loadInfluencersData();
+</script>

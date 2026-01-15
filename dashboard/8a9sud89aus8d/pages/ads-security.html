@@ -290,7 +290,7 @@
   <div class="section-title" style="display: flex; align-items: center; gap: 12px;">
     <span>Analytics - Funil de Conversao</span>
     <span class="info-tooltip" data-tooltip="Dados do Google Analytics 4 mostrando o funil de conversao do /scan."></span>
-    <button class="refresh-btn" style="margin-left: auto;" onclick="loadGA4Analytics()">Atualizar</button>
+    <button class="refresh-btn" style="margin-left: auto;" onclick="forceGA4Sync()">Sincronizar</button>
   </div>
 
   <!-- Metricas de Sessao -->
@@ -343,39 +343,84 @@
 </div>
 
 <script>
-// GA4 Analytics Functions
+// GA4 Analytics Functions - Consumindo do Cache Local
 async function loadGA4Analytics() {
   try {
-    // Carregar metricas de sessao
-    const sessionData = await fetchGA4SessionMetrics();
-    updateGA4SessionMetrics(sessionData);
+    // Carregar do cache local (syncronizado periodicamente)
+    const [sessionData, funnelData, eventsData, pagesData] = await Promise.all([
+      fetchFromCache('ga4', 'session_metrics', 7),
+      fetchFromCache('ga4', 'funnel_scan', 30),
+      fetchFromCache('ga4', 'events', 7),
+      fetchFromCache('ga4', 'pages', 7)
+    ]);
 
-    // Carregar funil
-    const funnelData = await fetchGA4Funnel();
-    updateGA4Funnel(funnelData);
-
-    // Carregar eventos
-    const eventsData = await fetchGA4Events();
-    updateGA4Events(eventsData);
-
-    // Carregar paginas
-    const pagesData = await fetchGA4TopPages();
-    updateGA4Pages(pagesData);
+    if (sessionData) updateGA4SessionMetrics(sessionData);
+    if (funnelData) updateGA4Funnel(funnelData);
+    if (eventsData) updateGA4Events(eventsData);
+    if (pagesData) updateGA4Pages(pagesData);
   } catch (error) {
     console.error('Erro ao carregar GA4:', error);
+    // Se cache falhar, tentar buscar direto
+    loadGA4AnalyticsDirect();
+  }
+}
+
+// Buscar dados do cache local
+async function fetchFromCache(source, metric, days) {
+  try {
+    const response = await fetch(`/api/sync/cache/${source}/${metric}?days=${days}`);
+    if (!response.ok) return null;
+    const result = await response.json();
+    return result.data;
+  } catch {
+    return null;
+  }
+}
+
+// Forcar sync e recarregar (botao Atualizar)
+async function forceGA4Sync() {
+  try {
+    document.getElementById('ga4-funnel-container').innerHTML = '<div style="color: #64748b; text-align: center; padding: 20px;">Sincronizando...</div>';
+    await fetch('/api/sync/ga4', { method: 'POST' });
+    await loadGA4Analytics();
+  } catch (error) {
+    console.error('Erro ao sincronizar GA4:', error);
+    loadGA4AnalyticsDirect();
+  }
+}
+
+// Fallback: buscar direto da API GA4 se cache vazio
+async function loadGA4AnalyticsDirect() {
+  try {
+    const token = await getGA4Token();
+    if (!token) return;
+
+    const [sessionData, eventsData, pagesData] = await Promise.all([
+      fetchGA4SessionMetricsDirect(token),
+      fetchGA4EventsDirect(token),
+      fetchGA4TopPagesDirect(token)
+    ]);
+
+    if (sessionData) updateGA4SessionMetrics(sessionData);
+    if (eventsData) updateGA4Events(eventsData);
+    if (pagesData) updateGA4Pages(pagesData);
+  } catch (error) {
+    console.error('Erro ao carregar GA4 direto:', error);
   }
 }
 
 async function getGA4Token() {
-  // Usar o endpoint do servidor para renovar token
-  const response = await fetch('/api/ga4/token');
-  if (!response.ok) throw new Error('Falha ao obter token GA4');
-  const data = await response.json();
-  return data.access_token;
+  try {
+    const response = await fetch('/api/ga4/token');
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.access_token;
+  } catch {
+    return null;
+  }
 }
 
-async function fetchGA4SessionMetrics() {
-  const token = await getGA4Token();
+async function fetchGA4SessionMetricsDirect(token) {
   const response = await fetch('https://analyticsdata.googleapis.com/v1beta/properties/518739213:runReport', {
     method: 'POST',
     headers: {
@@ -395,31 +440,7 @@ async function fetchGA4SessionMetrics() {
   return response.json();
 }
 
-async function fetchGA4Funnel() {
-  const token = await getGA4Token();
-  const response = await fetch('https://analyticsdata.googleapis.com/v1alpha/properties/518739213:runFunnelReport', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
-      funnel: {
-        steps: [
-          { name: 'Landing Page', filterExpression: { funnelEventFilter: { eventName: 'page_view' } } },
-          { name: 'Scan Start', filterExpression: { funnelEventFilter: { eventName: 'scan_start' } } },
-          { name: 'Scan Complete', filterExpression: { funnelEventFilter: { eventName: 'scan_complete' } } },
-          { name: 'Checkout', filterExpression: { funnelEventFilter: { eventName: 'checkout_start' } } }
-        ]
-      }
-    })
-  });
-  return response.json();
-}
-
-async function fetchGA4Events() {
-  const token = await getGA4Token();
+async function fetchGA4EventsDirect(token) {
   const response = await fetch('https://analyticsdata.googleapis.com/v1beta/properties/518739213:runReport', {
     method: 'POST',
     headers: {
@@ -436,8 +457,7 @@ async function fetchGA4Events() {
   return response.json();
 }
 
-async function fetchGA4TopPages() {
-  const token = await getGA4Token();
+async function fetchGA4TopPagesDirect(token) {
   const response = await fetch('https://analyticsdata.googleapis.com/v1beta/properties/518739213:runReport', {
     method: 'POST',
     headers: {
