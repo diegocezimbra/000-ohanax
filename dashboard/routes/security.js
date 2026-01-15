@@ -956,4 +956,290 @@ router.get('/trial-funnel', async (req, res) => {
   }
 });
 
+// =============================================================================
+// GET /api/security/all-scans - Lista TODOS os scans (trial + paid users)
+// =============================================================================
+router.get('/all-scans', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = (page - 1) * limit;
+    const scanType = req.query.type || ''; // 'trial', 'paid', ''
+    const status = req.query.status || '';
+    const search = req.query.search || '';
+
+    // Build combined query with UNION ALL
+    let whereTrialClause = '1=1';
+    let wherePaidClause = '1=1';
+    const trialParams = [];
+    const paidParams = [];
+    let trialParamIndex = 1;
+    let paidParamIndex = 1;
+
+    // Status filter
+    if (status) {
+      whereTrialClause += ` AND ts.status = $${trialParamIndex}`;
+      trialParams.push(status);
+      trialParamIndex++;
+
+      // Map status for paid scans
+      wherePaidClause += ` AND sar.status = $${paidParamIndex}`;
+      paidParams.push(status);
+      paidParamIndex++;
+    }
+
+    // Search filter
+    if (search) {
+      whereTrialClause += ` AND (ts.email ILIKE $${trialParamIndex} OR ts.frontend_url ILIKE $${trialParamIndex} OR ts.backend_url ILIKE $${trialParamIndex} OR ts.project_name ILIKE $${trialParamIndex})`;
+      trialParams.push(`%${search}%`);
+      trialParamIndex++;
+
+      wherePaidClause += ` AND (sau.email ILIKE $${paidParamIndex} OR sp.frontend_url ILIKE $${paidParamIndex} OR sp.backend_url ILIKE $${paidParamIndex} OR sp.name ILIKE $${paidParamIndex})`;
+      paidParams.push(`%${search}%`);
+      paidParamIndex++;
+    }
+
+    // Build queries based on type filter
+    let countQueries = [];
+    let dataQueries = [];
+
+    if (scanType !== 'paid') {
+      // Trial scans query
+      const trialCountQuery = `
+        SELECT COUNT(*) as count FROM security_trial_sessions ts WHERE ${whereTrialClause}
+      `;
+      countQueries.push({ type: 'trial', query: trialCountQuery, params: trialParams });
+
+      const trialDataQuery = `
+        SELECT
+          ts.id,
+          'trial' as scan_type,
+          ts.email,
+          ts.frontend_url,
+          ts.backend_url,
+          ts.project_name,
+          ts.report_id,
+          ts.status,
+          ts.payment_status,
+          CASE
+            WHEN ts.payment_status = 'paid' THEN 'Pago'
+            WHEN ts.payment_status = 'free' THEN 'Gratuito'
+            ELSE 'Pendente'
+          END as payment_label,
+          ts.created_at,
+          ts.completed_at,
+          ts.claimed_by_user_id,
+          NULL as owner_email,
+          NULL as owner_name
+        FROM security_trial_sessions ts
+        WHERE ${whereTrialClause}
+      `;
+      dataQueries.push({ type: 'trial', query: trialDataQuery, params: trialParams });
+    }
+
+    if (scanType !== 'trial') {
+      // Paid/logged in user scans query
+      const paidCountQuery = `
+        SELECT COUNT(*) as count
+        FROM security_audit_reports sar
+        LEFT JOIN security_projects sp ON sar.project_id = sp.id
+        LEFT JOIN security_admin_users sau ON sp.owner_id = sau.id
+        WHERE ${wherePaidClause}
+      `;
+      countQueries.push({ type: 'paid', query: paidCountQuery, params: paidParams });
+
+      const paidDataQuery = `
+        SELECT
+          sar.id,
+          'paid' as scan_type,
+          sau.email as email,
+          sp.frontend_url,
+          sp.backend_url,
+          sp.name as project_name,
+          sar.id::text as report_id,
+          sar.status,
+          'paid' as payment_status,
+          'Usuario Pago' as payment_label,
+          sar.created_at,
+          sar.completed_at,
+          sau.id as claimed_by_user_id,
+          sau.email as owner_email,
+          sau.name as owner_name
+        FROM security_audit_reports sar
+        LEFT JOIN security_projects sp ON sar.project_id = sp.id
+        LEFT JOIN security_admin_users sau ON sp.owner_id = sau.id
+        WHERE ${wherePaidClause}
+      `;
+      dataQueries.push({ type: 'paid', query: paidDataQuery, params: paidParams });
+    }
+
+    // Execute count queries
+    let totalCount = 0;
+    for (const cq of countQueries) {
+      const result = await db.security.query(cq.query, cq.params);
+      totalCount += parseInt(result.rows[0].count);
+    }
+
+    // Build combined data query with UNION ALL
+    let combinedQuery;
+    if (dataQueries.length === 2) {
+      // Need to carefully handle params for combined query
+      const trialQuery = dataQueries[0];
+      const paidQuery = dataQueries[1];
+
+      // Re-index paid params
+      let reindexedPaidQuery = paidQuery.query;
+      const paidParamOffset = trialQuery.params.length;
+      for (let i = paidQuery.params.length; i >= 1; i--) {
+        reindexedPaidQuery = reindexedPaidQuery.replace(
+          new RegExp(`\\$${i}`, 'g'),
+          `$${i + paidParamOffset}`
+        );
+      }
+
+      combinedQuery = `
+        SELECT * FROM (
+          (${trialQuery.query})
+          UNION ALL
+          (${reindexedPaidQuery})
+        ) combined
+        ORDER BY created_at DESC
+        LIMIT $${trialQuery.params.length + paidQuery.params.length + 1}
+        OFFSET $${trialQuery.params.length + paidQuery.params.length + 2}
+      `;
+      const allParams = [...trialQuery.params, ...paidQuery.params, limit, offset];
+      const result = await db.security.query(combinedQuery, allParams);
+
+      res.json({
+        scans: result.rows,
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          hasNext: page < Math.ceil(totalCount / limit),
+          hasPrev: page > 1,
+        },
+      });
+    } else if (dataQueries.length === 1) {
+      // Single query (filtered by type)
+      const query = dataQueries[0];
+      const paginatedQuery = `
+        ${query.query}
+        ORDER BY created_at DESC
+        LIMIT $${query.params.length + 1} OFFSET $${query.params.length + 2}
+      `;
+      const result = await db.security.query(paginatedQuery, [...query.params, limit, offset]);
+
+      res.json({
+        scans: result.rows,
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / limit),
+          hasNext: page < Math.ceil(totalCount / limit),
+          hasPrev: page > 1,
+        },
+      });
+    } else {
+      res.json({
+        scans: [],
+        pagination: { page: 1, limit, total: 0, totalPages: 0, hasNext: false, hasPrev: false },
+      });
+    }
+  } catch (err) {
+    console.error('Error fetching all scans:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /api/security/trial-sessions - Lista todos os scans de trial
+// =============================================================================
+router.get('/trial-sessions', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = (page - 1) * limit;
+    const status = req.query.status || '';
+    const paymentStatus = req.query.payment_status || '';
+    const search = req.query.search || '';
+
+    // Build WHERE clause dynamically
+    let whereClause = 'WHERE 1=1';
+    const params = [];
+    let paramIndex = 1;
+
+    if (status) {
+      whereClause += ` AND ts.status = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+
+    if (paymentStatus) {
+      whereClause += ` AND ts.payment_status = $${paramIndex}`;
+      params.push(paymentStatus);
+      paramIndex++;
+    }
+
+    if (search) {
+      whereClause += ` AND (ts.email ILIKE $${paramIndex} OR ts.frontend_url ILIKE $${paramIndex} OR ts.backend_url ILIKE $${paramIndex} OR ts.project_name ILIKE $${paramIndex})`;
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    // Count total
+    const countQuery = await db.security.query(`
+      SELECT COUNT(*) as total
+      FROM security_trial_sessions ts
+      ${whereClause}
+    `, params);
+
+    // Get sessions with pagination
+    const sessionsQuery = await db.security.query(`
+      SELECT
+        ts.id,
+        ts.email,
+        ts.frontend_url,
+        ts.backend_url,
+        ts.project_name,
+        ts.report_id,
+        ts.status,
+        ts.payment_status,
+        ts.created_at,
+        ts.completed_at,
+        ts.paid_at,
+        ts.claimed_at,
+        ts.expires_at,
+        ts.claimed_by_user_id,
+        au.name as claimed_by_name,
+        au.email as claimed_by_email
+      FROM security_trial_sessions ts
+      LEFT JOIN security_admin_users au ON ts.claimed_by_user_id = au.id
+      ${whereClause}
+      ORDER BY ts.created_at DESC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `, [...params, limit, offset]);
+
+    const total = parseInt(countQuery.rows[0].total);
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      sessions: sessionsQuery.rows,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    });
+  } catch (err) {
+    console.error('Error fetching trial sessions:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

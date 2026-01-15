@@ -574,6 +574,152 @@ export async function loadProjectPage(project) {
           charts['scanFunnel'].render();
         }
       } catch (e) { console.error('Error loading scan funnel:', e); }
+
+      // Database Trial Funnel - Real data from security_trial_sessions
+      try {
+        const dbFunnelData = await fetch('/api/security/trial-funnel').then(r => r.json());
+
+        // Update cards
+        const dbStartedEl = document.getElementById('db-funnel-started');
+        const dbCompletedEl = document.getElementById('db-funnel-completed');
+        const dbCompletedPctEl = document.getElementById('db-funnel-completed-pct');
+        const dbPaidEl = document.getElementById('db-funnel-paid');
+        const dbPaidPctEl = document.getElementById('db-funnel-paid-pct');
+        const dbRegisteredEl = document.getElementById('db-funnel-registered');
+        const dbRegisteredPctEl = document.getElementById('db-funnel-registered-pct');
+
+        const funnel = dbFunnelData.funnel || {};
+        const conversions = dbFunnelData.conversions || {};
+
+        if (dbStartedEl) dbStartedEl.textContent = funnel.scansStarted || 0;
+        if (dbCompletedEl) dbCompletedEl.textContent = funnel.scansCompleted || 0;
+        if (dbCompletedPctEl) dbCompletedPctEl.textContent = (conversions.startedToCompleted || 0) + '% dos iniciados';
+        if (dbPaidEl) dbPaidEl.textContent = funnel.paidTotal || 0;
+        if (dbPaidPctEl) dbPaidPctEl.textContent = (conversions.completedToPaid || 0) + '% dos completados';
+        if (dbRegisteredEl) dbRegisteredEl.textContent = funnel.fullyConverted || 0;
+        if (dbRegisteredPctEl) dbRegisteredPctEl.textContent = (conversions.overallConversion || 0) + '% conversao total';
+
+        // Update timing metrics
+        const timeToPayEl = document.getElementById('db-funnel-time-to-pay');
+        const timeToRegisterEl = document.getElementById('db-funnel-time-to-register');
+        const withVulnsEl = document.getElementById('db-funnel-with-vulns');
+        const vulnConversionEl = document.getElementById('db-funnel-vuln-conversion');
+
+        const timings = dbFunnelData.timings || {};
+        if (timeToPayEl) timeToPayEl.textContent = (timings.avgHoursToPayment || 0).toFixed(1) + ' h';
+        if (timeToRegisterEl) timeToRegisterEl.textContent = (timings.avgHoursToRegistration || 0).toFixed(1) + ' h';
+        if (withVulnsEl) withVulnsEl.textContent = funnel.withVulnerabilities || 0;
+
+        // Calculate vulnerability to payment conversion
+        const vulnToPaidRate = funnel.withVulnerabilities > 0
+          ? ((funnel.paidTotal / funnel.withVulnerabilities) * 100).toFixed(1)
+          : 0;
+        if (vulnConversionEl) vulnConversionEl.textContent = vulnToPaidRate + '%';
+
+        // Hot leads (paid but not registered)
+        const hotLeadsEl = document.getElementById('db-funnel-hot-leads');
+        if (hotLeadsEl && dbFunnelData.hotLeads) {
+          if (dbFunnelData.hotLeads.length > 0) {
+            hotLeadsEl.innerHTML = dbFunnelData.hotLeads.map(lead => `
+              <div style="padding: 8px 0; border-bottom: 1px solid #334155; font-size: 13px;">
+                <div style="color: #f59e0b;">${lead.email || 'Email nao informado'}</div>
+                <div style="color: #64748b; font-size: 11px; margin-top: 2px;">
+                  Projeto: ${lead.project_name || '-'} | Pagou: ${formatDate(lead.paid_at)}
+                </div>
+              </div>
+            `).join('');
+          } else {
+            hotLeadsEl.innerHTML = '<div style="color: #22c55e; font-size: 13px;">Todos os pagantes estao registrados!</div>';
+          }
+        }
+
+        // Cold leads (completed but not paid)
+        const coldLeadsEl = document.getElementById('db-funnel-cold-leads');
+        if (coldLeadsEl && dbFunnelData.coldLeads) {
+          if (dbFunnelData.coldLeads.length > 0) {
+            coldLeadsEl.innerHTML = dbFunnelData.coldLeads.slice(0, 10).map(lead => `
+              <div style="padding: 6px 0; border-bottom: 1px solid #334155; font-size: 12px;">
+                <div style="color: #94a3b8;">${lead.email || 'Email nao informado'}</div>
+                <div style="color: #64748b; font-size: 11px;">
+                  ${lead.project_name || '-'} | ${formatDate(lead.created_at)}
+                </div>
+              </div>
+            `).join('');
+          } else {
+            coldLeadsEl.innerHTML = '<div style="color: #64748b; font-size: 13px;">Sem leads frios</div>';
+          }
+        }
+
+        // Recent conversions
+        const recentConversionsEl = document.getElementById('db-funnel-recent-conversions');
+        if (recentConversionsEl && dbFunnelData.recentConversions) {
+          if (dbFunnelData.recentConversions.length > 0) {
+            recentConversionsEl.innerHTML = dbFunnelData.recentConversions.map(conv => `
+              <div style="padding: 6px 0; border-bottom: 1px solid #334155; font-size: 12px;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span style="color: #10b981;">${conv.email || '-'}</span>
+                  <span style="color: #64748b; font-size: 11px;">${formatDate(conv.claimed_at)}</span>
+                </div>
+                <div style="color: #64748b; font-size: 11px;">${conv.project_name || '-'}</div>
+              </div>
+            `).join('');
+          } else {
+            recentConversionsEl.innerHTML = '<div style="color: #64748b; font-size: 13px;">Sem conversoes recentes</div>';
+          }
+        }
+
+        // Render DB funnel chart
+        const dbFunnelChartEl = document.getElementById('db-trial-funnel-chart');
+        if (dbFunnelChartEl && funnel) {
+          if (charts['dbTrialFunnel']) charts['dbTrialFunnel'].destroy();
+          charts['dbTrialFunnel'] = new ApexCharts(dbFunnelChartEl, {
+            chart: {
+              type: 'bar',
+              height: 280,
+              background: chartTheme.background,
+              toolbar: { show: false },
+              fontFamily: 'Inter, sans-serif'
+            },
+            series: [{
+              name: 'Quantidade',
+              data: [
+                funnel.scansStarted || 0,
+                funnel.scansCompleted || 0,
+                funnel.withVulnerabilities || 0,
+                funnel.paidTotal || 0,
+                funnel.fullyConverted || 0
+              ]
+            }],
+            colors: ['#6366f1', '#8b5cf6', '#f59e0b', '#22c55e', '#10b981'],
+            plotOptions: {
+              bar: {
+                borderRadius: 4,
+                horizontal: true,
+                distributed: true,
+                dataLabels: { position: 'top' }
+              }
+            },
+            xaxis: {
+              categories: ['Iniciados', 'Completados', 'Com Vulns', 'Pagaram', 'Registraram'],
+              labels: { style: { colors: chartTheme.textColor } }
+            },
+            yaxis: { labels: { style: { colors: chartTheme.textColor } } },
+            grid: { borderColor: chartTheme.gridColor, strokeDashArray: 4 },
+            dataLabels: {
+              enabled: true,
+              formatter: (val) => val,
+              offsetX: 30,
+              style: { colors: ['#fff'], fontSize: '12px' }
+            },
+            legend: { show: false },
+            tooltip: { theme: 'dark' }
+          });
+          charts['dbTrialFunnel'].render();
+        }
+      } catch (e) { console.error('Error loading DB trial funnel:', e); }
+
+      // Load all scans list
+      loadAllScans(1);
     }
 
     // oEntregador today stats (usuarios ativos e bipados)
@@ -761,4 +907,111 @@ export async function loadProjectPage(project) {
     }
 
   } catch (err) { console.error(`Error loading ${project}:`, err); }
+}
+
+// =============================================================================
+// ALL SCANS LIST (Trial + Paid)
+// =============================================================================
+let allScansSearchTimeout = null;
+
+export function debounceAllScansSearch() {
+  clearTimeout(allScansSearchTimeout);
+  allScansSearchTimeout = setTimeout(() => loadAllScans(1), 300);
+}
+
+export async function loadAllScans(page = 1) {
+  try {
+    const typeEl = document.getElementById('all-scans-type');
+    const statusEl = document.getElementById('all-scans-status');
+    const searchEl = document.getElementById('all-scans-search');
+    const tableEl = document.getElementById('all-scans-table');
+    const countEl = document.getElementById('all-scans-count');
+    const paginationEl = document.getElementById('all-scans-pagination');
+
+    if (!tableEl) return;
+
+    const type = typeEl?.value || '';
+    const status = statusEl?.value || '';
+    const search = searchEl?.value || '';
+
+    tableEl.innerHTML = '<tr><td colspan="8" class="loading">Carregando...</td></tr>';
+
+    const params = new URLSearchParams({ page, limit: 30 });
+    if (type) params.append('type', type);
+    if (status) params.append('status', status);
+    if (search) params.append('search', search);
+
+    const data = await fetch(`/api/security/all-scans?${params}`).then(r => r.json());
+
+    if (countEl) countEl.textContent = data.pagination.total;
+
+    if (data.scans.length === 0) {
+      tableEl.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #64748b;">Nenhum scan encontrado</td></tr>';
+    } else {
+      tableEl.innerHTML = data.scans.map(scan => {
+        const typeLabel = scan.scan_type === 'trial'
+          ? '<span style="background: #f59e0b; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;">TRIAL</span>'
+          : '<span style="background: #22c55e; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;">PAGO</span>';
+
+        const statusColor = {
+          'completed': '#22c55e',
+          'claimed': '#10b981',
+          'scanning': '#f59e0b',
+          'pending': '#94a3b8',
+          'expired': '#ef4444',
+          'failed': '#ef4444'
+        }[scan.status] || '#94a3b8';
+
+        const paymentColor = {
+          'paid': '#22c55e',
+          'free': '#3b82f6',
+          'pending': '#f59e0b'
+        }[scan.payment_status] || '#94a3b8';
+
+        const frontendUrl = scan.frontend_url || '-';
+        const backendUrl = scan.backend_url || '-';
+        const truncatedFrontend = frontendUrl.length > 30 ? frontendUrl.substring(0, 30) + '...' : frontendUrl;
+        const truncatedBackend = backendUrl.length > 30 ? backendUrl.substring(0, 30) + '...' : backendUrl;
+
+        return `
+          <tr>
+            <td>${typeLabel}</td>
+            <td style="font-size: 12px;">${scan.email || '-'}</td>
+            <td style="font-size: 11px;" title="${frontendUrl}">${truncatedFrontend}</td>
+            <td style="font-size: 11px;" title="${backendUrl}">${truncatedBackend}</td>
+            <td style="font-size: 12px;">${scan.project_name || '-'}</td>
+            <td><span style="color: ${statusColor};">${scan.status}</span></td>
+            <td><span style="color: ${paymentColor};">${scan.payment_label || scan.payment_status || '-'}</span></td>
+            <td style="font-size: 11px;">${formatDateTime(scan.created_at)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Render pagination
+    if (paginationEl && data.pagination.totalPages > 1) {
+      let paginationHtml = '';
+      const { page: currentPage, totalPages, hasPrev, hasNext } = data.pagination;
+
+      if (hasPrev) {
+        paginationHtml += `<button onclick="loadAllScans(${currentPage - 1})">&laquo; Anterior</button>`;
+      }
+
+      paginationHtml += `<span style="margin: 0 12px; color: #94a3b8;">Página ${currentPage} de ${totalPages}</span>`;
+
+      if (hasNext) {
+        paginationHtml += `<button onclick="loadAllScans(${currentPage + 1})">Próximo &raquo;</button>`;
+      }
+
+      paginationEl.innerHTML = paginationHtml;
+    } else if (paginationEl) {
+      paginationEl.innerHTML = '';
+    }
+  } catch (err) {
+    console.error('Error loading all scans:', err);
+    const tableEl = document.getElementById('all-scans-table');
+    if (tableEl) {
+      tableEl.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #ef4444;">Erro ao carregar scans</td></tr>';
+    }
+  }
 }

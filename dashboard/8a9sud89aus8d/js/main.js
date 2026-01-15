@@ -11,7 +11,7 @@ import {
 
 // Import page modules
 import { loadOverview, renderOverviewCharts, renderFunnelChart } from './pages/overview.js';
-import { initProjectModule, loadProjectPage, renderProjectFunnel } from './pages/project.js';
+import { initProjectModule, loadProjectPage, renderProjectFunnel, loadAllScans, debounceAllScansSearch } from './pages/project.js';
 import { debounceSearch, loadUsersPage, getProjectClass as getUsersProjectClass } from './pages/users.js';
 import { debouncePayingSearch, loadPayingPage } from './pages/paying.js';
 import { loadRevenuePage } from './pages/revenue.js';
@@ -62,6 +62,10 @@ window.loadBillingAuditData = loadBillingAuditData;
 // Search debounce
 window.debounceSearch = debounceSearch;
 window.debouncePayingSearch = debouncePayingSearch;
+window.debounceAllScansSearch = debounceAllScansSearch;
+
+// All scans list
+window.loadAllScans = loadAllScans;
 
 // =============================================================================
 // INITIALIZE PROJECT MODULE

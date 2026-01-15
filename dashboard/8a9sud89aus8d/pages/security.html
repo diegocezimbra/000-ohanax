@@ -340,6 +340,156 @@
 </div>
 
 <!-- ============================================================================= -->
+<!-- FUNIL DE TRIAL - BANCO DE DADOS -->
+<!-- Este funil mostra dados reais da tabela security_trial_sessions -->
+<!-- ============================================================================= -->
+<div class="section">
+  <div class="section-title" style="display: flex; align-items: center; gap: 12px;">
+    <span>Funil de Trial - Banco de Dados</span>
+    <span style="font-size: 12px; color: #94a3b8; font-weight: normal;">(Dados reais)</span>
+    <span class="info-tooltip tooltip-left" data-tooltip="Este funil mostra dados reais da tabela security_trial_sessions. Diferente do funil Umami (baseado em eventos de tracking), este mostra o que realmente aconteceu no banco de dados."></span>
+  </div>
+
+  <div class="cards" style="margin-bottom: 16px;">
+    <div class="card">
+      <div class="card-title">Scans Iniciados <span class="info-tooltip" data-tooltip="Total de scans iniciados na página /trial. Cada linha na tabela security_trial_sessions representa um scan."></span></div>
+      <div class="card-value" id="db-funnel-started">--</div>
+      <div class="card-subtitle">Total de trials</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Completados <span class="info-tooltip" data-tooltip="Scans que terminaram com sucesso (status = completed). O usuário viu o resultado da análise."></span></div>
+      <div class="card-value" id="db-funnel-completed">--</div>
+      <div class="card-subtitle" id="db-funnel-completed-pct">--% dos iniciados</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Pagaram <span class="info-tooltip" data-tooltip="Usuários que pagaram após ver o resultado (payment_status = paid). Geram receita."></span></div>
+      <div class="card-value" id="db-funnel-paid" style="color: #22c55e;">--</div>
+      <div class="card-subtitle" id="db-funnel-paid-pct">--% dos completados</div>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">Registraram <span class="info-tooltip" data-tooltip="Usuários que pagaram E criaram conta (claimed_by_user_id preenchido). Conversão completa."></span></div>
+      <div class="card-value" id="db-funnel-registered" style="color: #10b981;">--</div>
+      <div class="card-subtitle" id="db-funnel-registered-pct">--% conversao total</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div>
+      <div class="section-title" style="font-size: 14px;">Funil de Conversao (DB) <span class="info-tooltip" data-tooltip="Visualização do funil com dados reais do banco. Cada barra mostra quantos usuários chegaram em cada etapa."></span></div>
+      <div id="db-trial-funnel-chart" style="height: 280px;"></div>
+    </div>
+    <div>
+      <div class="section-title" style="font-size: 14px;">Leads Quentes (Pagaram mas nao Registraram) <span class="info-tooltip tooltip-left" data-tooltip="Usuários que pagaram pelo scan mas ainda não criaram conta. São oportunidades de conversão - podem precisar de follow-up."></span></div>
+      <div id="db-funnel-hot-leads" style="max-height: 280px; overflow-y: auto;">
+        <div style="color: #64748b;">Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: 16px;">
+    <div>
+      <div class="section-title" style="font-size: 14px;">Leads Frios (Completaram mas nao Pagaram) <span class="info-tooltip" data-tooltip="Usuários que viram o resultado do scan mas não pagaram. Podem ter desistido pelo preço ou não viram valor suficiente."></span></div>
+      <div id="db-funnel-cold-leads" style="max-height: 200px; overflow-y: auto;">
+        <div style="color: #64748b;">Carregando...</div>
+      </div>
+    </div>
+    <div>
+      <div class="section-title" style="font-size: 14px;">Conversoes Recentes <span class="info-tooltip tooltip-left" data-tooltip="Últimos usuários que completaram a jornada: scan → pagamento → registro. Mostra atividade recente."></span></div>
+      <div id="db-funnel-recent-conversions" style="max-height: 200px; overflow-y: auto;">
+        <div style="color: #64748b;">Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 16px;">
+    <div class="section-title" style="font-size: 14px;">Metricas de Tempo <span class="info-tooltip" data-tooltip="Quanto tempo em média os usuários levam entre cada etapa do funil."></span></div>
+    <div class="grid-2">
+      <div>
+        <div class="metric-row">
+          <span class="metric-label">Tempo medio para Pagar <span class="info-tooltip" data-tooltip="Horas em média entre o scan completar e o usuário pagar."></span></span>
+          <span class="metric-value" id="db-funnel-time-to-pay">-- h</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">Tempo medio para Registrar <span class="info-tooltip" data-tooltip="Horas em média entre o pagamento e a criação da conta."></span></span>
+          <span class="metric-value" id="db-funnel-time-to-register">-- h</span>
+        </div>
+      </div>
+      <div>
+        <div class="metric-row">
+          <span class="metric-label">Com Vulnerabilidades <span class="info-tooltip" data-tooltip="Scans que encontraram pelo menos uma vulnerabilidade. Esses convertem melhor pois o usuário vê valor."></span></span>
+          <span class="metric-value" id="db-funnel-with-vulns">--</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">Taxa de Vuln → Pagamento <span class="info-tooltip" data-tooltip="Porcentagem de scans com vulnerabilidades que resultaram em pagamento."></span></span>
+          <span class="metric-value" id="db-funnel-vuln-conversion" style="color: #f59e0b;">--%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================================= -->
+<!-- LISTA DE TODOS OS SCANS (TRIAL + PAGOS) -->
+<!-- ============================================================================= -->
+<div class="section">
+  <div class="section-title" style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span>Todos os Scans (<span id="all-scans-count">0</span>)</span>
+      <span class="info-tooltip" data-tooltip="Lista completa de todos os scans executados (trial e pagos), do mais recente ao mais antigo. Inclui email, URLs escaneadas, tipo, status e datas."></span>
+    </div>
+    <button class="refresh-btn" onclick="loadAllScans(1)">Atualizar</button>
+  </div>
+
+  <div class="filters-row" style="margin-bottom: 16px;">
+    <div class="filter-group">
+      <label>Tipo</label>
+      <select id="all-scans-type" onchange="loadAllScans(1)">
+        <option value="">Todos</option>
+        <option value="trial">Trial (Landing Page)</option>
+        <option value="paid">Usuario Pago</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status</label>
+      <select id="all-scans-status" onchange="loadAllScans(1)">
+        <option value="">Todos</option>
+        <option value="pending">Pendente</option>
+        <option value="scanning">Escaneando</option>
+        <option value="completed">Completado</option>
+        <option value="claimed">Resgatado</option>
+        <option value="expired">Expirado</option>
+        <option value="failed">Falhou</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Buscar</label>
+      <input type="text" id="all-scans-search" placeholder="Email, URL, projeto..." onkeyup="debounceAllScansSearch()">
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Email</th>
+          <th>Frontend URL</th>
+          <th>Backend URL</th>
+          <th>Projeto</th>
+          <th>Status</th>
+          <th>Pagamento</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody id="all-scans-table">
+        <tr><td colspan="8" class="loading">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination" id="all-scans-pagination"></div>
+</div>
+
+<!-- ============================================================================= -->
 <!-- GRÁFICO DE CRESCIMENTO DE USUÁRIOS -->
 <!-- ============================================================================= -->
 <div class="section">
