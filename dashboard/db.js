@@ -19,6 +19,12 @@ const securityPool = new Pool({
   max: 5
 });
 
+// Analytics/Logs PostgreSQL - centraliza logs de todos os projetos
+const analyticsPool = new Pool({
+  connectionString: 'postgres://postgres:Jmlj3x7AiZoaVp3dVU930g09YdIsAMoVMu7g4JTLeVIDSrYompRRWR2FhBoON8IR@5.161.213.157:5441/postgres',
+  max: 10
+});
+
 // MongoDB connection
 const mongoUrl = 'mongodb://root:sU2fl3cVZXZnXz4eA3WKSwRG0H8oj5OF6UuDWDWEkY679XiSlbvPHFOGtdRlsdI4@5.161.213.157:5438/oentregador?directConnection=true&authSource=admin';
 let mongoClient = null;
@@ -45,5 +51,6 @@ export const db = {
   auth: authPool,
   billing: billingPool,
   security: securityPool,
+  analytics: analyticsPool,
   mongo: connectMongo
 };
