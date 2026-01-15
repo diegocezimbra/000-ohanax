@@ -2818,6 +2818,430 @@ app.get('/api/oentregador/audit/company/:companyId', async (req, res) => {
 });
 
 // =============================================================================
+// AUTH AUDIT ENDPOINTS (Authify Backend - PostgreSQL)
+// =============================================================================
+
+// GET /api/auth/audit/stats - Estatisticas de auditoria do Auth
+app.get('/api/auth/audit/stats', async (req, res) => {
+  try {
+    // Logins hoje
+    const loginsToday = await db.auth.query(`
+      SELECT COUNT(*) as count FROM login_history WHERE created_at::date = CURRENT_DATE
+    `);
+
+    // Logins falhos (ultimos 7 dias)
+    const failedLogins = await db.auth.query(`
+      SELECT COUNT(*) as count FROM login_history
+      WHERE success = false AND created_at > NOW() - INTERVAL '7 days'
+    `);
+
+    // Novos dispositivos (ultimos 7 dias)
+    const newDevices = await db.auth.query(`
+      SELECT COUNT(*) as count FROM login_history
+      WHERE is_new_device = true AND created_at > NOW() - INTERVAL '7 days'
+    `);
+
+    // Eventos criticos nao resolvidos
+    const criticalEvents = await db.auth.query(`
+      SELECT COUNT(*) as count FROM security_events
+      WHERE severity IN ('high', 'critical') AND resolved = false
+    `);
+
+    res.json({
+      loginsToday: parseInt(loginsToday.rows[0].count) || 0,
+      failedLogins: parseInt(failedLogins.rows[0].count) || 0,
+      newDevices: parseInt(newDevices.rows[0].count) || 0,
+      criticalEvents: parseInt(criticalEvents.rows[0].count) || 0
+    });
+  } catch (err) {
+    console.error('Error fetching auth audit stats:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/auth/audit/logins - Historico de logins
+app.get('/api/auth/audit/logins', async (req, res) => {
+  try {
+    const { success, page = 1, limit = 20 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    let whereClause = '';
+    const params = [];
+
+    if (success !== undefined && success !== '') {
+      whereClause = 'WHERE success = $1';
+      params.push(success === 'true');
+    }
+
+    const countQuery = `SELECT COUNT(*) as total FROM login_history ${whereClause}`;
+    const countResult = await db.auth.query(countQuery, params);
+    const total = parseInt(countResult.rows[0].total);
+
+    const dataQuery = `
+      SELECT
+        id, user_id, user_type, user_email, success, failure_reason,
+        ip_address, user_agent, device_fingerprint, is_new_device,
+        auth_method, created_at
+      FROM login_history
+      ${whereClause}
+      ORDER BY created_at DESC
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+    `;
+    const dataResult = await db.auth.query(dataQuery, [...params, parseInt(limit), offset]);
+
+    res.json({
+      data: dataResult.rows,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (err) {
+    console.error('Error fetching auth logins:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/auth/audit/logins-chart - Dados para grafico de logins (7 dias)
+app.get('/api/auth/audit/logins-chart', async (req, res) => {
+  try {
+    const result = await db.auth.query(`
+      SELECT
+        created_at::date as date,
+        COUNT(*) as total,
+        COUNT(CASE WHEN success = true THEN 1 END) as success,
+        COUNT(CASE WHEN success = false THEN 1 END) as failed
+      FROM login_history
+      WHERE created_at > NOW() - INTERVAL '7 days'
+      GROUP BY created_at::date
+      ORDER BY date
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching logins chart:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/auth/audit/security-events - Eventos de seguranca
+app.get('/api/auth/audit/security-events', async (req, res) => {
+  try {
+    const { severity, page = 1, limit = 20 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    let whereClause = '';
+    const params = [];
+
+    if (severity) {
+      whereClause = 'WHERE severity = $1';
+      params.push(severity);
+    }
+
+    const countQuery = `SELECT COUNT(*) as total FROM security_events ${whereClause}`;
+    const countResult = await db.auth.query(countQuery, params);
+    const total = parseInt(countResult.rows[0].total);
+
+    const dataQuery = `
+      SELECT
+        id, user_id, user_type, user_email, event_type, severity,
+        ip_address, user_agent, details, resolved, resolved_at,
+        resolved_by, created_at
+      FROM security_events
+      ${whereClause}
+      ORDER BY created_at DESC
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+    `;
+    const dataResult = await db.auth.query(dataQuery, [...params, parseInt(limit), offset]);
+
+    res.json({
+      data: dataResult.rows,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (err) {
+    console.error('Error fetching security events:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/auth/audit/security-events/:id/resolve - Resolver evento de seguranca
+app.patch('/api/auth/audit/security-events/:id/resolve', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await db.auth.query(`
+      UPDATE security_events
+      SET resolved = true, resolved_at = NOW()
+      WHERE id = $1
+    `, [id]);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error resolving security event:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/auth/audit/admin-actions - Acoes administrativas recentes
+app.get('/api/auth/audit/admin-actions', async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    const countQuery = `SELECT COUNT(*) as total FROM audit_logs WHERE actor_type = 'admin'`;
+    const countResult = await db.auth.query(countQuery);
+    const total = parseInt(countResult.rows[0].total);
+
+    const dataQuery = `
+      SELECT
+        id, actor_type, actor_id, actor_email, action,
+        resource_type, resource_id, http_method, endpoint,
+        status_code, success, duration_ms, changes, metadata,
+        severity, ip_address, created_at
+      FROM audit_logs
+      WHERE actor_type = 'admin'
+      ORDER BY created_at DESC
+      LIMIT $1 OFFSET $2
+    `;
+    const dataResult = await db.auth.query(dataQuery, [parseInt(limit), offset]);
+
+    res.json({
+      data: dataResult.rows,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (err) {
+    console.error('Error fetching admin actions:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// BILLING AUDIT LOGS
+// =============================================================================
+
+// Get all audit logs with pagination and filters
+app.get('/api/billing/audit-logs', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+    const action = req.query.action;
+    const resource = req.query.resource;
+    const days = parseInt(req.query.days) || 30;
+
+    let whereClause = `WHERE created_at >= NOW() - INTERVAL '${days} days'`;
+    if (action) {
+      whereClause += ` AND action = '${action}'`;
+    }
+    if (resource) {
+      whereClause += ` AND resource = '${resource}'`;
+    }
+
+    const countResult = await db.billing.query(`
+      SELECT COUNT(*) as total FROM audit_logs ${whereClause}
+    `);
+
+    const result = await db.billing.query(`
+      SELECT
+        id,
+        project_id,
+        action,
+        resource,
+        resource_id,
+        resource_name,
+        admin_user_id,
+        admin_user_email,
+        ip_address,
+        user_agent,
+        previous_values,
+        new_values,
+        metadata,
+        created_at
+      FROM audit_logs
+      ${whereClause}
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `);
+
+    res.json({
+      data: result.rows,
+      total: parseInt(countResult.rows[0].total),
+      page,
+      limit,
+      totalPages: Math.ceil(parseInt(countResult.rows[0].total) / limit)
+    });
+  } catch (err) {
+    console.error('Error fetching audit logs:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get audit logs summary (actions count by type)
+app.get('/api/billing/audit-logs/summary', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 7;
+
+    const result = await db.billing.query(`
+      SELECT
+        action,
+        COUNT(*) as count
+      FROM audit_logs
+      WHERE created_at >= NOW() - INTERVAL '${days} days'
+      GROUP BY action
+      ORDER BY count DESC
+    `);
+
+    const byResource = await db.billing.query(`
+      SELECT
+        resource,
+        COUNT(*) as count
+      FROM audit_logs
+      WHERE created_at >= NOW() - INTERVAL '${days} days'
+      GROUP BY resource
+      ORDER BY count DESC
+    `);
+
+    res.json({
+      byAction: result.rows,
+      byResource: byResource.rows,
+      period: `${days} days`
+    });
+  } catch (err) {
+    console.error('Error fetching audit summary:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get critical actions (DELETE, REVOKE, etc.)
+app.get('/api/billing/audit-logs/critical', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 30;
+
+    const result = await db.billing.query(`
+      SELECT
+        id,
+        project_id,
+        action,
+        resource,
+        resource_id,
+        resource_name,
+        admin_user_id,
+        admin_user_email,
+        ip_address,
+        previous_values,
+        new_values,
+        created_at
+      FROM audit_logs
+      WHERE action IN ('DELETE', 'REVOKE', 'CANCEL', 'DEACTIVATE')
+        AND created_at >= NOW() - INTERVAL '${days} days'
+      ORDER BY created_at DESC
+      LIMIT 50
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching critical actions:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get admin sessions (LOGIN/LOGOUT activity)
+app.get('/api/billing/sessions', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 7;
+
+    const result = await db.billing.query(`
+      SELECT
+        id,
+        admin_user_id,
+        admin_user_email,
+        action,
+        ip_address,
+        user_agent,
+        metadata,
+        created_at
+      FROM audit_logs
+      WHERE action IN ('LOGIN', 'LOGOUT', 'LOGIN_NEW_DEVICE')
+        AND created_at >= NOW() - INTERVAL '${days} days'
+      ORDER BY created_at DESC
+      LIMIT 100
+    `);
+
+    // Get unique active admins (with recent activity)
+    const activeAdmins = await db.billing.query(`
+      SELECT DISTINCT ON (admin_user_email)
+        admin_user_email,
+        admin_user_id,
+        ip_address,
+        user_agent,
+        created_at as last_activity
+      FROM audit_logs
+      WHERE admin_user_email IS NOT NULL
+        AND created_at >= NOW() - INTERVAL '${days} days'
+      ORDER BY admin_user_email, created_at DESC
+    `);
+
+    res.json({
+      sessions: result.rows,
+      activeAdmins: activeAdmins.rows,
+      period: `${days} days`
+    });
+  } catch (err) {
+    console.error('Error fetching sessions:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get activity per day for chart
+app.get('/api/billing/audit-logs/per-day', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 7;
+
+    const result = await db.billing.query(`
+      SELECT
+        DATE(created_at) as date,
+        COUNT(*) as total,
+        COUNT(CASE WHEN action = 'CREATE' THEN 1 END) as creates,
+        COUNT(CASE WHEN action = 'UPDATE' THEN 1 END) as updates,
+        COUNT(CASE WHEN action IN ('DELETE', 'REVOKE', 'CANCEL') THEN 1 END) as critical
+      FROM audit_logs
+      WHERE created_at >= NOW() - INTERVAL '${days} days'
+      GROUP BY DATE(created_at)
+      ORDER BY DATE(created_at) ASC
+    `);
+
+    // Fill missing days with zeros
+    const data = [];
+    const now = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const found = result.rows.find(r => r.date && r.date.toISOString().split('T')[0] === dateStr);
+      data.push({
+        date: dateStr,
+        total: found ? parseInt(found.total) : 0,
+        creates: found ? parseInt(found.creates) : 0,
+        updates: found ? parseInt(found.updates) : 0,
+        critical: found ? parseInt(found.critical) : 0
+      });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error('Error fetching audit per day:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
 // WEBSITE ESTATICO (RAIZ)
 // =============================================================================
 

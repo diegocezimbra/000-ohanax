@@ -816,6 +816,158 @@ async function loadProjectPage(project) {
           }
         }
       } catch (e) { console.error('Error loading security today stats:', e); }
+
+      // Activity Log data
+      try {
+        // Activity stats
+        const activityStats = await fetch('/api/security/activity/stats?days=30').then(r => r.json());
+        const activityTotalEl = document.getElementById('security-activity-total');
+        const activityLoginsEl = document.getElementById('security-activity-logins');
+        const activityFailedLoginsEl = document.getElementById('security-activity-failed-logins');
+        const activityScansEl = document.getElementById('security-activity-scans');
+
+        if (activityTotalEl) activityTotalEl.textContent = activityStats.totals?.total || 0;
+        if (activityLoginsEl) activityLoginsEl.textContent = activityStats.totals?.logins || 0;
+        if (activityFailedLoginsEl) activityFailedLoginsEl.textContent = activityStats.totals?.failed_logins || 0;
+        if (activityScansEl) activityScansEl.textContent = activityStats.totals?.scans_started || 0;
+
+        // By action
+        const byActionEl = document.getElementById('security-activity-by-action');
+        if (byActionEl && activityStats.byAction) {
+          const actionLabels = {
+            'login': 'Login',
+            'login_failed': 'Login Falho',
+            'logout': 'Logout',
+            'project_create': 'Criar Projeto',
+            'project_update': 'Atualizar Projeto',
+            'project_delete': 'Deletar Projeto',
+            'scan_start': 'Iniciar Scan',
+            'scan_complete': 'Scan Completo',
+            'report_export': 'Exportar Relatorio'
+          };
+          byActionEl.innerHTML = activityStats.byAction.map(a => `
+            <div class="metric-row" style="padding: 6px 0; border-bottom: 1px solid #334155;">
+              <span class="metric-label" style="font-size: 12px;">${actionLabels[a.action] || a.action}</span>
+              <span class="metric-value" style="font-size: 14px;">${a.count}</span>
+            </div>
+          `).join('') || '<div style="color: #64748b;">Sem dados</div>';
+        }
+
+        // By user
+        const byUserEl = document.getElementById('security-activity-by-user');
+        if (byUserEl && activityStats.byUser) {
+          byUserEl.innerHTML = activityStats.byUser.map(u => `
+            <div class="metric-row" style="padding: 6px 0; border-bottom: 1px solid #334155;">
+              <span class="metric-label" style="font-size: 12px;">${u.user_email || 'Desconhecido'}</span>
+              <span class="metric-value" style="font-size: 14px;">${u.count}</span>
+            </div>
+          `).join('') || '<div style="color: #64748b;">Sem dados</div>';
+        }
+      } catch (e) { console.error('Error loading activity stats:', e); }
+
+      // Activity per day chart
+      try {
+        const activityPerDay = await fetch('/api/security/activity/per-day?days=30').then(r => r.json());
+        const activityChartEl = document.getElementById('securityActivityChart');
+        if (activityChartEl && activityPerDay.length > 0) {
+          if (charts['securityActivity']) charts['securityActivity'].destroy();
+          charts['securityActivity'] = new ApexCharts(activityChartEl, {
+            chart: {
+              type: 'area',
+              height: 200,
+              background: chartTheme.background,
+              toolbar: { show: false },
+              fontFamily: 'Inter, sans-serif'
+            },
+            series: [
+              { name: 'Total', data: activityPerDay.map(d => d.total) },
+              { name: 'Logins', data: activityPerDay.map(d => d.logins) },
+              { name: 'Scans', data: activityPerDay.map(d => d.scans) }
+            ],
+            colors: ['#3b82f6', '#22c55e', '#ef4444'],
+            stroke: { curve: 'smooth', width: 2 },
+            fill: { type: 'gradient', gradient: { opacityFrom: 0.3, opacityTo: 0.1 } },
+            xaxis: {
+              categories: activityPerDay.map(d => {
+                const date = new Date(d.date);
+                return `${date.getDate()}/${date.getMonth() + 1}`;
+              }),
+              labels: { style: { colors: chartTheme.textColor, fontSize: '10px' } },
+              axisBorder: { show: false },
+              axisTicks: { show: false }
+            },
+            yaxis: {
+              labels: { style: { colors: chartTheme.textColor } }
+            },
+            grid: { borderColor: chartTheme.gridColor, strokeDashArray: 4 },
+            legend: { position: 'top', labels: { colors: chartTheme.textColor } },
+            tooltip: { theme: 'dark' }
+          });
+          charts['securityActivity'].render();
+        }
+      } catch (e) { console.error('Error loading activity chart:', e); }
+
+      // Failed logins
+      try {
+        const failedLogins = await fetch('/api/security/activity/failed-logins?hours=24').then(r => r.json());
+        const failedListEl = document.getElementById('security-failed-logins-list');
+        const suspiciousIpsEl = document.getElementById('security-suspicious-ips');
+
+        if (suspiciousIpsEl && failedLogins.suspiciousIps && failedLogins.suspiciousIps.length > 0) {
+          suspiciousIpsEl.textContent = `${failedLogins.suspiciousIps.length} IP(s) suspeito(s)`;
+        }
+
+        if (failedListEl) {
+          if (failedLogins.recent && failedLogins.recent.length > 0) {
+            failedListEl.innerHTML = failedLogins.recent.slice(0, 20).map(f => {
+              const time = new Date(f.created_at).toLocaleString('pt-BR', {
+                day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+              });
+              return `
+                <div style="padding: 6px 0; border-bottom: 1px solid #334155; font-size: 12px;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #ef4444;">${f.user_email || 'Email?'}</span>
+                    <span style="color: #64748b;">${time}</span>
+                  </div>
+                  <div style="color: #64748b; font-size: 11px;">IP: ${f.ip_address || '-'}</div>
+                </div>
+              `;
+            }).join('');
+          } else {
+            failedListEl.innerHTML = '<div style="color: #22c55e; font-size: 13px;">Nenhuma tentativa falha nas ultimas 24h</div>';
+          }
+        }
+      } catch (e) { console.error('Error loading failed logins:', e); }
+
+      // Recent activities table
+      try {
+        const activities = await fetch('/api/security/activity?limit=20').then(r => r.json());
+        const tableEl = document.getElementById('security-activity-table');
+
+        const actionLabels = {
+          'login': 'Login', 'login_failed': 'Login Falho', 'logout': 'Logout',
+          'project_create': 'Criar Projeto', 'project_update': 'Atualizar Projeto',
+          'project_delete': 'Deletar Projeto', 'scan_start': 'Iniciar Scan',
+          'scan_complete': 'Scan Completo', 'report_export': 'Exportar'
+        };
+
+        if (tableEl && activities.data) {
+          tableEl.innerHTML = activities.data.map(a => {
+            const actionColor = a.action === 'login' ? '#22c55e' :
+                               a.action === 'login_failed' ? '#ef4444' :
+                               a.action.includes('scan') ? '#f59e0b' : '#3b82f6';
+            return `
+              <tr>
+                <td>${a.user_name || a.user_email || '-'}</td>
+                <td style="color: ${actionColor};">${actionLabels[a.action] || a.action}</td>
+                <td>${a.resource_name || a.resource_type || '-'}</td>
+                <td style="font-size: 11px; color: #64748b;">${a.ip_address || '-'}</td>
+                <td style="font-size: 11px;">${formatDateTime(a.created_at)}</td>
+              </tr>
+            `;
+          }).join('') || '<tr><td colspan="5">Sem atividades</td></tr>';
+        }
+      } catch (e) { console.error('Error loading activities table:', e); }
     }
 
     // oEntregador today stats (usuarios ativos e bipados)
@@ -923,6 +1075,13 @@ async function loadProjectPage(project) {
       } catch (e) { console.error('Error loading audit data:', e); }
     }
 
+    // Billing audit logs
+    if (project === 'billing') {
+      try {
+        await loadBillingAuditData();
+      } catch (e) { console.error('Error loading billing audit data:', e); }
+    }
+
     // Tabela
     const tableEl = document.getElementById(`${project}-table`);
     if (tableEl) {
@@ -985,6 +1144,15 @@ async function loadProjectPage(project) {
       const funnelData = await fetch(`/api/funnel?project=${project}`).then(r => r.json());
       renderProjectFunnel(funnelData, project);
     } catch (err) { console.error(`Error loading funnel for ${project}:`, err); }
+
+    // Load auth audit data (for auth page only)
+    if (project === 'auth') {
+      await loadAuthAuditStats();
+      await loadAuthLoginsChart();
+      await loadAuthLogins();
+      await loadAuthSecurityEvents();
+      await loadAuthAdminActions();
+    }
 
   } catch (err) { console.error(`Error loading ${project}:`, err); }
 }
@@ -1748,6 +1916,533 @@ async function loadAuditLogs(page = 1) {
 window.loadAuditLogs = loadAuditLogs;
 window.loadAuditStats = loadAuditStats;
 window.loadAuditTimeline = loadAuditTimeline;
+
+// =============================================================================
+// AUTH AUDIT FUNCTIONS (for auth.html page)
+// =============================================================================
+
+let authLoginsPage = 1;
+const authLoginsPageSize = 20;
+
+// Load auth audit stats
+async function loadAuthAuditStats() {
+  try {
+    const stats = await fetch('/api/auth/audit/stats').then(r => r.json());
+
+    const loginsTodayEl = document.getElementById('auth-logins-today');
+    const failedLoginsEl = document.getElementById('auth-failed-logins');
+    const newDevicesEl = document.getElementById('auth-new-devices');
+    const criticalEventsEl = document.getElementById('auth-critical-events');
+
+    if (loginsTodayEl) loginsTodayEl.textContent = stats.loginsToday || 0;
+    if (failedLoginsEl) failedLoginsEl.textContent = stats.failedLogins || 0;
+    if (newDevicesEl) newDevicesEl.textContent = stats.newDevices || 0;
+    if (criticalEventsEl) criticalEventsEl.textContent = stats.criticalEvents || 0;
+  } catch (err) {
+    console.error('Error loading auth audit stats:', err);
+  }
+}
+
+// Load auth logins chart
+async function loadAuthLoginsChart() {
+  try {
+    const data = await fetch('/api/auth/audit/logins-chart').then(r => r.json());
+    const chartEl = document.getElementById('auth-logins-chart');
+
+    if (chartEl && data.length > 0) {
+      if (charts['authLogins']) charts['authLogins'].destroy();
+
+      charts['authLogins'] = new ApexCharts(chartEl, {
+        chart: {
+          type: 'bar',
+          height: 200,
+          stacked: true,
+          background: chartTheme.background,
+          toolbar: { show: false },
+          fontFamily: 'Inter, sans-serif'
+        },
+        series: [
+          {
+            name: 'Sucesso',
+            data: data.map(d => parseInt(d.success) || 0)
+          },
+          {
+            name: 'Falha',
+            data: data.map(d => parseInt(d.failed) || 0)
+          }
+        ],
+        colors: ['#22c55e', '#ef4444'],
+        plotOptions: {
+          bar: {
+            borderRadius: 4,
+            columnWidth: '60%'
+          }
+        },
+        xaxis: {
+          categories: data.map(d => {
+            const date = new Date(d.date);
+            return `${date.getDate()}/${date.getMonth() + 1}`;
+          }),
+          labels: { style: { colors: chartTheme.textColor, fontSize: '10px' } },
+          axisBorder: { show: false },
+          axisTicks: { show: false }
+        },
+        yaxis: {
+          labels: { style: { colors: chartTheme.textColor } },
+          min: 0
+        },
+        grid: {
+          borderColor: chartTheme.gridColor,
+          strokeDashArray: 4
+        },
+        dataLabels: { enabled: false },
+        legend: {
+          position: 'top',
+          labels: { colors: chartTheme.textColor }
+        },
+        tooltip: {
+          theme: 'dark',
+          y: {
+            formatter: (val) => val + ' logins'
+          }
+        }
+      });
+      charts['authLogins'].render();
+    }
+  } catch (err) {
+    console.error('Error loading auth logins chart:', err);
+  }
+}
+
+// Load auth logins table
+async function loadAuthLogins(page = 1) {
+  try {
+    authLoginsPage = page;
+    const filterEl = document.getElementById('auth-login-filter');
+    const success = filterEl ? filterEl.value : '';
+
+    let url = `/api/auth/audit/logins?page=${page}&limit=${authLoginsPageSize}`;
+    if (success) url += `&success=${success}`;
+
+    const result = await fetch(url).then(r => r.json());
+    const tableEl = document.getElementById('auth-logins-table');
+
+    if (tableEl) {
+      if (result.data && result.data.length > 0) {
+        tableEl.innerHTML = result.data.map(log => {
+          const statusClass = log.success ? 'active' : 'canceled';
+          const statusLabel = log.success ? 'Sucesso' : 'Falha';
+          const time = formatDateTime(log.created_at);
+          const method = formatAuthMethod(log.auth_method);
+          const device = log.is_new_device ? '<span style="color: #f59e0b;">Novo</span>' : 'Conhecido';
+
+          return `
+            <tr>
+              <td style="font-size: 12px; white-space: nowrap;">${time}</td>
+              <td style="font-size: 12px;">${log.user_email || '-'}</td>
+              <td style="font-size: 11px; color: #64748b;">${log.ip_address || '-'}</td>
+              <td style="font-size: 12px;">${method}</td>
+              <td><span class="status ${statusClass}">${statusLabel}</span></td>
+              <td style="font-size: 12px;">${device}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        tableEl.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">Nenhum login encontrado</td></tr>';
+      }
+    }
+
+    // Pagination
+    renderAuthLoginsPagination(result.page, result.totalPages);
+  } catch (err) {
+    console.error('Error loading auth logins:', err);
+  }
+}
+
+// Render pagination for auth logins
+function renderAuthLoginsPagination(page, totalPages) {
+  const paginationEl = document.getElementById('auth-logins-pagination');
+  if (!paginationEl) return;
+
+  if (totalPages > 1) {
+    let paginationHtml = '';
+    if (page > 1) {
+      paginationHtml += `<button onclick="loadAuthLogins(${page - 1})" style="background: #1e293b; border: 1px solid #334155; padding: 6px 12px; border-radius: 4px; color: #f1f5f9; cursor: pointer;">Anterior</button>`;
+    }
+    paginationHtml += `<span style="color: #94a3b8; padding: 6px 12px;">Pagina ${page} de ${totalPages}</span>`;
+    if (page < totalPages) {
+      paginationHtml += `<button onclick="loadAuthLogins(${page + 1})" style="background: #1e293b; border: 1px solid #334155; padding: 6px 12px; border-radius: 4px; color: #f1f5f9; cursor: pointer;">Proxima</button>`;
+    }
+    paginationEl.innerHTML = paginationHtml;
+  } else {
+    paginationEl.innerHTML = '';
+  }
+}
+
+// Format auth method
+function formatAuthMethod(method) {
+  const methods = {
+    'password': 'Senha',
+    'oauth_google': 'Google',
+    'oauth_github': 'GitHub',
+    'magic_link': 'Magic Link',
+    'api_key': 'API Key'
+  };
+  return methods[method] || method || '-';
+}
+
+// Load auth security events
+async function loadAuthSecurityEvents() {
+  try {
+    const filterEl = document.getElementById('auth-severity-filter');
+    const severity = filterEl ? filterEl.value : '';
+
+    let url = '/api/auth/audit/security-events?limit=20';
+    if (severity) url += `&severity=${severity}`;
+
+    const result = await fetch(url).then(r => r.json());
+    const tableEl = document.getElementById('auth-security-table');
+
+    if (tableEl) {
+      if (result.data && result.data.length > 0) {
+        tableEl.innerHTML = result.data.map(event => {
+          const severityClass = getSeverityClass(event.severity);
+          const eventLabel = formatSecurityEventType(event.event_type);
+          const time = formatDateTime(event.created_at);
+          const resolvedStatus = event.resolved
+            ? '<span class="status active">Resolvido</span>'
+            : `<span class="status canceled">Pendente</span>`;
+          const actionBtn = !event.resolved
+            ? `<button onclick="resolveSecurityEvent('${event.id}')" style="background: #22c55e; border: none; padding: 4px 8px; border-radius: 4px; color: white; cursor: pointer; font-size: 11px;">Resolver</button>`
+            : '';
+
+          return `
+            <tr>
+              <td style="font-size: 12px; white-space: nowrap;">${time}</td>
+              <td style="font-size: 12px;">${eventLabel}</td>
+              <td><span class="status ${severityClass}">${event.severity}</span></td>
+              <td style="font-size: 12px;">${event.user_email || '-'}</td>
+              <td style="font-size: 11px; color: #64748b;">${event.ip_address || '-'}</td>
+              <td>${resolvedStatus}</td>
+              <td>${actionBtn}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        tableEl.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #22c55e;">Nenhum evento de seguranca</td></tr>';
+      }
+    }
+  } catch (err) {
+    console.error('Error loading security events:', err);
+  }
+}
+
+// Get severity CSS class
+function getSeverityClass(severity) {
+  const classes = {
+    'low': 'trialing',
+    'medium': 'pending',
+    'high': 'canceled',
+    'critical': 'canceled'
+  };
+  return classes[severity] || 'trialing';
+}
+
+// Format security event type
+function formatSecurityEventType(eventType) {
+  const types = {
+    'failed_login': 'Login Falho',
+    'multiple_failed_logins': 'Multiplos Logins Falhos',
+    'password_reset': 'Reset de Senha',
+    'password_changed': 'Senha Alterada',
+    'email_changed': 'Email Alterado',
+    'new_device': 'Novo Dispositivo',
+    'suspicious_location': 'Localizacao Suspeita',
+    'session_revoked_all': 'Sessoes Revogadas',
+    'api_key_created': 'API Key Criada',
+    'api_key_revoked': 'API Key Revogada',
+    'account_locked': 'Conta Bloqueada',
+    'rate_limit_exceeded': 'Rate Limit Excedido'
+  };
+  return types[eventType] || eventType || '-';
+}
+
+// Resolve security event
+async function resolveSecurityEvent(eventId) {
+  try {
+    await fetch(`/api/auth/audit/security-events/${eventId}/resolve`, {
+      method: 'PATCH'
+    });
+    await loadAuthSecurityEvents();
+    await loadAuthAuditStats();
+  } catch (err) {
+    console.error('Error resolving security event:', err);
+  }
+}
+
+// Load auth admin actions
+async function loadAuthAdminActions() {
+  try {
+    const result = await fetch('/api/auth/audit/admin-actions?limit=20').then(r => r.json());
+    const tableEl = document.getElementById('auth-admin-actions-table');
+
+    if (tableEl) {
+      if (result.data && result.data.length > 0) {
+        tableEl.innerHTML = result.data.map(log => {
+          const time = formatDateTime(log.created_at);
+          const actionLabel = formatAdminAction(log.action);
+          const details = log.changes
+            ? JSON.stringify(log.changes).substring(0, 50) + '...'
+            : (log.metadata ? JSON.stringify(log.metadata).substring(0, 50) + '...' : '-');
+
+          return `
+            <tr>
+              <td style="font-size: 12px; white-space: nowrap;">${time}</td>
+              <td style="font-size: 12px;">${log.actor_email || '-'}</td>
+              <td style="font-size: 12px; color: #3b82f6;">${actionLabel}</td>
+              <td style="font-size: 12px;">${log.resource_type || '-'}</td>
+              <td style="font-size: 11px; color: #64748b; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${details}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        tableEl.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b;">Nenhuma acao administrativa</td></tr>';
+      }
+    }
+  } catch (err) {
+    console.error('Error loading admin actions:', err);
+  }
+}
+
+// Format admin action
+function formatAdminAction(action) {
+  if (!action) return '-';
+  return action
+    .replace(/\./g, ' ')
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+// Make auth audit functions available globally
+window.loadAuthLogins = loadAuthLogins;
+window.loadAuthSecurityEvents = loadAuthSecurityEvents;
+window.loadAuthAdminActions = loadAuthAdminActions;
+window.resolveSecurityEvent = resolveSecurityEvent;
+
+// =============================================================================
+// BILLING AUDIT FUNCTIONS
+// =============================================================================
+
+async function loadBillingAuditData() {
+  const days = 7;
+
+  // Load summary stats
+  try {
+    const summary = await fetch(`/api/billing/audit-logs/summary?days=${days}`).then(r => r.json());
+    const sessions = await fetch(`/api/billing/sessions?days=${days}`).then(r => r.json());
+
+    // Total actions count
+    const totalActions = summary.byAction?.reduce((sum, a) => sum + parseInt(a.count), 0) || 0;
+    const totalEl = document.getElementById('billing-audit-total');
+    if (totalEl) totalEl.textContent = totalActions;
+
+    // Critical actions count
+    const criticalActions = ['DELETE', 'REVOKE', 'CANCEL', 'DEACTIVATE'];
+    const criticalCount = summary.byAction?.filter(a => criticalActions.includes(a.action))
+      .reduce((sum, a) => sum + parseInt(a.count), 0) || 0;
+    const criticalEl = document.getElementById('billing-audit-critical-count');
+    if (criticalEl) criticalEl.textContent = criticalCount;
+
+    // Active admins
+    const adminsEl = document.getElementById('billing-audit-admins');
+    if (adminsEl) adminsEl.textContent = sessions.activeAdmins?.length || 0;
+
+    // Actions by type
+    const byActionEl = document.getElementById('billing-audit-by-action');
+    if (byActionEl && summary.byAction?.length > 0) {
+      const actionLabels = {
+        'CREATE': 'Criar', 'UPDATE': 'Atualizar', 'DELETE': 'Deletar',
+        'ACTIVATE': 'Ativar', 'DEACTIVATE': 'Desativar', 'REVOKE': 'Revogar',
+        'LOGIN': 'Login', 'LOGOUT': 'Logout', 'LOGIN_NEW_DEVICE': 'Novo Device',
+        'CANCEL': 'Cancelar', 'VIEW': 'Visualizar'
+      };
+      const actionColors = {
+        'CREATE': '#22c55e', 'UPDATE': '#3b82f6', 'DELETE': '#ef4444',
+        'ACTIVATE': '#22c55e', 'DEACTIVATE': '#f59e0b', 'REVOKE': '#ef4444',
+        'LOGIN': '#8b5cf6', 'LOGOUT': '#64748b', 'LOGIN_NEW_DEVICE': '#f59e0b',
+        'CANCEL': '#ef4444', 'VIEW': '#64748b'
+      };
+      byActionEl.innerHTML = summary.byAction.slice(0, 8).map(a => `
+        <div class="metric-row" style="padding: 6px 0; border-bottom: 1px solid #334155;">
+          <span class="metric-label" style="font-size: 12px; color: ${actionColors[a.action] || '#94a3b8'};">
+            ${actionLabels[a.action] || a.action}
+          </span>
+          <span class="metric-value" style="font-size: 14px;">${a.count}</span>
+        </div>
+      `).join('');
+    } else if (byActionEl) {
+      byActionEl.innerHTML = '<div style="color: #64748b; font-size: 13px;">Sem acoes registradas</div>';
+    }
+  } catch (e) { console.error('Error loading billing audit summary:', e); }
+
+  // Load critical actions
+  try {
+    const critical = await fetch(`/api/billing/audit-logs/critical?days=${days}`).then(r => r.json());
+    const criticalEl = document.getElementById('billing-critical-actions');
+
+    if (criticalEl) {
+      if (critical.length > 0) {
+        criticalEl.innerHTML = critical.slice(0, 10).map(c => {
+          const time = new Date(c.created_at).toLocaleString('pt-BR', {
+            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+          });
+          const actionLabels = { 'DELETE': 'Deletou', 'REVOKE': 'Revogou', 'CANCEL': 'Cancelou', 'DEACTIVATE': 'Desativou' };
+          const resourceLabels = { 'PLAN': 'Plano', 'GATEWAY': 'Gateway', 'API_KEY': 'API Key', 'PROJECT': 'Projeto', 'SUBSCRIPTION': 'Assinatura' };
+          return `
+            <div style="padding: 8px 0; border-bottom: 1px solid #334155; font-size: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #ef4444; font-weight: 500;">${actionLabels[c.action] || c.action} ${resourceLabels[c.resource] || c.resource}</span>
+                <span style="color: #64748b; font-size: 11px;">${time}</span>
+              </div>
+              <div style="color: #94a3b8; font-size: 11px; margin-top: 2px;">
+                ${c.resource_name || c.resource_id || '-'} por ${c.admin_user_email || 'Sistema'}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        criticalEl.innerHTML = '<div style="color: #22c55e; font-size: 13px;">Nenhuma acao critica nos ultimos 7 dias</div>';
+      }
+    }
+  } catch (e) { console.error('Error loading billing critical actions:', e); }
+
+  // Load sessions
+  try {
+    const sessions = await fetch(`/api/billing/sessions?days=${days}`).then(r => r.json());
+    const sessionsEl = document.getElementById('billing-admin-sessions');
+
+    if (sessionsEl) {
+      if (sessions.activeAdmins?.length > 0) {
+        sessionsEl.innerHTML = sessions.activeAdmins.map(s => {
+          const time = new Date(s.last_activity).toLocaleString('pt-BR', {
+            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+          });
+          return `
+            <div style="padding: 8px 0; border-bottom: 1px solid #334155; font-size: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #f1f5f9;">${s.admin_user_email || 'Admin'}</span>
+                <span style="color: #64748b; font-size: 11px;">${time}</span>
+              </div>
+              <div style="color: #64748b; font-size: 11px; margin-top: 2px;">
+                IP: ${s.ip_address || '-'}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        sessionsEl.innerHTML = '<div style="color: #64748b; font-size: 13px;">Nenhuma sessao ativa</div>';
+      }
+    }
+  } catch (e) { console.error('Error loading billing sessions:', e); }
+
+  // Load audit chart (activity per day)
+  try {
+    const perDay = await fetch(`/api/billing/audit-logs/per-day?days=${days}`).then(r => r.json());
+    const chartEl = document.getElementById('billing-audit-chart');
+
+    if (chartEl && perDay.length > 0) {
+      if (charts['billingAudit']) charts['billingAudit'].destroy();
+      charts['billingAudit'] = new ApexCharts(chartEl, {
+        chart: {
+          type: 'bar',
+          height: 200,
+          stacked: true,
+          background: chartTheme.background,
+          toolbar: { show: false },
+          fontFamily: 'Inter, sans-serif'
+        },
+        series: [
+          { name: 'Criar', data: perDay.map(d => d.creates) },
+          { name: 'Atualizar', data: perDay.map(d => d.updates) },
+          { name: 'Criticas', data: perDay.map(d => d.critical) }
+        ],
+        colors: ['#22c55e', '#3b82f6', '#ef4444'],
+        plotOptions: {
+          bar: { borderRadius: 4, columnWidth: '60%' }
+        },
+        xaxis: {
+          categories: perDay.map(d => {
+            const date = new Date(d.date);
+            return `${date.getDate()}/${date.getMonth() + 1}`;
+          }),
+          labels: { style: { colors: chartTheme.textColor, fontSize: '10px' } },
+          axisBorder: { show: false },
+          axisTicks: { show: false }
+        },
+        yaxis: {
+          labels: { style: { colors: chartTheme.textColor } },
+          min: 0,
+          forceNiceScale: true
+        },
+        grid: { borderColor: chartTheme.gridColor, strokeDashArray: 4 },
+        dataLabels: { enabled: false },
+        legend: { position: 'top', labels: { colors: chartTheme.textColor } },
+        tooltip: { theme: 'dark' }
+      });
+      charts['billingAudit'].render();
+    }
+  } catch (e) { console.error('Error loading billing audit chart:', e); }
+
+  // Load recent audit logs table
+  try {
+    const logs = await fetch(`/api/billing/audit-logs?days=${days}&limit=15`).then(r => r.json());
+    const tableEl = document.getElementById('billing-audit-table');
+
+    if (tableEl) {
+      if (logs.data?.length > 0) {
+        const actionLabels = {
+          'CREATE': 'Criar', 'UPDATE': 'Atualizar', 'DELETE': 'Deletar',
+          'ACTIVATE': 'Ativar', 'DEACTIVATE': 'Desativar', 'REVOKE': 'Revogar',
+          'LOGIN': 'Login', 'LOGOUT': 'Logout', 'LOGIN_NEW_DEVICE': 'Novo Device',
+          'CANCEL': 'Cancelar', 'VIEW': 'Visualizar'
+        };
+        const resourceLabels = {
+          'PLAN': 'Plano', 'GATEWAY': 'Gateway', 'API_KEY': 'API Key',
+          'PROJECT': 'Projeto', 'SUBSCRIPTION': 'Assinatura', 'BRANDING': 'Branding',
+          'ONE_TIME_PRODUCT': 'Produto', 'SESSION': 'Sessao'
+        };
+        const actionColors = {
+          'CREATE': '#22c55e', 'UPDATE': '#3b82f6', 'DELETE': '#ef4444',
+          'ACTIVATE': '#22c55e', 'DEACTIVATE': '#f59e0b', 'REVOKE': '#ef4444',
+          'LOGIN': '#8b5cf6', 'LOGOUT': '#64748b', 'CANCEL': '#ef4444'
+        };
+
+        tableEl.innerHTML = logs.data.map(log => {
+          const time = new Date(log.created_at).toLocaleString('pt-BR', {
+            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+          });
+          const details = log.resource_name || log.resource_id || '-';
+          return `
+            <tr>
+              <td style="font-size: 12px; white-space: nowrap;">${time}</td>
+              <td style="font-size: 12px;">${log.admin_user_email || 'Sistema'}</td>
+              <td style="font-size: 12px; color: ${actionColors[log.action] || '#94a3b8'};">${actionLabels[log.action] || log.action}</td>
+              <td style="font-size: 12px;">${resourceLabels[log.resource] || log.resource}</td>
+              <td style="font-size: 11px; color: #64748b; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${details}</td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        tableEl.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b;">Nenhuma atividade registrada</td></tr>';
+      }
+    }
+  } catch (e) { console.error('Error loading billing audit table:', e); }
+}
+
+// Make billing audit function available globally
+window.loadBillingAuditData = loadBillingAuditData;
 
 // =============================================================================
 // INITIALIZATION
