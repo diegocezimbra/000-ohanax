@@ -1012,7 +1012,7 @@ router.get('/all-scans', async (req, res) => {
 
       const trialDataQuery = `
         SELECT
-          ts.id,
+          ts.id::text as id,
           'trial' as scan_type,
           ts.email,
           ts.frontend_url,
@@ -1050,7 +1050,7 @@ router.get('/all-scans', async (req, res) => {
 
       const paidDataQuery = `
         SELECT
-          sar.id,
+          sar.id::text as id,
           'paid' as scan_type,
           sau.email as email,
           sp.frontend_url,
@@ -1150,6 +1150,56 @@ router.get('/all-scans', async (req, res) => {
     }
   } catch (err) {
     console.error('Error fetching all scans:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /api/security/paying - Assinantes e compradores one-time recentes
+// =============================================================================
+router.get('/paying', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 5;
+
+    // Assinantes ativos/trialing
+    const subscribersQuery = await db.security.query(`
+      SELECT
+        u.email,
+        u.name,
+        s.plan_name,
+        s.price as mrr,
+        s.status,
+        s.created_at
+      FROM security_subscriptions s
+      JOIN security_admin_users u ON s.user_id = u.id
+      WHERE s.status IN ('active', 'trialing')
+      ORDER BY s.created_at DESC
+      LIMIT $1
+    `, [limit]);
+
+    // Compradores one-time (do security_onetime_packages)
+    const onetimeQuery = await db.security.query(`
+      SELECT
+        u.email,
+        u.name,
+        op.name as package_name,
+        pu.amount,
+        pu.status,
+        pu.created_at
+      FROM security_package_purchases pu
+      JOIN security_admin_users u ON pu.user_id = u.id
+      JOIN security_onetime_packages op ON pu.package_id = op.id
+      WHERE pu.status = 'paid'
+      ORDER BY pu.created_at DESC
+      LIMIT $1
+    `, [limit]);
+
+    res.json({
+      subscribers: subscribersQuery.rows,
+      onetime_purchases: onetimeQuery.rows,
+    });
+  } catch (err) {
+    console.error('Error fetching paying data:', err);
     res.status(500).json({ error: err.message });
   }
 });

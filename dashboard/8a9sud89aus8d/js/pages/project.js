@@ -204,6 +204,73 @@ export async function loadProjectPage(project) {
         if (paidPercentEl) paidPercentEl.textContent = percentage + '%';
       } catch (e) { console.error('Error loading scan stats:', e); }
 
+      // Revenue section - Assinaturas e One-Time
+      try {
+        // Popular a seção de receita com dados corretos
+        const subRevenueEl = document.getElementById('security-sub-revenue');
+        const subsInfoEl = document.getElementById('security-subs');
+
+        if (subRevenueEl) subRevenueEl.textContent = formatCurrency(mrr);
+        if (subsInfoEl) subsInfoEl.textContent = activeSubs + ' assinantes ativos';
+
+        // Carregar assinantes recentes e compradores one-time
+        const payingData = await fetch('/api/security/paying?limit=5').then(r => r.json());
+        const tableEl = document.getElementById('security-table');
+
+        if (tableEl) {
+          const subs = payingData.subscribers || [];
+          const onetime = payingData.onetime_purchases || [];
+
+          // Combinar e ordenar por data
+          const allTransactions = [
+            ...subs.map(s => ({
+              email: s.email,
+              name: s.plan_name || 'Plano',
+              value: s.mrr || 0,
+              type: 'Assinatura',
+              status: s.status,
+              created_at: s.created_at,
+              isOnetime: false
+            })),
+            ...onetime.map(o => ({
+              email: o.email,
+              name: o.package_name || 'Pacote',
+              value: o.amount || 0,
+              type: 'One-Time',
+              status: o.status,
+              created_at: o.created_at,
+              isOnetime: true
+            }))
+          ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 10);
+
+          if (allTransactions.length > 0) {
+            tableEl.innerHTML = allTransactions.map(t => `
+              <tr ${t.isOnetime ? 'style="background: rgba(245, 158, 11, 0.08);"' : ''}>
+                <td>${t.email || '-'}</td>
+                <td ${t.isOnetime ? 'style="color: #f59e0b;"' : ''}>${t.name}</td>
+                <td>${formatCurrency(t.value)}</td>
+                <td style="font-size: 11px; ${t.isOnetime ? 'color: #f59e0b;' : 'color: #22c55e;'}">${t.type}</td>
+                <td style="font-size: 11px;">${formatDateTime(t.created_at)}</td>
+              </tr>
+            `).join('');
+          } else {
+            tableEl.innerHTML = '<tr><td colspan="5" style="color: #64748b;">Sem transacoes recentes</td></tr>';
+          }
+        }
+
+        // Mostrar percentual one-time sobre total
+        const totalRev = mrr + oneTimeRevenue;
+        if (totalRev > 0) {
+          const mrrPercent = ((mrr / totalRev) * 100).toFixed(0);
+          const oneTimePercent = ((oneTimeRevenue / totalRev) * 100).toFixed(0);
+
+          const oneTimeCountEl = document.getElementById('security-onetime-count');
+          if (oneTimeCountEl) {
+            oneTimeCountEl.textContent = `${oneTimeCount} pacotes (${oneTimePercent}% da receita)`;
+          }
+        }
+      } catch (e) { console.error('Error loading revenue section:', e); }
+
       // Scans per day chart
       try {
         const scansPerDay = await fetch('/api/security/scans-per-day?days=30').then(r => r.json());
@@ -625,9 +692,10 @@ export async function loadProjectPage(project) {
 
         // Hot leads (paid but not registered)
         const hotLeadsEl = document.getElementById('db-funnel-hot-leads');
-        if (hotLeadsEl && dbFunnelData.hotLeads) {
-          if (dbFunnelData.hotLeads.length > 0) {
-            hotLeadsEl.innerHTML = dbFunnelData.hotLeads.map(lead => `
+        const hotLeads = dbFunnelData.leads?.hot || dbFunnelData.hotLeads || [];
+        if (hotLeadsEl) {
+          if (hotLeads.length > 0) {
+            hotLeadsEl.innerHTML = hotLeads.map(lead => `
               <div style="padding: 8px 0; border-bottom: 1px solid #334155; font-size: 13px;">
                 <div style="color: #f59e0b;">${lead.email || 'Email nao informado'}</div>
                 <div style="color: #64748b; font-size: 11px; margin-top: 2px;">
@@ -642,9 +710,10 @@ export async function loadProjectPage(project) {
 
         // Cold leads (completed but not paid)
         const coldLeadsEl = document.getElementById('db-funnel-cold-leads');
-        if (coldLeadsEl && dbFunnelData.coldLeads) {
-          if (dbFunnelData.coldLeads.length > 0) {
-            coldLeadsEl.innerHTML = dbFunnelData.coldLeads.slice(0, 10).map(lead => `
+        const coldLeads = dbFunnelData.leads?.cold || dbFunnelData.coldLeads || [];
+        if (coldLeadsEl) {
+          if (coldLeads.length > 0) {
+            coldLeadsEl.innerHTML = coldLeads.slice(0, 10).map(lead => `
               <div style="padding: 6px 0; border-bottom: 1px solid #334155; font-size: 12px;">
                 <div style="color: #94a3b8;">${lead.email || 'Email nao informado'}</div>
                 <div style="color: #64748b; font-size: 11px;">
