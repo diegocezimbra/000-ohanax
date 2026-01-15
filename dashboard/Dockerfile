@@ -9,6 +9,7 @@ COPY server.js db.js ./
 COPY routes/ ./routes/
 COPY config/ ./config/
 COPY utils/ ./utils/
+COPY services/ ./services/
 COPY 8a9sud89aus8d/ ./8a9sud89aus8d/
 
 EXPOSE 3333
