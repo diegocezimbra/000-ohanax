@@ -11,6 +11,7 @@ import securityRoutes from './routes/security.js';
 import oentregadorRoutes from './routes/oentregador.js';
 import overviewRoutes from './routes/overview.js';
 import adsRoutes from './routes/ads.js';
+import ga4Routes from './routes/ga4.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -163,6 +164,7 @@ app.use('/api/billing', billingRoutes);
 app.use('/api/security', securityRoutes);
 app.use('/api/oentregador', oentregadorRoutes);
 app.use('/api/ads', adsRoutes);
+app.use('/api/ga4', ga4Routes);
 app.use('/api', overviewRoutes);
 
 // =============================================================================

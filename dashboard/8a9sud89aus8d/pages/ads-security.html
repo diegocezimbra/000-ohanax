@@ -282,3 +282,259 @@
     </div>
   </div>
 </details>
+
+<!-- ============================================================================= -->
+<!-- ANALYTICS - FUNIL DO GA4 -->
+<!-- ============================================================================= -->
+<div class="section">
+  <div class="section-title" style="display: flex; align-items: center; gap: 12px;">
+    <span>Analytics - Funil de Conversao</span>
+    <span class="info-tooltip" data-tooltip="Dados do Google Analytics 4 mostrando o funil de conversao do /scan."></span>
+    <button class="refresh-btn" style="margin-left: auto;" onclick="loadGA4Analytics()">Atualizar</button>
+  </div>
+
+  <!-- Metricas de Sessao -->
+  <div class="cards" style="margin-bottom: 16px;">
+    <div class="card">
+      <div class="card-title">Usuarios Ativos <span class="info-tooltip" data-tooltip="Usuarios unicos que visitaram o site nos ultimos 7 dias."></span></div>
+      <div class="card-value" id="ga4-active-users">--</div>
+      <div class="card-subtitle">7 dias</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Sessoes <span class="info-tooltip" data-tooltip="Total de sessoes no periodo."></span></div>
+      <div class="card-value" id="ga4-sessions">--</div>
+      <div class="card-subtitle">7 dias</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Page Views <span class="info-tooltip" data-tooltip="Total de visualizacoes de pagina."></span></div>
+      <div class="card-value" id="ga4-page-views">--</div>
+      <div class="card-subtitle">7 dias</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Bounce Rate <span class="info-tooltip tooltip-left" data-tooltip="Taxa de rejeicao - usuarios que sairam sem interagir."></span></div>
+      <div class="card-value" id="ga4-bounce-rate">--%</div>
+      <div class="card-subtitle">7 dias</div>
+    </div>
+  </div>
+
+  <!-- Funil Visual -->
+  <div style="background: #1e293b; border-radius: 8px; padding: 20px; margin-bottom: 16px;">
+    <div style="font-size: 14px; font-weight: 600; color: #f1f5f9; margin-bottom: 16px;">Funil: Scan Flow</div>
+    <div id="ga4-funnel-container" style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="color: #64748b; text-align: center; padding: 20px;">Carregando funil...</div>
+    </div>
+  </div>
+
+  <!-- Top Eventos -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div style="background: #1e293b; border-radius: 8px; padding: 16px;">
+      <div style="font-size: 14px; font-weight: 600; color: #f1f5f9; margin-bottom: 12px;">Top Eventos (7 dias)</div>
+      <div id="ga4-top-events" style="font-size: 12px;">
+        <div style="color: #64748b;">Carregando...</div>
+      </div>
+    </div>
+    <div style="background: #1e293b; border-radius: 8px; padding: 16px;">
+      <div style="font-size: 14px; font-weight: 600; color: #f1f5f9; margin-bottom: 12px;">Top Paginas (7 dias)</div>
+      <div id="ga4-top-pages" style="font-size: 12px;">
+        <div style="color: #64748b;">Carregando...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// GA4 Analytics Functions
+async function loadGA4Analytics() {
+  try {
+    // Carregar metricas de sessao
+    const sessionData = await fetchGA4SessionMetrics();
+    updateGA4SessionMetrics(sessionData);
+
+    // Carregar funil
+    const funnelData = await fetchGA4Funnel();
+    updateGA4Funnel(funnelData);
+
+    // Carregar eventos
+    const eventsData = await fetchGA4Events();
+    updateGA4Events(eventsData);
+
+    // Carregar paginas
+    const pagesData = await fetchGA4TopPages();
+    updateGA4Pages(pagesData);
+  } catch (error) {
+    console.error('Erro ao carregar GA4:', error);
+  }
+}
+
+async function getGA4Token() {
+  // Usar o endpoint do servidor para renovar token
+  const response = await fetch('/api/ga4/token');
+  if (!response.ok) throw new Error('Falha ao obter token GA4');
+  const data = await response.json();
+  return data.access_token;
+}
+
+async function fetchGA4SessionMetrics() {
+  const token = await getGA4Token();
+  const response = await fetch('https://analyticsdata.googleapis.com/v1beta/properties/518739213:runReport', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+      metrics: [
+        { name: 'activeUsers' },
+        { name: 'sessions' },
+        { name: 'screenPageViews' },
+        { name: 'bounceRate' }
+      ]
+    })
+  });
+  return response.json();
+}
+
+async function fetchGA4Funnel() {
+  const token = await getGA4Token();
+  const response = await fetch('https://analyticsdata.googleapis.com/v1alpha/properties/518739213:runFunnelReport', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+      funnel: {
+        steps: [
+          { name: 'Landing Page', filterExpression: { funnelEventFilter: { eventName: 'page_view' } } },
+          { name: 'Scan Start', filterExpression: { funnelEventFilter: { eventName: 'scan_start' } } },
+          { name: 'Scan Complete', filterExpression: { funnelEventFilter: { eventName: 'scan_complete' } } },
+          { name: 'Checkout', filterExpression: { funnelEventFilter: { eventName: 'checkout_start' } } }
+        ]
+      }
+    })
+  });
+  return response.json();
+}
+
+async function fetchGA4Events() {
+  const token = await getGA4Token();
+  const response = await fetch('https://analyticsdata.googleapis.com/v1beta/properties/518739213:runReport', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+      dimensions: [{ name: 'eventName' }],
+      metrics: [{ name: 'eventCount' }],
+      limit: 10
+    })
+  });
+  return response.json();
+}
+
+async function fetchGA4TopPages() {
+  const token = await getGA4Token();
+  const response = await fetch('https://analyticsdata.googleapis.com/v1beta/properties/518739213:runReport', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+      dimensions: [{ name: 'pagePath' }],
+      metrics: [{ name: 'screenPageViews' }],
+      limit: 8
+    })
+  });
+  return response.json();
+}
+
+function updateGA4SessionMetrics(data) {
+  if (!data.rows || data.rows.length === 0) return;
+  const row = data.rows[0];
+  document.getElementById('ga4-active-users').textContent = row.metricValues[0]?.value || '--';
+  document.getElementById('ga4-sessions').textContent = row.metricValues[1]?.value || '--';
+  document.getElementById('ga4-page-views').textContent = row.metricValues[2]?.value || '--';
+  const bounceRate = parseFloat(row.metricValues[3]?.value || 0) * 100;
+  document.getElementById('ga4-bounce-rate').textContent = bounceRate.toFixed(1) + '%';
+}
+
+function updateGA4Funnel(data) {
+  const container = document.getElementById('ga4-funnel-container');
+  if (!data.funnelTable?.rows) {
+    container.innerHTML = '<div style="color: #64748b; text-align: center;">Sem dados de funil</div>';
+    return;
+  }
+
+  const maxUsers = Math.max(...data.funnelTable.rows.map(r => parseInt(r.metricValues[0]?.value || 0)));
+
+  container.innerHTML = data.funnelTable.rows.map((row, index) => {
+    const stepName = row.dimensionValues[0]?.value || 'Step';
+    const users = parseInt(row.metricValues[0]?.value || 0);
+    const rate = parseFloat(row.metricValues[1]?.value || 0) * 100;
+    const width = maxUsers > 0 ? (users / maxUsers) * 100 : 0;
+    const color = index === 0 ? '#3b82f6' : index === data.funnelTable.rows.length - 1 ? '#22c55e' : '#8b5cf6';
+
+    return `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 140px; font-size: 12px; color: #94a3b8;">${stepName}</div>
+        <div style="flex: 1; background: #334155; border-radius: 4px; height: 24px; position: relative; overflow: hidden;">
+          <div style="background: ${color}; height: 100%; width: ${width}%; transition: width 0.5s;"></div>
+          <div style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 11px; color: white; font-weight: 600;">${users} users</div>
+        </div>
+        ${index > 0 ? `<div style="width: 60px; font-size: 11px; color: ${rate > 50 ? '#22c55e' : rate > 20 ? '#f59e0b' : '#ef4444'};">${rate.toFixed(1)}%</div>` : '<div style="width: 60px;"></div>'}
+      </div>
+    `;
+  }).join('');
+}
+
+function updateGA4Events(data) {
+  const container = document.getElementById('ga4-top-events');
+  if (!data.rows) {
+    container.innerHTML = '<div style="color: #64748b;">Sem eventos</div>';
+    return;
+  }
+
+  container.innerHTML = data.rows.map(row => {
+    const event = row.dimensionValues[0]?.value || '';
+    const count = row.metricValues[0]?.value || 0;
+    return `
+      <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #334155;">
+        <span style="color: #e2e8f0;">${event}</span>
+        <span style="color: #22c55e; font-weight: 600;">${count}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateGA4Pages(data) {
+  const container = document.getElementById('ga4-top-pages');
+  if (!data.rows) {
+    container.innerHTML = '<div style="color: #64748b;">Sem paginas</div>';
+    return;
+  }
+
+  container.innerHTML = data.rows.map(row => {
+    const page = row.dimensionValues[0]?.value || '';
+    const views = row.metricValues[0]?.value || 0;
+    const shortPage = page.length > 35 ? page.substring(0, 35) + '...' : page;
+    return `
+      <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #334155;">
+        <span style="color: #e2e8f0;" title="${page}">${shortPage}</span>
+        <span style="color: #3b82f6; font-weight: 600;">${views}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// Carregar ao iniciar a pagina
+document.addEventListener('DOMContentLoaded', function() {
+  // Verificar se a pagina de ads-security foi carregada
+  setTimeout(loadGA4Analytics, 500);
+});
+</script>
