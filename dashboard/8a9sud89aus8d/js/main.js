@@ -968,6 +968,119 @@ async function loadProjectPage(project) {
           }).join('') || '<tr><td colspan="5">Sem atividades</td></tr>';
         }
       } catch (e) { console.error('Error loading activities table:', e); }
+
+      // Scan Funnel - Detailed (from Umami events)
+      try {
+        const funnelData = await fetch('/api/security/scan-funnel?days=30').then(r => r.json());
+
+        // Update cards
+        const pageviewsEl = document.getElementById('scan-funnel-pageviews');
+        const engagementEl = document.getElementById('scan-funnel-engagement');
+        const engagementPctEl = document.getElementById('scan-funnel-engagement-pct');
+        const startedEl = document.getElementById('scan-funnel-started');
+        const startedPctEl = document.getElementById('scan-funnel-started-pct');
+        const purchasesEl = document.getElementById('scan-funnel-purchases');
+        const purchasesPctEl = document.getElementById('scan-funnel-purchases-pct');
+
+        if (pageviewsEl) pageviewsEl.textContent = funnelData.funnel?.pageViews || 0;
+        if (engagementEl) engagementEl.textContent = funnelData.funnel?.formEngagement || 0;
+        if (engagementPctEl) engagementPctEl.textContent = (funnelData.conversions?.pageToEngagement || 0) + '% engajaram';
+        if (startedEl) startedEl.textContent = funnelData.funnel?.trialStarted || 0;
+        if (startedPctEl) startedPctEl.textContent = (funnelData.conversions?.engagementToTrial || 0) + '% iniciaram';
+        if (purchasesEl) purchasesEl.textContent = funnelData.funnel?.purchaseCompleted || 0;
+        if (purchasesPctEl) purchasesPctEl.textContent = (funnelData.conversions?.overallConversion || 0) + '% conversao';
+
+        // Update details
+        const paymentPageEl = document.getElementById('scan-funnel-payment-page');
+        const checkoutEl = document.getElementById('scan-funnel-checkout');
+        const emailErrorsEl = document.getElementById('scan-funnel-email-errors');
+        const existingUsersEl = document.getElementById('scan-funnel-existing-users');
+        const registerClickEl = document.getElementById('scan-funnel-register-click');
+        const scanErrorsEl = document.getElementById('scan-funnel-scan-errors');
+
+        if (paymentPageEl) paymentPageEl.textContent = funnelData.funnel?.paymentPageView || 0;
+        if (checkoutEl) checkoutEl.textContent = funnelData.funnel?.initiateCheckout || 0;
+        if (emailErrorsEl) emailErrorsEl.textContent = funnelData.funnel?.emailValidationFailed || 0;
+        if (existingUsersEl) existingUsersEl.textContent = funnelData.funnel?.existingUserRedirect || 0;
+        if (registerClickEl) registerClickEl.textContent = funnelData.funnel?.registerClick || 0;
+        if (scanErrorsEl) scanErrorsEl.textContent = funnelData.funnel?.scanError || 0;
+
+        // Render dropouts list
+        const dropoutsEl = document.getElementById('scan-funnel-dropouts');
+        if (dropoutsEl && funnelData.dropouts) {
+          const dropouts = funnelData.dropouts;
+          const items = [
+            { label: 'Abandono no Form', value: dropouts.formAbandonment || 0, color: '#f59e0b' },
+            { label: 'Email Invalido', value: dropouts.emailFailed || 0, color: '#ef4444' },
+            { label: 'Usuario Existente', value: dropouts.existingUser || 0, color: '#3b82f6' },
+            { label: 'Abandono Pagamento', value: dropouts.paymentAbandonment || 0, color: '#f59e0b' },
+            { label: 'Abandono Checkout', value: dropouts.checkoutAbandonment || 0, color: '#ef4444' },
+            { label: 'Erros de Scan', value: dropouts.scanErrors || 0, color: '#ef4444' }
+          ].filter(item => item.value > 0);
+
+          if (items.length > 0) {
+            dropoutsEl.innerHTML = items.map(item => `
+              <div class="metric-row" style="padding: 8px 0; border-bottom: 1px solid #334155;">
+                <span class="metric-label">${item.label}</span>
+                <span class="metric-value" style="color: ${item.color};">${item.value}</span>
+              </div>
+            `).join('');
+          } else {
+            dropoutsEl.innerHTML = '<div style="color: #22c55e; padding: 16px;">Sem abandonos significativos</div>';
+          }
+        }
+
+        // Render funnel chart
+        const funnelChartEl = document.getElementById('scan-funnel-chart');
+        if (funnelChartEl && funnelData.funnel) {
+          const f = funnelData.funnel;
+          if (charts['scanFunnel']) charts['scanFunnel'].destroy();
+          charts['scanFunnel'] = new ApexCharts(funnelChartEl, {
+            chart: {
+              type: 'bar',
+              height: 280,
+              background: chartTheme.background,
+              toolbar: { show: false },
+              fontFamily: 'Inter, sans-serif'
+            },
+            series: [{
+              name: 'Usuarios',
+              data: [
+                f.pageViews || 0,
+                f.formEngagement || 0,
+                f.trialStarted || 0,
+                f.paymentPageView || 0,
+                f.initiateCheckout || 0,
+                f.purchaseCompleted || 0
+              ]
+            }],
+            colors: ['#6366f1', '#8b5cf6', '#3b82f6', '#f59e0b', '#22c55e', '#10b981'],
+            plotOptions: {
+              bar: {
+                borderRadius: 4,
+                horizontal: true,
+                distributed: true,
+                dataLabels: { position: 'top' }
+              }
+            },
+            xaxis: {
+              categories: ['Page View', 'Engajou Form', 'Iniciou Scan', 'Pag. Pagamento', 'Iniciou Checkout', 'Comprou'],
+              labels: { style: { colors: chartTheme.textColor } }
+            },
+            yaxis: { labels: { style: { colors: chartTheme.textColor } } },
+            grid: { borderColor: chartTheme.gridColor, strokeDashArray: 4 },
+            dataLabels: {
+              enabled: true,
+              formatter: (val) => val,
+              offsetX: 30,
+              style: { colors: ['#fff'], fontSize: '12px' }
+            },
+            legend: { show: false },
+            tooltip: { theme: 'dark' }
+          });
+          charts['scanFunnel'].render();
+        }
+      } catch (e) { console.error('Error loading scan funnel:', e); }
     }
 
     // oEntregador today stats (usuarios ativos e bipados)

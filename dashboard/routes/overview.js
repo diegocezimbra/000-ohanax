@@ -1,0 +1,1324 @@
+import express from 'express';
+import { db } from '../db.js';
+import { getUmamiVisitors, getTotalVisitors, UMAMI_CONFIG } from '../utils/umami.js';
+
+const router = express.Router();
+
+// Mapeamento de nomes de projeto no frontend para nomes no banco billing
+const projectNameMapping = {
+  'auth': 'app-auth',
+  'billing': 'app-billing',
+  'security': 'security-audit',
+  'oentregador': 'app-oentregador'
+};
+
+// =============================================================================
+// GET /dashboard/summary - Combined Dashboard Summary
+// =============================================================================
+router.get('/dashboard/summary', async (req, res) => {
+  try {
+    const authResult = await db.auth.query(`
+      SELECT
+        COUNT(*) as total_users,
+        COUNT(CASE WHEN created_at > NOW() - INTERVAL '30 days' THEN 1 END) as new_users_30d
+      FROM users
+    `);
+
+    const billingResult = await db.billing.query(`
+      SELECT
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as mrr,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as paying_customers
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+    `);
+
+    const securityResult = await db.security.query(`
+      SELECT COUNT(*) as total_audits FROM security_audit_reports
+    `);
+
+    let oentregadorUsers = 0;
+    let oentregadorCompanies = 0;
+    try {
+      const mongoDB = await db.mongo();
+      const users = mongoDB.collection('app_users');
+      const companies = mongoDB.collection('app_companies');
+      oentregadorUsers = await users.countDocuments();
+      oentregadorCompanies = await companies.countDocuments();
+    } catch (e) {
+      console.error('MongoDB error in summary:', e.message);
+    }
+
+    res.json({
+      auth: authResult.rows[0],
+      billing: billingResult.rows[0],
+      security: securityResult.rows[0],
+      oentregador: { total_users: oentregadorUsers, total_companies: oentregadorCompanies }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /metrics/users - Users Metrics (all services combined)
+// =============================================================================
+router.get('/metrics/users', async (req, res) => {
+  try {
+    // Auth users
+    const authUsers = await db.auth.query(`
+      SELECT
+        COUNT(*) as total,
+        COUNT(CASE WHEN email_verified = true THEN 1 END) as verified,
+        COUNT(CASE WHEN created_at > NOW() - INTERVAL '30 days' THEN 1 END) as new_30d,
+        COUNT(CASE WHEN created_at > NOW() - INTERVAL '7 days' THEN 1 END) as new_7d,
+        COUNT(CASE WHEN created_at::date = CURRENT_DATE THEN 1 END) as new_today,
+        COUNT(CASE WHEN last_login_at > NOW() - INTERVAL '30 days' THEN 1 END) as active_30d,
+        COUNT(CASE WHEN last_login_at > NOW() - INTERVAL '7 days' THEN 1 END) as active_7d
+      FROM users
+    `);
+
+    // Auth users by project
+    const authByProject = await db.auth.query(`
+      SELECT
+        p.name as project_name,
+        COUNT(u.id) as total_users,
+        COUNT(CASE WHEN u.created_at > NOW() - INTERVAL '30 days' THEN 1 END) as new_30d
+      FROM projects p
+      LEFT JOIN users u ON u.project_id = p.id
+      GROUP BY p.id, p.name
+      ORDER BY total_users DESC
+    `);
+
+    // Auth growth
+    const authGrowth = await db.auth.query(`
+      SELECT
+        DATE_TRUNC('day', created_at)::date as date,
+        COUNT(*) as count
+      FROM users
+      WHERE created_at > NOW() - INTERVAL '30 days'
+      GROUP BY DATE_TRUNC('day', created_at)
+      ORDER BY date
+    `);
+
+    // oEntregador users
+    let oeUsers = { total: 0, active: 0, new_30d: 0, companies: 0 };
+    try {
+      const mongoDB = await db.mongo();
+      const users = mongoDB.collection('app_users');
+      const companies = mongoDB.collection('app_companies');
+      oeUsers.total = await users.countDocuments();
+      oeUsers.active = await users.countDocuments({ isActive: true });
+      oeUsers.companies = await companies.countDocuments();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      oeUsers.new_30d = await users.countDocuments({ userCreatedAt: { $gte: thirtyDaysAgo } });
+    } catch (e) {
+      console.error('MongoDB error:', e.message);
+    }
+
+    res.json({
+      auth: authUsers.rows[0],
+      authByProject: authByProject.rows,
+      authGrowth: authGrowth.rows,
+      oentregador: oeUsers,
+      combined: {
+        total: parseInt(authUsers.rows[0].total) + oeUsers.total,
+        new_30d: parseInt(authUsers.rows[0].new_30d) + oeUsers.new_30d
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /metrics/subscriptions - Subscriptions Metrics
+// =============================================================================
+router.get('/metrics/subscriptions', async (req, res) => {
+  try {
+    // General stats
+    const stats = await db.billing.query(`
+      SELECT
+        COUNT(*) as total,
+        COUNT(CASE WHEN status = 'active' THEN 1 END) as active,
+        COUNT(CASE WHEN status = 'trialing' THEN 1 END) as trialing,
+        COUNT(CASE WHEN status = 'canceled' THEN 1 END) as canceled,
+        COUNT(CASE WHEN status = 'past_due' THEN 1 END) as past_due,
+        COUNT(CASE WHEN status = 'expired' THEN 1 END) as expired,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
+        COUNT(CASE WHEN created_at > NOW() - INTERVAL '30 days' THEN 1 END) as new_30d,
+        COUNT(CASE WHEN created_at > NOW() - INTERVAL '7 days' THEN 1 END) as new_7d,
+        COUNT(CASE WHEN created_at::date = CURRENT_DATE THEN 1 END) as new_today
+      FROM subscriptions
+    `);
+
+    // MRR calculation
+    const mrr = await db.billing.query(`
+      SELECT
+        COALESCE(SUM(
+          CASE pl.interval
+            WHEN 'monthly' THEN pl.price_cents
+            WHEN 'yearly' THEN pl.price_cents / 12
+            WHEN 'weekly' THEN pl.price_cents * 4
+            ELSE pl.price_cents
+          END
+        ), 0) / 100.0 as mrr
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      WHERE s.status = 'active'
+    `);
+
+    // By project
+    const byProject = await db.billing.query(`
+      SELECT
+        p.name as project_name,
+        COUNT(s.id) as total,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active,
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as mrr
+      FROM projects p
+      LEFT JOIN subscriptions s ON s.project_id = p.id
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      GROUP BY p.id, p.name
+      ORDER BY mrr DESC
+    `);
+
+    // By plan
+    const byPlan = await db.billing.query(`
+      SELECT
+        pl.name as plan_name,
+        pl.price_cents / 100.0 as price,
+        pl.interval,
+        p.name as project_name,
+        COUNT(s.id) as total,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active
+      FROM plans pl
+      LEFT JOIN subscriptions s ON s.plan_id = pl.id
+      LEFT JOIN projects p ON pl.project_id = p.id
+      GROUP BY pl.id, p.name
+      ORDER BY active DESC
+    `);
+
+    // Growth
+    const growth = await db.billing.query(`
+      SELECT
+        DATE_TRUNC('day', created_at)::date as date,
+        COUNT(*) as total,
+        COUNT(CASE WHEN status IN ('active', 'trialing') THEN 1 END) as active
+      FROM subscriptions
+      WHERE created_at > NOW() - INTERVAL '30 days'
+      GROUP BY DATE_TRUNC('day', created_at)
+      ORDER BY date
+    `);
+
+    // Recent subscribers
+    const recent = await db.billing.query(`
+      SELECT
+        s.external_user_email as email,
+        s.status,
+        pl.name as plan_name,
+        pl.price_cents / 100.0 as price,
+        p.name as project_name,
+        s.created_at
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      LEFT JOIN projects p ON s.project_id = p.id
+      ORDER BY s.created_at DESC
+      LIMIT 20
+    `);
+
+    res.json({
+      stats: stats.rows[0],
+      mrr: parseFloat(mrr.rows[0].mrr),
+      arr: parseFloat(mrr.rows[0].mrr) * 12,
+      byProject: byProject.rows,
+      byPlan: byPlan.rows,
+      growth: growth.rows,
+      recent: recent.rows
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /overview - Dados gerais para a pagina Overview
+// =============================================================================
+router.get('/overview', async (req, res) => {
+  try {
+    // Total MRR e assinantes ativos (todos os projetos)
+    const billingMetrics = await db.billing.query(`
+      SELECT
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as total_mrr,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as total_active_subs
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+    `);
+
+    // Total usuarios do auth
+    const authUsers = await db.auth.query(`SELECT COUNT(*) as total FROM users`);
+
+    // Usuarios do oEntregador (MongoDB)
+    let oentregadorUsers = 0;
+    try {
+      const mongoDB = await db.mongo();
+      oentregadorUsers = await mongoDB.collection('app_users').countDocuments();
+    } catch (e) { console.error('MongoDB error:', e.message); }
+
+    // Usuarios por projeto - buscar do billing (exceto Teste)
+    const projectsFromBilling = await db.billing.query(`SELECT id, name FROM projects WHERE name != 'Teste'`);
+
+    // Para cada projeto, buscar quantidade de usuarios no auth
+    const usersByProjectData = [];
+    for (const proj of projectsFromBilling.rows) {
+      // Se for app-oentregador, usar contagem do MongoDB
+      if (proj.name === 'app-oentregador') {
+        usersByProjectData.push({
+          project_name: proj.name,
+          total_users: oentregadorUsers
+        });
+        continue;
+      }
+
+      const authUsersQuery = await db.auth.query(`
+        SELECT COUNT(*) as total
+        FROM users u
+        JOIN projects p ON u.project_id = p.id
+        WHERE p.name = $1
+      `, [proj.name]);
+
+      usersByProjectData.push({
+        project_name: proj.name,
+        total_users: parseInt(authUsersQuery.rows[0]?.total || 0)
+      });
+    }
+
+    // Ordenar por total_users
+    usersByProjectData.sort((a, b) => b.total_users - a.total_users);
+
+    const usersByProject = { rows: usersByProjectData };
+
+    // MRR por projeto
+    const mrrByProject = await db.billing.query(`
+      SELECT
+        p.name as project_name,
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as mrr,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active_subs
+      FROM projects p
+      LEFT JOIN subscriptions s ON s.project_id = p.id
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      GROUP BY p.id, p.name
+      ORDER BY mrr DESC
+    `);
+
+    // Ultimos assinantes
+    const recentSubscribers = await db.billing.query(`
+      SELECT
+        s.external_user_email as email,
+        s.status,
+        CASE pl.interval
+          WHEN 'monthly' THEN pl.price_cents
+          WHEN 'yearly' THEN pl.price_cents / 12
+          WHEN 'weekly' THEN pl.price_cents * 4
+          ELSE pl.price_cents
+        END / 100.0 as mrr,
+        pl.name as plan_name,
+        p.name as project_name,
+        s.created_at
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      LEFT JOIN projects p ON s.project_id = p.id
+      ORDER BY s.created_at DESC
+      LIMIT 10
+    `);
+
+    // One-time purchases totais e por projeto
+    const oneTimeTotal = await db.billing.query(`
+      SELECT
+        COUNT(CASE WHEN status = 'paid' THEN 1 END) as total_paid,
+        COALESCE(SUM(CASE WHEN status = 'paid' THEN amount_cents END), 0) / 100.0 as total_revenue
+      FROM one_time_purchases
+    `);
+
+    const oneTimeByProject = await db.billing.query(`
+      SELECT
+        p.name as project_name,
+        COUNT(CASE WHEN otp.status = 'paid' THEN 1 END) as paid_purchases,
+        COALESCE(SUM(CASE WHEN otp.status = 'paid' THEN otp.amount_cents END), 0) / 100.0 as revenue
+      FROM projects p
+      LEFT JOIN one_time_purchases otp ON otp.project_id = p.id
+      GROUP BY p.id, p.name
+      HAVING COUNT(CASE WHEN otp.status = 'paid' THEN 1 END) > 0
+      ORDER BY revenue DESC
+    `);
+
+    // Subscribers by status for the radial chart
+    const subsByStatus = await db.billing.query(`
+      SELECT
+        status,
+        COUNT(*) as count
+      FROM subscriptions
+      GROUP BY status
+      ORDER BY count DESC
+    `);
+
+    const totalMrr = parseFloat(billingMetrics.rows[0].total_mrr) || 0;
+    const totalOneTimeRevenue = parseFloat(oneTimeTotal.rows[0].total_revenue) || 0;
+
+    res.json({
+      totalMrr: totalMrr,
+      totalOneTimeRevenue: totalOneTimeRevenue,
+      totalRevenue: totalMrr + totalOneTimeRevenue,
+      totalUsers: parseInt(authUsers.rows[0].total) + oentregadorUsers,
+      totalActiveSubs: parseInt(billingMetrics.rows[0].total_active_subs),
+      totalPaidPurchases: parseInt(oneTimeTotal.rows[0].total_paid) || 0,
+      usersByProject: usersByProject.rows,
+      mrrByProject: mrrByProject.rows,
+      oneTimeByProject: oneTimeByProject.rows,
+      recentSubscribers: recentSubscribers.rows,
+      subsByStatus: subsByStatus.rows
+    });
+  } catch (err) {
+    console.error('Error in /api/overview:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /funnel - Dados do funil de conversao (todos os apps ou filtrado por projeto)
+// =============================================================================
+router.get('/funnel', async (req, res) => {
+  const project = req.query.project; // opcional: 'auth', 'billing', 'security', 'oentregador'
+  const billingProjectName = project ? projectNameMapping[project] : null;
+
+  try {
+    let registeredUsers = 0;
+
+    // Usuarios cadastrados (auth database)
+    if (!project || project !== 'oentregador') {
+      const authProjectName = project === 'auth' ? 'app-auth' :
+                              project === 'billing' ? 'app-billing' :
+                              project === 'security' ? 'security-audit' : null;
+
+      const authUsersQuery = await db.auth.query(`
+        SELECT COUNT(*) as total
+        FROM users u
+        LEFT JOIN projects p ON u.project_id = p.id
+        ${authProjectName ? `WHERE p.name = '${authProjectName}'` : ''}
+      `);
+      registeredUsers += parseInt(authUsersQuery.rows[0].total) || 0;
+    }
+
+    // Usuarios oEntregador (MongoDB)
+    if (!project || project === 'oentregador') {
+      try {
+        const mongoDB = await db.mongo();
+        const oeUsers = await mongoDB.collection('app_users').countDocuments();
+        registeredUsers += oeUsers;
+      } catch (e) { console.error('MongoDB error:', e.message); }
+    }
+
+    // Trial subscriptions
+    const trialQuery = billingProjectName
+      ? `SELECT COUNT(*) as total FROM subscriptions s JOIN projects p ON s.project_id = p.id WHERE s.status = 'trialing' AND p.name = $1`
+      : `SELECT COUNT(*) as total FROM subscriptions WHERE status = 'trialing'`;
+    const trialResult = billingProjectName
+      ? await db.billing.query(trialQuery, [billingProjectName])
+      : await db.billing.query(trialQuery);
+    const trialUsers = parseInt(trialResult.rows[0].total) || 0;
+
+    // Paying users (active subscriptions)
+    const payingQuery = billingProjectName
+      ? `SELECT COUNT(*) as total FROM subscriptions s JOIN projects p ON s.project_id = p.id WHERE s.status = 'active' AND p.name = $1`
+      : `SELECT COUNT(*) as total FROM subscriptions WHERE status = 'active'`;
+    const payingResult = billingProjectName
+      ? await db.billing.query(payingQuery, [billingProjectName])
+      : await db.billing.query(payingQuery);
+    const payingUsers = parseInt(payingResult.rows[0].total) || 0;
+
+    // One-time purchases (paid)
+    const purchasesQuery = billingProjectName
+      ? `SELECT COUNT(DISTINCT external_user_email) as total FROM one_time_purchases otp JOIN projects p ON otp.project_id = p.id WHERE otp.status = 'paid' AND p.name = $1`
+      : `SELECT COUNT(DISTINCT external_user_email) as total FROM one_time_purchases WHERE status = 'paid'`;
+    const purchasesResult = billingProjectName
+      ? await db.billing.query(purchasesQuery, [billingProjectName])
+      : await db.billing.query(purchasesQuery);
+    const oneTimeBuyers = parseInt(purchasesResult.rows[0].total) || 0;
+
+    // Total pagantes = assinantes ativos + compradores one-time (unique)
+    const totalPaying = payingUsers + oneTimeBuyers;
+
+    // Get visitors from Umami (last 90 days for all-time funnel view)
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 90);
+
+    let visitors = 0;
+    let visitorsByProject = {};
+
+    if (project) {
+      // Single project
+      const websiteId = UMAMI_CONFIG.websites[project];
+      const token = project === 'oentregador' ? UMAMI_CONFIG.tokens.oentregador : UMAMI_CONFIG.tokens.main;
+      const umamiData = await getUmamiVisitors(websiteId, token, startDate, endDate);
+      visitors = umamiData.visitors;
+    } else {
+      // All projects
+      const umamiData = await getTotalVisitors(startDate, endDate);
+      visitors = umamiData.visitors;
+      visitorsByProject = umamiData.byProject;
+    }
+
+    res.json({
+      funnel: [
+        { stage: 'Visitantes', count: visitors, color: '#6366f1' },
+        { stage: 'Cadastrados', count: registeredUsers, color: '#64748b' },
+        { stage: 'Em Trial', count: trialUsers, color: '#f59e0b' },
+        { stage: 'Pagantes', count: totalPaying, color: '#22c55e' }
+      ],
+      details: {
+        visitors: visitors,
+        registered: registeredUsers,
+        trialing: trialUsers,
+        paying_subscriptions: payingUsers,
+        paying_one_time: oneTimeBuyers,
+        total_paying: totalPaying,
+        visitors_by_project: visitorsByProject
+      },
+      conversion: {
+        visitor_to_registered: visitors > 0 ? ((registeredUsers / visitors) * 100).toFixed(1) : 0,
+        registered_to_trial: registeredUsers > 0 ? ((trialUsers / registeredUsers) * 100).toFixed(1) : 0,
+        trial_to_paid: trialUsers > 0 ? ((payingUsers / (trialUsers + payingUsers)) * 100).toFixed(1) : 0,
+        registered_to_paid: registeredUsers > 0 ? ((totalPaying / registeredUsers) * 100).toFixed(1) : 0,
+        visitor_to_paid: visitors > 0 ? ((totalPaying / visitors) * 100).toFixed(1) : 0
+      }
+    });
+  } catch (err) {
+    console.error('Error in /api/funnel:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /project/:project - Dados padronizados para cada projeto
+// =============================================================================
+router.get('/project/:project', async (req, res) => {
+  const project = req.params.project;
+  const billingProjectName = projectNameMapping[project];
+
+  try {
+    let users = { total: 0, verified: 0, active_7d: 0, new_today: 0, new_30d: 0 };
+    let growth = [];
+
+    // Obter dados de usuarios
+    if (project === 'oentregador') {
+      // MongoDB
+      try {
+        const mongoDB = await db.mongo();
+        const usersCol = mongoDB.collection('app_users');
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        users.total = await usersCol.countDocuments();
+        users.verified = await usersCol.countDocuments({ isStep01VerifyEmailCompleted: true });
+        users.active_7d = await usersCol.countDocuments({
+          $or: [
+            { userLastLoginAt: { $gte: sevenDaysAgo } },
+            { isActive: true }
+          ]
+        });
+        users.new_today = await usersCol.countDocuments({ userCreatedAt: { $gte: today } });
+        users.new_30d = await usersCol.countDocuments({ userCreatedAt: { $gte: thirtyDaysAgo } });
+
+        // Growth
+        const growthData = await usersCol.aggregate([
+          { $match: { userCreatedAt: { $gte: thirtyDaysAgo } } },
+          {
+            $group: {
+              _id: { $dateToString: { format: "%Y-%m-%d", date: "$userCreatedAt" } },
+              count: { $sum: 1 }
+            }
+          },
+          { $sort: { _id: 1 } }
+        ]).toArray();
+        growth = growthData.map(g => ({ date: g._id, count: g.count }));
+      } catch (e) { console.error('MongoDB error:', e.message); }
+    } else {
+      // PostgreSQL (auth database)
+      const authProjectName = project === 'auth' ? 'app-auth' :
+                              project === 'billing' ? 'app-billing' :
+                              project === 'security' ? 'security-audit' : null;
+
+      const usersData = await db.auth.query(`
+        SELECT
+          COUNT(*) as total,
+          COUNT(CASE WHEN u.email_verified = true THEN 1 END) as verified,
+          COUNT(CASE WHEN u.last_login_at > NOW() - INTERVAL '7 days' THEN 1 END) as active_7d,
+          COUNT(CASE WHEN u.created_at::date = CURRENT_DATE THEN 1 END) as new_today,
+          COUNT(CASE WHEN u.created_at > NOW() - INTERVAL '30 days' THEN 1 END) as new_30d
+        FROM users u
+        LEFT JOIN projects p ON u.project_id = p.id
+        ${authProjectName ? `WHERE p.name = '${authProjectName}'` : ''}
+      `);
+      users = usersData.rows[0];
+
+      // Growth
+      const growthData = await db.auth.query(`
+        SELECT
+          DATE_TRUNC('day', u.created_at)::date as date,
+          COUNT(*) as count
+        FROM users u
+        LEFT JOIN projects p ON u.project_id = p.id
+        WHERE u.created_at > NOW() - INTERVAL '30 days'
+        ${authProjectName ? `AND p.name = '${authProjectName}'` : ''}
+        GROUP BY DATE_TRUNC('day', u.created_at)
+        ORDER BY date
+      `);
+      growth = growthData.rows;
+    }
+
+    // Obter dados de billing (todos os projetos usam o billing database)
+    const billingData = await db.billing.query(`
+      SELECT
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as mrr,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active,
+        COUNT(CASE WHEN s.status = 'trialing' THEN 1 END) as trialing,
+        COUNT(CASE WHEN s.status = 'canceled' THEN 1 END) as canceled,
+        COALESCE((
+          SELECT SUM(amount_cents) / 100.0
+          FROM payments pay
+          JOIN subscriptions sub ON pay.subscription_id = sub.id
+          JOIN projects prj ON sub.project_id = prj.id
+          WHERE pay.status = 'succeeded' AND prj.name = $1
+        ), 0) as subscription_revenue
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      LEFT JOIN projects p ON s.project_id = p.id
+      WHERE p.name = $1
+    `, [billingProjectName]);
+
+    // Obter dados de compras one-time
+    const oneTimeData = await db.billing.query(`
+      SELECT
+        COUNT(*) as total_purchases,
+        COUNT(CASE WHEN status = 'paid' THEN 1 END) as paid_purchases,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_purchases,
+        COALESCE(SUM(CASE WHEN status = 'paid' THEN amount_cents END), 0) / 100.0 as one_time_revenue
+      FROM one_time_purchases otp
+      JOIN projects p ON otp.project_id = p.id
+      WHERE p.name = $1
+    `, [billingProjectName]);
+
+    // Assinantes recentes do projeto
+    const subscribers = await db.billing.query(`
+      SELECT
+        s.external_user_email as email,
+        s.status,
+        CASE pl.interval
+          WHEN 'monthly' THEN pl.price_cents
+          WHEN 'yearly' THEN pl.price_cents / 12
+          WHEN 'weekly' THEN pl.price_cents * 4
+          ELSE pl.price_cents
+        END / 100.0 as mrr,
+        pl.name as plan_name,
+        s.created_at
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      LEFT JOIN projects p ON s.project_id = p.id
+      WHERE p.name = $1
+      ORDER BY s.created_at DESC
+      LIMIT 20
+    `, [billingProjectName]);
+
+    const subscriptionRevenue = parseFloat(billingData.rows[0].subscription_revenue) || 0;
+    const oneTimeRevenue = parseFloat(oneTimeData.rows[0].one_time_revenue) || 0;
+
+    res.json({
+      users: {
+        total: parseInt(users.total) || 0,
+        verified: parseInt(users.verified) || 0,
+        active_7d: parseInt(users.active_7d) || 0,
+        new_today: parseInt(users.new_today) || 0,
+        new_30d: parseInt(users.new_30d) || 0
+      },
+      billing: {
+        mrr: parseFloat(billingData.rows[0].mrr) || 0,
+        active: parseInt(billingData.rows[0].active) || 0,
+        trialing: parseInt(billingData.rows[0].trialing) || 0,
+        canceled: parseInt(billingData.rows[0].canceled) || 0,
+        subscription_revenue: subscriptionRevenue,
+        one_time_revenue: oneTimeRevenue,
+        total_revenue: subscriptionRevenue + oneTimeRevenue
+      },
+      one_time: {
+        total_purchases: parseInt(oneTimeData.rows[0].total_purchases) || 0,
+        paid_purchases: parseInt(oneTimeData.rows[0].paid_purchases) || 0,
+        pending_purchases: parseInt(oneTimeData.rows[0].pending_purchases) || 0,
+        revenue: oneTimeRevenue
+      },
+      subscribers: subscribers.rows,
+      growth: growth
+    });
+  } catch (err) {
+    console.error(`Error in /api/project/${project}:`, err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /users - Lista completa de usuarios com filtros
+// =============================================================================
+router.get('/users', async (req, res) => {
+  const { project, status, plan, search, page = 1, limit = 50 } = req.query;
+  const offset = (parseInt(page) - 1) * parseInt(limit);
+
+  try {
+    let users = [];
+    let total = 0;
+
+    // Get users from auth database
+    if (!project || project !== 'oentregador') {
+      const authQuery = `
+        SELECT
+          u.id,
+          u.email,
+          u.email_verified,
+          u.created_at,
+          u.last_login_at,
+          p.name as project_name
+        FROM users u
+        LEFT JOIN projects p ON u.project_id = p.id
+        WHERE 1=1
+        ${project && project !== 'oentregador' ? `AND p.name = '${project}'` : ''}
+        ${status === 'verified' ? 'AND u.email_verified = true' : status === 'unverified' ? 'AND u.email_verified = false' : ''}
+        ${search ? `AND u.email ILIKE '%${search}%'` : ''}
+        ORDER BY u.created_at DESC
+      `;
+
+      const authUsers = await db.auth.query(authQuery);
+
+      // Get subscriptions from billing database
+      const subsQuery = `
+        SELECT
+          s.external_user_email as email,
+          p.name as project_name,
+          s.status,
+          pl.name as plan_name,
+          CASE pl.interval
+            WHEN 'monthly' THEN pl.price_cents
+            WHEN 'yearly' THEN pl.price_cents / 12
+            WHEN 'weekly' THEN pl.price_cents * 4
+            ELSE COALESCE(pl.price_cents, 0)
+          END / 100.0 as mrr
+        FROM subscriptions s
+        LEFT JOIN plans pl ON s.plan_id = pl.id
+        LEFT JOIN projects p ON s.project_id = p.id
+      `;
+      const subsResult = await db.billing.query(subsQuery);
+
+      // Create subscription lookup by email+project
+      const subsMap = new Map();
+      subsResult.rows.forEach(s => {
+        const key = `${s.email}:${s.project_name}`;
+        subsMap.set(key, s);
+      });
+
+      // Merge users with subscription data
+      let mergedUsers = authUsers.rows.map(u => {
+        const key = `${u.email}:${u.project_name}`;
+        const sub = subsMap.get(key);
+        return {
+          ...u,
+          subscription_status: sub?.status || null,
+          plan_name: sub?.plan_name || null,
+          mrr: sub?.mrr || 0,
+          source: 'auth'
+        };
+      });
+
+      // Filter by plan status if needed
+      if (plan === 'paying') {
+        mergedUsers = mergedUsers.filter(u => u.subscription_status === 'active');
+      } else if (plan === 'trialing') {
+        mergedUsers = mergedUsers.filter(u => u.subscription_status === 'trialing');
+      } else if (plan === 'free') {
+        mergedUsers = mergedUsers.filter(u => !u.subscription_status);
+      }
+
+      total = mergedUsers.length;
+      users = mergedUsers.slice(offset, offset + parseInt(limit));
+    }
+
+    // Get oEntregador users if needed
+    if (!project || project === 'oentregador') {
+      try {
+        const mongoDB = await db.mongo();
+        const mongoQuery = search ? { userEmail: { $regex: search, $options: 'i' } } : {};
+        const oeUsers = await mongoDB.collection('app_users')
+          .find(mongoQuery)
+          .sort({ userCreatedAt: -1 })
+          .skip(project === 'oentregador' ? offset : 0)
+          .limit(project === 'oentregador' ? parseInt(limit) : 100)
+          .toArray();
+
+        const oeCount = await mongoDB.collection('app_users').countDocuments(mongoQuery);
+
+        // Get oEntregador subscriptions from billing database to merge
+        const oeEmails = oeUsers.map(u => u.userEmail).filter(Boolean);
+        let oeSubsMap = new Map();
+
+        if (oeEmails.length > 0) {
+          // Convert emails to lowercase for case-insensitive matching
+          const oeEmailsLower = oeEmails.map(e => e.toLowerCase());
+          const oeSubsQuery = `
+            SELECT
+              s.external_user_email as email,
+              LOWER(s.external_user_email) as email_lower,
+              s.status,
+              pl.name as plan_name,
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END / 100.0 as mrr
+            FROM subscriptions s
+            LEFT JOIN plans pl ON s.plan_id = pl.id
+            LEFT JOIN projects p ON s.project_id = p.id
+            WHERE p.name = 'app-oentregador'
+            AND LOWER(s.external_user_email) = ANY($1)
+          `;
+          const oeSubs = await db.billing.query(oeSubsQuery, [oeEmailsLower]);
+          oeSubs.rows.forEach(sub => {
+            oeSubsMap.set(sub.email_lower, sub);
+          });
+        }
+
+        const mappedOeUsers = oeUsers.map(u => {
+          const sub = oeSubsMap.get(u.userEmail?.toLowerCase());
+          return {
+            id: u._id.toString(),
+            email: u.userEmail,
+            email_verified: u.isStep01VerifyEmailCompleted || false,
+            created_at: u.userCreatedAt,
+            last_login_at: u.userLastLoginAt,
+            project_name: 'oentregador',
+            subscription_status: sub?.status || null,
+            plan_name: sub?.plan_name || null,
+            mrr: sub?.mrr || 0,
+            source: 'oentregador'
+          };
+        });
+
+        // Apply plan filter for oEntregador
+        let filteredOeUsers = mappedOeUsers;
+        if (plan === 'paying') {
+          filteredOeUsers = mappedOeUsers.filter(u => u.subscription_status === 'active');
+        } else if (plan === 'trialing') {
+          filteredOeUsers = mappedOeUsers.filter(u => u.subscription_status === 'trialing');
+        } else if (plan === 'free') {
+          filteredOeUsers = mappedOeUsers.filter(u => !u.subscription_status);
+        }
+
+        if (project === 'oentregador') {
+          users = filteredOeUsers;
+          total = plan ? filteredOeUsers.length : oeCount;
+        } else {
+          users = [...users, ...filteredOeUsers].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, parseInt(limit));
+          total += plan ? filteredOeUsers.length : oeCount;
+        }
+      } catch (e) {
+        console.error('MongoDB error:', e.message);
+      }
+    }
+
+    // Get summary stats
+    let stats = { total: 0, verified: 0, with_plan: 0, free: 0 };
+    if (project === 'oentregador') {
+      // Stats for oEntregador from MongoDB + billing
+      try {
+        const mongoDB = await db.mongo();
+        const totalUsers = await mongoDB.collection('app_users').countDocuments({});
+        const verifiedUsers = await mongoDB.collection('app_users').countDocuments({ isStep01VerifyEmailCompleted: true });
+
+        // Get subscription count from billing for oentregador
+        const oeSubsCountQuery = `
+          SELECT COUNT(*) as count
+          FROM subscriptions s
+          LEFT JOIN projects p ON s.project_id = p.id
+          WHERE p.name = 'app-oentregador' AND s.status IN ('active', 'trialing')
+        `;
+        const oeSubsCount = await db.billing.query(oeSubsCountQuery);
+
+        stats = {
+          total: totalUsers,
+          verified: verifiedUsers,
+          with_plan: parseInt(oeSubsCount.rows[0].count) || 0,
+          free: totalUsers - parseInt(oeSubsCount.rows[0].count) || 0
+        };
+      } catch (e) {
+        console.error('Error getting oEntregador stats:', e.message);
+      }
+    } else if (!project) {
+      // Stats for all projects (auth only, oentregador handled separately in UI)
+      const authStatsQuery = `
+        SELECT
+          COUNT(*) as total,
+          COUNT(CASE WHEN email_verified = true THEN 1 END) as verified
+        FROM users u
+        LEFT JOIN projects p ON u.project_id = p.id
+        WHERE 1=1
+      `;
+      const authStats = await db.auth.query(authStatsQuery);
+
+      const billingStatsQuery = `
+        SELECT
+          COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as with_plan
+        FROM subscriptions s
+        LEFT JOIN projects p ON s.project_id = p.id
+        WHERE 1=1
+      `;
+      const billingStats = await db.billing.query(billingStatsQuery);
+
+      stats = {
+        total: parseInt(authStats.rows[0].total) || 0,
+        verified: parseInt(authStats.rows[0].verified) || 0,
+        with_plan: parseInt(billingStats.rows[0].with_plan) || 0,
+        free: parseInt(authStats.rows[0].total) - parseInt(billingStats.rows[0].with_plan) || 0
+      };
+    } else {
+      // Stats for specific auth project
+      const authStatsQuery = `
+        SELECT
+          COUNT(*) as total,
+          COUNT(CASE WHEN email_verified = true THEN 1 END) as verified
+        FROM users u
+        LEFT JOIN projects p ON u.project_id = p.id
+        WHERE p.name = '${project}'
+      `;
+      const authStats = await db.auth.query(authStatsQuery);
+
+      const billingStatsQuery = `
+        SELECT
+          COUNT(CASE WHEN s.status IN ('active', 'trialing') THEN 1 END) as with_plan
+        FROM subscriptions s
+        LEFT JOIN projects p ON s.project_id = p.id
+        WHERE p.name = '${project}'
+      `;
+      const billingStats = await db.billing.query(billingStatsQuery);
+
+      stats = {
+        total: parseInt(authStats.rows[0].total) || 0,
+        verified: parseInt(authStats.rows[0].verified) || 0,
+        with_plan: parseInt(billingStats.rows[0].with_plan) || 0,
+        free: parseInt(authStats.rows[0].total) - parseInt(billingStats.rows[0].with_plan) || 0
+      };
+    }
+
+    res.json({
+      users,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / parseInt(limit)),
+      stats
+    });
+  } catch (err) {
+    console.error('Error in /api/users:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /paying - Lista de clientes pagantes
+// =============================================================================
+router.get('/paying', async (req, res) => {
+  const { project, type, plan, search, startDate, endDate } = req.query;
+
+  try {
+    // Subscriptions
+    let subscriptionsQuery = `
+      SELECT
+        s.external_user_email as email,
+        p.name as project_name,
+        pl.name as plan_name,
+        'subscription' as type,
+        CASE pl.interval
+          WHEN 'monthly' THEN pl.price_cents
+          WHEN 'yearly' THEN pl.price_cents / 12
+          WHEN 'weekly' THEN pl.price_cents * 4
+          ELSE pl.price_cents
+        END / 100.0 as value,
+        s.status,
+        s.created_at,
+        pl.interval
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      LEFT JOIN projects p ON s.project_id = p.id
+      WHERE s.status = 'active'
+      ${project ? `AND p.name = '${project}'` : ''}
+      ${plan ? `AND pl.name = '${plan}'` : ''}
+      ${search ? `AND s.external_user_email ILIKE '%${search}%'` : ''}
+      ${startDate ? `AND s.created_at >= '${startDate}'` : ''}
+      ${endDate ? `AND s.created_at <= '${endDate}'` : ''}
+      ORDER BY s.created_at DESC
+    `;
+
+    // One-time purchases
+    let onetimeQuery = `
+      SELECT
+        otp.external_user_email as email,
+        p.name as project_name,
+        'Pacote One-Time' as plan_name,
+        'onetime' as type,
+        otp.amount_cents / 100.0 as value,
+        otp.status,
+        otp.created_at,
+        'one-time' as interval
+      FROM one_time_purchases otp
+      LEFT JOIN projects p ON otp.project_id = p.id
+      WHERE otp.status = 'paid'
+      ${project ? `AND p.name = '${project}'` : ''}
+      ${search ? `AND otp.external_user_email ILIKE '%${search}%'` : ''}
+      ${startDate ? `AND otp.created_at >= '${startDate}'` : ''}
+      ${endDate ? `AND otp.created_at <= '${endDate}'` : ''}
+      ORDER BY otp.created_at DESC
+    `;
+
+    let customers = [];
+
+    if (!type || type === 'subscription') {
+      const subs = await db.billing.query(subscriptionsQuery);
+      customers = [...customers, ...subs.rows];
+    }
+
+    if (!type || type === 'onetime') {
+      const onetime = await db.billing.query(onetimeQuery);
+      customers = [...customers, ...onetime.rows];
+    }
+
+    // Sort by date
+    customers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    // Get summary
+    const summaryQuery = `
+      SELECT
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as mrr,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active_subs
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      LEFT JOIN projects p ON s.project_id = p.id
+      WHERE 1=1
+      ${project ? `AND p.name = '${project}'` : ''}
+    `;
+
+    const onetimeSummaryQuery = `
+      SELECT
+        COUNT(DISTINCT external_user_email) as buyers,
+        COALESCE(SUM(amount_cents), 0) / 100.0 as revenue
+      FROM one_time_purchases
+      WHERE status = 'paid'
+      ${project ? `AND project_id = (SELECT id FROM projects WHERE name = '${project}')` : ''}
+    `;
+
+    const summary = await db.billing.query(summaryQuery);
+    const onetimeSummary = await db.billing.query(onetimeSummaryQuery);
+
+    // Get available plans for filter
+    const plansQuery = `SELECT DISTINCT name FROM plans WHERE status = 'active' ORDER BY name`;
+    const plans = await db.billing.query(plansQuery);
+
+    res.json({
+      customers,
+      total: customers.length,
+      summary: {
+        mrr: parseFloat(summary.rows[0].mrr) || 0,
+        active_subs: parseInt(summary.rows[0].active_subs) || 0,
+        onetime_buyers: parseInt(onetimeSummary.rows[0].buyers) || 0,
+        onetime_revenue: parseFloat(onetimeSummary.rows[0].revenue) || 0
+      },
+      plans: plans.rows.map(p => p.name)
+    });
+  } catch (err) {
+    console.error('Error in /api/paying:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /revenue - Receita detalhada por projeto
+// =============================================================================
+router.get('/revenue', async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  try {
+    // Revenue by project
+    const byProjectQuery = `
+      SELECT
+        p.name as project_name,
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as mrr,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active_subs,
+        COUNT(CASE WHEN s.status = 'trialing' THEN 1 END) as trialing,
+        COALESCE((
+          SELECT SUM(amount_cents) / 100.0
+          FROM one_time_purchases otp
+          WHERE otp.project_id = p.id AND otp.status = 'paid'
+        ), 0) as onetime_revenue,
+        COALESCE((
+          SELECT COUNT(DISTINCT external_user_email)
+          FROM one_time_purchases otp
+          WHERE otp.project_id = p.id AND otp.status = 'paid'
+        ), 0) as onetime_buyers
+      FROM projects p
+      LEFT JOIN subscriptions s ON s.project_id = p.id
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      WHERE p.name != 'Teste'
+      GROUP BY p.id, p.name
+      ORDER BY mrr DESC
+    `;
+
+    const byProject = await db.billing.query(byProjectQuery);
+
+    // Total summary
+    const totalMrr = byProject.rows.reduce((sum, p) => sum + parseFloat(p.mrr), 0);
+    const totalOnetime = byProject.rows.reduce((sum, p) => sum + parseFloat(p.onetime_revenue), 0);
+
+    // Revenue by plan
+    const byPlanQuery = `
+      SELECT
+        pl.name as plan_name,
+        p.name as project_name,
+        pl.interval,
+        pl.price_cents / 100.0 as price,
+        COUNT(CASE WHEN s.status = 'active' THEN 1 END) as active_subs,
+        COALESCE(SUM(
+          CASE
+            WHEN s.status = 'active' THEN
+              CASE pl.interval
+                WHEN 'monthly' THEN pl.price_cents
+                WHEN 'yearly' THEN pl.price_cents / 12
+                WHEN 'weekly' THEN pl.price_cents * 4
+                ELSE pl.price_cents
+              END
+            ELSE 0
+          END
+        ), 0) / 100.0 as mrr
+      FROM plans pl
+      LEFT JOIN subscriptions s ON s.plan_id = pl.id
+      LEFT JOIN projects p ON pl.project_id = p.id
+      WHERE pl.status = 'active'
+      GROUP BY pl.id, p.name
+      ORDER BY mrr DESC
+    `;
+
+    const byPlan = await db.billing.query(byPlanQuery);
+
+    // Recent transactions (subscriptions + one-time) - separate queries to avoid UNION issues
+    const subsTransactionsQuery = `
+      SELECT
+        s.external_user_email as email,
+        p.name as project_name,
+        'subscription' as type,
+        pl.name as plan_name,
+        CASE pl.interval
+          WHEN 'monthly' THEN pl.price_cents
+          WHEN 'yearly' THEN pl.price_cents / 12
+          WHEN 'weekly' THEN pl.price_cents * 4
+          ELSE pl.price_cents
+        END / 100.0 as value,
+        s.created_at
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      LEFT JOIN projects p ON s.project_id = p.id
+      WHERE s.status = 'active'
+      ORDER BY s.created_at DESC
+      LIMIT 10
+    `;
+
+    const onetimeTransactionsQuery = `
+      SELECT
+        otp.external_user_email as email,
+        p.name as project_name,
+        'onetime' as type,
+        'Pacote One-Time' as plan_name,
+        otp.amount_cents / 100.0 as value,
+        otp.created_at
+      FROM one_time_purchases otp
+      LEFT JOIN projects p ON otp.project_id = p.id
+      WHERE otp.status = 'paid'
+      ORDER BY otp.created_at DESC
+      LIMIT 10
+    `;
+
+    const [subsTransactions, onetimeTransactions] = await Promise.all([
+      db.billing.query(subsTransactionsQuery),
+      db.billing.query(onetimeTransactionsQuery)
+    ]);
+
+    const transactions = {
+      rows: [...subsTransactions.rows, ...onetimeTransactions.rows]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 15)
+    };
+
+    // MRR growth (last 30 days by counting new active subscriptions)
+    const mrrGrowthQuery = `
+      SELECT
+        DATE_TRUNC('day', s.created_at)::date as date,
+        SUM(
+          CASE pl.interval
+            WHEN 'monthly' THEN pl.price_cents
+            WHEN 'yearly' THEN pl.price_cents / 12
+            WHEN 'weekly' THEN pl.price_cents * 4
+            ELSE pl.price_cents
+          END
+        ) / 100.0 as mrr
+      FROM subscriptions s
+      LEFT JOIN plans pl ON s.plan_id = pl.id
+      WHERE s.status = 'active' AND s.created_at > NOW() - INTERVAL '30 days'
+      GROUP BY DATE_TRUNC('day', s.created_at)
+      ORDER BY date
+    `;
+
+    const mrrGrowth = await db.billing.query(mrrGrowthQuery);
+
+    res.json({
+      summary: {
+        total_revenue: totalMrr + totalOnetime,
+        mrr: totalMrr,
+        arr: totalMrr * 12,
+        onetime: totalOnetime
+      },
+      byProject: byProject.rows.map(p => ({
+        name: p.project_name,
+        mrr: parseFloat(p.mrr),
+        arr: parseFloat(p.mrr) * 12,
+        active_subs: parseInt(p.active_subs),
+        trialing: parseInt(p.trialing),
+        onetime_revenue: parseFloat(p.onetime_revenue),
+        onetime_buyers: parseInt(p.onetime_buyers),
+        total_revenue: parseFloat(p.mrr) + parseFloat(p.onetime_revenue)
+      })),
+      byPlan: byPlan.rows,
+      transactions: transactions.rows,
+      mrrGrowth: mrrGrowth.rows
+    });
+  } catch (err) {
+    console.error('Error in /api/revenue:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /debug/umami - Debug endpoint for Umami testing
+// =============================================================================
+router.get('/debug/umami', async (req, res) => {
+  const now = new Date();
+  const startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  const endDate = now;
+
+  const results = {};
+
+  // Test each website
+  for (const [project, websiteId] of Object.entries(UMAMI_CONFIG.websites)) {
+    const token = project === 'oentregador' ? UMAMI_CONFIG.tokens.oentregador : UMAMI_CONFIG.tokens.main;
+    const data = await getUmamiVisitors(websiteId, token, startDate, endDate);
+    results[project] = {
+      websiteId,
+      tokenPrefix: token.substring(0, 10) + '...',
+      ...data
+    };
+  }
+
+  res.json({
+    message: 'Umami debug info',
+    dateRange: {
+      start: startDate.toISOString(),
+      end: endDate.toISOString()
+    },
+    results
+  });
+});
+
+export default router;

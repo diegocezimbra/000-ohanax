@@ -88,6 +88,78 @@ async function getTotalVisitors(startDate, endDate) {
   };
 }
 
+// Fetch custom events count from Umami
+async function getUmamiEventCount(websiteId, token, eventName, startDate, endDate) {
+  try {
+    const startAt = new Date(startDate).getTime();
+    const endAt = new Date(endDate).getTime();
+
+    // Umami API endpoint for events
+    const url = `${UMAMI_CONFIG.baseUrl}/websites/${websiteId}/events?startAt=${startAt}&endAt=${endAt}`;
+    console.log(`[Umami] Fetching events: ${url.substring(0, 80)}...`);
+
+    const response = await fetch(url, {
+      headers: {
+        'x-umami-api-key': token,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      console.error(`[Umami] Events fetch failed: ${response.status}`);
+      return 0;
+    }
+
+    const data = await response.json();
+    // Find specific event by name
+    const event = data.find(e => e.eventName === eventName);
+    return event ? event.count : 0;
+  } catch (err) {
+    console.error('[Umami] Events fetch error:', err.message);
+    return 0;
+  }
+}
+
+// Fetch all scan funnel events from Umami
+async function getSecurityScanFunnelEvents(startDate, endDate) {
+  const websiteId = UMAMI_CONFIG.websites.security;
+  const token = UMAMI_CONFIG.tokens.main;
+
+  try {
+    const startAt = new Date(startDate).getTime();
+    const endAt = new Date(endDate).getTime();
+
+    // Fetch all events for the security website
+    const url = `${UMAMI_CONFIG.baseUrl}/websites/${websiteId}/events?startAt=${startAt}&endAt=${endAt}`;
+    console.log(`[Umami] Fetching scan funnel events...`);
+
+    const response = await fetch(url, {
+      headers: {
+        'x-umami-api-key': token,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      console.error(`[Umami] Scan funnel events fetch failed: ${response.status}`);
+      return {};
+    }
+
+    const data = await response.json();
+
+    // Map event names to counts
+    const eventCounts = {};
+    for (const event of data) {
+      eventCounts[event.eventName] = event.count || 0;
+    }
+
+    return eventCounts;
+  } catch (err) {
+    console.error('[Umami] Scan funnel events error:', err.message);
+    return {};
+  }
+}
+
 app.use(cors({
   origin: ['https://www.ohanax.com', 'https://ohanax.com', 'http://localhost:3333'],
   credentials: true
@@ -969,6 +1041,95 @@ app.get('/api/security/activity/failed-logins', async (req, res) => {
     });
   } catch (err) {
     console.error('Error fetching failed logins:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/security/scan-funnel - Funil detalhado do fluxo de scan (dados do Umami)
+app.get('/api/security/scan-funnel', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 30;
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    // Fetch events from Umami
+    const events = await getSecurityScanFunnelEvents(startDate, endDate);
+
+    // Also get page visitors from Umami
+    const websiteId = UMAMI_CONFIG.websites.security;
+    const token = UMAMI_CONFIG.tokens.main;
+    const visitorData = await getUmamiVisitors(websiteId, token, startDate, endDate);
+
+    // Get trial data from database
+    const trialsStarted = await db.security.query(`
+      SELECT COUNT(*) as total
+      FROM security_trial_sessions
+      WHERE created_at >= $1
+    `, [startDate]);
+
+    const trialsPaid = await db.security.query(`
+      SELECT COUNT(*) as total
+      FROM security_trial_sessions
+      WHERE created_at >= $1 AND payment_status = 'paid'
+    `, [startDate]);
+
+    const trialsCompleted = await db.security.query(`
+      SELECT COUNT(*) as total
+      FROM security_trial_sessions
+      WHERE created_at >= $1 AND status IN ('completed', 'claimed')
+    `, [startDate]);
+
+    // Build funnel data
+    const funnel = {
+      // From Umami events
+      pageViews: events['scan_page_view'] || visitorData.pageviews || 0,
+      formEngagement: events['form_engagement'] || 0,
+      emailValidationFailed: events['email_validation_failed'] || 0,
+      existingUserRedirect: events['existing_user_redirect'] || 0,
+      trialStarted: events['trial_started'] || parseInt(trialsStarted.rows[0]?.total) || 0,
+      scanCompleted: events['scan_completed'] || parseInt(trialsCompleted.rows[0]?.total) || 0,
+      paymentPageView: events['payment_page_view'] || 0,
+      initiateCheckout: events['initiate_checkout'] || 0,
+      checkoutError: events['checkout_error'] || 0,
+      purchaseCompleted: events['purchase_completed'] || parseInt(trialsPaid.rows[0]?.total) || 0,
+      registerClick: events['register_click'] || 0,
+      loginClick: events['login_click'] || 0,
+      scanError: events['scan_error'] || 0,
+
+      // Computed metrics
+      visitors: visitorData.visitors || 0,
+    };
+
+    // Calculate conversion rates
+    const conversions = {
+      pageToEngagement: funnel.pageViews > 0 ? ((funnel.formEngagement / funnel.pageViews) * 100).toFixed(1) : '0',
+      engagementToTrial: funnel.formEngagement > 0 ? ((funnel.trialStarted / funnel.formEngagement) * 100).toFixed(1) : '0',
+      trialToPaymentPage: funnel.trialStarted > 0 ? ((funnel.paymentPageView / funnel.trialStarted) * 100).toFixed(1) : '0',
+      paymentPageToCheckout: funnel.paymentPageView > 0 ? ((funnel.initiateCheckout / funnel.paymentPageView) * 100).toFixed(1) : '0',
+      checkoutToPurchase: funnel.initiateCheckout > 0 ? ((funnel.purchaseCompleted / funnel.initiateCheckout) * 100).toFixed(1) : '0',
+      overallConversion: funnel.pageViews > 0 ? ((funnel.purchaseCompleted / funnel.pageViews) * 100).toFixed(2) : '0',
+    };
+
+    // Dropout points
+    const dropouts = {
+      formAbandonment: funnel.formEngagement > 0 ? funnel.formEngagement - funnel.trialStarted : 0,
+      emailFailed: funnel.emailValidationFailed,
+      existingUser: funnel.existingUserRedirect,
+      paymentAbandonment: funnel.paymentPageView > 0 ? funnel.paymentPageView - funnel.initiateCheckout : 0,
+      checkoutAbandonment: funnel.initiateCheckout > 0 ? funnel.initiateCheckout - funnel.purchaseCompleted : 0,
+      scanErrors: funnel.scanError,
+    };
+
+    res.json({
+      period: `${days} days`,
+      funnel,
+      conversions,
+      dropouts,
+      rawEvents: events
+    });
+  } catch (err) {
+    console.error('Error fetching scan funnel:', err);
     res.status(500).json({ error: err.message });
   }
 });
