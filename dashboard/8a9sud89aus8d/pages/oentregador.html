@@ -189,3 +189,131 @@
     <tbody id="oentregador-table"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
   </table>
 </div>
+
+<!-- ========================================== -->
+<!-- SECAO DE AUDITORIA -->
+<!-- ========================================== -->
+
+<div class="section" style="margin-top: 30px; border-top: 2px solid #334155; padding-top: 30px;">
+  <div class="section-title" style="display: flex; align-items: center; gap: 12px;">
+    <span style="font-size: 20px;">🔍</span>
+    Sistema de Auditoria
+    <span style="font-size: 12px; background: #22c55e; color: white; padding: 4px 8px; border-radius: 4px; margin-left: auto;">NOVO</span>
+  </div>
+
+  <!-- Cards de Estatisticas de Auditoria -->
+  <div class="cards" style="margin-top: 20px;">
+    <div class="card">
+      <div class="card-title">Total de Logs</div>
+      <div class="card-value" id="audit-total-logs">--</div>
+      <div class="card-subtitle">Ultimos 7 dias</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #22c55e;">
+      <div class="card-title">Sucesso</div>
+      <div class="card-value" id="audit-success" style="color: #22c55e;">--</div>
+      <div class="card-subtitle">Operacoes bem-sucedidas</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #f59e0b;">
+      <div class="card-title">Falhas</div>
+      <div class="card-value" id="audit-failure" style="color: #f59e0b;">--</div>
+      <div class="card-subtitle">Operacoes com falha</div>
+    </div>
+    <div class="card" style="border-left: 3px solid #ef4444;">
+      <div class="card-title">Erros</div>
+      <div class="card-value" id="audit-error" style="color: #ef4444;">--</div>
+      <div class="card-subtitle">Erros do sistema</div>
+    </div>
+  </div>
+
+  <!-- Grid de Categorias e Top Users -->
+  <div class="grid-2" style="margin-top: 20px;">
+    <div class="section" style="background: #0f172a; padding: 20px; border-radius: 8px;">
+      <div class="section-title" style="font-size: 14px; margin-bottom: 16px;">Eventos por Categoria</div>
+      <div class="metric-row">
+        <span class="metric-label">🔐 Autenticacao</span>
+        <span class="metric-value" id="audit-cat-auth">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">📦 Bipagem</span>
+        <span class="metric-value" id="audit-cat-bipagem">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">⚙️ Configuracao</span>
+        <span class="metric-value" id="audit-cat-config">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">🔄 Sincronizacao</span>
+        <span class="metric-value" id="audit-cat-sync">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">📝 CRUD</span>
+        <span class="metric-value" id="audit-cat-crud">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">💻 Sistema</span>
+        <span class="metric-value" id="audit-cat-system">--</span>
+      </div>
+    </div>
+
+    <div class="section" style="background: #0f172a; padding: 20px; border-radius: 8px;">
+      <div class="section-title" style="font-size: 14px; margin-bottom: 16px;">Usuarios Mais Ativos</div>
+      <div id="audit-top-users" style="max-height: 220px; overflow-y: auto;">
+        <div style="color: #64748b;">Carregando...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grafico de Timeline -->
+  <div style="margin-top: 20px;">
+    <div class="section-title" style="font-size: 14px; margin-bottom: 16px;">Atividade de Auditoria (Ultimos 30 dias)</div>
+    <div id="auditTimelineChart" style="height: 280px;"></div>
+  </div>
+
+  <!-- Top Acoes -->
+  <div class="section" style="background: #0f172a; padding: 20px; border-radius: 8px; margin-top: 20px;">
+    <div class="section-title" style="font-size: 14px; margin-bottom: 16px;">Top 10 Acoes Registradas</div>
+    <div id="audit-top-actions" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+      <div style="color: #64748b;">Carregando...</div>
+    </div>
+  </div>
+
+  <!-- Tabela de Logs Recentes -->
+  <div style="margin-top: 20px;">
+    <div class="section-title" style="font-size: 14px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+      <span>Logs Recentes</span>
+      <div style="display: flex; gap: 8px;">
+        <select id="audit-filter-category" style="background: #1e293b; border: 1px solid #334155; padding: 6px 12px; border-radius: 4px; color: #f1f5f9; font-size: 12px;">
+          <option value="">Todas Categorias</option>
+          <option value="auth">Autenticacao</option>
+          <option value="bipagem">Bipagem</option>
+          <option value="config">Configuracao</option>
+          <option value="sync">Sincronizacao</option>
+          <option value="crud">CRUD</option>
+          <option value="system">Sistema</option>
+        </select>
+        <select id="audit-filter-status" style="background: #1e293b; border: 1px solid #334155; padding: 6px 12px; border-radius: 4px; color: #f1f5f9; font-size: 12px;">
+          <option value="">Todos Status</option>
+          <option value="success">Sucesso</option>
+          <option value="failure">Falha</option>
+          <option value="error">Erro</option>
+        </select>
+        <button onclick="loadAuditLogs()" style="background: #3b82f6; border: none; padding: 6px 12px; border-radius: 4px; color: white; font-size: 12px; cursor: pointer;">Filtrar</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 140px;">Data/Hora</th>
+          <th>Acao</th>
+          <th>Usuario</th>
+          <th>Status</th>
+          <th>Detalhes</th>
+        </tr>
+      </thead>
+      <tbody id="audit-logs-table">
+        <tr><td colspan="5" class="loading">Carregando...</td></tr>
+      </tbody>
+    </table>
+    <div id="audit-pagination" style="display: flex; justify-content: center; gap: 8px; margin-top: 16px;"></div>
+  </div>
+</div>

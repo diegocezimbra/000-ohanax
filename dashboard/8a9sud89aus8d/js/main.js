@@ -912,6 +912,15 @@ async function loadProjectPage(project) {
           charts['oentregadorBipados'].render();
         }
       } catch (e) { console.error('Error loading bipados per day:', e); }
+
+      // ========================================
+      // AUDIT LOGS SECTION
+      // ========================================
+      try {
+        await loadAuditStats();
+        await loadAuditTimeline();
+        await loadAuditLogs();
+      } catch (e) { console.error('Error loading audit data:', e); }
     }
 
     // Tabela
@@ -1473,6 +1482,272 @@ async function loadRevenuePage() {
     console.error('Error loading revenue:', err);
   }
 }
+
+// =============================================================================
+// AUDIT LOGS FUNCTIONS
+// =============================================================================
+
+let auditCurrentPage = 1;
+const auditPageSize = 20;
+
+// Load audit statistics
+async function loadAuditStats() {
+  try {
+    const stats = await fetch('/api/oentregador/audit/stats?period=week').then(r => r.json());
+
+    // Total logs
+    const totalLogsEl = document.getElementById('audit-total-logs');
+    if (totalLogsEl) totalLogsEl.textContent = formatNumber(stats.totalLogs || 0);
+
+    // Status counts
+    const successEl = document.getElementById('audit-success');
+    const failureEl = document.getElementById('audit-failure');
+    const errorEl = document.getElementById('audit-error');
+
+    if (successEl) successEl.textContent = formatNumber(stats.byStatus?.success || 0);
+    if (failureEl) failureEl.textContent = formatNumber(stats.byStatus?.failure || 0);
+    if (errorEl) errorEl.textContent = formatNumber(stats.byStatus?.error || 0);
+
+    // Category counts
+    const categories = ['auth', 'bipagem', 'config', 'sync', 'crud', 'system'];
+    categories.forEach(cat => {
+      const el = document.getElementById(`audit-cat-${cat}`);
+      if (el) el.textContent = formatNumber(stats.byCategory?.[cat] || 0);
+    });
+
+    // Top users
+    const topUsersEl = document.getElementById('audit-top-users');
+    if (topUsersEl && stats.topUsers) {
+      if (stats.topUsers.length > 0) {
+        topUsersEl.innerHTML = stats.topUsers.map(u => `
+          <div class="metric-row" style="padding: 8px 0; border-bottom: 1px solid #334155;">
+            <div style="display: flex; flex-direction: column;">
+              <span class="metric-label" style="font-size: 13px;">${u.userName || 'Desconhecido'}</span>
+              <span style="font-size: 11px; color: #64748b;">${u.userEmail || ''}</span>
+            </div>
+            <span class="metric-value" style="color: #3b82f6;">${u.count}</span>
+          </div>
+        `).join('');
+      } else {
+        topUsersEl.innerHTML = '<div style="color: #64748b; font-size: 13px;">Nenhum dado disponivel</div>';
+      }
+    }
+
+    // Top actions
+    const topActionsEl = document.getElementById('audit-top-actions');
+    if (topActionsEl && stats.topActions) {
+      if (stats.topActions.length > 0) {
+        topActionsEl.innerHTML = stats.topActions.map(a => {
+          const actionLabel = formatAuditAction(a.action);
+          const color = getActionColor(a.action);
+          return `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #1e293b; border-radius: 4px; border-left: 3px solid ${color};">
+              <span style="font-size: 12px; color: #e2e8f0;">${actionLabel}</span>
+              <span style="font-size: 14px; font-weight: 600; color: ${color};">${a.count}</span>
+            </div>
+          `;
+        }).join('');
+      } else {
+        topActionsEl.innerHTML = '<div style="color: #64748b; font-size: 13px;">Nenhum dado disponivel</div>';
+      }
+    }
+  } catch (err) {
+    console.error('Error loading audit stats:', err);
+  }
+}
+
+// Format audit action for display
+function formatAuditAction(action) {
+  const actionMap = {
+    'auth.login': 'Login',
+    'auth.login_failed': 'Login Falhou',
+    'auth.logout': 'Logout',
+    'auth.register': 'Registro',
+    'auth.password_reset_request': 'Reset Senha Solicitado',
+    'auth.password_reset_complete': 'Reset Senha Completo',
+    'bipagem.scan': 'Bipagem OK',
+    'bipagem.scan_not_found': 'BR Nao Encontrada',
+    'bipagem.scan_wrong_at': 'BR em AT Errada',
+    'bipagem.complete_at': 'AT Conferida',
+    'config.provider_create': 'Config Criada',
+    'config.provider_update': 'Config Atualizada',
+    'config.provider_delete': 'Config Deletada',
+    'sync.daily_start': 'Sync Iniciado',
+    'sync.daily_complete': 'Sync Completo',
+    'system.startup': 'Sistema Iniciado',
+    'system.error': 'Erro Sistema'
+  };
+  return actionMap[action] || action;
+}
+
+// Get color for action type
+function getActionColor(action) {
+  if (action.includes('error') || action.includes('failed') || action.includes('wrong')) return '#ef4444';
+  if (action.includes('not_found')) return '#f59e0b';
+  if (action.includes('login') || action.includes('register')) return '#8b5cf6';
+  if (action.includes('bipagem') || action.includes('scan')) return '#22c55e';
+  if (action.includes('config')) return '#3b82f6';
+  if (action.includes('sync')) return '#06b6d4';
+  return '#64748b';
+}
+
+// Load audit timeline chart
+async function loadAuditTimeline() {
+  try {
+    const timeline = await fetch('/api/oentregador/audit/timeline?days=30').then(r => r.json());
+    const chartEl = document.getElementById('auditTimelineChart');
+
+    if (chartEl && timeline.data && timeline.data.length > 0) {
+      if (charts['auditTimeline']) charts['auditTimeline'].destroy();
+
+      charts['auditTimeline'] = new ApexCharts(chartEl, {
+        chart: {
+          type: 'area',
+          height: 280,
+          stacked: true,
+          background: chartTheme.background,
+          toolbar: { show: false },
+          fontFamily: 'Inter, sans-serif'
+        },
+        series: [
+          {
+            name: 'Sucesso',
+            data: timeline.data.map(d => d.success)
+          },
+          {
+            name: 'Falhas',
+            data: timeline.data.map(d => d.failure)
+          },
+          {
+            name: 'Erros',
+            data: timeline.data.map(d => d.error)
+          }
+        ],
+        colors: ['#22c55e', '#f59e0b', '#ef4444'],
+        fill: {
+          type: 'gradient',
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.5,
+            opacityTo: 0.1
+          }
+        },
+        stroke: { curve: 'smooth', width: 2 },
+        xaxis: {
+          categories: timeline.data.map(d => {
+            const date = new Date(d.date);
+            return `${date.getDate()}/${date.getMonth() + 1}`;
+          }),
+          labels: {
+            style: { colors: chartTheme.textColor, fontSize: '10px' },
+            rotate: -45,
+            rotateAlways: timeline.data.length > 15
+          },
+          axisBorder: { show: false },
+          axisTicks: { show: false }
+        },
+        yaxis: {
+          labels: { style: { colors: chartTheme.textColor } },
+          min: 0
+        },
+        grid: {
+          borderColor: chartTheme.gridColor,
+          strokeDashArray: 4
+        },
+        dataLabels: { enabled: false },
+        legend: {
+          position: 'top',
+          labels: { colors: chartTheme.textColor }
+        },
+        tooltip: {
+          theme: 'dark',
+          y: {
+            formatter: (val) => val + ' eventos'
+          }
+        }
+      });
+      charts['auditTimeline'].render();
+    }
+  } catch (err) {
+    console.error('Error loading audit timeline:', err);
+  }
+}
+
+// Load audit logs table
+async function loadAuditLogs(page = 1) {
+  try {
+    auditCurrentPage = page;
+    const category = document.getElementById('audit-filter-category')?.value || '';
+    const status = document.getElementById('audit-filter-status')?.value || '';
+
+    let url = `/api/oentregador/audit/logs?page=${page}&limit=${auditPageSize}`;
+    if (category) url += `&category=${category}`;
+    if (status) url += `&status=${status}`;
+
+    const result = await fetch(url).then(r => r.json());
+    const tableEl = document.getElementById('audit-logs-table');
+
+    if (tableEl) {
+      if (result.data && result.data.length > 0) {
+        tableEl.innerHTML = result.data.map(log => {
+          const statusClass = log.status === 'success' ? 'active' : (log.status === 'error' ? 'canceled' : 'trialing');
+          const statusLabel = log.status === 'success' ? 'Sucesso' : (log.status === 'error' ? 'Erro' : 'Falha');
+          const timestamp = new Date(log.timestamp);
+          const timeStr = `${timestamp.toLocaleDateString('pt-BR')} ${timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+
+          return `
+            <tr>
+              <td style="font-size: 12px; white-space: nowrap;">${timeStr}</td>
+              <td style="font-size: 12px;">
+                <span style="color: ${getActionColor(log.action)};">${formatAuditAction(log.action)}</span>
+              </td>
+              <td style="font-size: 12px;">
+                <div>${log.userName || '-'}</div>
+                <div style="font-size: 10px; color: #64748b;">${log.userEmail || ''}</div>
+              </td>
+              <td><span class="status ${statusClass}">${statusLabel}</span></td>
+              <td style="font-size: 11px; color: #94a3b8; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">
+                ${log.errorMessage || (log.metadata ? JSON.stringify(log.metadata).substring(0, 50) + '...' : '-')}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        tableEl.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b;">Nenhum log encontrado</td></tr>';
+      }
+    }
+
+    // Pagination
+    const paginationEl = document.getElementById('audit-pagination');
+    if (paginationEl && result.totalPages > 1) {
+      let paginationHtml = '';
+
+      // Previous button
+      if (page > 1) {
+        paginationHtml += `<button onclick="loadAuditLogs(${page - 1})" style="background: #1e293b; border: 1px solid #334155; padding: 6px 12px; border-radius: 4px; color: #f1f5f9; cursor: pointer;">Anterior</button>`;
+      }
+
+      // Page info
+      paginationHtml += `<span style="color: #94a3b8; padding: 6px 12px;">Pagina ${page} de ${result.totalPages}</span>`;
+
+      // Next button
+      if (page < result.totalPages) {
+        paginationHtml += `<button onclick="loadAuditLogs(${page + 1})" style="background: #1e293b; border: 1px solid #334155; padding: 6px 12px; border-radius: 4px; color: #f1f5f9; cursor: pointer;">Proxima</button>`;
+      }
+
+      paginationEl.innerHTML = paginationHtml;
+    } else if (paginationEl) {
+      paginationEl.innerHTML = '';
+    }
+  } catch (err) {
+    console.error('Error loading audit logs:', err);
+  }
+}
+
+// Make functions available globally
+window.loadAuditLogs = loadAuditLogs;
+window.loadAuditStats = loadAuditStats;
+window.loadAuditTimeline = loadAuditTimeline;
 
 // =============================================================================
 // INITIALIZATION

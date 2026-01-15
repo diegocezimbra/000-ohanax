@@ -759,6 +759,220 @@ app.get('/api/security/trials', async (req, res) => {
   }
 });
 
+// Activity logs - recent activities
+app.get('/api/security/activity', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = parseInt(req.query.offset) || 0;
+    const action = req.query.action;
+    const resourceType = req.query.resourceType;
+    const userId = req.query.userId;
+
+    let whereClause = 'WHERE 1=1';
+    const params = [];
+    let paramIndex = 1;
+
+    if (action) {
+      whereClause += ` AND action = $${paramIndex++}`;
+      params.push(action);
+    }
+    if (resourceType) {
+      whereClause += ` AND resource_type = $${paramIndex++}`;
+      params.push(resourceType);
+    }
+    if (userId) {
+      whereClause += ` AND user_id = $${paramIndex++}`;
+      params.push(userId);
+    }
+
+    const result = await db.security.query(`
+      SELECT
+        sal.id,
+        sal.user_id,
+        sal.user_email,
+        sal.action,
+        sal.resource_type,
+        sal.resource_id,
+        sal.resource_name,
+        sal.ip_address,
+        sal.success,
+        sal.error_message,
+        sal.metadata,
+        sal.created_at,
+        sau.name as user_name
+      FROM security_activity_logs sal
+      LEFT JOIN security_admin_users sau ON sal.user_id = sau.id
+      ${whereClause}
+      ORDER BY sal.created_at DESC
+      LIMIT $${paramIndex++} OFFSET $${paramIndex++}
+    `, [...params, limit, offset]);
+
+    const countResult = await db.security.query(`
+      SELECT COUNT(*) as total
+      FROM security_activity_logs sal
+      ${whereClause}
+    `, params);
+
+    res.json({
+      data: result.rows,
+      meta: {
+        total: parseInt(countResult.rows[0].total),
+        limit,
+        offset
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching activity logs:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Activity stats
+app.get('/api/security/activity/stats', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 30;
+
+    // Count by action
+    const byAction = await db.security.query(`
+      SELECT action, COUNT(*) as count
+      FROM security_activity_logs
+      WHERE created_at >= NOW() - INTERVAL '${days} days'
+      GROUP BY action
+      ORDER BY count DESC
+    `);
+
+    // Count by resource type
+    const byResource = await db.security.query(`
+      SELECT resource_type, COUNT(*) as count
+      FROM security_activity_logs
+      WHERE created_at >= NOW() - INTERVAL '${days} days'
+      GROUP BY resource_type
+      ORDER BY count DESC
+    `);
+
+    // Count by user
+    const byUser = await db.security.query(`
+      SELECT
+        user_email,
+        COUNT(*) as count
+      FROM security_activity_logs
+      WHERE created_at >= NOW() - INTERVAL '${days} days' AND user_email IS NOT NULL
+      GROUP BY user_email
+      ORDER BY count DESC
+      LIMIT 20
+    `);
+
+    // Total stats
+    const totals = await db.security.query(`
+      SELECT
+        COUNT(*) as total,
+        COUNT(CASE WHEN success = false THEN 1 END) as failed,
+        COUNT(CASE WHEN action = 'login' THEN 1 END) as logins,
+        COUNT(CASE WHEN action = 'login_failed' THEN 1 END) as failed_logins,
+        COUNT(CASE WHEN action = 'scan_start' THEN 1 END) as scans_started
+      FROM security_activity_logs
+      WHERE created_at >= NOW() - INTERVAL '${days} days'
+    `);
+
+    res.json({
+      totals: totals.rows[0],
+      byAction: byAction.rows,
+      byResource: byResource.rows,
+      byUser: byUser.rows,
+      period: `${days} days`
+    });
+  } catch (err) {
+    console.error('Error fetching activity stats:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Activity per day (for charts)
+app.get('/api/security/activity/per-day', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 30;
+
+    const result = await db.security.query(`
+      SELECT
+        DATE(created_at) as date,
+        COUNT(*) as total,
+        COUNT(CASE WHEN action = 'login' THEN 1 END) as logins,
+        COUNT(CASE WHEN action = 'scan_start' THEN 1 END) as scans,
+        COUNT(CASE WHEN success = false THEN 1 END) as failed
+      FROM security_activity_logs
+      WHERE created_at >= NOW() - INTERVAL '${days} days'
+      GROUP BY DATE(created_at)
+      ORDER BY DATE(created_at) ASC
+    `);
+
+    // Fill missing days with zeros
+    const data = [];
+    const now = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const found = result.rows.find(r => r.date && r.date.toISOString().split('T')[0] === dateStr);
+      data.push({
+        date: dateStr,
+        total: found ? parseInt(found.total) : 0,
+        logins: found ? parseInt(found.logins) : 0,
+        scans: found ? parseInt(found.scans) : 0,
+        failed: found ? parseInt(found.failed) : 0
+      });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error('Error fetching activity per day:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Failed logins (security monitoring)
+app.get('/api/security/activity/failed-logins', async (req, res) => {
+  try {
+    const hours = parseInt(req.query.hours) || 24;
+
+    const result = await db.security.query(`
+      SELECT
+        user_email,
+        ip_address,
+        error_message,
+        created_at
+      FROM security_activity_logs
+      WHERE action = 'login_failed'
+        AND created_at >= NOW() - INTERVAL '${hours} hours'
+      ORDER BY created_at DESC
+      LIMIT 100
+    `);
+
+    // Group by IP
+    const byIp = await db.security.query(`
+      SELECT
+        ip_address,
+        COUNT(*) as attempts,
+        array_agg(DISTINCT user_email) as emails
+      FROM security_activity_logs
+      WHERE action = 'login_failed'
+        AND created_at >= NOW() - INTERVAL '${hours} hours'
+      GROUP BY ip_address
+      HAVING COUNT(*) >= 3
+      ORDER BY attempts DESC
+    `);
+
+    res.json({
+      recent: result.rows,
+      suspiciousIps: byIp.rows,
+      period: `${hours} hours`
+    });
+  } catch (err) {
+    console.error('Error fetching failed logins:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // =============================================================================
 // O ENTREGADOR METRICS (MongoDB)
 // =============================================================================
@@ -2340,6 +2554,267 @@ app.get('/api/debug/umami', async (req, res) => {
     },
     results
   });
+});
+
+// =============================================================================
+// OENTREGADOR - AUDIT LOGS
+// =============================================================================
+
+// Get audit logs with filters
+app.get('/api/oentregador/audit/logs', async (req, res) => {
+  try {
+    const mongoDB = await db.mongo();
+    const auditLogs = mongoDB.collection('app_audit_logs');
+
+    const {
+      page = 1,
+      limit = 50,
+      category,
+      status,
+      userId,
+      companyId,
+      action,
+      startDate,
+      endDate
+    } = req.query;
+
+    const query = {};
+
+    if (category) query.category = category;
+    if (status) query.status = status;
+    if (userId) query.userId = userId;
+    if (companyId) query.companyId = companyId;
+    if (action) query.action = { $regex: action, $options: 'i' };
+
+    if (startDate || endDate) {
+      query.timestamp = {};
+      if (startDate) query.timestamp.$gte = new Date(startDate);
+      if (endDate) query.timestamp.$lte = new Date(endDate);
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [logs, total] = await Promise.all([
+      auditLogs
+        .find(query)
+        .sort({ timestamp: -1 })
+        .skip(skip)
+        .limit(parseInt(limit))
+        .toArray(),
+      auditLogs.countDocuments(query)
+    ]);
+
+    res.json({
+      data: logs,
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (err) {
+    console.error('Error fetching audit logs:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get audit stats
+app.get('/api/oentregador/audit/stats', async (req, res) => {
+  try {
+    const mongoDB = await db.mongo();
+    const auditLogs = mongoDB.collection('app_audit_logs');
+
+    const { period = 'week', companyId } = req.query;
+
+    // Calculate start date based on period
+    const now = new Date();
+    let startDate;
+    switch (period) {
+      case 'day':
+        startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        break;
+      case 'week':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'month':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    }
+
+    const matchQuery = { timestamp: { $gte: startDate } };
+    if (companyId) matchQuery.companyId = companyId;
+
+    // Get counts by category
+    const byCategory = await auditLogs.aggregate([
+      { $match: matchQuery },
+      { $group: { _id: '$category', count: { $sum: 1 } } }
+    ]).toArray();
+
+    // Get counts by status
+    const byStatus = await auditLogs.aggregate([
+      { $match: matchQuery },
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]).toArray();
+
+    // Get top actions
+    const topActions = await auditLogs.aggregate([
+      { $match: matchQuery },
+      { $group: { _id: '$action', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]).toArray();
+
+    // Get top users
+    const topUsers = await auditLogs.aggregate([
+      { $match: { ...matchQuery, userId: { $ne: null } } },
+      {
+        $group: {
+          _id: '$userId',
+          userName: { $first: '$userName' },
+          userEmail: { $first: '$userEmail' },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]).toArray();
+
+    // Get total count
+    const totalLogs = await auditLogs.countDocuments(matchQuery);
+
+    // Convert arrays to objects
+    const categoryObj = {
+      auth: 0, bipagem: 0, config: 0, sync: 0, crud: 0, system: 0, financial: 0
+    };
+    byCategory.forEach(c => { if (c._id) categoryObj[c._id] = c.count; });
+
+    const statusObj = { success: 0, failure: 0, error: 0 };
+    byStatus.forEach(s => { if (s._id) statusObj[s._id] = s.count; });
+
+    res.json({
+      totalLogs,
+      byCategory: categoryObj,
+      byStatus: statusObj,
+      topActions: topActions.map(a => ({ action: a._id, count: a.count })),
+      topUsers: topUsers.map(u => ({
+        userId: u._id,
+        userName: u.userName || 'Unknown',
+        userEmail: u.userEmail,
+        count: u.count
+      })),
+      period: {
+        start: startDate,
+        end: now,
+        name: period
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching audit stats:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get audit activity timeline (logs per day)
+app.get('/api/oentregador/audit/timeline', async (req, res) => {
+  try {
+    const mongoDB = await db.mongo();
+    const auditLogs = mongoDB.collection('app_audit_logs');
+
+    const days = parseInt(req.query.days) || 30;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    const result = await auditLogs.aggregate([
+      { $match: { timestamp: { $gte: startDate } } },
+      {
+        $group: {
+          _id: {
+            date: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+            status: '$status'
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { '_id.date': 1 } }
+    ]).toArray();
+
+    // Fill missing days and organize by status
+    const data = [];
+    const now = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const dayData = {
+        date: dateStr,
+        success: 0,
+        failure: 0,
+        error: 0,
+        total: 0
+      };
+
+      result.filter(r => r._id.date === dateStr).forEach(r => {
+        if (r._id.status && dayData.hasOwnProperty(r._id.status)) {
+          dayData[r._id.status] = r.count;
+          dayData.total += r.count;
+        }
+      });
+
+      data.push(dayData);
+    }
+
+    res.json({ data });
+  } catch (err) {
+    console.error('Error fetching audit timeline:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get recent activity for a user
+app.get('/api/oentregador/audit/user/:userId', async (req, res) => {
+  try {
+    const mongoDB = await db.mongo();
+    const auditLogs = mongoDB.collection('app_audit_logs');
+
+    const { userId } = req.params;
+    const limit = parseInt(req.query.limit) || 20;
+
+    const logs = await auditLogs
+      .find({ userId })
+      .sort({ timestamp: -1 })
+      .limit(limit)
+      .toArray();
+
+    res.json({ data: logs });
+  } catch (err) {
+    console.error('Error fetching user audit logs:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get recent activity for a company
+app.get('/api/oentregador/audit/company/:companyId', async (req, res) => {
+  try {
+    const mongoDB = await db.mongo();
+    const auditLogs = mongoDB.collection('app_audit_logs');
+
+    const { companyId } = req.params;
+    const limit = parseInt(req.query.limit) || 20;
+
+    const logs = await auditLogs
+      .find({ companyId })
+      .sort({ timestamp: -1 })
+      .limit(limit)
+      .toArray();
+
+    res.json({ data: logs });
+  } catch (err) {
+    console.error('Error fetching company audit logs:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // =============================================================================
