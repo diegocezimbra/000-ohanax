@@ -10,6 +10,7 @@ let formatDate = null;
 let formatDateTime = null;
 let formatNumber = null;
 let adsData = null; // Store loaded ads data for filtering
+let currentSort = { column: null, direction: 'desc' }; // For sortable columns
 
 /**
  * Initialize the ads-security module with dependencies
@@ -73,6 +74,199 @@ function formatLargeNumber(value) {
   if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
   return value.toLocaleString('pt-BR');
 }
+
+/**
+ * Calculate ad score based on metrics
+ * Score breakdown:
+ * - CTR: 0-30 pts (>2% = 30, >1.5% = 25, >1% = 20, >0.5% = 10, else 0)
+ * - CPC: 0-20 pts (lower is better: <0.50 = 20, <1.00 = 15, <2.00 = 10, <3.00 = 5)
+ * - CPL: 0-30 pts (lower is better, requires leads: <20 = 30, <30 = 25, <50 = 20, <80 = 10)
+ * - Leads: 0-20 pts (>10 = 20, >5 = 15, >2 = 10, >0 = 5)
+ */
+function calculateAdScore(metrics) {
+  let score = 0;
+  const breakdown = {};
+
+  // CTR Score (0-30 pts)
+  const ctr = parseFloat(metrics.ctr) || 0;
+  if (ctr >= 2) { score += 30; breakdown.ctr = 30; }
+  else if (ctr >= 1.5) { score += 25; breakdown.ctr = 25; }
+  else if (ctr >= 1) { score += 20; breakdown.ctr = 20; }
+  else if (ctr >= 0.5) { score += 10; breakdown.ctr = 10; }
+  else { breakdown.ctr = 0; }
+
+  // CPC Score (0-20 pts) - lower is better
+  const cpc = parseFloat(metrics.cpc) || 999;
+  if (cpc < 0.50) { score += 20; breakdown.cpc = 20; }
+  else if (cpc < 1.00) { score += 15; breakdown.cpc = 15; }
+  else if (cpc < 2.00) { score += 10; breakdown.cpc = 10; }
+  else if (cpc < 3.00) { score += 5; breakdown.cpc = 5; }
+  else { breakdown.cpc = 0; }
+
+  // CPL Score (0-30 pts) - lower is better, only if has leads
+  const cpl = parseFloat(metrics.cpl) || null;
+  const leads = parseInt(metrics.leads) || 0;
+  if (leads > 0 && cpl !== null) {
+    if (cpl < 20) { score += 30; breakdown.cpl = 30; }
+    else if (cpl < 30) { score += 25; breakdown.cpl = 25; }
+    else if (cpl < 50) { score += 20; breakdown.cpl = 20; }
+    else if (cpl < 80) { score += 10; breakdown.cpl = 10; }
+    else { breakdown.cpl = 0; }
+  } else {
+    breakdown.cpl = 0;
+  }
+
+  // Leads Score (0-20 pts)
+  if (leads >= 10) { score += 20; breakdown.leads = 20; }
+  else if (leads >= 5) { score += 15; breakdown.leads = 15; }
+  else if (leads >= 2) { score += 10; breakdown.leads = 10; }
+  else if (leads > 0) { score += 5; breakdown.leads = 5; }
+  else { breakdown.leads = 0; }
+
+  return { score, breakdown, maxScore: 100 };
+}
+
+/**
+ * Get score color based on value
+ */
+function getScoreColor(score) {
+  if (score >= 70) return '#22c55e'; // Green - Excellent
+  if (score >= 50) return '#84cc16'; // Lime - Good
+  if (score >= 30) return '#f59e0b'; // Amber - Average
+  if (score >= 15) return '#f97316'; // Orange - Below average
+  return '#ef4444'; // Red - Poor
+}
+
+/**
+ * Generate analysis (recommendation) regardless of Learning status
+ * This shows what the recommendation WOULD be based on current metrics
+ */
+function generateAnalysis(metrics, avgCpl = 50) {
+  const ctr = parseFloat(metrics.ctr) || 0;
+  const cpc = parseFloat(metrics.cpc) || 0;
+  const cpl = parseFloat(metrics.cpl) || null;
+  const leads = parseInt(metrics.leads) || 0;
+  const spend = parseFloat(metrics.spend) || 0;
+  const impressions = parseInt(metrics.impressions) || 0;
+
+  // Check for SCALE conditions (Accelerator)
+  if (leads >= 5 && ctr >= 2 && cpl && cpl < avgCpl * 0.5) {
+    return { action: 'SCALE', color: '#8b5cf6', reason: 'Alta performance - escalar' };
+  }
+
+  // Check for PAUSE conditions (Stop Loss)
+  if (impressions >= 1000 && ctr < 0.5) {
+    return { action: 'PAUSE', color: '#ef4444', reason: 'CTR muito baixo' };
+  }
+  if (cpl && cpl > avgCpl * 3) {
+    return { action: 'PAUSE', color: '#ef4444', reason: 'CPL muito alto' };
+  }
+  if (spend >= 50 && leads === 0) {
+    return { action: 'PAUSE', color: '#ef4444', reason: 'Sem conversoes com gasto alto' };
+  }
+
+  // Check for WARNING conditions
+  if (ctr < 0.8 && impressions >= 500) {
+    return { action: 'REVIEW', color: '#f59e0b', reason: 'CTR abaixo do ideal' };
+  }
+  if (cpl && cpl > avgCpl * 1.5) {
+    return { action: 'REVIEW', color: '#f59e0b', reason: 'CPL acima da media' };
+  }
+
+  // Healthy
+  if (leads > 0 && ctr >= 0.8) {
+    return { action: 'KEEP', color: '#22c55e', reason: 'Performance adequada' };
+  }
+
+  // Default - needs more data
+  return { action: 'MONITOR', color: '#3b82f6', reason: 'Aguardando mais dados' };
+}
+
+/**
+ * Sort ads by column
+ */
+function sortAds(ads, column, direction) {
+  return [...ads].sort((a, b) => {
+    let valA, valB;
+
+    switch (column) {
+      case 'status':
+        valA = a.optimizerStatus?.code || '';
+        valB = b.optimizerStatus?.code || '';
+        break;
+      case 'name':
+        valA = a.name || '';
+        valB = b.name || '';
+        break;
+      case 'spend':
+        valA = parseFloat(a.metrics?.spend) || 0;
+        valB = parseFloat(b.metrics?.spend) || 0;
+        break;
+      case 'impressions':
+        valA = parseInt(a.metrics?.impressions) || 0;
+        valB = parseInt(b.metrics?.impressions) || 0;
+        break;
+      case 'clicks':
+        valA = parseInt(a.metrics?.clicks) || 0;
+        valB = parseInt(b.metrics?.clicks) || 0;
+        break;
+      case 'ctr':
+        valA = parseFloat(a.metrics?.ctr) || 0;
+        valB = parseFloat(b.metrics?.ctr) || 0;
+        break;
+      case 'cpc':
+        valA = parseFloat(a.metrics?.cpc) || 0;
+        valB = parseFloat(b.metrics?.cpc) || 0;
+        break;
+      case 'leads':
+        valA = parseInt(a.metrics?.leads) || 0;
+        valB = parseInt(b.metrics?.leads) || 0;
+        break;
+      case 'cpl':
+        valA = parseFloat(a.metrics?.cpl) || 999999;
+        valB = parseFloat(b.metrics?.cpl) || 999999;
+        break;
+      case 'score':
+        valA = calculateAdScore(a.metrics || {}).score;
+        valB = calculateAdScore(b.metrics || {}).score;
+        break;
+      default:
+        return 0;
+    }
+
+    if (typeof valA === 'string') {
+      return direction === 'asc'
+        ? valA.localeCompare(valB)
+        : valB.localeCompare(valA);
+    }
+
+    return direction === 'asc' ? valA - valB : valB - valA;
+  });
+}
+
+/**
+ * Handle column header click for sorting
+ */
+function handleSort(column) {
+  if (currentSort.column === column) {
+    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+  } else {
+    currentSort.column = column;
+    currentSort.direction = 'desc';
+  }
+
+  if (adsData && adsData.ads) {
+    const filter = document.getElementById('ads-filter-status')?.value;
+    const filteredAds = filter
+      ? adsData.ads.filter(ad => ad.optimizerStatus?.code === filter)
+      : adsData.ads;
+    const sortedAds = sortAds(filteredAds, column, currentSort.direction);
+    renderAdsTable(sortedAds);
+  }
+}
+
+// Expose sort handler globally
+window.handleAdsSort = handleSort;
 
 /**
  * Get status badge HTML
@@ -192,25 +386,69 @@ async function loadAdsData(startDate, endDate) {
 }
 
 /**
+ * Get sort indicator for column header
+ */
+function getSortIndicator(column) {
+  if (currentSort.column !== column) return '';
+  return currentSort.direction === 'asc' ? ' ▲' : ' ▼';
+}
+
+/**
+ * Render table headers with sorting
+ */
+function renderTableHeaders() {
+  const thead = document.querySelector('#ads-table-container thead');
+  if (!thead) return;
+
+  thead.innerHTML = `
+    <tr>
+      <th class="sortable-header" onclick="handleAdsSort('status')">Status${getSortIndicator('status')}</th>
+      <th class="sortable-header" onclick="handleAdsSort('name')">Nome${getSortIndicator('name')}</th>
+      <th class="sortable-header" onclick="handleAdsSort('spend')">Gasto${getSortIndicator('spend')}</th>
+      <th class="sortable-header" onclick="handleAdsSort('impressions')">Impressoes${getSortIndicator('impressions')}</th>
+      <th class="sortable-header" onclick="handleAdsSort('clicks')">Cliques${getSortIndicator('clicks')}</th>
+      <th class="sortable-header" onclick="handleAdsSort('ctr')">CTR${getSortIndicator('ctr')}</th>
+      <th class="sortable-header" onclick="handleAdsSort('cpc')">CPC${getSortIndicator('cpc')}</th>
+      <th class="sortable-header" onclick="handleAdsSort('leads')">Leads${getSortIndicator('leads')}</th>
+      <th class="sortable-header" onclick="handleAdsSort('cpl')">CPL${getSortIndicator('cpl')}</th>
+      <th class="sortable-header" onclick="handleAdsSort('score')">Pontuacao${getSortIndicator('score')}</th>
+      <th>Analise</th>
+      <th>Recomendacao</th>
+    </tr>
+  `;
+}
+
+/**
  * Render ads table
  */
 function renderAdsTable(ads) {
   const tbody = document.getElementById('ads-table');
 
+  // Update headers with sort indicators
+  renderTableHeaders();
+
   if (!ads || ads.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="10" style="color: #64748b;">Nenhum anuncio encontrado</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="color: #64748b;">Nenhum anuncio encontrado</td></tr>';
     return;
   }
+
+  // Calculate average CPL for analysis
+  const adsWithCpl = ads.filter(ad => ad.metrics?.cpl);
+  const avgCpl = adsWithCpl.length > 0
+    ? adsWithCpl.reduce((sum, ad) => sum + parseFloat(ad.metrics.cpl), 0) / adsWithCpl.length
+    : 50;
 
   tbody.innerHTML = ads.map(ad => {
     const metrics = ad.metrics || {};
     const status = ad.optimizerStatus || {};
     const rec = ad.recommendation;
+    const scoreData = calculateAdScore(metrics);
+    const analysis = generateAnalysis(metrics, avgCpl);
 
     return `
       <tr data-status="${status.code || ''}">
         <td>${getStatusBadge(status)}</td>
-        <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${ad.name}">${ad.name}</td>
+        <td style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${ad.name}">${ad.name}</td>
         <td>${formatBRL(metrics.spend)}</td>
         <td>${formatLargeNumber(metrics.impressions)}</td>
         <td>${formatLargeNumber(metrics.clicks)}</td>
@@ -218,7 +456,15 @@ function renderAdsTable(ads) {
         <td>${formatBRL(metrics.cpc)}</td>
         <td style="color: ${metrics.leads > 0 ? '#22c55e' : '#64748b'};">${metrics.leads || 0}</td>
         <td style="color: ${metrics.cpl ? '#f59e0b' : '#64748b'};">${metrics.cpl ? formatBRL(metrics.cpl) : '--'}</td>
-        <td style="font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${rec?.reason || ''}">
+        <td>
+          <span style="color: ${getScoreColor(scoreData.score)}; font-weight: 600;" title="CTR: ${scoreData.breakdown.ctr}/30, CPC: ${scoreData.breakdown.cpc}/20, CPL: ${scoreData.breakdown.cpl}/30, Leads: ${scoreData.breakdown.leads}/20">
+            ${scoreData.score}/100
+          </span>
+        </td>
+        <td style="font-size: 11px;" title="${analysis.reason}">
+          <span style="color: ${analysis.color}; font-weight: 500;">${analysis.action}</span>
+        </td>
+        <td style="font-size: 11px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${rec?.reason || ''}">
           ${rec ? `<span style="color: ${getRecommendationColor(rec.priority)};">${rec.action}</span>` : '--'}
         </td>
       </tr>
