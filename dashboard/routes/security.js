@@ -1050,12 +1050,14 @@ router.get('/all-scans', async (req, res) => {
 
     if (scanType !== 'trial') {
       // Paid/logged in user scans query
+      // Exclude reports that are already linked to a trial session (to avoid duplicates)
       const paidCountQuery = `
         SELECT COUNT(*) as count
         FROM security_audit_reports sar
         LEFT JOIN security_projects sp ON sar.project_id = sp.id
         LEFT JOIN security_admin_users sau ON sp.owner_id = sau.id
         WHERE ${wherePaidClause}
+          AND NOT EXISTS (SELECT 1 FROM security_trial_sessions ts WHERE ts.report_id = sar.id)
       `;
       countQueries.push({ type: 'paid', query: paidCountQuery, params: paidParams });
 
@@ -1080,6 +1082,7 @@ router.get('/all-scans', async (req, res) => {
         LEFT JOIN security_projects sp ON sar.project_id = sp.id
         LEFT JOIN security_admin_users sau ON sp.owner_id = sau.id
         WHERE ${wherePaidClause}
+          AND NOT EXISTS (SELECT 1 FROM security_trial_sessions ts WHERE ts.report_id = sar.id)
       `;
       dataQueries.push({ type: 'paid', query: paidDataQuery, params: paidParams });
     }
