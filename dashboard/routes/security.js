@@ -1050,14 +1050,19 @@ router.get('/all-scans', async (req, res) => {
 
     if (scanType !== 'trial') {
       // Paid/logged in user scans query
-      // Exclude reports that are already linked to a trial session (to avoid duplicates)
+      // Exclude reports that are linked to an ACTIVE trial (not yet claimed)
+      // If trial was claimed (converted to paid user), it should appear as PAID
       const paidCountQuery = `
         SELECT COUNT(*) as count
         FROM security_audit_reports sar
         LEFT JOIN security_projects sp ON sar.project_id = sp.id
         LEFT JOIN security_admin_users sau ON sp.owner_id = sau.id
         WHERE ${wherePaidClause}
-          AND NOT EXISTS (SELECT 1 FROM security_trial_sessions ts WHERE ts.report_id = sar.id)
+          AND NOT EXISTS (
+            SELECT 1 FROM security_trial_sessions ts
+            WHERE ts.report_id = sar.id
+              AND ts.status != 'claimed'
+          )
       `;
       countQueries.push({ type: 'paid', query: paidCountQuery, params: paidParams });
 
@@ -1065,7 +1070,7 @@ router.get('/all-scans', async (req, res) => {
         SELECT
           sar.id::text as id,
           'paid' as scan_type,
-          sau.email as email,
+          COALESCE(sau.email, ts_claimed.email) as email,
           sp.frontend_url,
           sp.backend_url,
           sp.name as project_name,
@@ -1075,14 +1080,19 @@ router.get('/all-scans', async (req, res) => {
           'Usuario Pago' as payment_label,
           sar.created_at,
           sar.completed_at,
-          sau.id::text as claimed_by_user_id,
+          COALESCE(sau.id::text, ts_claimed.claimed_by_user_id::text) as claimed_by_user_id,
           sau.email as owner_email,
           sau.name as owner_name
         FROM security_audit_reports sar
         LEFT JOIN security_projects sp ON sar.project_id = sp.id
         LEFT JOIN security_admin_users sau ON sp.owner_id = sau.id
+        LEFT JOIN security_trial_sessions ts_claimed ON ts_claimed.report_id = sar.id AND ts_claimed.status = 'claimed'
         WHERE ${wherePaidClause}
-          AND NOT EXISTS (SELECT 1 FROM security_trial_sessions ts WHERE ts.report_id = sar.id)
+          AND NOT EXISTS (
+            SELECT 1 FROM security_trial_sessions ts
+            WHERE ts.report_id = sar.id
+              AND ts.status != 'claimed'
+          )
       `;
       dataQueries.push({ type: 'paid', query: paidDataQuery, params: paidParams });
     }
