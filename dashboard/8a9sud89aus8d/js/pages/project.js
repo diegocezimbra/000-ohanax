@@ -599,6 +599,13 @@ export async function loadProjectPage(project) {
         if (dbRegisteredEl) dbRegisteredEl.textContent = funnel.fullyConverted || 0;
         if (dbRegisteredPctEl) dbRegisteredPctEl.textContent = (conversions.overallConversion || 0) + '% conversao total';
 
+        // Update main conversion rate KPI
+        const conversionRateEl = document.getElementById('security-conversion-rate');
+        if (conversionRateEl) {
+          const rate = conversions.startedToPaid || conversions.completedToPaid || 0;
+          conversionRateEl.textContent = rate + '%';
+        }
+
         // Update timing metrics
         const timeToPayEl = document.getElementById('db-funnel-time-to-pay');
         const timeToRegisterEl = document.getElementById('db-funnel-time-to-register');
@@ -675,7 +682,7 @@ export async function loadProjectPage(project) {
           charts['dbTrialFunnel'] = new ApexCharts(dbFunnelChartEl, {
             chart: {
               type: 'bar',
-              height: 280,
+              height: 260,
               background: chartTheme.background,
               toolbar: { show: false },
               fontFamily: 'Inter, sans-serif'
