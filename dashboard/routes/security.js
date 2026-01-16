@@ -1581,7 +1581,7 @@ router.get('/analytics-funnel', async (req, res) => {
       },
       {
         step: 5,
-        name: 'Resultado Visualizado',
+        name: 'Pág. de Desbloqueio',
         event: 'funnel_result_page_view',
         count: funnel.resultPageView,
         sessions: funnel.resultPageViewSessions,
