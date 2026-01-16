@@ -830,7 +830,7 @@ export async function loadProjectPage(project) {
           const pctEl = document.getElementById(`af-step-${index + 1}-pct`);
 
           if (countEl) countEl.textContent = step.count.toLocaleString('pt-BR');
-          if (pctEl) pctEl.textContent = step.percentage + '%';
+          if (pctEl) pctEl.textContent = step.percentage; // já vem com % do backend
         });
 
         // Update dropouts

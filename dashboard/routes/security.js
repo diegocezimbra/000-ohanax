@@ -1462,21 +1462,25 @@ router.get('/analytics-funnel', async (req, res) => {
       ctaClickRegister: eventCounts['cta_result_click_register'] || 0,
       ctaClickLogin: eventCounts['cta_result_click_login'] || 0,
 
+      // Step 6: Scan encontrou vulnerabilidades (redirect automatico para payment)
+      vulnsFound: eventCounts['nav_result_redirect_payment'] || 0,
+      vulnsFoundSessions: eventSessions['nav_result_redirect_payment'] || 0,
+
       // ============ PÁGINA: payment.html (/scan/{id}/payment) - DESBLOQUEIO ============
-      // Step 6: Usuario acessou pagina de desbloqueio (ve vulns e botao desbloquear)
+      // Step 7: Usuario acessou pagina de desbloqueio (ve vulns e botao desbloquear)
       paymentPageView: eventCounts['funnel_unlock_page_view'] || 0,
       paymentPageViewSessions: eventSessions['funnel_unlock_page_view'] || 0,
 
-      // Step 7: Usuario clicou em desbloquear
+      // Step 8: Usuario clicou em desbloquear
       paymentClickUnlock: eventCounts['funnel_unlock_click'] || 0,
       paymentClickUnlockSessions: eventSessions['funnel_unlock_click'] || 0,
 
-      // Step 8: Checkout Stripe foi criado (URL gerada)
+      // Step 9: Checkout Stripe foi criado (URL gerada)
       paymentCheckoutCreated: eventCounts['funnel_unlock_checkout_created'] || 0,
       paymentCheckoutCreatedSessions: eventSessions['funnel_unlock_checkout_created'] || 0,
 
       // ============ PÁGINA: result.html (/scan/{id}/result?just_paid=1) ============
-      // Step 9: Usuario voltou do Stripe com pagamento confirmado
+      // Step 10: Usuario voltou do Stripe com pagamento confirmado
       conversionPaymentSuccess: eventCounts['conversion_payment_success'] || 0,
       conversionPaymentSuccessSessions: eventSessions['conversion_payment_success'] || 0,
 
@@ -1512,9 +1516,14 @@ router.get('/analytics-funnel', async (req, res) => {
         ? ((funnel.resultPageView / funnel.scanStarted) * 100).toFixed(1)
         : '0',
 
-      // Result View -> Payment Page View
-      resultToPayment: funnel.resultPageView > 0
-        ? ((funnel.paymentPageView / funnel.resultPageView) * 100).toFixed(1)
+      // Result View -> Vulns Found (encontrou vulnerabilidades)
+      resultToVulnsFound: funnel.resultPageView > 0
+        ? ((funnel.vulnsFound / funnel.resultPageView) * 100).toFixed(1)
+        : '0',
+
+      // Vulns Found -> Payment Page View
+      vulnsFoundToPayment: funnel.vulnsFound > 0
+        ? ((funnel.paymentPageView / funnel.vulnsFound) * 100).toFixed(1)
         : '0',
 
       // Payment Page -> Click Unlock
@@ -1544,7 +1553,8 @@ router.get('/analytics-funnel', async (req, res) => {
       formAbandonment: funnel.formStart - funnel.formSubmit,
       scanNotStarted: funnel.formSubmit - funnel.scanStarted,
       resultAbandonment: funnel.scanStarted - funnel.resultPageView,
-      beforePayment: funnel.resultPageView - funnel.paymentPageView,
+      noVulnsFound: funnel.resultPageView - funnel.vulnsFound,
+      beforePayment: funnel.vulnsFound - funnel.paymentPageView,
       beforeUnlock: funnel.paymentPageView - funnel.paymentClickUnlock,
       beforeCheckout: funnel.paymentClickUnlock - funnel.paymentCheckoutCreated,
       checkoutAbandonment: funnel.paymentCheckoutCreated - funnel.conversionPaymentSuccess,
@@ -1552,6 +1562,19 @@ router.get('/analytics-funnel', async (req, res) => {
     };
 
     // Funil como array para visualizacao (diagrama)
+    // Criar array de dropouts para o frontend (9 dropouts entre os 10 steps)
+    const dropoutsArray = [
+      { count: dropouts.beforeFormStart, rate: funnel.scanPageView > 0 ? ((dropouts.beforeFormStart / funnel.scanPageView) * 100).toFixed(1) : '0' },   // 1: Page -> Form Start
+      { count: dropouts.formAbandonment, rate: funnel.formStart > 0 ? ((dropouts.formAbandonment / funnel.formStart) * 100).toFixed(1) : '0' },         // 2: Form Start -> Submit
+      { count: dropouts.scanNotStarted, rate: funnel.formSubmit > 0 ? ((dropouts.scanNotStarted / funnel.formSubmit) * 100).toFixed(1) : '0' },         // 3: Submit -> Scan Started
+      { count: dropouts.resultAbandonment, rate: funnel.scanStarted > 0 ? ((dropouts.resultAbandonment / funnel.scanStarted) * 100).toFixed(1) : '0' }, // 4: Scan -> Result
+      { count: dropouts.noVulnsFound, rate: funnel.resultPageView > 0 ? ((dropouts.noVulnsFound / funnel.resultPageView) * 100).toFixed(1) : '0' },     // 5: Result -> Vulns Found
+      { count: dropouts.beforePayment, rate: funnel.vulnsFound > 0 ? ((dropouts.beforePayment / funnel.vulnsFound) * 100).toFixed(1) : '0' },           // 6: Vulns -> Payment Page
+      { count: dropouts.beforeUnlock, rate: funnel.paymentPageView > 0 ? ((dropouts.beforeUnlock / funnel.paymentPageView) * 100).toFixed(1) : '0' },   // 7: Payment -> Click Unlock
+      { count: dropouts.beforeCheckout, rate: funnel.paymentClickUnlock > 0 ? ((dropouts.beforeCheckout / funnel.paymentClickUnlock) * 100).toFixed(1) : '0' }, // 8: Click -> Checkout
+      { count: dropouts.checkoutAbandonment, rate: funnel.paymentCheckoutCreated > 0 ? ((dropouts.checkoutAbandonment / funnel.paymentCheckoutCreated) * 100).toFixed(1) : '0' }, // 9: Checkout -> Payment
+    ];
+
     const funnelSteps = [
       {
         step: 1,
@@ -1596,19 +1619,28 @@ router.get('/analytics-funnel', async (req, res) => {
         count: funnel.resultPageView,
         sessions: funnel.resultPageViewSessions,
         percentage: conversions.scanToResult + '%',
-        dropoutNext: dropouts.beforePayment,
+        dropoutNext: dropouts.noVulnsFound,
       },
       {
         step: 6,
+        name: 'Encontrou Vulns',
+        event: 'nav_result_redirect_payment',
+        count: funnel.vulnsFound,
+        sessions: funnel.vulnsFoundSessions,
+        percentage: conversions.resultToVulnsFound + '%',
+        dropoutNext: dropouts.beforePayment,
+      },
+      {
+        step: 7,
         name: 'Pág. de Desbloqueio',
         event: 'funnel_unlock_page_view',
         count: funnel.paymentPageView,
         sessions: funnel.paymentPageViewSessions,
-        percentage: conversions.resultToPayment + '%',
+        percentage: conversions.vulnsFoundToPayment + '%',
         dropoutNext: dropouts.beforeUnlock,
       },
       {
-        step: 7,
+        step: 8,
         name: 'Clicou Desbloquear',
         event: 'funnel_unlock_click',
         count: funnel.paymentClickUnlock,
@@ -1617,7 +1649,7 @@ router.get('/analytics-funnel', async (req, res) => {
         dropoutNext: dropouts.beforeCheckout,
       },
       {
-        step: 8,
+        step: 9,
         name: 'Checkout Criado',
         event: 'funnel_unlock_checkout_created',
         count: funnel.paymentCheckoutCreated,
@@ -1626,7 +1658,7 @@ router.get('/analytics-funnel', async (req, res) => {
         dropoutNext: dropouts.checkoutAbandonment,
       },
       {
-        step: 9,
+        step: 10,
         name: 'Pagamento Concluído',
         event: 'conversion_payment_success',
         count: funnel.conversionPaymentSuccess,
@@ -1686,7 +1718,8 @@ router.get('/analytics-funnel', async (req, res) => {
       funnel,
       funnelSteps,
       conversions,
-      dropouts,
+      dropouts: dropoutsArray,  // Array formatado para o frontend
+      dropoutsRaw: dropouts,    // Objeto original para debug
       daily: dailyData,
       utmSources: utmQuery.rows,
       rawEvents: eventCounts,
