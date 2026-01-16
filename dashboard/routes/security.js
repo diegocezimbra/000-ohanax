@@ -1656,41 +1656,46 @@ router.get('/analytics-funnel', async (req, res) => {
     // EVENTOS PÓS-SCAN POR VARIAÇÃO (result.html, payment.html)
     // Esses eventos acontecem em páginas compartilhadas, mas o funnel_variant
     // identifica de qual landing page o usuário veio
+    // NOTA: A coluna funnel_variant pode não existir ainda - tratamos o erro graciosamente
     // ================================================================================
-    const postScanEventsQuery = await db.analytics.query(`
-      SELECT
-        funnel_variant,
-        event_name,
-        COUNT(*) as count,
-        COUNT(DISTINCT session_id) as unique_sessions
-      FROM security_analytics_events
-      WHERE created_at >= $1
-        AND funnel_variant IN ('original', 'video', 'pro')
-        AND event_name IN (
-          'nav_result_redirect_payment',
-          'funnel_unlock_page_view',
-          'funnel_unlock_click',
-          'funnel_unlock_checkout_created',
-          'conversion_payment_success'
-        )
-      GROUP BY funnel_variant, event_name
-    `, [startDate]);
-
-    // Organizar eventos por variação
     const postScanByVariant = {
       original: {},
       video: {},
       pro: {},
     };
 
-    for (const row of postScanEventsQuery.rows) {
-      const variant = row.funnel_variant;
-      if (postScanByVariant[variant]) {
-        postScanByVariant[variant][row.event_name] = {
-          count: parseInt(row.count),
-          sessions: parseInt(row.unique_sessions),
-        };
+    try {
+      const postScanEventsQuery = await db.analytics.query(`
+        SELECT
+          funnel_variant,
+          event_name,
+          COUNT(*) as count,
+          COUNT(DISTINCT session_id) as unique_sessions
+        FROM security_analytics_events
+        WHERE created_at >= $1
+          AND funnel_variant IN ('original', 'video', 'pro')
+          AND event_name IN (
+            'nav_result_redirect_payment',
+            'funnel_unlock_page_view',
+            'funnel_unlock_click',
+            'funnel_unlock_checkout_created',
+            'conversion_payment_success'
+          )
+        GROUP BY funnel_variant, event_name
+      `, [startDate]);
+
+      for (const row of postScanEventsQuery.rows) {
+        const variant = row.funnel_variant;
+        if (postScanByVariant[variant]) {
+          postScanByVariant[variant][row.event_name] = {
+            count: parseInt(row.count),
+            sessions: parseInt(row.unique_sessions),
+          };
+        }
       }
+    } catch (variantErr) {
+      // Coluna funnel_variant ainda não existe - continua com dados vazios
+      console.log('funnel_variant column not yet available:', variantErr.message);
     }
 
     // ================================================================================
