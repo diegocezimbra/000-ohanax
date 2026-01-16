@@ -1653,6 +1653,47 @@ router.get('/analytics-funnel', async (req, res) => {
     ];
 
     // ================================================================================
+    // EVENTOS PÓS-SCAN POR VARIAÇÃO (result.html, payment.html)
+    // Esses eventos acontecem em páginas compartilhadas, mas o funnel_variant
+    // identifica de qual landing page o usuário veio
+    // ================================================================================
+    const postScanEventsQuery = await db.analytics.query(`
+      SELECT
+        funnel_variant,
+        event_name,
+        COUNT(*) as count,
+        COUNT(DISTINCT session_id) as unique_sessions
+      FROM security_analytics_events
+      WHERE created_at >= $1
+        AND funnel_variant IN ('original', 'video', 'pro')
+        AND event_name IN (
+          'nav_result_redirect_payment',
+          'funnel_unlock_page_view',
+          'funnel_unlock_click',
+          'funnel_unlock_checkout_created',
+          'conversion_payment_success'
+        )
+      GROUP BY funnel_variant, event_name
+    `, [startDate]);
+
+    // Organizar eventos por variação
+    const postScanByVariant = {
+      original: {},
+      video: {},
+      pro: {},
+    };
+
+    for (const row of postScanEventsQuery.rows) {
+      const variant = row.funnel_variant;
+      if (postScanByVariant[variant]) {
+        postScanByVariant[variant][row.event_name] = {
+          count: parseInt(row.count),
+          sessions: parseInt(row.unique_sessions),
+        };
+      }
+    }
+
+    // ================================================================================
     // FUNIL VARIAÇÃO A: /scan-video (Landing com vídeo)
     // ================================================================================
     const funnelVideoRaw = {
@@ -1666,6 +1707,17 @@ router.get('/analytics-funnel', async (req, res) => {
       formSubmitSessions: eventSessions['funnel_scan_video_form_submit'] || 0,
       scanStarted: eventCounts['funnel_scan_video_started'] || 0,
       scanStartedSessions: eventSessions['funnel_scan_video_started'] || 0,
+      // Eventos pós-scan (páginas compartilhadas)
+      vulnsFound: postScanByVariant.video['nav_result_redirect_payment']?.count || 0,
+      vulnsFoundSessions: postScanByVariant.video['nav_result_redirect_payment']?.sessions || 0,
+      paymentPageView: postScanByVariant.video['funnel_unlock_page_view']?.count || 0,
+      paymentPageViewSessions: postScanByVariant.video['funnel_unlock_page_view']?.sessions || 0,
+      paymentClickUnlock: postScanByVariant.video['funnel_unlock_click']?.count || 0,
+      paymentClickUnlockSessions: postScanByVariant.video['funnel_unlock_click']?.sessions || 0,
+      checkoutCreated: postScanByVariant.video['funnel_unlock_checkout_created']?.count || 0,
+      checkoutCreatedSessions: postScanByVariant.video['funnel_unlock_checkout_created']?.sessions || 0,
+      paymentSuccess: postScanByVariant.video['conversion_payment_success']?.count || 0,
+      paymentSuccessSessions: postScanByVariant.video['conversion_payment_success']?.sessions || 0,
     };
 
     const funnelVideoSteps = [
@@ -1709,10 +1761,51 @@ router.get('/analytics-funnel', async (req, res) => {
         sessions: funnelVideoRaw.scanStartedSessions,
         percentage: funnelVideoRaw.formSubmit > 0 ? ((funnelVideoRaw.scanStarted / funnelVideoRaw.formSubmit) * 100).toFixed(1) + '%' : '0%',
       },
+      // Eventos pós-scan (páginas compartilhadas)
+      {
+        step: 6,
+        name: 'Encontrou Vulns',
+        event: 'nav_result_redirect_payment',
+        count: funnelVideoRaw.vulnsFound,
+        sessions: funnelVideoRaw.vulnsFoundSessions,
+        percentage: funnelVideoRaw.scanStarted > 0 ? ((funnelVideoRaw.vulnsFound / funnelVideoRaw.scanStarted) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 7,
+        name: 'Pág. Desbloqueio',
+        event: 'funnel_unlock_page_view',
+        count: funnelVideoRaw.paymentPageView,
+        sessions: funnelVideoRaw.paymentPageViewSessions,
+        percentage: funnelVideoRaw.vulnsFound > 0 ? ((funnelVideoRaw.paymentPageView / funnelVideoRaw.vulnsFound) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 8,
+        name: 'Clicou Desbloquear',
+        event: 'funnel_unlock_click',
+        count: funnelVideoRaw.paymentClickUnlock,
+        sessions: funnelVideoRaw.paymentClickUnlockSessions,
+        percentage: funnelVideoRaw.paymentPageView > 0 ? ((funnelVideoRaw.paymentClickUnlock / funnelVideoRaw.paymentPageView) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 9,
+        name: 'Checkout Criado',
+        event: 'funnel_unlock_checkout_created',
+        count: funnelVideoRaw.checkoutCreated,
+        sessions: funnelVideoRaw.checkoutCreatedSessions,
+        percentage: funnelVideoRaw.paymentClickUnlock > 0 ? ((funnelVideoRaw.checkoutCreated / funnelVideoRaw.paymentClickUnlock) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 10,
+        name: 'Pagamento Concluído',
+        event: 'conversion_payment_success',
+        count: funnelVideoRaw.paymentSuccess,
+        sessions: funnelVideoRaw.paymentSuccessSessions,
+        percentage: funnelVideoRaw.checkoutCreated > 0 ? ((funnelVideoRaw.paymentSuccess / funnelVideoRaw.checkoutCreated) * 100).toFixed(1) + '%' : '0%',
+      },
     ];
 
     const funnelVideoConversion = funnelVideoRaw.pageView > 0
-      ? ((funnelVideoRaw.scanStarted / funnelVideoRaw.pageView) * 100).toFixed(2)
+      ? ((funnelVideoRaw.paymentSuccess / funnelVideoRaw.pageView) * 100).toFixed(2)
       : '0';
 
     // ================================================================================
@@ -1731,6 +1824,17 @@ router.get('/analytics-funnel', async (req, res) => {
       formSubmitSessions: eventSessions['funnel_scan_pro_form_submit'] || 0,
       scanStarted: eventCounts['funnel_scan_pro_started'] || 0,
       scanStartedSessions: eventSessions['funnel_scan_pro_started'] || 0,
+      // Eventos pós-scan (páginas compartilhadas)
+      vulnsFound: postScanByVariant.pro['nav_result_redirect_payment']?.count || 0,
+      vulnsFoundSessions: postScanByVariant.pro['nav_result_redirect_payment']?.sessions || 0,
+      paymentPageView: postScanByVariant.pro['funnel_unlock_page_view']?.count || 0,
+      paymentPageViewSessions: postScanByVariant.pro['funnel_unlock_page_view']?.sessions || 0,
+      paymentClickUnlock: postScanByVariant.pro['funnel_unlock_click']?.count || 0,
+      paymentClickUnlockSessions: postScanByVariant.pro['funnel_unlock_click']?.sessions || 0,
+      checkoutCreated: postScanByVariant.pro['funnel_unlock_checkout_created']?.count || 0,
+      checkoutCreatedSessions: postScanByVariant.pro['funnel_unlock_checkout_created']?.sessions || 0,
+      paymentSuccess: postScanByVariant.pro['conversion_payment_success']?.count || 0,
+      paymentSuccessSessions: postScanByVariant.pro['conversion_payment_success']?.sessions || 0,
     };
 
     const funnelProSteps = [
@@ -1782,10 +1886,156 @@ router.get('/analytics-funnel', async (req, res) => {
         sessions: funnelProRaw.scanStartedSessions,
         percentage: funnelProRaw.formSubmit > 0 ? ((funnelProRaw.scanStarted / funnelProRaw.formSubmit) * 100).toFixed(1) + '%' : '0%',
       },
+      // Eventos pós-scan (páginas compartilhadas)
+      {
+        step: 7,
+        name: 'Encontrou Vulns',
+        event: 'nav_result_redirect_payment',
+        count: funnelProRaw.vulnsFound,
+        sessions: funnelProRaw.vulnsFoundSessions,
+        percentage: funnelProRaw.scanStarted > 0 ? ((funnelProRaw.vulnsFound / funnelProRaw.scanStarted) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 8,
+        name: 'Pág. Desbloqueio',
+        event: 'funnel_unlock_page_view',
+        count: funnelProRaw.paymentPageView,
+        sessions: funnelProRaw.paymentPageViewSessions,
+        percentage: funnelProRaw.vulnsFound > 0 ? ((funnelProRaw.paymentPageView / funnelProRaw.vulnsFound) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 9,
+        name: 'Clicou Desbloquear',
+        event: 'funnel_unlock_click',
+        count: funnelProRaw.paymentClickUnlock,
+        sessions: funnelProRaw.paymentClickUnlockSessions,
+        percentage: funnelProRaw.paymentPageView > 0 ? ((funnelProRaw.paymentClickUnlock / funnelProRaw.paymentPageView) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 10,
+        name: 'Checkout Criado',
+        event: 'funnel_unlock_checkout_created',
+        count: funnelProRaw.checkoutCreated,
+        sessions: funnelProRaw.checkoutCreatedSessions,
+        percentage: funnelProRaw.paymentClickUnlock > 0 ? ((funnelProRaw.checkoutCreated / funnelProRaw.paymentClickUnlock) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 11,
+        name: 'Pagamento Concluído',
+        event: 'conversion_payment_success',
+        count: funnelProRaw.paymentSuccess,
+        sessions: funnelProRaw.paymentSuccessSessions,
+        percentage: funnelProRaw.checkoutCreated > 0 ? ((funnelProRaw.paymentSuccess / funnelProRaw.checkoutCreated) * 100).toFixed(1) + '%' : '0%',
+      },
     ];
 
     const funnelProConversion = funnelProRaw.pageView > 0
-      ? ((funnelProRaw.scanStarted / funnelProRaw.pageView) * 100).toFixed(2)
+      ? ((funnelProRaw.paymentSuccess / funnelProRaw.pageView) * 100).toFixed(2)
+      : '0';
+
+    // ================================================================================
+    // FUNIL VARIAÇÃO ORIGINAL: /scan (Landing padrão)
+    // ================================================================================
+    const funnelOriginalRaw = {
+      pageView: eventCounts['funnel_scan_page_view'] || 0,
+      pageViewSessions: eventSessions['funnel_scan_page_view'] || 0,
+      formStart: eventCounts['funnel_scan_form_start'] || 0,
+      formStartSessions: eventSessions['funnel_scan_form_start'] || 0,
+      formSubmit: eventCounts['funnel_scan_form_submit'] || 0,
+      formSubmitSessions: eventSessions['funnel_scan_form_submit'] || 0,
+      scanStarted: eventCounts['funnel_scan_started'] || 0,
+      scanStartedSessions: eventSessions['funnel_scan_started'] || 0,
+      // Eventos pós-scan (páginas compartilhadas)
+      vulnsFound: postScanByVariant.original['nav_result_redirect_payment']?.count || 0,
+      vulnsFoundSessions: postScanByVariant.original['nav_result_redirect_payment']?.sessions || 0,
+      paymentPageView: postScanByVariant.original['funnel_unlock_page_view']?.count || 0,
+      paymentPageViewSessions: postScanByVariant.original['funnel_unlock_page_view']?.sessions || 0,
+      paymentClickUnlock: postScanByVariant.original['funnel_unlock_click']?.count || 0,
+      paymentClickUnlockSessions: postScanByVariant.original['funnel_unlock_click']?.sessions || 0,
+      checkoutCreated: postScanByVariant.original['funnel_unlock_checkout_created']?.count || 0,
+      checkoutCreatedSessions: postScanByVariant.original['funnel_unlock_checkout_created']?.sessions || 0,
+      paymentSuccess: postScanByVariant.original['conversion_payment_success']?.count || 0,
+      paymentSuccessSessions: postScanByVariant.original['conversion_payment_success']?.sessions || 0,
+    };
+
+    const funnelOriginalSteps = [
+      {
+        step: 1,
+        name: 'Página Scan',
+        event: 'funnel_scan_page_view',
+        count: funnelOriginalRaw.pageView,
+        sessions: funnelOriginalRaw.pageViewSessions,
+        percentage: '100%',
+      },
+      {
+        step: 2,
+        name: 'Início Formulário',
+        event: 'funnel_scan_form_start',
+        count: funnelOriginalRaw.formStart,
+        sessions: funnelOriginalRaw.formStartSessions,
+        percentage: funnelOriginalRaw.pageView > 0 ? ((funnelOriginalRaw.formStart / funnelOriginalRaw.pageView) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 3,
+        name: 'Formulário Enviado',
+        event: 'funnel_scan_form_submit',
+        count: funnelOriginalRaw.formSubmit,
+        sessions: funnelOriginalRaw.formSubmitSessions,
+        percentage: funnelOriginalRaw.formStart > 0 ? ((funnelOriginalRaw.formSubmit / funnelOriginalRaw.formStart) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 4,
+        name: 'Scan Iniciado',
+        event: 'funnel_scan_started',
+        count: funnelOriginalRaw.scanStarted,
+        sessions: funnelOriginalRaw.scanStartedSessions,
+        percentage: funnelOriginalRaw.formSubmit > 0 ? ((funnelOriginalRaw.scanStarted / funnelOriginalRaw.formSubmit) * 100).toFixed(1) + '%' : '0%',
+      },
+      // Eventos pós-scan (páginas compartilhadas)
+      {
+        step: 5,
+        name: 'Encontrou Vulns',
+        event: 'nav_result_redirect_payment',
+        count: funnelOriginalRaw.vulnsFound,
+        sessions: funnelOriginalRaw.vulnsFoundSessions,
+        percentage: funnelOriginalRaw.scanStarted > 0 ? ((funnelOriginalRaw.vulnsFound / funnelOriginalRaw.scanStarted) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 6,
+        name: 'Pág. Desbloqueio',
+        event: 'funnel_unlock_page_view',
+        count: funnelOriginalRaw.paymentPageView,
+        sessions: funnelOriginalRaw.paymentPageViewSessions,
+        percentage: funnelOriginalRaw.vulnsFound > 0 ? ((funnelOriginalRaw.paymentPageView / funnelOriginalRaw.vulnsFound) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 7,
+        name: 'Clicou Desbloquear',
+        event: 'funnel_unlock_click',
+        count: funnelOriginalRaw.paymentClickUnlock,
+        sessions: funnelOriginalRaw.paymentClickUnlockSessions,
+        percentage: funnelOriginalRaw.paymentPageView > 0 ? ((funnelOriginalRaw.paymentClickUnlock / funnelOriginalRaw.paymentPageView) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 8,
+        name: 'Checkout Criado',
+        event: 'funnel_unlock_checkout_created',
+        count: funnelOriginalRaw.checkoutCreated,
+        sessions: funnelOriginalRaw.checkoutCreatedSessions,
+        percentage: funnelOriginalRaw.paymentClickUnlock > 0 ? ((funnelOriginalRaw.checkoutCreated / funnelOriginalRaw.paymentClickUnlock) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 9,
+        name: 'Pagamento Concluído',
+        event: 'conversion_payment_success',
+        count: funnelOriginalRaw.paymentSuccess,
+        sessions: funnelOriginalRaw.paymentSuccessSessions,
+        percentage: funnelOriginalRaw.checkoutCreated > 0 ? ((funnelOriginalRaw.paymentSuccess / funnelOriginalRaw.checkoutCreated) * 100).toFixed(1) + '%' : '0%',
+      },
+    ];
+
+    const funnelOriginalConversion = funnelOriginalRaw.pageView > 0
+      ? ((funnelOriginalRaw.paymentSuccess / funnelOriginalRaw.pageView) * 100).toFixed(2)
       : '0';
 
     // Eventos por dia para grafico de tendencia
@@ -1845,6 +2095,14 @@ router.get('/analytics-funnel', async (req, res) => {
       rawEvents: eventCounts,
       // Variações de landing page para A/B testing
       variations: {
+        original: {
+          name: 'Scan Original',
+          path: '/scan',
+          description: 'Landing padrão (controle)',
+          funnel: funnelOriginalRaw,
+          steps: funnelOriginalSteps,
+          overallConversion: funnelOriginalConversion + '%',
+        },
         video: {
           name: 'Scan Video',
           path: '/scan-video',

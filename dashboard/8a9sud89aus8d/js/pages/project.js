@@ -647,15 +647,16 @@ export async function loadProjectPage(project) {
         // LANDING PAGE VARIATIONS - A/B Testing
         // ========================================
         if (analyticsFunnel.variations) {
-          const { video, pro } = analyticsFunnel.variations;
+          const { original, video, pro } = analyticsFunnel.variations;
+
+          // Helper function
+          const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+          };
 
           // Video Variation (/scan-video)
           if (video) {
-            const setVal = (id, val) => {
-              const el = document.getElementById(id);
-              if (el) el.textContent = val;
-            };
-
             setVal('var-video-page', video.funnel?.pageView || 0);
             setVal('var-video-play', video.funnel?.videoPlay || 0);
             setVal('var-video-form-start', video.funnel?.formStart || 0);
@@ -663,21 +664,22 @@ export async function loadProjectPage(project) {
             setVal('var-video-scan', video.funnel?.scanStarted || 0);
             setVal('var-video-conversion', video.overallConversion || '0%');
 
-            // Comparison table
+            // Comparison table - pre-scan
             setVal('cmp-video-pv', video.funnel?.pageView || 0);
             setVal('cmp-video-fs', video.funnel?.formStart || 0);
             setVal('cmp-video-sub', video.funnel?.formSubmit || 0);
             setVal('cmp-video-scan', video.funnel?.scanStarted || 0);
+            // Comparison table - post-scan
+            setVal('cmp-video-vulns', video.funnel?.vulnsFound || 0);
+            setVal('cmp-video-payment', video.funnel?.paymentPageView || 0);
+            setVal('cmp-video-unlock', video.funnel?.paymentClickUnlock || 0);
+            setVal('cmp-video-checkout', video.funnel?.checkoutCreated || 0);
+            setVal('cmp-video-paid', video.funnel?.paymentSuccess || 0);
             setVal('cmp-video-conv', video.overallConversion || '0%');
           }
 
           // Pro Variation (/scan-pro)
           if (pro) {
-            const setVal = (id, val) => {
-              const el = document.getElementById(id);
-              if (el) el.textContent = val;
-            };
-
             setVal('var-pro-page', pro.funnel?.pageView || 0);
             setVal('var-pro-quiz-start', pro.funnel?.quizStart || 0);
             setVal('var-pro-quiz-done', pro.funnel?.quizComplete || 0);
@@ -686,24 +688,35 @@ export async function loadProjectPage(project) {
             setVal('var-pro-scan', pro.funnel?.scanStarted || 0);
             setVal('var-pro-conversion', pro.overallConversion || '0%');
 
-            // Comparison table
+            // Comparison table - pre-scan
             setVal('cmp-pro-pv', pro.funnel?.pageView || 0);
             setVal('cmp-pro-fs', pro.funnel?.formStart || 0);
             setVal('cmp-pro-sub', pro.funnel?.formSubmit || 0);
             setVal('cmp-pro-scan', pro.funnel?.scanStarted || 0);
+            // Comparison table - post-scan
+            setVal('cmp-pro-vulns', pro.funnel?.vulnsFound || 0);
+            setVal('cmp-pro-payment', pro.funnel?.paymentPageView || 0);
+            setVal('cmp-pro-unlock', pro.funnel?.paymentClickUnlock || 0);
+            setVal('cmp-pro-checkout', pro.funnel?.checkoutCreated || 0);
+            setVal('cmp-pro-paid', pro.funnel?.paymentSuccess || 0);
             setVal('cmp-pro-conv', pro.overallConversion || '0%');
           }
 
-          // Original (/scan) - from main funnel
-          const setVal = (id, val) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = val;
-          };
-          setVal('cmp-original-pv', analyticsFunnel.funnel?.scanPageView || 0);
-          setVal('cmp-original-fs', analyticsFunnel.funnel?.formStart || 0);
-          setVal('cmp-original-sub', analyticsFunnel.funnel?.formSubmit || 0);
-          setVal('cmp-original-scan', analyticsFunnel.funnel?.scanStarted || 0);
-          setVal('cmp-original-conv', analyticsFunnel.conversions?.overallConversion ? analyticsFunnel.conversions.overallConversion + '%' : '0%');
+          // Original (/scan) - from variations.original
+          if (original) {
+            // Comparison table - pre-scan
+            setVal('cmp-original-pv', original.funnel?.pageView || 0);
+            setVal('cmp-original-fs', original.funnel?.formStart || 0);
+            setVal('cmp-original-sub', original.funnel?.formSubmit || 0);
+            setVal('cmp-original-scan', original.funnel?.scanStarted || 0);
+            // Comparison table - post-scan
+            setVal('cmp-original-vulns', original.funnel?.vulnsFound || 0);
+            setVal('cmp-original-payment', original.funnel?.paymentPageView || 0);
+            setVal('cmp-original-unlock', original.funnel?.paymentClickUnlock || 0);
+            setVal('cmp-original-checkout', original.funnel?.checkoutCreated || 0);
+            setVal('cmp-original-paid', original.funnel?.paymentSuccess || 0);
+            setVal('cmp-original-conv', original.overallConversion || '0%');
+          }
         }
       } catch (e) { console.error('Error loading analytics funnel:', e); }
     }
