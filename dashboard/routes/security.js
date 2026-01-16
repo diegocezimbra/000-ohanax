@@ -558,7 +558,7 @@ router.get('/scan-funnel', async (req, res) => {
     `, [startDate]);
 
     // Build funnel data - usando nomes CORRETOS dos eventos do Security frontend
-    // Nomes reais: funnel_scan_*, funnel_result_*, funnel_payment_*
+    // Nomes reais: funnel_scan_*, funnel_result_*, funnel_unlock_*
     const funnel = {
       // Step 1: Page View - usuário acessou /scan (scan/index.html)
       pageView: events['funnel_scan_page_view'] || events['funnel_trial_page_view'] || visitorData.pageviews || 0,
@@ -581,14 +581,14 @@ router.get('/scan-funnel', async (req, res) => {
       // Step 6b: Click Login - usuário clicou para fazer login
       clickLogin: events['cta_result_click_login'] || events['funnel_trial_click_login'] || 0,
 
-      // Step 7: Payment Page View - usuário viu página de pagamento
-      paymentPageView: events['funnel_payment_page_view'] || 0,
+      // Step 7: Unlock Page View - usuário viu página de desbloqueio
+      paymentPageView: events['funnel_unlock_page_view'] || 0,
 
       // Step 8: Click Unlock - usuário clicou para desbloquear
-      clickUnlock: events['funnel_payment_click_unlock'] || 0,
+      clickUnlock: events['funnel_unlock_click'] || 0,
 
       // Step 9: Checkout Created - checkout foi criado
-      checkoutStart: events['funnel_payment_checkout_created'] || events['conversion_checkout_start'] || 0,
+      checkoutStart: events['funnel_unlock_checkout_created'] || events['conversion_checkout_start'] || 0,
 
       // Step 10: Checkout Success - pagamento concluído
       checkoutSuccess: events['conversion_payment_success'] || events['conversion_checkout_success'] || parseInt(trialsPaid.rows[0]?.total) || 0,
@@ -671,9 +671,9 @@ router.get('/scan-funnel', async (req, res) => {
       { step: 3, name: 'Form Submit', event: 'funnel_scan_form_submit', count: funnel.formSubmit },
       { step: 4, name: 'Scan Started', event: 'funnel_scan_started', count: funnel.scanStarted },
       { step: 5, name: 'Result View', event: 'funnel_result_page_view', count: funnel.resultView },
-      { step: 6, name: 'Payment Page', event: 'funnel_payment_page_view', count: funnel.paymentPageView },
-      { step: 7, name: 'Click Unlock', event: 'funnel_payment_click_unlock', count: funnel.clickUnlock },
-      { step: 8, name: 'Checkout Created', event: 'funnel_payment_checkout_created', count: funnel.checkoutStart },
+      { step: 6, name: 'Unlock Page', event: 'funnel_unlock_page_view', count: funnel.paymentPageView },
+      { step: 7, name: 'Click Unlock', event: 'funnel_unlock_click', count: funnel.clickUnlock },
+      { step: 8, name: 'Checkout Created', event: 'funnel_unlock_checkout_created', count: funnel.checkoutStart },
       { step: 9, name: 'Purchase Complete', event: 'conversion_payment_success', count: funnel.checkoutSuccess },
     ];
 
@@ -1430,9 +1430,9 @@ router.get('/analytics-funnel', async (req, res) => {
     // Step 3: index.html (/scan)           -> funnel_scan_form_submit    -> "Form Submetido"
     // Step 4: index.html (/scan)           -> funnel_scan_started        -> "Scan Iniciado"
     // Step 5: result.html (/scan/{id}/result)   -> funnel_result_page_view   -> "Pág. de Resultado"
-    // Step 6: payment.html (/scan/{id}/payment) -> funnel_payment_page_view  -> "Pág. de Desbloqueio"
-    // Step 7: payment.html (/scan/{id}/payment) -> funnel_payment_click_unlock -> "Clicou Desbloquear"
-    // Step 8: payment.html (/scan/{id}/payment) -> funnel_payment_checkout_created -> "Checkout Criado"
+    // Step 6: payment.html (/scan/{id}/payment) -> funnel_unlock_page_view  -> "Pág. de Desbloqueio"
+    // Step 7: payment.html (/scan/{id}/payment) -> funnel_unlock_click -> "Clicou Desbloquear"
+    // Step 8: payment.html (/scan/{id}/payment) -> funnel_unlock_checkout_created -> "Checkout Criado"
     // Step 9: result.html (/scan/{id}/result?just_paid=1) -> conversion_payment_success -> "Pagamento Concluído"
     // ================================================================================
     const funnel = {
@@ -1462,19 +1462,18 @@ router.get('/analytics-funnel', async (req, res) => {
       ctaClickRegister: eventCounts['cta_result_click_register'] || 0,
       ctaClickLogin: eventCounts['cta_result_click_login'] || 0,
 
-      // ============ PÁGINA: payment.html (/scan/{id}/payment) ============
+      // ============ PÁGINA: payment.html (/scan/{id}/payment) - DESBLOQUEIO ============
       // Step 6: Usuario acessou pagina de desbloqueio (ve vulns e botao desbloquear)
-      // NOTA: O evento se chama "payment" por razoes historicas, mas a pagina é de desbloqueio
-      paymentPageView: eventCounts['funnel_payment_page_view'] || 0,
-      paymentPageViewSessions: eventSessions['funnel_payment_page_view'] || 0,
+      paymentPageView: eventCounts['funnel_unlock_page_view'] || 0,
+      paymentPageViewSessions: eventSessions['funnel_unlock_page_view'] || 0,
 
       // Step 7: Usuario clicou em desbloquear
-      paymentClickUnlock: eventCounts['funnel_payment_click_unlock'] || 0,
-      paymentClickUnlockSessions: eventSessions['funnel_payment_click_unlock'] || 0,
+      paymentClickUnlock: eventCounts['funnel_unlock_click'] || 0,
+      paymentClickUnlockSessions: eventSessions['funnel_unlock_click'] || 0,
 
       // Step 8: Checkout Stripe foi criado (URL gerada)
-      paymentCheckoutCreated: eventCounts['funnel_payment_checkout_created'] || 0,
-      paymentCheckoutCreatedSessions: eventSessions['funnel_payment_checkout_created'] || 0,
+      paymentCheckoutCreated: eventCounts['funnel_unlock_checkout_created'] || 0,
+      paymentCheckoutCreatedSessions: eventSessions['funnel_unlock_checkout_created'] || 0,
 
       // ============ PÁGINA: result.html (/scan/{id}/result?just_paid=1) ============
       // Step 9: Usuario voltou do Stripe com pagamento confirmado
@@ -1602,7 +1601,7 @@ router.get('/analytics-funnel', async (req, res) => {
       {
         step: 6,
         name: 'Pág. de Desbloqueio',
-        event: 'funnel_payment_page_view',
+        event: 'funnel_unlock_page_view',
         count: funnel.paymentPageView,
         sessions: funnel.paymentPageViewSessions,
         percentage: conversions.resultToPayment + '%',
@@ -1611,7 +1610,7 @@ router.get('/analytics-funnel', async (req, res) => {
       {
         step: 7,
         name: 'Clicou Desbloquear',
-        event: 'funnel_payment_click_unlock',
+        event: 'funnel_unlock_click',
         count: funnel.paymentClickUnlock,
         sessions: funnel.paymentClickUnlockSessions,
         percentage: conversions.paymentToUnlock + '%',
@@ -1620,7 +1619,7 @@ router.get('/analytics-funnel', async (req, res) => {
       {
         step: 8,
         name: 'Checkout Criado',
-        event: 'funnel_payment_checkout_created',
+        event: 'funnel_unlock_checkout_created',
         count: funnel.paymentCheckoutCreated,
         sessions: funnel.paymentCheckoutCreatedSessions,
         percentage: conversions.unlockToCheckout + '%',

@@ -842,18 +842,20 @@ export async function loadProjectPage(project) {
           }
         });
 
-        // UTM Sources
-        const utmListEl = document.getElementById('af-utm-list');
+        // UTM Sources - usando o novo layout
+        const utmListEl = document.getElementById('af-utm-sources');
         if (utmListEl && analyticsFunnel.utmSources) {
           if (analyticsFunnel.utmSources.length > 0) {
             utmListEl.innerHTML = analyticsFunnel.utmSources.map(utm => `
-              <div class="metric-row" style="padding: 6px 0; border-bottom: 1px solid #334155;">
-                <span class="metric-label" style="font-size: 12px;">${utm.source || 'direto'}</span>
-                <span class="metric-value" style="font-size: 14px;">${utm.count}</span>
+              <div class="funnel-utm-item">
+                <div class="funnel-utm-source">
+                  <span class="funnel-utm-badge">${utm.source || 'direto'}</span>
+                </div>
+                <span class="funnel-utm-count">${utm.count}</span>
               </div>
             `).join('');
           } else {
-            utmListEl.innerHTML = '<div style="color: #64748b; font-size: 13px;">Sem dados de UTM</div>';
+            utmListEl.innerHTML = '<div class="funnel-utm-empty">Sem dados de UTM no periodo</div>';
           }
         }
 
