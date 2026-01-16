@@ -807,6 +807,94 @@ export async function loadProjectPage(project) {
 
       // Load all scans list
       loadAllScans(1);
+
+      // ========================================
+      // ANALYTICS FUNNEL - Internal Database (security_analytics_events)
+      // ========================================
+      try {
+        const analyticsFunnel = await fetch('/api/security/analytics-funnel?days=30').then(r => r.json());
+
+        // Update metric cards
+        const afSessionsEl = document.getElementById('af-total-sessions');
+        const afVisitorsEl = document.getElementById('af-total-visitors');
+        const afConversionEl = document.getElementById('af-conversion-rate');
+
+        if (afSessionsEl) afSessionsEl.textContent = (analyticsFunnel.totals?.uniqueSessions || 0).toLocaleString('pt-BR');
+        if (afVisitorsEl) afVisitorsEl.textContent = (analyticsFunnel.totals?.uniqueVisitors || 0).toLocaleString('pt-BR');
+        if (afConversionEl) afConversionEl.textContent = (analyticsFunnel.totals?.conversionRate || 0) + '%';
+
+        // Update funnel steps
+        const steps = analyticsFunnel.funnelSteps || [];
+        steps.forEach((step, index) => {
+          const countEl = document.getElementById(`af-step-${index + 1}-count`);
+          const pctEl = document.getElementById(`af-step-${index + 1}-pct`);
+
+          if (countEl) countEl.textContent = step.count.toLocaleString('pt-BR');
+          if (pctEl) pctEl.textContent = step.percentage + '%';
+        });
+
+        // Update dropouts
+        const dropouts = analyticsFunnel.dropouts || [];
+        dropouts.forEach((dropout, index) => {
+          const dropoutEl = document.getElementById(`af-dropout-${index + 1}`);
+          if (dropoutEl) {
+            dropoutEl.textContent = `-${dropout.count} (${dropout.rate}%)`;
+          }
+        });
+
+        // UTM Sources
+        const utmListEl = document.getElementById('af-utm-list');
+        if (utmListEl && analyticsFunnel.utmSources) {
+          if (analyticsFunnel.utmSources.length > 0) {
+            utmListEl.innerHTML = analyticsFunnel.utmSources.map(utm => `
+              <div class="metric-row" style="padding: 6px 0; border-bottom: 1px solid #334155;">
+                <span class="metric-label" style="font-size: 12px;">${utm.source || 'direto'}</span>
+                <span class="metric-value" style="font-size: 14px;">${utm.count}</span>
+              </div>
+            `).join('');
+          } else {
+            utmListEl.innerHTML = '<div style="color: #64748b; font-size: 13px;">Sem dados de UTM</div>';
+          }
+        }
+
+        // Daily trends chart
+        const afChartEl = document.getElementById('af-daily-chart');
+        if (afChartEl && analyticsFunnel.dailyTrends && analyticsFunnel.dailyTrends.length > 0) {
+          if (charts['analyticsFunnel']) charts['analyticsFunnel'].destroy();
+          charts['analyticsFunnel'] = new ApexCharts(afChartEl, {
+            chart: {
+              type: 'area',
+              height: 200,
+              background: chartTheme.background,
+              toolbar: { show: false },
+              fontFamily: 'Inter, sans-serif'
+            },
+            series: [
+              { name: 'Page Views', data: analyticsFunnel.dailyTrends.map(d => d.pageViews || 0) },
+              { name: 'Form Starts', data: analyticsFunnel.dailyTrends.map(d => d.formStarts || 0) },
+              { name: 'Scans', data: analyticsFunnel.dailyTrends.map(d => d.scansStarted || 0) },
+              { name: 'Payments', data: analyticsFunnel.dailyTrends.map(d => d.payments || 0) }
+            ],
+            colors: ['#6366f1', '#8b5cf6', '#f59e0b', '#22c55e'],
+            stroke: { curve: 'smooth', width: 2 },
+            fill: { type: 'gradient', gradient: { opacityFrom: 0.3, opacityTo: 0.1 } },
+            xaxis: {
+              categories: analyticsFunnel.dailyTrends.map(d => {
+                const date = new Date(d.date);
+                return `${date.getDate()}/${date.getMonth() + 1}`;
+              }),
+              labels: { style: { colors: chartTheme.textColor, fontSize: '10px' } },
+              axisBorder: { show: false },
+              axisTicks: { show: false }
+            },
+            yaxis: { labels: { style: { colors: chartTheme.textColor } } },
+            grid: { borderColor: chartTheme.gridColor, strokeDashArray: 4 },
+            legend: { position: 'top', labels: { colors: chartTheme.textColor } },
+            tooltip: { theme: 'dark' }
+          });
+          charts['analyticsFunnel'].render();
+        }
+      } catch (e) { console.error('Error loading analytics funnel:', e); }
     }
 
     // oEntregador today stats (usuarios ativos e bipados)

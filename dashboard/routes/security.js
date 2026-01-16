@@ -1374,4 +1374,317 @@ router.get('/trial-sessions', async (req, res) => {
   }
 });
 
+// =============================================================================
+// GET /api/security/analytics-funnel - Funil completo baseado nos eventos do nosso banco interno
+// Usa a tabela security_analytics_events (banco analytics) em vez do Umami
+// =============================================================================
+router.get('/analytics-funnel', async (req, res) => {
+  try {
+    const days = parseInt(req.query.days) || 30;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    // Buscar contagem de cada evento do funil
+    const eventsQuery = await db.analytics.query(`
+      SELECT
+        event_name,
+        COUNT(*) as count,
+        COUNT(DISTINCT session_id) as unique_sessions,
+        COUNT(DISTINCT visitor_id) as unique_visitors
+      FROM security_analytics_events
+      WHERE created_at >= $1
+      GROUP BY event_name
+      ORDER BY count DESC
+    `, [startDate]);
+
+    // Criar mapa de eventos
+    const eventCounts = {};
+    const eventSessions = {};
+    for (const row of eventsQuery.rows) {
+      eventCounts[row.event_name] = parseInt(row.count);
+      eventSessions[row.event_name] = parseInt(row.unique_sessions);
+    }
+
+    // Sessoes unicas totais
+    const totalSessionsQuery = await db.analytics.query(`
+      SELECT COUNT(DISTINCT session_id) as total
+      FROM security_analytics_events
+      WHERE created_at >= $1
+    `, [startDate]);
+    const totalSessions = parseInt(totalSessionsQuery.rows[0]?.total) || 0;
+
+    // Visitantes unicos totais
+    const totalVisitorsQuery = await db.analytics.query(`
+      SELECT COUNT(DISTINCT visitor_id) as total
+      FROM security_analytics_events
+      WHERE created_at >= $1 AND visitor_id IS NOT NULL
+    `, [startDate]);
+    const totalVisitors = parseInt(totalVisitorsQuery.rows[0]?.total) || 0;
+
+    // Montar dados do funil - FLUXO COMPLETO DO USUARIO
+    // O funil segue a jornada: Landing -> Form -> Scan -> Result -> Payment -> Conversion
+    const funnel = {
+      // ============ ETAPA 1: LANDING PAGE ============
+      // Usuario acessou a pagina de scan
+      scanPageView: eventCounts['funnel_scan_page_view'] || 0,
+      scanPageViewSessions: eventSessions['funnel_scan_page_view'] || 0,
+
+      // ============ ETAPA 2: FORMULARIO ============
+      // Usuario comecou a preencher o formulario
+      formStart: eventCounts['funnel_scan_form_start'] || 0,
+      formStartSessions: eventSessions['funnel_scan_form_start'] || 0,
+
+      // Usuario submeteu o formulario
+      formSubmit: eventCounts['funnel_scan_form_submit'] || 0,
+      formSubmitSessions: eventSessions['funnel_scan_form_submit'] || 0,
+
+      // ============ ETAPA 3: SCAN ============
+      // Scan iniciou
+      scanStarted: eventCounts['funnel_scan_started'] || 0,
+      scanStartedSessions: eventSessions['funnel_scan_started'] || 0,
+
+      // ============ ETAPA 4: RESULTADO ============
+      // Usuario viu a pagina de resultado
+      resultPageView: eventCounts['funnel_result_page_view'] || 0,
+      resultPageViewSessions: eventSessions['funnel_result_page_view'] || 0,
+
+      // Cliques nos CTAs do resultado
+      ctaClickRegister: eventCounts['cta_result_click_register'] || 0,
+      ctaClickLogin: eventCounts['cta_result_click_login'] || 0,
+
+      // ============ ETAPA 5: PAGAMENTO ============
+      // Usuario acessou pagina de pagamento
+      paymentPageView: eventCounts['funnel_payment_page_view'] || 0,
+      paymentPageViewSessions: eventSessions['funnel_payment_page_view'] || 0,
+
+      // Usuario clicou em desbloquear
+      paymentClickUnlock: eventCounts['funnel_payment_click_unlock'] || 0,
+      paymentClickUnlockSessions: eventSessions['funnel_payment_click_unlock'] || 0,
+
+      // Checkout foi criado
+      paymentCheckoutCreated: eventCounts['funnel_payment_checkout_created'] || 0,
+      paymentCheckoutCreatedSessions: eventSessions['funnel_payment_checkout_created'] || 0,
+
+      // ============ ETAPA 6: CONVERSAO ============
+      // Pagamento concluido com sucesso
+      conversionPaymentSuccess: eventCounts['conversion_payment_success'] || 0,
+      conversionPaymentSuccessSessions: eventSessions['conversion_payment_success'] || 0,
+
+      // ============ ERROS ============
+      errorScanApi: eventCounts['error_scan_api'] || 0,
+      errorScanValidation: eventCounts['error_scan_validation'] || 0,
+      errorPayment: eventCounts['error_payment'] || 0,
+
+      // ============ METRICAS GERAIS ============
+      totalSessions,
+      totalVisitors,
+    };
+
+    // Calcular taxas de conversao entre cada etapa
+    const conversions = {
+      // Page View -> Form Start
+      pageToFormStart: funnel.scanPageView > 0
+        ? ((funnel.formStart / funnel.scanPageView) * 100).toFixed(1)
+        : '0',
+
+      // Form Start -> Form Submit
+      formStartToSubmit: funnel.formStart > 0
+        ? ((funnel.formSubmit / funnel.formStart) * 100).toFixed(1)
+        : '0',
+
+      // Form Submit -> Scan Started
+      submitToScanStarted: funnel.formSubmit > 0
+        ? ((funnel.scanStarted / funnel.formSubmit) * 100).toFixed(1)
+        : '0',
+
+      // Scan Started -> Result View
+      scanToResult: funnel.scanStarted > 0
+        ? ((funnel.resultPageView / funnel.scanStarted) * 100).toFixed(1)
+        : '0',
+
+      // Result View -> Payment Page View
+      resultToPayment: funnel.resultPageView > 0
+        ? ((funnel.paymentPageView / funnel.resultPageView) * 100).toFixed(1)
+        : '0',
+
+      // Payment Page -> Click Unlock
+      paymentToUnlock: funnel.paymentPageView > 0
+        ? ((funnel.paymentClickUnlock / funnel.paymentPageView) * 100).toFixed(1)
+        : '0',
+
+      // Click Unlock -> Checkout Created
+      unlockToCheckout: funnel.paymentClickUnlock > 0
+        ? ((funnel.paymentCheckoutCreated / funnel.paymentClickUnlock) * 100).toFixed(1)
+        : '0',
+
+      // Checkout -> Payment Success
+      checkoutToSuccess: funnel.paymentCheckoutCreated > 0
+        ? ((funnel.conversionPaymentSuccess / funnel.paymentCheckoutCreated) * 100).toFixed(1)
+        : '0',
+
+      // Conversao geral: Page View -> Payment Success
+      overallConversion: funnel.scanPageView > 0
+        ? ((funnel.conversionPaymentSuccess / funnel.scanPageView) * 100).toFixed(2)
+        : '0',
+    };
+
+    // Pontos de dropout (abandono)
+    const dropouts = {
+      beforeFormStart: funnel.scanPageView - funnel.formStart,
+      formAbandonment: funnel.formStart - funnel.formSubmit,
+      scanNotStarted: funnel.formSubmit - funnel.scanStarted,
+      resultAbandonment: funnel.scanStarted - funnel.resultPageView,
+      beforePayment: funnel.resultPageView - funnel.paymentPageView,
+      beforeUnlock: funnel.paymentPageView - funnel.paymentClickUnlock,
+      beforeCheckout: funnel.paymentClickUnlock - funnel.paymentCheckoutCreated,
+      checkoutAbandonment: funnel.paymentCheckoutCreated - funnel.conversionPaymentSuccess,
+      totalErrors: funnel.errorScanApi + funnel.errorScanValidation + funnel.errorPayment,
+    };
+
+    // Funil como array para visualizacao (diagrama)
+    const funnelSteps = [
+      {
+        step: 1,
+        name: 'Página do Scan',
+        event: 'funnel_scan_page_view',
+        count: funnel.scanPageView,
+        sessions: funnel.scanPageViewSessions,
+        percentage: '100%',
+        dropoutNext: dropouts.beforeFormStart,
+      },
+      {
+        step: 2,
+        name: 'Início do Formulário',
+        event: 'funnel_scan_form_start',
+        count: funnel.formStart,
+        sessions: funnel.formStartSessions,
+        percentage: conversions.pageToFormStart + '%',
+        dropoutNext: dropouts.formAbandonment,
+      },
+      {
+        step: 3,
+        name: 'Formulário Enviado',
+        event: 'funnel_scan_form_submit',
+        count: funnel.formSubmit,
+        sessions: funnel.formSubmitSessions,
+        percentage: conversions.formStartToSubmit + '%',
+        dropoutNext: dropouts.scanNotStarted,
+      },
+      {
+        step: 4,
+        name: 'Scan Iniciado',
+        event: 'funnel_scan_started',
+        count: funnel.scanStarted,
+        sessions: funnel.scanStartedSessions,
+        percentage: conversions.submitToScanStarted + '%',
+        dropoutNext: dropouts.resultAbandonment,
+      },
+      {
+        step: 5,
+        name: 'Resultado Visualizado',
+        event: 'funnel_result_page_view',
+        count: funnel.resultPageView,
+        sessions: funnel.resultPageViewSessions,
+        percentage: conversions.scanToResult + '%',
+        dropoutNext: dropouts.beforePayment,
+      },
+      {
+        step: 6,
+        name: 'Página de Pagamento',
+        event: 'funnel_payment_page_view',
+        count: funnel.paymentPageView,
+        sessions: funnel.paymentPageViewSessions,
+        percentage: conversions.resultToPayment + '%',
+        dropoutNext: dropouts.beforeUnlock,
+      },
+      {
+        step: 7,
+        name: 'Clicou Desbloquear',
+        event: 'funnel_payment_click_unlock',
+        count: funnel.paymentClickUnlock,
+        sessions: funnel.paymentClickUnlockSessions,
+        percentage: conversions.paymentToUnlock + '%',
+        dropoutNext: dropouts.beforeCheckout,
+      },
+      {
+        step: 8,
+        name: 'Checkout Criado',
+        event: 'funnel_payment_checkout_created',
+        count: funnel.paymentCheckoutCreated,
+        sessions: funnel.paymentCheckoutCreatedSessions,
+        percentage: conversions.unlockToCheckout + '%',
+        dropoutNext: dropouts.checkoutAbandonment,
+      },
+      {
+        step: 9,
+        name: 'Pagamento Concluído',
+        event: 'conversion_payment_success',
+        count: funnel.conversionPaymentSuccess,
+        sessions: funnel.conversionPaymentSuccessSessions,
+        percentage: conversions.checkoutToSuccess + '%',
+        dropoutNext: 0,
+      },
+    ];
+
+    // Eventos por dia para grafico de tendencia
+    const dailyQuery = await db.analytics.query(`
+      SELECT
+        DATE(created_at) as date,
+        COUNT(*) FILTER (WHERE event_name = 'funnel_scan_page_view') as page_views,
+        COUNT(*) FILTER (WHERE event_name = 'funnel_scan_form_submit') as form_submits,
+        COUNT(*) FILTER (WHERE event_name = 'funnel_result_page_view') as result_views,
+        COUNT(*) FILTER (WHERE event_name = 'conversion_payment_success') as conversions
+      FROM security_analytics_events
+      WHERE created_at >= $1
+      GROUP BY DATE(created_at)
+      ORDER BY DATE(created_at) ASC
+    `, [startDate]);
+
+    // Preencher dias faltantes com zeros
+    const dailyData = [];
+    const now = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const found = dailyQuery.rows.find(r => r.date && r.date.toISOString().split('T')[0] === dateStr);
+      dailyData.push({
+        date: dateStr,
+        pageViews: found ? parseInt(found.page_views) : 0,
+        formSubmits: found ? parseInt(found.form_submits) : 0,
+        resultViews: found ? parseInt(found.result_views) : 0,
+        conversions: found ? parseInt(found.conversions) : 0,
+      });
+    }
+
+    // UTM Sources - de onde vem os usuarios
+    const utmQuery = await db.analytics.query(`
+      SELECT
+        COALESCE(utm_source, 'direto') as source,
+        COUNT(*) as events,
+        COUNT(DISTINCT session_id) as sessions
+      FROM security_analytics_events
+      WHERE created_at >= $1 AND event_name = 'funnel_scan_page_view'
+      GROUP BY utm_source
+      ORDER BY sessions DESC
+      LIMIT 10
+    `, [startDate]);
+
+    res.json({
+      period: `${days} days`,
+      funnel,
+      funnelSteps,
+      conversions,
+      dropouts,
+      daily: dailyData,
+      utmSources: utmQuery.rows,
+      rawEvents: eventCounts,
+    });
+  } catch (err) {
+    console.error('Error fetching analytics funnel:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
