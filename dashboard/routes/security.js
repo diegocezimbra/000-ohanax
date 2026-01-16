@@ -1652,6 +1652,142 @@ router.get('/analytics-funnel', async (req, res) => {
       },
     ];
 
+    // ================================================================================
+    // FUNIL VARIAÇÃO A: /scan-video (Landing com vídeo)
+    // ================================================================================
+    const funnelVideoRaw = {
+      pageView: eventCounts['funnel_scan_video_page_view'] || 0,
+      pageViewSessions: eventSessions['funnel_scan_video_page_view'] || 0,
+      videoPlay: eventCounts['funnel_scan_video_play'] || 0,
+      videoPlaySessions: eventSessions['funnel_scan_video_play'] || 0,
+      formStart: eventCounts['funnel_scan_video_form_start'] || 0,
+      formStartSessions: eventSessions['funnel_scan_video_form_start'] || 0,
+      formSubmit: eventCounts['funnel_scan_video_form_submit'] || 0,
+      formSubmitSessions: eventSessions['funnel_scan_video_form_submit'] || 0,
+      scanStarted: eventCounts['funnel_scan_video_started'] || 0,
+      scanStartedSessions: eventSessions['funnel_scan_video_started'] || 0,
+    };
+
+    const funnelVideoSteps = [
+      {
+        step: 1,
+        name: 'Página Video',
+        event: 'funnel_scan_video_page_view',
+        count: funnelVideoRaw.pageView,
+        sessions: funnelVideoRaw.pageViewSessions,
+        percentage: '100%',
+      },
+      {
+        step: 2,
+        name: 'Video Play',
+        event: 'funnel_scan_video_play',
+        count: funnelVideoRaw.videoPlay,
+        sessions: funnelVideoRaw.videoPlaySessions,
+        percentage: funnelVideoRaw.pageView > 0 ? ((funnelVideoRaw.videoPlay / funnelVideoRaw.pageView) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 3,
+        name: 'Início Formulário',
+        event: 'funnel_scan_video_form_start',
+        count: funnelVideoRaw.formStart,
+        sessions: funnelVideoRaw.formStartSessions,
+        percentage: funnelVideoRaw.videoPlay > 0 ? ((funnelVideoRaw.formStart / funnelVideoRaw.videoPlay) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 4,
+        name: 'Formulário Enviado',
+        event: 'funnel_scan_video_form_submit',
+        count: funnelVideoRaw.formSubmit,
+        sessions: funnelVideoRaw.formSubmitSessions,
+        percentage: funnelVideoRaw.formStart > 0 ? ((funnelVideoRaw.formSubmit / funnelVideoRaw.formStart) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 5,
+        name: 'Scan Iniciado',
+        event: 'funnel_scan_video_started',
+        count: funnelVideoRaw.scanStarted,
+        sessions: funnelVideoRaw.scanStartedSessions,
+        percentage: funnelVideoRaw.formSubmit > 0 ? ((funnelVideoRaw.scanStarted / funnelVideoRaw.formSubmit) * 100).toFixed(1) + '%' : '0%',
+      },
+    ];
+
+    const funnelVideoConversion = funnelVideoRaw.pageView > 0
+      ? ((funnelVideoRaw.scanStarted / funnelVideoRaw.pageView) * 100).toFixed(2)
+      : '0';
+
+    // ================================================================================
+    // FUNIL VARIAÇÃO B: /scan-pro (Landing com quiz/psicologia)
+    // ================================================================================
+    const funnelProRaw = {
+      pageView: eventCounts['funnel_scan_pro_page_view'] || 0,
+      pageViewSessions: eventSessions['funnel_scan_pro_page_view'] || 0,
+      quizStart: eventCounts['funnel_scan_pro_quiz_start'] || 0,
+      quizStartSessions: eventSessions['funnel_scan_pro_quiz_start'] || 0,
+      quizComplete: eventCounts['funnel_scan_pro_quiz_complete'] || 0,
+      quizCompleteSessions: eventSessions['funnel_scan_pro_quiz_complete'] || 0,
+      formStart: eventCounts['funnel_scan_pro_form_start'] || 0,
+      formStartSessions: eventSessions['funnel_scan_pro_form_start'] || 0,
+      formSubmit: eventCounts['funnel_scan_pro_form_submit'] || 0,
+      formSubmitSessions: eventSessions['funnel_scan_pro_form_submit'] || 0,
+      scanStarted: eventCounts['funnel_scan_pro_started'] || 0,
+      scanStartedSessions: eventSessions['funnel_scan_pro_started'] || 0,
+    };
+
+    const funnelProSteps = [
+      {
+        step: 1,
+        name: 'Página Pro',
+        event: 'funnel_scan_pro_page_view',
+        count: funnelProRaw.pageView,
+        sessions: funnelProRaw.pageViewSessions,
+        percentage: '100%',
+      },
+      {
+        step: 2,
+        name: 'Quiz Iniciado',
+        event: 'funnel_scan_pro_quiz_start',
+        count: funnelProRaw.quizStart,
+        sessions: funnelProRaw.quizStartSessions,
+        percentage: funnelProRaw.pageView > 0 ? ((funnelProRaw.quizStart / funnelProRaw.pageView) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 3,
+        name: 'Quiz Completo',
+        event: 'funnel_scan_pro_quiz_complete',
+        count: funnelProRaw.quizComplete,
+        sessions: funnelProRaw.quizCompleteSessions,
+        percentage: funnelProRaw.quizStart > 0 ? ((funnelProRaw.quizComplete / funnelProRaw.quizStart) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 4,
+        name: 'Início Formulário',
+        event: 'funnel_scan_pro_form_start',
+        count: funnelProRaw.formStart,
+        sessions: funnelProRaw.formStartSessions,
+        percentage: funnelProRaw.quizComplete > 0 ? ((funnelProRaw.formStart / funnelProRaw.quizComplete) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 5,
+        name: 'Formulário Enviado',
+        event: 'funnel_scan_pro_form_submit',
+        count: funnelProRaw.formSubmit,
+        sessions: funnelProRaw.formSubmitSessions,
+        percentage: funnelProRaw.formStart > 0 ? ((funnelProRaw.formSubmit / funnelProRaw.formStart) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 6,
+        name: 'Scan Iniciado',
+        event: 'funnel_scan_pro_started',
+        count: funnelProRaw.scanStarted,
+        sessions: funnelProRaw.scanStartedSessions,
+        percentage: funnelProRaw.formSubmit > 0 ? ((funnelProRaw.scanStarted / funnelProRaw.formSubmit) * 100).toFixed(1) + '%' : '0%',
+      },
+    ];
+
+    const funnelProConversion = funnelProRaw.pageView > 0
+      ? ((funnelProRaw.scanStarted / funnelProRaw.pageView) * 100).toFixed(2)
+      : '0';
+
     // Eventos por dia para grafico de tendencia
     const dailyQuery = await db.analytics.query(`
       SELECT
@@ -1707,9 +1843,98 @@ router.get('/analytics-funnel', async (req, res) => {
       daily: dailyData,
       utmSources: utmQuery.rows,
       rawEvents: eventCounts,
+      // Variações de landing page para A/B testing
+      variations: {
+        video: {
+          name: 'Scan Video',
+          path: '/scan-video',
+          description: 'Landing com vídeo explicativo',
+          funnel: funnelVideoRaw,
+          steps: funnelVideoSteps,
+          overallConversion: funnelVideoConversion + '%',
+        },
+        pro: {
+          name: 'Scan Pro',
+          path: '/scan-pro',
+          description: 'Landing com quiz de segurança',
+          funnel: funnelProRaw,
+          steps: funnelProSteps,
+          overallConversion: funnelProConversion + '%',
+        },
+      },
     });
   } catch (err) {
     console.error('Error fetching analytics funnel:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
+// LEADS CAPTURADOS - Lista de leads parciais (emails/whatsapp capturados)
+// =============================================================================
+router.get('/leads', async (req, res) => {
+  try {
+    const { page = 1, limit = 50, search = '', status = '' } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    let whereClause = 'WHERE 1=1';
+    const params = [];
+    let paramIndex = 1;
+
+    if (search) {
+      whereClause += ` AND (email ILIKE $${paramIndex} OR whatsapp ILIKE $${paramIndex} OR frontend_url ILIKE $${paramIndex})`;
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    if (status) {
+      whereClause += ` AND status = $${paramIndex}`;
+      params.push(status);
+      paramIndex++;
+    }
+
+    // Buscar leads da tabela security_leads
+    const countQuery = `SELECT COUNT(*) FROM security_leads ${whereClause}`;
+    const countResult = await db.security.query(countQuery, params);
+    const total = parseInt(countResult.rows[0].count);
+
+    const dataQuery = `
+      SELECT
+        id,
+        email,
+        whatsapp,
+        frontend_url,
+        backend_url,
+        project_name,
+        status,
+        source,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        ip_address,
+        created_at,
+        updated_at,
+        paid_at,
+        registered_at
+      FROM security_leads
+      ${whereClause}
+      ORDER BY created_at DESC
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    `;
+
+    const dataResult = await db.security.query(dataQuery, [...params, parseInt(limit), offset]);
+
+    res.json({
+      leads: dataResult.rows,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching leads:', err);
     res.status(500).json({ error: err.message });
   }
 });
