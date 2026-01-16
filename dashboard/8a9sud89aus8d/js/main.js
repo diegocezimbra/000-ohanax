@@ -109,29 +109,41 @@ initAdsSecurityModule({
 async function loadPage(pageName) {
   const container = document.getElementById('page-content');
 
-  // Check cache first
-  if (pageCache[pageName]) {
-    container.innerHTML = pageCache[pageName];
-    currentPage = pageName;
-    loadPageData(pageName);
-    return;
-  }
-
   // Show loading
   container.innerHTML = '<div class="loading">Carregando...</div>';
 
   try {
+    // Always fetch fresh to ensure scripts are re-executed
     const response = await fetch(`pages/${pageName}.html`);
     if (!response.ok) throw new Error('Page not found');
     const html = await response.text();
-    pageCache[pageName] = html;
     container.innerHTML = html;
     currentPage = pageName;
+
+    // Execute inline scripts (they don't run when using innerHTML)
+    executeInlineScripts(container);
+
     loadPageData(pageName);
   } catch (err) {
     console.error(`Error loading page ${pageName}:`, err);
     container.innerHTML = '<div class="loading">Erro ao carregar pagina</div>';
   }
+}
+
+// Helper to execute inline scripts after innerHTML
+function executeInlineScripts(container) {
+  const scripts = container.querySelectorAll('script');
+  scripts.forEach(oldScript => {
+    const newScript = document.createElement('script');
+    // Copy attributes
+    Array.from(oldScript.attributes).forEach(attr => {
+      newScript.setAttribute(attr.name, attr.value);
+    });
+    // Copy content
+    newScript.textContent = oldScript.textContent;
+    // Replace old script with new one to execute it
+    oldScript.parentNode.replaceChild(newScript, oldScript);
+  });
 }
 
 function loadPageData(pageName) {
