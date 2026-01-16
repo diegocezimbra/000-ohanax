@@ -838,7 +838,12 @@ export async function loadProjectPage(project) {
         dropouts.forEach((dropout, index) => {
           const dropoutEl = document.getElementById(`af-dropout-${index + 1}`);
           if (dropoutEl) {
-            dropoutEl.textContent = `-${dropout.count} (${dropout.rate}%)`;
+            const numEl = dropoutEl.querySelector('.dropout-num');
+            if (numEl) {
+              numEl.textContent = `${dropout.count}`;
+            } else {
+              dropoutEl.textContent = `-${dropout.count}`;
+            }
           }
         });
 
