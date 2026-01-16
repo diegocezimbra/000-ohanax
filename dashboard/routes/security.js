@@ -1422,51 +1422,62 @@ router.get('/analytics-funnel', async (req, res) => {
     const totalVisitors = parseInt(totalVisitorsQuery.rows[0]?.total) || 0;
 
     // Montar dados do funil - FLUXO COMPLETO DO USUARIO
-    // O funil segue a jornada: Landing -> Form -> Scan -> Result -> Payment -> Conversion
+    // ================================================================================
+    // MAPA DE PAGINAS E EVENTOS:
+    // ================================================================================
+    // Step 1: index.html (/scan)           -> funnel_scan_page_view      -> "Pág. de Scan"
+    // Step 2: index.html (/scan)           -> funnel_scan_form_start     -> "Form Iniciado"
+    // Step 3: index.html (/scan)           -> funnel_scan_form_submit    -> "Form Submetido"
+    // Step 4: index.html (/scan)           -> funnel_scan_started        -> "Scan Iniciado"
+    // Step 5: result.html (/scan/{id}/result)   -> funnel_result_page_view   -> "Pág. de Resultado"
+    // Step 6: payment.html (/scan/{id}/payment) -> funnel_payment_page_view  -> "Pág. de Desbloqueio"
+    // Step 7: payment.html (/scan/{id}/payment) -> funnel_payment_click_unlock -> "Clicou Desbloquear"
+    // Step 8: payment.html (/scan/{id}/payment) -> funnel_payment_checkout_created -> "Checkout Criado"
+    // Step 9: result.html (/scan/{id}/result?just_paid=1) -> conversion_payment_success -> "Pagamento Concluído"
+    // ================================================================================
     const funnel = {
-      // ============ ETAPA 1: LANDING PAGE ============
-      // Usuario acessou a pagina de scan
+      // ============ PÁGINA: index.html (/scan) ============
+      // Step 1: Usuario acessou a pagina de scan
       scanPageView: eventCounts['funnel_scan_page_view'] || 0,
       scanPageViewSessions: eventSessions['funnel_scan_page_view'] || 0,
 
-      // ============ ETAPA 2: FORMULARIO ============
-      // Usuario comecou a preencher o formulario
+      // Step 2: Usuario comecou a preencher o formulario
       formStart: eventCounts['funnel_scan_form_start'] || 0,
       formStartSessions: eventSessions['funnel_scan_form_start'] || 0,
 
-      // Usuario submeteu o formulario
+      // Step 3: Usuario submeteu o formulario
       formSubmit: eventCounts['funnel_scan_form_submit'] || 0,
       formSubmitSessions: eventSessions['funnel_scan_form_submit'] || 0,
 
-      // ============ ETAPA 3: SCAN ============
-      // Scan iniciou
+      // Step 4: Scan iniciou (redirect para result.html)
       scanStarted: eventCounts['funnel_scan_started'] || 0,
       scanStartedSessions: eventSessions['funnel_scan_started'] || 0,
 
-      // ============ ETAPA 4: RESULTADO ============
-      // Usuario viu a pagina de resultado
+      // ============ PÁGINA: result.html (/scan/{id}/result) ============
+      // Step 5: Usuario viu a pagina de resultado (scan rodando, mostra vulns)
       resultPageView: eventCounts['funnel_result_page_view'] || 0,
       resultPageViewSessions: eventSessions['funnel_result_page_view'] || 0,
 
-      // Cliques nos CTAs do resultado
+      // CTAs do resultado (usuario ja pagou ou registrou)
       ctaClickRegister: eventCounts['cta_result_click_register'] || 0,
       ctaClickLogin: eventCounts['cta_result_click_login'] || 0,
 
-      // ============ ETAPA 5: PAGAMENTO ============
-      // Usuario acessou pagina de pagamento
+      // ============ PÁGINA: payment.html (/scan/{id}/payment) ============
+      // Step 6: Usuario acessou pagina de desbloqueio (ve vulns e botao desbloquear)
+      // NOTA: O evento se chama "payment" por razoes historicas, mas a pagina é de desbloqueio
       paymentPageView: eventCounts['funnel_payment_page_view'] || 0,
       paymentPageViewSessions: eventSessions['funnel_payment_page_view'] || 0,
 
-      // Usuario clicou em desbloquear
+      // Step 7: Usuario clicou em desbloquear
       paymentClickUnlock: eventCounts['funnel_payment_click_unlock'] || 0,
       paymentClickUnlockSessions: eventSessions['funnel_payment_click_unlock'] || 0,
 
-      // Checkout foi criado
+      // Step 8: Checkout Stripe foi criado (URL gerada)
       paymentCheckoutCreated: eventCounts['funnel_payment_checkout_created'] || 0,
       paymentCheckoutCreatedSessions: eventSessions['funnel_payment_checkout_created'] || 0,
 
-      // ============ ETAPA 6: CONVERSAO ============
-      // Pagamento concluido com sucesso
+      // ============ PÁGINA: result.html (/scan/{id}/result?just_paid=1) ============
+      // Step 9: Usuario voltou do Stripe com pagamento confirmado
       conversionPaymentSuccess: eventCounts['conversion_payment_success'] || 0,
       conversionPaymentSuccessSessions: eventSessions['conversion_payment_success'] || 0,
 
