@@ -1581,7 +1581,7 @@ router.get('/analytics-funnel', async (req, res) => {
       },
       {
         step: 5,
-        name: 'Pág. de Desbloqueio',
+        name: 'Pág. de Resultado',
         event: 'funnel_result_page_view',
         count: funnel.resultPageView,
         sessions: funnel.resultPageViewSessions,
@@ -1590,7 +1590,7 @@ router.get('/analytics-funnel', async (req, res) => {
       },
       {
         step: 6,
-        name: 'Página de Pagamento',
+        name: 'Pág. de Desbloqueio',
         event: 'funnel_payment_page_view',
         count: funnel.paymentPageView,
         sessions: funnel.paymentPageViewSessions,
