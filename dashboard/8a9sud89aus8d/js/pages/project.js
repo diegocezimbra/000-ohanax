@@ -671,16 +671,16 @@ export async function loadProjectPage(project) {
 
         if (dbStartedEl) dbStartedEl.textContent = funnel.scansStarted || 0;
         if (dbCompletedEl) dbCompletedEl.textContent = funnel.scansCompleted || 0;
-        if (dbCompletedPctEl) dbCompletedPctEl.textContent = (conversions.startedToCompleted || 0) + '% dos iniciados';
+        if (dbCompletedPctEl) dbCompletedPctEl.textContent = (conversions.startToComplete || 0) + '% dos iniciados';
         if (dbPaidEl) dbPaidEl.textContent = funnel.paidTotal || 0;
-        if (dbPaidPctEl) dbPaidPctEl.textContent = (conversions.completedToPaid || 0) + '% dos completados';
+        if (dbPaidPctEl) dbPaidPctEl.textContent = (conversions.vulnsToPaid || 0) + '% dos completados';
         if (dbRegisteredEl) dbRegisteredEl.textContent = funnel.fullyConverted || 0;
         if (dbRegisteredPctEl) dbRegisteredPctEl.textContent = (conversions.overallConversion || 0) + '% conversao total';
 
         // Update main conversion rate KPI
         const conversionRateEl = document.getElementById('security-conversion-rate');
         if (conversionRateEl) {
-          const rate = conversions.startedToPaid || conversions.completedToPaid || 0;
+          const rate = conversions.vulnsToPaid || conversions.paymentConversion || 0;
           conversionRateEl.textContent = rate + '%';
         }
 
