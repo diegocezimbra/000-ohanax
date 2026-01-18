@@ -17,7 +17,7 @@ export const metaConfig = {
   adAccountId: '354686431783766',
   pageId: '330409406821958',
   instagramId: '17841466860212532',
-  campaignId: '120236094614610680',
+  campaignId: '120236244665850680', // Video v5 campaign (36 ads)
 
   // Campos padrao para buscar campanhas
   campaignFields: [

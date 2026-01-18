@@ -299,16 +299,17 @@ router.get('/security/adsets', async (req, res) => {
  */
 router.get('/security/ads', async (req, res) => {
   try {
-    const { startDate, endDate, campaignId = metaConfig.campaignId } = req.query;
+    const { startDate, endDate, campaignId = metaConfig.campaignId, showPaused = 'false' } = req.query;
 
     const start = startDate || getDefaultStartDate();
     const end = endDate || getDefaultEndDate();
     const timeRange = JSON.stringify({ since: start, until: end });
 
-    // Buscar ads
-    const adsData = await fetchMeta(`${campaignId}/ads`, {
-      fields: 'id,name,status,created_time,updated_time,adset_id',
-      limit: 100,
+    // Buscar ads da conta inteira (todas as campanhas) - filtrar apenas ACTIVE
+    const adsData = await fetchMeta(`act_${metaConfig.adAccountId}/ads`, {
+      fields: 'id,name,status,created_time,updated_time,adset_id,campaign_id',
+      filtering: JSON.stringify([{ field: 'effective_status', operator: 'IN', value: showPaused === 'true' ? ['ACTIVE', 'PAUSED'] : ['ACTIVE'] }]),
+      limit: 200,
     });
 
     const ads = adsData.data || [];
