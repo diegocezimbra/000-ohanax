@@ -154,22 +154,22 @@
     </div>
   </div>
 
-  <div class="table-container">
-    <table id="ads-table-container">
+  <div class="table-container" style="overflow-x: auto;">
+    <table id="ads-table-container" class="table-resizable">
       <thead>
         <tr>
-          <th class="sortable-header" onclick="handleAdsSort('status')">Status</th>
-          <th class="sortable-header" onclick="handleAdsSort('name')">Nome</th>
-          <th class="sortable-header" onclick="handleAdsSort('spend')">Gasto</th>
-          <th class="sortable-header" onclick="handleAdsSort('impressions')">Impressoes</th>
-          <th class="sortable-header" onclick="handleAdsSort('clicks')">Cliques</th>
-          <th class="sortable-header" onclick="handleAdsSort('ctr')">CTR</th>
-          <th class="sortable-header" onclick="handleAdsSort('cpc')">CPC</th>
-          <th class="sortable-header" onclick="handleAdsSort('leads')">Leads</th>
-          <th class="sortable-header" onclick="handleAdsSort('cpl')">CPL</th>
-          <th class="sortable-header" onclick="handleAdsSort('score')">Pontuacao</th>
-          <th>Analise</th>
-          <th>Recomendacao</th>
+          <th class="sortable-header" onclick="handleAdsSort('status')" style="width: 90px;">Status</th>
+          <th class="sortable-header" onclick="handleAdsSort('name')" style="width: 250px;">Nome</th>
+          <th class="sortable-header" onclick="handleAdsSort('spend')" style="width: 80px;">Gasto</th>
+          <th class="sortable-header" onclick="handleAdsSort('impressions')" style="width: 90px;">Impressoes</th>
+          <th class="sortable-header" onclick="handleAdsSort('clicks')" style="width: 70px;">Cliques</th>
+          <th class="sortable-header" onclick="handleAdsSort('ctr')" style="width: 60px;">CTR</th>
+          <th class="sortable-header" onclick="handleAdsSort('cpc')" style="width: 70px;">CPC</th>
+          <th class="sortable-header" onclick="handleAdsSort('leads')" style="width: 60px;">Leads</th>
+          <th class="sortable-header" onclick="handleAdsSort('cpl')" style="width: 70px;">CPL</th>
+          <th class="sortable-header" onclick="handleAdsSort('score')" style="width: 80px;">Pontuacao</th>
+          <th style="width: 150px;">Analise</th>
+          <th style="width: 150px;">Recomendacao</th>
         </tr>
       </thead>
       <tbody id="ads-table">
@@ -556,5 +556,60 @@ function updateGA4Pages(data) {
 document.addEventListener('DOMContentLoaded', function() {
   // Verificar se a pagina de ads-security foi carregada
   setTimeout(loadGA4Analytics, 500);
+
+  // Inicializar colunas redimensionaveis
+  setTimeout(initResizableColumns, 100);
 });
+
+// =============================================================================
+// RESIZABLE TABLE COLUMNS
+// =============================================================================
+function initResizableColumns() {
+  const tables = document.querySelectorAll('.table-resizable');
+
+  tables.forEach(table => {
+    const headers = table.querySelectorAll('th');
+
+    headers.forEach((th, index) => {
+      // Nao adicionar handle na ultima coluna
+      if (index === headers.length - 1) return;
+
+      // Criar handle de resize
+      const handle = document.createElement('div');
+      handle.className = 'resize-handle';
+      th.appendChild(handle);
+
+      let startX, startWidth, isResizing = false;
+
+      handle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        isResizing = true;
+        startX = e.pageX;
+        startWidth = th.offsetWidth;
+
+        handle.classList.add('resizing');
+        document.body.classList.add('table-resizing');
+
+        const onMouseMove = (e) => {
+          if (!isResizing) return;
+          const diff = e.pageX - startX;
+          const newWidth = Math.max(50, startWidth + diff);
+          th.style.width = newWidth + 'px';
+        };
+
+        const onMouseUp = () => {
+          isResizing = false;
+          handle.classList.remove('resizing');
+          document.body.classList.remove('table-resizing');
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+    });
+  });
+}
 </script>
