@@ -76,22 +76,17 @@ function formatLargeNumber(value) {
 }
 
 /**
- * Calculate ad score based on metrics - Formula Continua v2
+ * Calculate ad score based on metrics - Formula Continua v3
  *
- * Usa formulas continuas para diferenciar melhor cada anuncio.
- * Pontuacao final em escala de 0-1000 para maior granularidade.
+ * Formula 100% continua - cada centavo de diferenca no CPC,
+ * cada 0.01% de CTR, cada clique importa na pontuacao final.
  *
- * Componentes (pesos totais = 100%):
- * - CTR Score (25%): Maior CTR = melhor. Escala logaritmica ate 5%
- * - CPC Score (20%): Menor CPC = melhor. Escala inversa ate R$5
- * - CPL Score (30%): Menor CPL = melhor (se tiver leads). Escala inversa ate R$150
- * - Leads Score (15%): Mais leads = melhor. Escala logaritmica
- * - Eficiencia (10%): Leads/Gasto - ROI do investimento
+ * Escala: 0-1000 pontos (com decimais para diferenciar)
  */
 function calculateAdScore(metrics) {
   const breakdown = {};
 
-  // Extrair metricas
+  // Extrair metricas com precisao
   const ctr = parseFloat(metrics.ctr) || 0;
   const cpc = parseFloat(metrics.cpc) || 0;
   const cpl = parseFloat(metrics.cpl) || 0;
@@ -101,86 +96,71 @@ function calculateAdScore(metrics) {
   const impressions = parseInt(metrics.impressions) || 0;
 
   // ========================================
-  // CTR Score (0-250 pts) - 25% do total
-  // Formula: min(250, (CTR / 3) * 250)
-  // CTR de 3%+ = pontuacao maxima
+  // 1. CTR Score (0-300 pts)
+  // Cada 1% de CTR = 33.33 pontos
+  // CTR 9%+ = maximo (300)
   // ========================================
-  const ctrScore = Math.min(250, (ctr / 3) * 250);
-  breakdown.ctr = Math.round(ctrScore * 10) / 10;
+  const ctrScore = Math.min(300, ctr * 33.333);
+  breakdown.ctr = Math.round(ctrScore * 100) / 100;
 
   // ========================================
-  // CPC Score (0-200 pts) - 20% do total
-  // Formula inversa: quanto menor o CPC, maior a pontuacao
-  // CPC de R$0.30 ou menos = pontuacao maxima
-  // CPC acima de R$5 = pontuacao minima
+  // 2. CPC Score (0-300 pts) - INVERSO
+  // Quanto MENOR o CPC, MAIOR a pontuacao
+  // Formula exponencial inversa para valorizar CPC baixo
+  // CPC R$0.09 = ~291pts
+  // CPC R$0.14 = ~276pts
+  // CPC R$0.27 = ~237pts
   // ========================================
   let cpcScore = 0;
-  if (cpc > 0 && cpc <= 5) {
-    // Formula: 200 * (1 - (cpc - 0.3) / 4.7) com floor em 0
-    cpcScore = Math.max(0, 200 * (1 - Math.max(0, cpc - 0.3) / 4.7));
-  } else if (cpc === 0 && clicks > 0) {
-    cpcScore = 0; // Dados invalidos
+  if (cpc > 0) {
+    // Formula: 300 * e^(-cpc * 1.2)
+    // Isso cria uma curva onde CPC baixo vale MUITO mais
+    cpcScore = 300 * Math.exp(-cpc * 1.2);
   }
-  breakdown.cpc = Math.round(cpcScore * 10) / 10;
+  breakdown.cpc = Math.round(cpcScore * 100) / 100;
 
   // ========================================
-  // CPL Score (0-300 pts) - 30% do total
-  // Formula inversa: quanto menor o CPL, maior a pontuacao
-  // CPL de R$10 ou menos = pontuacao maxima
-  // CPL acima de R$150 = pontuacao minima
+  // 3. Volume Score (0-200 pts)
+  // Cliques e impressoes - diferencia anuncios sem leads
+  // Cada clique = 3pts (max 150 em 50 cliques)
+  // Bonus por impressoes (max 50 pts)
+  // ========================================
+  const clicksScore = Math.min(150, clicks * 3);
+  const impressionsBonus = Math.min(50, impressions / 20);
+  const volumeScore = clicksScore + impressionsBonus;
+  breakdown.volume = Math.round(volumeScore * 100) / 100;
+
+  // ========================================
+  // 4. CPL Score (0-150 pts) - INVERSO
+  // Quanto MENOR o CPL, MAIOR a pontuacao
   // So pontua se tiver leads
+  // Formula: 150 * e^(-cpl * 0.03)
   // ========================================
   let cplScore = 0;
   if (leads > 0 && cpl > 0) {
-    if (cpl <= 10) {
-      cplScore = 300;
-    } else if (cpl <= 150) {
-      // Formula: 300 * (1 - (cpl - 10) / 140)
-      cplScore = Math.max(0, 300 * (1 - (cpl - 10) / 140));
-    }
+    cplScore = 150 * Math.exp(-cpl * 0.025);
   }
-  breakdown.cpl = Math.round(cplScore * 10) / 10;
+  breakdown.cpl = Math.round(cplScore * 100) / 100;
 
   // ========================================
-  // Leads Score (0-150 pts) - 15% do total
-  // Formula logaritmica: mais leads = mais pontos, mas com retorno decrescente
-  // 1 lead = ~50pts, 5 leads = ~100pts, 20+ leads = ~150pts
+  // 5. Leads Score (0-50 pts)
+  // Bonus por ter leads
   // ========================================
   let leadsScore = 0;
   if (leads > 0) {
-    // Formula: 150 * (log10(leads + 1) / log10(21))
-    leadsScore = Math.min(150, 150 * (Math.log10(leads + 1) / Math.log10(21)));
+    leadsScore = Math.min(50, leads * 10);
   }
-  breakdown.leads = Math.round(leadsScore * 10) / 10;
+  breakdown.leads = Math.round(leadsScore * 100) / 100;
 
   // ========================================
-  // Eficiencia Score (0-100 pts) - 10% do total
-  // Leads por Real gasto (ROI)
-  // Formula: quanto mais leads por real, melhor
+  // Pontuacao Final (teorico max ~1000)
   // ========================================
-  let efficiencyScore = 0;
-  if (leads > 0 && spend > 0) {
-    const leadsPerReal = leads / spend;
-    // Se consegue 1 lead por R$10 ou menos = otimo
-    // Formula: min(100, leadsPerReal * 1000)
-    // 0.1 lead/R$ (1 lead por R$10) = 100pts
-    // 0.05 lead/R$ (1 lead por R$20) = 50pts
-    efficiencyScore = Math.min(100, leadsPerReal * 1000);
-  }
-  breakdown.efficiency = Math.round(efficiencyScore * 10) / 10;
-
-  // ========================================
-  // Pontuacao Final (0-1000)
-  // ========================================
-  const totalScore = ctrScore + cpcScore + cplScore + leadsScore + efficiencyScore;
-  const finalScore = Math.round(totalScore);
+  const totalScore = ctrScore + cpcScore + volumeScore + cplScore + leadsScore;
 
   return {
-    score: finalScore,
+    score: Math.round(totalScore * 100) / 100,
     breakdown,
-    maxScore: 1000,
-    // Percentual para facilitar leitura
-    percent: Math.round(totalScore / 10)
+    maxScore: 1000
   };
 }
 
@@ -515,7 +495,7 @@ function renderAdsTable(ads) {
         <td style="color: ${metrics.leads > 0 ? '#22c55e' : '#64748b'};">${metrics.leads || 0}</td>
         <td style="color: ${metrics.cpl ? '#f59e0b' : '#64748b'};">${metrics.cpl ? formatBRL(metrics.cpl) : '--'}</td>
         <td>
-          <span style="color: ${getScoreColor(scoreData.score)}; font-weight: 600;" title="CTR: ${scoreData.breakdown.ctr}/250 | CPC: ${scoreData.breakdown.cpc}/200 | CPL: ${scoreData.breakdown.cpl}/300 | Leads: ${scoreData.breakdown.leads}/150 | Efic: ${scoreData.breakdown.efficiency}/100">
+          <span style="color: ${getScoreColor(scoreData.score)}; font-weight: 600;" title="CTR: ${scoreData.breakdown.ctr}/300 | CPC: ${scoreData.breakdown.cpc}/300 | Vol: ${scoreData.breakdown.volume}/200 | CPL: ${scoreData.breakdown.cpl}/150 | Leads: ${scoreData.breakdown.leads}/50">
             ${scoreData.score}
           </span>
         </td>
