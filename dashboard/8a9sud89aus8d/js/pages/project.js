@@ -950,7 +950,7 @@ export async function loadAllScans(page = 1) {
       tableEl.innerHTML = data.scans.map(scan => {
         const typeLabel = scan.scan_type === 'trial'
           ? '<span style="background: #f59e0b; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;">TRIAL</span>'
-          : '<span style="background: #22c55e; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;">PAGO</span>';
+          : '<span style="background: #3b82f6; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;">LOGADO</span>';
 
         const statusColor = {
           'completed': '#22c55e',
@@ -964,7 +964,8 @@ export async function loadAllScans(page = 1) {
         const paymentColor = {
           'paid': '#22c55e',
           'free': '#3b82f6',
-          'pending': '#f59e0b'
+          'pending': '#f59e0b',
+          'logged': '#8b5cf6'
         }[scan.payment_status] || '#94a3b8';
 
         const frontendUrl = scan.frontend_url || '-';
