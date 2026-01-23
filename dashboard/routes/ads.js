@@ -1,11 +1,68 @@
 import express from 'express';
 import { metaConfig, autoOptimizerRules, adStatus } from '../config/meta.js';
+import { db } from '../db.js';
 
 const router = express.Router();
 
 // =============================================================================
 // HELPERS
 // =============================================================================
+
+/**
+ * Busca leads internos do banco security_analytics_events
+ * Lead = funnel_scan_form_submit (usuario submeteu formulario e iniciou scan)
+ * Isso representa o sucesso do anuncio em trazer trafego qualificado
+ */
+async function getInternalLeads(startDate, endDate) {
+  try {
+    const result = await db.analytics.query(`
+      SELECT
+        COUNT(*) FILTER (WHERE event_name = 'funnel_scan_form_submit') as form_submits,
+        COUNT(*) FILTER (WHERE event_name = 'funnel_scan_started') as scans_started,
+        COUNT(*) FILTER (WHERE event_name = 'conversion_payment_success') as payments,
+        COUNT(DISTINCT session_id) as unique_sessions
+      FROM security_analytics_events
+      WHERE created_at >= $1 AND created_at <= $2::date + INTERVAL '1 day'
+    `, [startDate, endDate]);
+
+    return {
+      leads: parseInt(result.rows[0]?.form_submits) || 0,
+      scansStarted: parseInt(result.rows[0]?.scans_started) || 0,
+      payments: parseInt(result.rows[0]?.payments) || 0,
+      sessions: parseInt(result.rows[0]?.unique_sessions) || 0,
+    };
+  } catch (err) {
+    console.error('[Ads] Error fetching internal leads:', err.message);
+    return { leads: 0, scansStarted: 0, payments: 0, sessions: 0 };
+  }
+}
+
+/**
+ * Busca leads internos por dia para graficos
+ */
+async function getInternalLeadsDaily(startDate, endDate) {
+  try {
+    const result = await db.analytics.query(`
+      SELECT
+        DATE(created_at) as date,
+        COUNT(*) FILTER (WHERE event_name = 'funnel_scan_form_submit') as leads,
+        COUNT(*) FILTER (WHERE event_name = 'conversion_payment_success') as payments
+      FROM security_analytics_events
+      WHERE created_at >= $1 AND created_at <= $2::date + INTERVAL '1 day'
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `, [startDate, endDate]);
+
+    return result.rows.map(row => ({
+      date: row.date.toISOString().split('T')[0],
+      leads: parseInt(row.leads) || 0,
+      payments: parseInt(row.payments) || 0,
+    }));
+  } catch (err) {
+    console.error('[Ads] Error fetching internal leads daily:', err.message);
+    return [];
+  }
+}
 
 /**
  * Faz requisicao para a API do Meta
@@ -241,28 +298,46 @@ router.get('/security/campaign/:id', async (req, res) => {
 /**
  * GET /api/ads/security/insights
  * Insights gerais da conta (agregado)
+ *
+ * IMPORTANTE: Leads agora vem do banco interno (security_analytics_events)
  */
 router.get('/security/insights', async (req, res) => {
   try {
     const { startDate, endDate, level = 'account' } = req.query;
 
-    const timeRange = startDate && endDate
-      ? JSON.stringify({ since: startDate, until: endDate })
-      : JSON.stringify({ since: getDefaultStartDate(), until: getDefaultEndDate() });
+    const start = startDate || getDefaultStartDate();
+    const end = endDate || getDefaultEndDate();
+    const timeRange = JSON.stringify({ since: start, until: end });
 
-    const data = await fetchMeta(`act_${metaConfig.adAccountId}/insights`, {
-      fields: metaConfig.insightFields,
-      time_range: timeRange,
-      level,
-    });
+    // Buscar dados do Meta e leads internos em paralelo
+    const [metaData, internalLeads] = await Promise.all([
+      fetchMeta(`act_${metaConfig.adAccountId}/insights`, {
+        fields: metaConfig.insightFields,
+        time_range: timeRange,
+        level,
+      }),
+      getInternalLeads(start, end),
+    ]);
 
-    const insights = data.data?.[0] || {};
+    const insights = metaData.data?.[0] || {};
     const metrics = calculateDerivedMetrics(insights);
+
+    // Substituir leads do Meta pelos leads internos
+    const leadsInternal = internalLeads.leads || 0;
+    metrics.leadsMeta = metrics.leads; // Guardar original para comparacao
+    metrics.leads = leadsInternal;
+    metrics.cpl = leadsInternal > 0 ? metrics.spend / leadsInternal : null;
+
+    // Adicionar metricas extras do funil interno
+    metrics.scansStarted = internalLeads.scansStarted;
+    metrics.payments = internalLeads.payments;
+    metrics.sessions = internalLeads.sessions;
 
     res.json({
       raw: insights,
       metrics,
-      period: { startDate, endDate },
+      internalLeads,
+      period: { startDate: start, endDate: end },
     });
   } catch (err) {
     console.error('Error fetching insights:', err);
@@ -296,6 +371,11 @@ router.get('/security/adsets', async (req, res) => {
 /**
  * GET /api/ads/security/ads
  * Lista todos os ads com insights e status
+ *
+ * IMPORTANTE: Leads agora vem do banco interno (security_analytics_events)
+ * Lead = funnel_scan_form_submit (usuario submeteu formulario)
+ * Isso representa o sucesso do anuncio em trazer trafego qualificado
+ * A conversao final (pagamento) depende da landing page, nao do anuncio
  */
 router.get('/security/ads', async (req, res) => {
   try {
@@ -304,6 +384,10 @@ router.get('/security/ads', async (req, res) => {
     const start = startDate || getDefaultStartDate();
     const end = endDate || getDefaultEndDate();
     const timeRange = JSON.stringify({ since: start, until: end });
+
+    // Buscar leads internos do banco (funnel_scan_form_submit)
+    const internalLeads = await getInternalLeads(start, end);
+    console.log(`[Ads] Internal leads for ${start} to ${end}:`, internalLeads);
 
     // Buscar ads da conta inteira (todas as campanhas) - filtrar apenas ACTIVE
     const adsData = await fetchMeta(`act_${metaConfig.adAccountId}/ads`, {
@@ -349,13 +433,44 @@ router.get('/security/ads', async (req, res) => {
       })
     );
 
+    // =======================================================================
+    // LEADS: Distribuir leads internos proporcionalmente por cliques
+    // =======================================================================
+    // Como nao temos tracking por ad individual, distribuimos os leads
+    // proporcionalmente aos cliques de cada anuncio.
+    // Isso é mais justo do que mostrar 0 para todos ou o total para todos.
+    // =======================================================================
+    const totalClicks = adsWithInsights.reduce((sum, ad) => sum + (ad.metrics.clicks || 0), 0);
+    const totalInternalLeads = internalLeads.leads || 0;
+
+    // Recalcular leads e CPL para cada ad baseado na proporcao de cliques
+    const adsWithInternalLeads = adsWithInsights.map((ad) => {
+      const clickShare = totalClicks > 0 ? (ad.metrics.clicks || 0) / totalClicks : 0;
+      const estimatedLeads = Math.round(totalInternalLeads * clickShare);
+
+      // Recalcular CPL com leads internos
+      const newCpl = estimatedLeads > 0 ? ad.metrics.spend / estimatedLeads : null;
+
+      return {
+        ...ad,
+        metrics: {
+          ...ad.metrics,
+          leads: estimatedLeads,
+          leadsInternal: estimatedLeads, // Para debug
+          leadsMeta: ad.metrics.leads, // Leads originais do Meta (para comparacao)
+          cpl: newCpl,
+          clickShare: (clickShare * 100).toFixed(1) + '%',
+        },
+      };
+    });
+
     // Calcular CPL medio da campanha para comparacao
-    const totalSpend = adsWithInsights.reduce((sum, ad) => sum + ad.metrics.spend, 0);
-    const totalLeads = adsWithInsights.reduce((sum, ad) => sum + ad.metrics.leads, 0);
+    const totalSpend = adsWithInternalLeads.reduce((sum, ad) => sum + ad.metrics.spend, 0);
+    const totalLeads = totalInternalLeads; // Usar leads internos
     const campaignAvgCpl = totalLeads > 0 ? totalSpend / totalLeads : null;
 
     // Adicionar status e recomendacao a cada ad
-    const adsWithStatus = adsWithInsights.map((ad) => {
+    const adsWithStatus = adsWithInternalLeads.map((ad) => {
       const status = determineAdStatus(
         { ...ad.metrics, status: ad.status },
         campaignAvgCpl,
@@ -380,6 +495,13 @@ router.get('/security/ads', async (req, res) => {
         totalSpend,
         totalLeads,
         avgCpl: campaignAvgCpl,
+        // Dados internos para debug/transparencia
+        internalLeads: {
+          formSubmits: internalLeads.leads,
+          scansStarted: internalLeads.scansStarted,
+          payments: internalLeads.payments,
+          sessions: internalLeads.sessions,
+        },
         byStatus: {
           learning: adsWithStatus.filter(a => a.optimizerStatus.code === 'LEARNING').length,
           healthy: adsWithStatus.filter(a => a.optimizerStatus.code === 'HEALTHY').length,
@@ -458,6 +580,8 @@ router.get('/security/recommendations', async (req, res) => {
 /**
  * GET /api/ads/security/daily-insights
  * Insights por dia para graficos
+ *
+ * IMPORTANTE: Leads agora vem do banco interno (security_analytics_events)
  */
 router.get('/security/daily-insights', async (req, res) => {
   try {
@@ -467,16 +591,38 @@ router.get('/security/daily-insights', async (req, res) => {
     const end = endDate || getDefaultEndDate();
     const timeRange = JSON.stringify({ since: start, until: end });
 
-    const data = await fetchMeta(`act_${metaConfig.adAccountId}/insights`, {
-      fields: metaConfig.insightFields,
-      time_range: timeRange,
-      time_increment: 1, // daily breakdown
-    });
+    // Buscar dados do Meta e leads internos por dia em paralelo
+    const [metaData, internalLeadsDaily] = await Promise.all([
+      fetchMeta(`act_${metaConfig.adAccountId}/insights`, {
+        fields: metaConfig.insightFields,
+        time_range: timeRange,
+        time_increment: 1, // daily breakdown
+      }),
+      getInternalLeadsDaily(start, end),
+    ]);
 
-    const dailyInsights = (data.data || []).map(day => ({
-      date: day.date_start,
-      ...calculateDerivedMetrics(day),
-    }));
+    // Criar mapa de leads internos por data
+    const leadsMap = {};
+    for (const day of internalLeadsDaily) {
+      leadsMap[day.date] = day;
+    }
+
+    // Combinar dados do Meta com leads internos
+    const dailyInsights = (metaData.data || []).map(day => {
+      const metrics = calculateDerivedMetrics(day);
+      const internalDay = leadsMap[day.date_start] || { leads: 0, payments: 0 };
+
+      // Substituir leads do Meta pelos internos
+      metrics.leadsMeta = metrics.leads;
+      metrics.leads = internalDay.leads;
+      metrics.payments = internalDay.payments;
+      metrics.cpl = internalDay.leads > 0 ? metrics.spend / internalDay.leads : null;
+
+      return {
+        date: day.date_start,
+        ...metrics,
+      };
+    });
 
     res.json({
       daily: dailyInsights,

@@ -5,13 +5,13 @@
 export const UMAMI_CONFIG = {
   baseUrl: 'https://api.umami.is/v1',
   tokens: {
-    // Token para security, auth, billing
+    // Token para auth, billing
     main: 'api_qEPOgaHG9K7EeZjgUZiVyvtkYpaADJST',
     // Token para oentregador
     oentregador: 'api_wEDDdI2afGuX3dmR2YQf2Bd34ud58fW4'
   },
   websites: {
-    security: 'adecb5b8-60e1-448b-ab8c-aad0350dc2a2',
+    // Security removido - agora usa banco interno (security_analytics_events)
     auth: '032c4869-3301-4d7d-869a-2e898f1f49c7',
     billing: '2a708d6c-43ed-439e-af48-60a2c3e82f38',
     oentregador: 'c0ec15e8-98a1-4615-b586-5de88b65eba5'
@@ -53,12 +53,11 @@ export async function getUmamiVisitors(websiteId, token, startDate, endDate) {
   }
 }
 
-// Get total visitors across all websites
+// Get total visitors across all websites (exceto Security que usa banco interno)
 export async function getTotalVisitors(startDate, endDate) {
   const results = await Promise.all([
     getUmamiVisitors(UMAMI_CONFIG.websites.auth, UMAMI_CONFIG.tokens.main, startDate, endDate),
     getUmamiVisitors(UMAMI_CONFIG.websites.billing, UMAMI_CONFIG.tokens.main, startDate, endDate),
-    getUmamiVisitors(UMAMI_CONFIG.websites.security, UMAMI_CONFIG.tokens.main, startDate, endDate),
     getUmamiVisitors(UMAMI_CONFIG.websites.oentregador, UMAMI_CONFIG.tokens.oentregador, startDate, endDate)
   ]);
 
@@ -68,8 +67,7 @@ export async function getTotalVisitors(startDate, endDate) {
     byProject: {
       auth: results[0],
       billing: results[1],
-      security: results[2],
-      oentregador: results[3]
+      oentregador: results[2]
     }
   };
 }
@@ -106,42 +104,3 @@ export async function getUmamiEventCount(websiteId, token, eventName, startDate,
   }
 }
 
-// Fetch all scan funnel events from Umami
-export async function getSecurityScanFunnelEvents(startDate, endDate) {
-  const websiteId = UMAMI_CONFIG.websites.security;
-  const token = UMAMI_CONFIG.tokens.main;
-
-  try {
-    const startAt = new Date(startDate).getTime();
-    const endAt = new Date(endDate).getTime();
-
-    // Fetch all events for the security website
-    const url = `${UMAMI_CONFIG.baseUrl}/websites/${websiteId}/events?startAt=${startAt}&endAt=${endAt}`;
-    console.log(`[Umami] Fetching scan funnel events...`);
-
-    const response = await fetch(url, {
-      headers: {
-        'x-umami-api-key': token,
-        'Accept': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      console.error(`[Umami] Scan funnel events fetch failed: ${response.status}`);
-      return {};
-    }
-
-    const data = await response.json();
-
-    // Map event names to counts
-    const eventCounts = {};
-    for (const event of data) {
-      eventCounts[event.eventName] = event.count || 0;
-    }
-
-    return eventCounts;
-  } catch (err) {
-    console.error('[Umami] Scan funnel events error:', err.message);
-    return {};
-  }
-}

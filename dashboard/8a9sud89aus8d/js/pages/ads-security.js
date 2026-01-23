@@ -76,10 +76,18 @@ function formatLargeNumber(value) {
 }
 
 /**
- * Calculate ad score based on metrics - Formula Continua v3
+ * Calculate ad score based on metrics - Formula Continua v4
  *
- * Formula 100% continua - cada centavo de diferenca no CPC,
- * cada 0.01% de CTR, cada clique importa na pontuacao final.
+ * FOCO: Eficiencia do anuncio em trazer trafego qualificado
+ * Lead = form submit (usuario iniciou scan)
+ *
+ * O anuncio é avaliado por:
+ * 1. CTR - quao atrativo é o criativo/copy
+ * 2. CPC - eficiencia de gasto por clique
+ * 3. Volume - quantidade de cliques/impressoes
+ * 4. Leads - form submits (trafego que converteu no topo do funil)
+ *
+ * NAO avalia conversao final (pagamento) - isso depende da landing page
  *
  * Escala: 0-1000 pontos (com decimais para diferenciar)
  */
@@ -89,73 +97,62 @@ function calculateAdScore(metrics) {
   // Extrair metricas com precisao
   const ctr = parseFloat(metrics.ctr) || 0;
   const cpc = parseFloat(metrics.cpc) || 0;
-  const cpl = parseFloat(metrics.cpl) || 0;
-  const leads = parseInt(metrics.leads) || 0;
-  const spend = parseFloat(metrics.spend) || 0;
+  const leads = parseInt(metrics.leads) || 0; // Form submits agora
   const clicks = parseInt(metrics.clicks) || 0;
   const impressions = parseInt(metrics.impressions) || 0;
 
   // ========================================
-  // 1. CTR Score (0-300 pts)
-  // Cada 1% de CTR = 33.33 pontos
-  // CTR 9%+ = maximo (300)
+  // 1. CTR Score (0-350 pts) - PESO MAIOR
+  // CTR é a metrica mais importante para anuncios
+  // Cada 1% de CTR = 35 pontos
+  // CTR 10%+ = maximo (350)
   // ========================================
-  const ctrScore = Math.min(300, ctr * 33.333);
+  const ctrScore = Math.min(350, ctr * 35);
   breakdown.ctr = Math.round(ctrScore * 100) / 100;
 
   // ========================================
-  // 2. CPC Score (0-300 pts) - INVERSO
+  // 2. CPC Score (0-350 pts) - INVERSO, PESO MAIOR
   // Quanto MENOR o CPC, MAIOR a pontuacao
   // Formula exponencial inversa para valorizar CPC baixo
-  // CPC R$0.09 = ~291pts
-  // CPC R$0.14 = ~276pts
-  // CPC R$0.27 = ~237pts
+  // CPC R$0.10 = ~312pts
+  // CPC R$0.20 = ~274pts
+  // CPC R$0.30 = ~241pts
+  // CPC R$0.50 = ~185pts
   // ========================================
   let cpcScore = 0;
   if (cpc > 0) {
-    // Formula: 300 * e^(-cpc * 1.2)
-    // Isso cria uma curva onde CPC baixo vale MUITO mais
-    cpcScore = 300 * Math.exp(-cpc * 1.2);
+    // Formula: 350 * e^(-cpc * 1.1)
+    cpcScore = 350 * Math.exp(-cpc * 1.1);
   }
   breakdown.cpc = Math.round(cpcScore * 100) / 100;
 
   // ========================================
-  // 3. Volume Score (0-200 pts)
-  // Cliques e impressoes - diferencia anuncios sem leads
-  // Cada clique = 3pts (max 150 em 50 cliques)
+  // 3. Volume Score (0-150 pts)
+  // Cliques indicam interesse real
+  // Cada clique = 2pts (max 100 em 50 cliques)
   // Bonus por impressoes (max 50 pts)
   // ========================================
-  const clicksScore = Math.min(150, clicks * 3);
-  const impressionsBonus = Math.min(50, impressions / 20);
+  const clicksScore = Math.min(100, clicks * 2);
+  const impressionsBonus = Math.min(50, impressions / 50);
   const volumeScore = clicksScore + impressionsBonus;
   breakdown.volume = Math.round(volumeScore * 100) / 100;
 
   // ========================================
-  // 4. CPL Score (0-150 pts) - INVERSO
-  // Quanto MENOR o CPL, MAIOR a pontuacao
-  // So pontua se tiver leads
-  // Formula: 150 * e^(-cpl * 0.03)
-  // ========================================
-  let cplScore = 0;
-  if (leads > 0 && cpl > 0) {
-    cplScore = 150 * Math.exp(-cpl * 0.025);
-  }
-  breakdown.cpl = Math.round(cplScore * 100) / 100;
-
-  // ========================================
-  // 5. Leads Score (0-50 pts)
-  // Bonus por ter leads
+  // 4. Leads Score (0-150 pts)
+  // Form submits = trafego qualificado
+  // Cada lead = 15pts (max 150 em 10 leads)
   // ========================================
   let leadsScore = 0;
   if (leads > 0) {
-    leadsScore = Math.min(50, leads * 10);
+    leadsScore = Math.min(150, leads * 15);
   }
   breakdown.leads = Math.round(leadsScore * 100) / 100;
 
   // ========================================
   // Pontuacao Final (teorico max ~1000)
+  // CTR: 350 + CPC: 350 + Volume: 150 + Leads: 150 = 1000
   // ========================================
-  const totalScore = ctrScore + cpcScore + volumeScore + cplScore + leadsScore;
+  const totalScore = ctrScore + cpcScore + volumeScore + leadsScore;
 
   return {
     score: Math.round(totalScore * 100) / 100,
@@ -178,6 +175,19 @@ function getScoreColor(score) {
 /**
  * Generate analysis (recommendation) regardless of Learning status
  * This shows what the recommendation WOULD be based on current metrics
+ *
+ * IMPORTANTE: Agora 'leads' representa form submits (topo do funil)
+ * O anuncio é bom se traz trafego qualificado que preenche o formulario
+ * A conversao final (pagamento) depende da landing page, nao do anuncio
+ *
+ * Metricas de sucesso de anuncio:
+ * - CTR alto = copy/criativo funcionando
+ * - CPC baixo = eficiencia de gasto
+ * - Leads (form submits) = trafego qualificado
+ *
+ * NAO avaliamos mais:
+ * - Pagamentos (depende da landing page)
+ * - ROAS direto (idem)
  */
 function generateAnalysis(metrics, avgCpl = 50) {
   const ctr = parseFloat(metrics.ctr) || 0;
@@ -186,37 +196,61 @@ function generateAnalysis(metrics, avgCpl = 50) {
   const leads = parseInt(metrics.leads) || 0;
   const spend = parseFloat(metrics.spend) || 0;
   const impressions = parseInt(metrics.impressions) || 0;
+  const clicks = parseInt(metrics.clicks) || 0;
 
-  // Check for SCALE conditions (Accelerator)
-  if (leads >= 5 && ctr >= 2 && cpl && cpl < avgCpl * 0.5) {
-    return { action: 'SCALE', color: '#8b5cf6', reason: 'Alta performance - escalar' };
+  // ========================================
+  // SCALE - Anuncio excelente, escalar
+  // ========================================
+  // CTR alto + CPC baixo + tem leads = anuncio top
+  if (ctr >= 2.5 && cpc <= 0.20 && leads >= 3) {
+    return { action: 'SCALE', color: '#8b5cf6', reason: 'CTR excelente + CPC baixo - escalar!' };
+  }
+  // Muitos leads com CTR bom
+  if (leads >= 5 && ctr >= 1.5) {
+    return { action: 'SCALE', color: '#8b5cf6', reason: 'Alto volume de leads - escalar!' };
   }
 
-  // Check for PAUSE conditions (Stop Loss)
+  // ========================================
+  // PAUSE - Stop Loss (problemas graves)
+  // ========================================
+  // CTR muito baixo com volume significativo = criativo ruim
   if (impressions >= 1000 && ctr < 0.5) {
-    return { action: 'PAUSE', color: '#ef4444', reason: 'CTR muito baixo' };
+    return { action: 'PAUSE', color: '#ef4444', reason: 'CTR muito baixo - revisar criativo' };
   }
-  if (cpl && cpl > avgCpl * 3) {
-    return { action: 'PAUSE', color: '#ef4444', reason: 'CPL muito alto' };
-  }
-  if (spend >= 50 && leads === 0) {
-    return { action: 'PAUSE', color: '#ef4444', reason: 'Sem conversoes com gasto alto' };
+  // CPC muito alto = segmentacao ruim
+  if (clicks >= 20 && cpc > 1.0) {
+    return { action: 'PAUSE', color: '#ef4444', reason: 'CPC muito alto - revisar segmentacao' };
   }
 
-  // Check for WARNING conditions
-  if (ctr < 0.8 && impressions >= 500) {
+  // ========================================
+  // REVIEW - Precisa atencao
+  // ========================================
+  // CTR abaixo do ideal mas nao critico
+  if (ctr < 1.0 && impressions >= 500) {
     return { action: 'REVIEW', color: '#f59e0b', reason: 'CTR abaixo do ideal' };
   }
-  if (cpl && cpl > avgCpl * 1.5) {
-    return { action: 'REVIEW', color: '#f59e0b', reason: 'CPL acima da media' };
+  // CPC acima do esperado
+  if (cpc > 0.50 && clicks >= 10) {
+    return { action: 'REVIEW', color: '#f59e0b', reason: 'CPC acima do esperado' };
+  }
+  // Gasto alto sem leads (mas com cliques) = problema de landing page
+  if (spend >= 30 && leads === 0 && clicks >= 20) {
+    return { action: 'REVIEW', color: '#f59e0b', reason: 'Sem form submits - verificar landing page' };
   }
 
-  // Healthy
-  if (leads > 0 && ctr >= 0.8) {
+  // ========================================
+  // KEEP - Anuncio saudavel
+  // ========================================
+  if (ctr >= 1.0 && cpc <= 0.50 && leads > 0) {
     return { action: 'KEEP', color: '#22c55e', reason: 'Performance adequada' };
   }
+  if (ctr >= 1.5 && cpc <= 0.30) {
+    return { action: 'KEEP', color: '#22c55e', reason: 'Bom CTR e CPC' };
+  }
 
-  // Default - needs more data
+  // ========================================
+  // MONITOR - Aguardando mais dados
+  // ========================================
   return { action: 'MONITOR', color: '#3b82f6', reason: 'Aguardando mais dados' };
 }
 
@@ -495,7 +529,7 @@ function renderAdsTable(ads) {
         <td style="color: ${metrics.leads > 0 ? '#22c55e' : '#64748b'};">${metrics.leads || 0}</td>
         <td style="color: ${metrics.cpl ? '#f59e0b' : '#64748b'};">${metrics.cpl ? formatBRL(metrics.cpl) : '--'}</td>
         <td>
-          <span style="color: ${getScoreColor(scoreData.score)}; font-weight: 600;" title="CTR: ${scoreData.breakdown.ctr}/300 | CPC: ${scoreData.breakdown.cpc}/300 | Vol: ${scoreData.breakdown.volume}/200 | CPL: ${scoreData.breakdown.cpl}/150 | Leads: ${scoreData.breakdown.leads}/50">
+          <span style="color: ${getScoreColor(scoreData.score)}; font-weight: 600;" title="CTR: ${scoreData.breakdown.ctr}/350 | CPC: ${scoreData.breakdown.cpc}/350 | Vol: ${scoreData.breakdown.volume}/150 | Leads: ${scoreData.breakdown.leads}/150">
             ${scoreData.score}
           </span>
         </td>
