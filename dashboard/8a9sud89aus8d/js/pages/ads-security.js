@@ -531,6 +531,7 @@ export async function loadAdsSecurityPage() {
     loadAdsData(startDate, endDate),
     loadDailyChart(startDate, endDate),
     loadCampaigns(),
+    loadUtmBreakdown(),
   ]);
 }
 
@@ -1046,4 +1047,113 @@ async function loadCampaigns() {
     console.error('Error loading campaigns:', err);
     document.getElementById('ads-campaigns-table').innerHTML = `<tr><td colspan="6" style="color: #ef4444;">Erro ao carregar: ${err.message}</td></tr>`;
   }
+}
+
+/**
+ * Load UTM breakdown data
+ */
+async function loadUtmBreakdown() {
+  try {
+    const response = await fetch('/api/security/utm-breakdown?days=30');
+    const data = await response.json();
+
+    if (data.error) {
+      console.error('Error loading UTM breakdown:', data.error);
+      return;
+    }
+
+    // Render UTM Sources
+    const sourcesList = document.getElementById('utm-sources-list');
+    if (sourcesList && data.sources) {
+      sourcesList.innerHTML = data.sources.length > 0
+        ? data.sources.map(s => `
+          <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #334155;">
+            <span style="color: ${getSourceColor(s.value)}; font-weight: 500;">${s.value}</span>
+            <span style="color: #f1f5f9;">${s.sessions} sessões</span>
+          </div>
+        `).join('')
+        : '<div style="color: #64748b;">Nenhum dado</div>';
+    }
+
+    // Render UTM Mediums
+    const mediumsList = document.getElementById('utm-mediums-list');
+    if (mediumsList && data.mediums) {
+      mediumsList.innerHTML = data.mediums.length > 0
+        ? data.mediums.map(m => `
+          <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #334155;">
+            <span style="color: #f59e0b;">${m.value}</span>
+            <span style="color: #f1f5f9;">${m.sessions} sessões</span>
+          </div>
+        `).join('')
+        : '<div style="color: #64748b;">Nenhum dado</div>';
+    }
+
+    // Render UTM Campaigns
+    const campaignsList = document.getElementById('utm-campaigns-list');
+    if (campaignsList && data.campaigns) {
+      campaignsList.innerHTML = data.campaigns.length > 0
+        ? data.campaigns.map(c => `
+          <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #334155;">
+            <span style="color: #22c55e;" title="${c.value}">${c.value.length > 20 ? c.value.slice(0, 20) + '...' : c.value}</span>
+            <span style="color: #f1f5f9;">${c.sessions} sessões</span>
+          </div>
+        `).join('')
+        : '<div style="color: #64748b;">Nenhum dado</div>';
+    }
+
+    // Render UTM Contents
+    const contentsList = document.getElementById('utm-contents-list');
+    if (contentsList && data.contents) {
+      contentsList.innerHTML = data.contents.length > 0
+        ? data.contents.map(c => `
+          <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #334155;">
+            <span style="color: #8b5cf6;" title="${c.value}">${c.value.length > 20 ? c.value.slice(0, 20) + '...' : c.value}</span>
+            <span style="color: #f1f5f9;">${c.sessions} sessões</span>
+          </div>
+        `).join('')
+        : '<div style="color: #64748b;">Nenhum dado</div>';
+    }
+
+    // Render full breakdown table
+    const breakdownTable = document.getElementById('utm-breakdown-table');
+    if (breakdownTable && data.fullBreakdown) {
+      breakdownTable.innerHTML = data.fullBreakdown.length > 0
+        ? data.fullBreakdown.map(row => `
+          <tr>
+            <td><span style="color: ${getSourceColor(row.source)}; font-weight: 500;">${row.source}</span></td>
+            <td style="color: #f59e0b;">${row.medium}</td>
+            <td style="color: #22c55e;" title="${row.campaign}">${row.campaign.length > 15 ? row.campaign.slice(0, 15) + '...' : row.campaign}</td>
+            <td style="color: #8b5cf6;" title="${row.content}">${row.content.length > 15 ? row.content.slice(0, 15) + '...' : row.content}</td>
+            <td style="font-weight: 600;">${row.sessions}</td>
+            <td>${row.page_views}</td>
+            <td>${row.form_submits}</td>
+            <td style="color: ${row.conversions > 0 ? '#22c55e' : '#64748b'}; font-weight: 600;">${row.conversions}</td>
+          </tr>
+        `).join('')
+        : '<tr><td colspan="8" style="text-align: center; color: #64748b;">Nenhum dado encontrado</td></tr>';
+    }
+
+  } catch (err) {
+    console.error('Error loading UTM breakdown:', err);
+  }
+}
+
+/**
+ * Get color for UTM source
+ */
+function getSourceColor(source) {
+  const colors = {
+    'meta': '#1877f2',
+    'facebook': '#1877f2',
+    'instagram': '#e4405f',
+    'google': '#4285f4',
+    'influencer': '#10b981',
+    'youtube': '#ff0000',
+    'linkedin': '#0a66c2',
+    'tiktok': '#000000',
+    'twitter': '#1da1f2',
+    'direto': '#64748b',
+    'none': '#64748b',
+  };
+  return colors[source?.toLowerCase()] || '#3b82f6';
 }

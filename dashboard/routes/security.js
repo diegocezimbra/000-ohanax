@@ -1903,6 +1903,96 @@ router.get('/analytics-funnel', async (req, res) => {
 });
 
 // =============================================================================
+// UTM BREAKDOWN - Todos os valores únicos dos UTM params
+// =============================================================================
+router.get('/utm-breakdown', async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(days));
+
+    // Buscar todos os UTM sources únicos com contagem
+    const sourcesQuery = await db.analytics.query(`
+      SELECT
+        COALESCE(utm_source, 'direto') as value,
+        COUNT(*) as events,
+        COUNT(DISTINCT session_id) as sessions
+      FROM security_analytics_events
+      WHERE created_at >= $1
+      GROUP BY utm_source
+      ORDER BY sessions DESC
+    `, [startDate]);
+
+    // Buscar todos os UTM mediums únicos com contagem
+    const mediumsQuery = await db.analytics.query(`
+      SELECT
+        COALESCE(utm_medium, 'none') as value,
+        COUNT(*) as events,
+        COUNT(DISTINCT session_id) as sessions
+      FROM security_analytics_events
+      WHERE created_at >= $1
+      GROUP BY utm_medium
+      ORDER BY sessions DESC
+    `, [startDate]);
+
+    // Buscar todas as UTM campaigns únicas com contagem
+    const campaignsQuery = await db.analytics.query(`
+      SELECT
+        COALESCE(utm_campaign, 'none') as value,
+        COUNT(*) as events,
+        COUNT(DISTINCT session_id) as sessions
+      FROM security_analytics_events
+      WHERE created_at >= $1
+      GROUP BY utm_campaign
+      ORDER BY sessions DESC
+    `, [startDate]);
+
+    // Buscar todos os UTM contents únicos com contagem
+    const contentsQuery = await db.analytics.query(`
+      SELECT
+        COALESCE(utm_content, 'none') as value,
+        COUNT(*) as events,
+        COUNT(DISTINCT session_id) as sessions
+      FROM security_analytics_events
+      WHERE created_at >= $1
+      GROUP BY utm_content
+      ORDER BY sessions DESC
+    `, [startDate]);
+
+    // Buscar breakdown completo (combinação de todos os UTMs)
+    const fullBreakdownQuery = await db.analytics.query(`
+      SELECT
+        COALESCE(utm_source, 'direto') as source,
+        COALESCE(utm_medium, 'none') as medium,
+        COALESCE(utm_campaign, 'none') as campaign,
+        COALESCE(utm_content, 'none') as content,
+        COUNT(*) as events,
+        COUNT(DISTINCT session_id) as sessions,
+        COUNT(*) FILTER (WHERE event_name = 'funnel_scan_page_view') as page_views,
+        COUNT(*) FILTER (WHERE event_name = 'funnel_scan_form_submit') as form_submits,
+        COUNT(*) FILTER (WHERE event_name = 'conversion_payment_success') as conversions
+      FROM security_analytics_events
+      WHERE created_at >= $1
+      GROUP BY utm_source, utm_medium, utm_campaign, utm_content
+      ORDER BY sessions DESC
+      LIMIT 50
+    `, [startDate]);
+
+    res.json({
+      period: `${days} dias`,
+      sources: sourcesQuery.rows,
+      mediums: mediumsQuery.rows,
+      campaigns: campaignsQuery.rows,
+      contents: contentsQuery.rows,
+      fullBreakdown: fullBreakdownQuery.rows,
+    });
+  } catch (err) {
+    console.error('Error fetching UTM breakdown:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// =============================================================================
 // LEADS CAPTURADOS - Lista de leads parciais (emails/whatsapp capturados)
 // =============================================================================
 router.get('/leads', async (req, res) => {
