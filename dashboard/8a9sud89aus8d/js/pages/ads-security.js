@@ -576,7 +576,7 @@ async function loadAdsData(startDate, endDate) {
 
     if (data.error) {
       console.error('Error loading ads:', data.error);
-      document.getElementById('ads-table').innerHTML = `<tr><td colspan="10" style="color: #ef4444;">Erro: ${data.error}</td></tr>`;
+      document.getElementById('ads-table').innerHTML = `<tr><td colspan="14" style="color: #ef4444;">Erro: ${data.error}</td></tr>`;
       return;
     }
 
@@ -605,7 +605,7 @@ async function loadAdsData(startDate, endDate) {
 
   } catch (err) {
     console.error('Error loading ads data:', err);
-    document.getElementById('ads-table').innerHTML = `<tr><td colspan="10" style="color: #ef4444;">Erro ao carregar: ${err.message}</td></tr>`;
+    document.getElementById('ads-table').innerHTML = `<tr><td colspan="14" style="color: #ef4444;">Erro ao carregar: ${err.message}</td></tr>`;
   }
 }
 
@@ -628,6 +628,8 @@ function renderTableHeaders() {
     <tr>
       <th class="sortable-header" onclick="handleAdsSort('status')">Status${getSortIndicator('status')}</th>
       <th class="sortable-header" onclick="handleAdsSort('name')">Nome${getSortIndicator('name')}</th>
+      <th>Targeting</th>
+      <th>Landing Page</th>
       <th class="sortable-header" onclick="handleAdsSort('spend')">Gasto${getSortIndicator('spend')}</th>
       <th class="sortable-header" onclick="handleAdsSort('impressions')">Impressoes${getSortIndicator('impressions')}</th>
       <th class="sortable-header" onclick="handleAdsSort('clicks')">Cliques${getSortIndicator('clicks')}</th>
@@ -643,6 +645,22 @@ function renderTableHeaders() {
 }
 
 /**
+ * Format landing page URL for display
+ */
+function formatLandingPage(url) {
+  if (!url) return '<span style="color: #64748b;">--</span>';
+  try {
+    const urlObj = new URL(url);
+    const path = urlObj.pathname;
+    // Show short version of path
+    const shortPath = path.length > 15 ? '...' + path.slice(-12) : path;
+    return `<a href="${url}" target="_blank" style="color: #3b82f6; text-decoration: none;" title="${url}">${shortPath}</a>`;
+  } catch {
+    return '<span style="color: #64748b;">--</span>';
+  }
+}
+
+/**
  * Render ads table
  */
 function renderAdsTable(ads) {
@@ -652,7 +670,7 @@ function renderAdsTable(ads) {
   renderTableHeaders();
 
   if (!ads || ads.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="12" style="color: #64748b;">Nenhum anuncio encontrado</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" style="color: #64748b;">Nenhum anuncio encontrado</td></tr>';
     return;
   }
 
@@ -668,11 +686,18 @@ function renderAdsTable(ads) {
     const rec = ad.recommendation;
     const scoreData = calculateAdScore(metrics);
     const analysis = generateAnalysis(metrics, avgCpl);
+    const targeting = ad.targeting || { summary: 'N/A' };
 
     return `
       <tr data-status="${status.code || ''}">
         <td>${getStatusBadge(status)}</td>
         <td style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${ad.name}">${ad.name}</td>
+        <td style="font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${targeting.details?.interests?.join(', ') || targeting.summary}">
+          <span style="color: #94a3b8;">${targeting.summary}</span>
+        </td>
+        <td style="font-size: 11px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          ${formatLandingPage(ad.landingPageUrl)}
+        </td>
         <td>${formatBRL(metrics.spend)}</td>
         <td>${formatLargeNumber(metrics.impressions)}</td>
         <td>${formatLargeNumber(metrics.clicks)}</td>

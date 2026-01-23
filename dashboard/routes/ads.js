@@ -201,6 +201,106 @@ function determineAdStatus(metrics, campaignAvgCpl, daysActive) {
 }
 
 /**
+ * Extrai URL da landing page do creative
+ */
+function extractLandingPageUrl(creative) {
+  if (!creative) return null;
+
+  // Tentar object_story_spec primeiro
+  const storySpec = creative.object_story_spec;
+  if (storySpec) {
+    // Link ads
+    if (storySpec.link_data?.link) {
+      return storySpec.link_data.link;
+    }
+    // Video ads
+    if (storySpec.video_data?.call_to_action?.value?.link) {
+      return storySpec.video_data.call_to_action.value.link;
+    }
+  }
+
+  // Tentar asset_feed_spec (para ads dinamicos)
+  const feedSpec = creative.asset_feed_spec;
+  if (feedSpec?.link_urls?.length > 0) {
+    return feedSpec.link_urls[0].website_url || feedSpec.link_urls[0];
+  }
+
+  return null;
+}
+
+/**
+ * Formata targeting info para exibicao
+ */
+function formatTargeting(targeting) {
+  if (!targeting) return { summary: 'N/A', details: {} };
+
+  const parts = [];
+  const details = {};
+
+  // Localizacao
+  if (targeting.geo_locations) {
+    const geo = targeting.geo_locations;
+    const locations = [];
+    if (geo.countries) locations.push(...geo.countries);
+    if (geo.regions) locations.push(...geo.regions.map(r => r.name || r.key));
+    if (geo.cities) locations.push(...geo.cities.map(c => c.name || c.key));
+    if (locations.length > 0) {
+      parts.push(locations.slice(0, 2).join(', '));
+      details.locations = locations;
+    }
+  }
+
+  // Idade
+  if (targeting.age_min || targeting.age_max) {
+    const ageRange = `${targeting.age_min || 18}-${targeting.age_max || 65}`;
+    parts.push(ageRange);
+    details.ageRange = ageRange;
+  }
+
+  // Genero
+  if (targeting.genders && targeting.genders.length > 0) {
+    const genderMap = { 1: 'M', 2: 'F' };
+    const genders = targeting.genders.map(g => genderMap[g] || g).join('/');
+    parts.push(genders);
+    details.genders = genders;
+  }
+
+  // Interesses (flexible_spec)
+  if (targeting.flexible_spec && targeting.flexible_spec.length > 0) {
+    const interests = [];
+    for (const spec of targeting.flexible_spec) {
+      if (spec.interests) {
+        interests.push(...spec.interests.map(i => i.name));
+      }
+      if (spec.behaviors) {
+        interests.push(...spec.behaviors.map(b => b.name));
+      }
+    }
+    if (interests.length > 0) {
+      details.interests = interests;
+      parts.push(interests.slice(0, 2).join(', '));
+    }
+  }
+
+  // Custom audiences
+  if (targeting.custom_audiences && targeting.custom_audiences.length > 0) {
+    details.customAudiences = targeting.custom_audiences.map(ca => ca.name);
+    parts.push('Custom');
+  }
+
+  // Lookalike
+  if (targeting.connections && targeting.connections.length > 0) {
+    parts.push('Conexoes');
+    details.connections = true;
+  }
+
+  return {
+    summary: parts.length > 0 ? parts.join(' | ') : 'Broad',
+    details,
+  };
+}
+
+/**
  * Gera recomendacao baseada no status
  */
 function generateRecommendation(status, metrics, adName) {
@@ -389,9 +489,25 @@ router.get('/security/ads', async (req, res) => {
     const internalLeads = await getInternalLeads(start, end);
     console.log(`[Ads] Internal leads for ${start} to ${end}:`, internalLeads);
 
+    // Buscar adsets primeiro para ter targeting info
+    const adsetsData = await fetchMeta(`act_${metaConfig.adAccountId}/adsets`, {
+      fields: 'id,name,targeting',
+      limit: 200,
+    });
+
+    // Criar mapa de targeting por adset_id
+    const adsetTargetingMap = {};
+    for (const adset of adsetsData.data || []) {
+      adsetTargetingMap[adset.id] = {
+        name: adset.name,
+        targeting: adset.targeting || {},
+      };
+    }
+
     // Buscar ads da conta inteira (todas as campanhas) - filtrar apenas ACTIVE
+    // Inclui creative para pegar landing page URL
     const adsData = await fetchMeta(`act_${metaConfig.adAccountId}/ads`, {
-      fields: 'id,name,status,created_time,updated_time,adset_id,campaign_id',
+      fields: 'id,name,status,created_time,updated_time,adset_id,campaign_id,creative{id,effective_object_story_id,object_story_spec,asset_feed_spec}',
       filtering: JSON.stringify([{ field: 'effective_status', operator: 'IN', value: showPaused === 'true' ? ['ACTIVE', 'PAUSED'] : ['ACTIVE'] }]),
       limit: 200,
     });
@@ -415,11 +531,21 @@ router.get('/security/ads', async (req, res) => {
           const now = new Date();
           const daysActive = Math.floor((now - createdDate) / (1000 * 60 * 60 * 24));
 
+          // Extrair targeting do adset
+          const adsetInfo = adsetTargetingMap[ad.adset_id] || {};
+          const targeting = formatTargeting(adsetInfo.targeting);
+
+          // Extrair landing page URL do creative
+          const landingPageUrl = extractLandingPageUrl(ad.creative);
+
           return {
             ...ad,
             insights,
             metrics,
             daysActive,
+            targeting,
+            adsetName: adsetInfo.name || null,
+            landingPageUrl,
           };
         } catch (err) {
           return {
@@ -427,6 +553,8 @@ router.get('/security/ads', async (req, res) => {
             insights: {},
             metrics: calculateDerivedMetrics({}),
             daysActive: 0,
+            targeting: { summary: 'N/A', details: {} },
+            landingPageUrl: null,
             error: err.message,
           };
         }
