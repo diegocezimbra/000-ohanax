@@ -647,7 +647,7 @@ export async function loadProjectPage(project) {
         // LANDING PAGE VARIATIONS - A/B Testing
         // ========================================
         if (analyticsFunnel.variations) {
-          const { original, video, pro } = analyticsFunnel.variations;
+          const { original, video, pro, whatsapp } = analyticsFunnel.variations;
 
           // Helper function
           const setVal = (id, val) => {
@@ -716,6 +716,45 @@ export async function loadProjectPage(project) {
             setVal('cmp-original-checkout', original.funnel?.checkoutCreated || 0);
             setVal('cmp-original-paid', original.funnel?.paymentSuccess || 0);
             setVal('cmp-original-conv', original.overallConversion || '0%');
+          }
+
+          // WhatsApp Variation (/whatsapp)
+          if (whatsapp) {
+            // Funnel visual column
+            setVal('var-whatsapp-page', whatsapp.funnel?.pageView || 0);
+            setVal('var-whatsapp-quiz-start', whatsapp.funnel?.quizStart || 0);
+            setVal('var-whatsapp-q1', whatsapp.funnel?.q1Passed || 0);
+            setVal('var-whatsapp-q2', whatsapp.funnel?.q2Passed || 0);
+            setVal('var-whatsapp-qualified', whatsapp.funnel?.qualified || 0);
+            setVal('var-whatsapp-cta', whatsapp.funnel?.ctaClick || 0);
+            setVal('var-whatsapp-conversion', whatsapp.overallConversion || '0%');
+
+            // Percentages
+            const wFunnel = whatsapp.funnel || {};
+            const wPv = wFunnel.pageView || 0;
+            const wQs = wFunnel.quizStart || 0;
+            const wQ1 = wFunnel.q1Passed || 0;
+            const wQ2 = wFunnel.q2Passed || 0;
+            const wQual = wFunnel.qualified || 0;
+            const wCta = wFunnel.ctaClick || 0;
+
+            setVal('var-whatsapp-quiz-start-pct', wPv > 0 ? ((wQs / wPv) * 100).toFixed(1) + '%' : '0%');
+            setVal('var-whatsapp-q1-pct', wQs > 0 ? ((wQ1 / wQs) * 100).toFixed(1) + '%' : '0%');
+            setVal('var-whatsapp-q2-pct', wQ1 > 0 ? ((wQ2 / wQ1) * 100).toFixed(1) + '%' : '0%');
+            setVal('var-whatsapp-qualified-pct', wQ2 > 0 ? ((wQual / wQ2) * 100).toFixed(1) + '%' : '0%');
+            setVal('var-whatsapp-cta-pct', wQual > 0 ? ((wCta / wQual) * 100).toFixed(1) + '%' : '0%');
+
+            // Comparison table
+            setVal('cmp-whatsapp-pv', wPv);
+            setVal('cmp-whatsapp-fs', wQs); // Quiz Start = Form Start equivalent
+            setVal('cmp-whatsapp-q1', wQ1);
+            setVal('cmp-whatsapp-q2', wQ2);
+            setVal('cmp-whatsapp-qualified', wQual);
+            setVal('cmp-whatsapp-payment', '-'); // N/A for WhatsApp funnel
+            setVal('cmp-whatsapp-cta', wCta);
+            setVal('cmp-whatsapp-checkout', '-'); // N/A for WhatsApp funnel
+            setVal('cmp-whatsapp-paid', '-'); // N/A for WhatsApp funnel
+            setVal('cmp-whatsapp-conv', whatsapp.overallConversion || '0%');
           }
         }
       } catch (e) { console.error('Error loading analytics funnel:', e); }

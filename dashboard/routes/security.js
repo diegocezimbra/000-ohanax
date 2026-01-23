@@ -1347,6 +1347,7 @@ router.get('/analytics-funnel', async (req, res) => {
       original: {},
       video: {},
       pro: {},
+      whatsapp: {},
     };
 
     const postScanEventsQuery = await db.analytics.query(`
@@ -1357,7 +1358,7 @@ router.get('/analytics-funnel', async (req, res) => {
         COUNT(DISTINCT session_id) as unique_sessions
       FROM security_analytics_events
       WHERE created_at >= $1
-        AND funnel_variant IN ('original', 'video', 'pro')
+        AND funnel_variant IN ('original', 'video', 'pro', 'whatsapp')
         AND event_name IN (
           'nav_result_redirect_payment',
           'funnel_unlock_page_view',
@@ -1723,6 +1724,87 @@ router.get('/analytics-funnel', async (req, res) => {
       ? ((funnelOriginalRaw.paymentSuccess / funnelOriginalRaw.pageView) * 100).toFixed(2)
       : '0';
 
+    // ================================================================================
+    // FUNIL VARIAÇÃO WHATSAPP: /whatsapp (Landing com quiz de qualificação)
+    // ================================================================================
+    const funnelWhatsappRaw = {
+      pageView: eventCounts['funnel_whatsapp_page_view'] || 0,
+      pageViewSessions: eventSessions['funnel_whatsapp_page_view'] || 0,
+      quizStart: eventCounts['funnel_whatsapp_quiz_start'] || 0,
+      quizStartSessions: eventSessions['funnel_whatsapp_quiz_start'] || 0,
+      q1Passed: eventCounts['funnel_whatsapp_q1_passed'] || 0,
+      q1PassedSessions: eventSessions['funnel_whatsapp_q1_passed'] || 0,
+      q2Passed: eventCounts['funnel_whatsapp_q2_passed'] || 0,
+      q2PassedSessions: eventSessions['funnel_whatsapp_q2_passed'] || 0,
+      qualified: eventCounts['funnel_whatsapp_qualified'] || 0,
+      qualifiedSessions: eventSessions['funnel_whatsapp_qualified'] || 0,
+      disqualified: eventCounts['funnel_whatsapp_disqualified'] || 0,
+      disqualifiedSessions: eventSessions['funnel_whatsapp_disqualified'] || 0,
+      ctaClick: eventCounts['funnel_whatsapp_cta_click'] || 0,
+      ctaClickSessions: eventSessions['funnel_whatsapp_cta_click'] || 0,
+      urgencyShown: eventCounts['funnel_whatsapp_urgency_shown'] || 0,
+      abandoned: eventCounts['funnel_whatsapp_abandoned'] || 0,
+      scrollDepth: eventCounts['funnel_whatsapp_scroll_depth'] || 0,
+      socialProofSeen: eventCounts['funnel_whatsapp_social_proof_seen'] || 0,
+      testimonialSeen: eventCounts['funnel_whatsapp_testimonial_seen'] || 0,
+      timeMilestone: eventCounts['funnel_whatsapp_time_milestone'] || 0,
+    };
+
+    const funnelWhatsappSteps = [
+      {
+        step: 1,
+        name: 'Página WhatsApp',
+        event: 'funnel_whatsapp_page_view',
+        count: funnelWhatsappRaw.pageView,
+        sessions: funnelWhatsappRaw.pageViewSessions,
+        percentage: '100%',
+      },
+      {
+        step: 2,
+        name: 'Quiz Iniciado',
+        event: 'funnel_whatsapp_quiz_start',
+        count: funnelWhatsappRaw.quizStart,
+        sessions: funnelWhatsappRaw.quizStartSessions,
+        percentage: funnelWhatsappRaw.pageView > 0 ? ((funnelWhatsappRaw.quizStart / funnelWhatsappRaw.pageView) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 3,
+        name: 'Q1 Passou',
+        event: 'funnel_whatsapp_q1_passed',
+        count: funnelWhatsappRaw.q1Passed,
+        sessions: funnelWhatsappRaw.q1PassedSessions,
+        percentage: funnelWhatsappRaw.quizStart > 0 ? ((funnelWhatsappRaw.q1Passed / funnelWhatsappRaw.quizStart) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 4,
+        name: 'Q2 Passou',
+        event: 'funnel_whatsapp_q2_passed',
+        count: funnelWhatsappRaw.q2Passed,
+        sessions: funnelWhatsappRaw.q2PassedSessions,
+        percentage: funnelWhatsappRaw.q1Passed > 0 ? ((funnelWhatsappRaw.q2Passed / funnelWhatsappRaw.q1Passed) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 5,
+        name: 'Qualificado',
+        event: 'funnel_whatsapp_qualified',
+        count: funnelWhatsappRaw.qualified,
+        sessions: funnelWhatsappRaw.qualifiedSessions,
+        percentage: funnelWhatsappRaw.q2Passed > 0 ? ((funnelWhatsappRaw.qualified / funnelWhatsappRaw.q2Passed) * 100).toFixed(1) + '%' : '0%',
+      },
+      {
+        step: 6,
+        name: 'Clicou WhatsApp',
+        event: 'funnel_whatsapp_cta_click',
+        count: funnelWhatsappRaw.ctaClick,
+        sessions: funnelWhatsappRaw.ctaClickSessions,
+        percentage: funnelWhatsappRaw.qualified > 0 ? ((funnelWhatsappRaw.ctaClick / funnelWhatsappRaw.qualified) * 100).toFixed(1) + '%' : '0%',
+      },
+    ];
+
+    const funnelWhatsappConversion = funnelWhatsappRaw.pageView > 0
+      ? ((funnelWhatsappRaw.ctaClick / funnelWhatsappRaw.pageView) * 100).toFixed(2)
+      : '0';
+
     // Eventos por dia para grafico de tendencia
     const dailyQuery = await db.analytics.query(`
       SELECT
@@ -1803,6 +1885,14 @@ router.get('/analytics-funnel', async (req, res) => {
           funnel: funnelProRaw,
           steps: funnelProSteps,
           overallConversion: funnelProConversion + '%',
+        },
+        whatsapp: {
+          name: 'WhatsApp',
+          path: '/whatsapp',
+          description: 'Landing com quiz de qualificação para WhatsApp',
+          funnel: funnelWhatsappRaw,
+          steps: funnelWhatsappSteps,
+          overallConversion: funnelWhatsappConversion + '%',
         },
       },
     });
