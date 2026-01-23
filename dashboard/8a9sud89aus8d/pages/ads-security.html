@@ -1,19 +1,19 @@
 <div class="header">
   <h2><span class="service-badge ads">ADS</span> Security Ads Analysis</h2>
   <div class="header-actions">
-    <div class="date-filter">
-      <select id="ads-security-period" onchange="onPeriodChange('ads-security')">
-        <option value="7">Ultimos 7 dias</option>
-        <option value="14">Ultimos 14 dias</option>
-        <option value="30" selected>Ultimos 30 dias</option>
-        <option value="60">Ultimos 60 dias</option>
-        <option value="90">Ultimos 90 dias</option>
-        <option value="custom">Personalizado</option>
+    <div class="date-filter" style="display: flex; align-items: center; gap: 8px;">
+      <select id="ads-security-period" onchange="onPeriodChange('ads-security')" style="font-size: 12px;">
+        <option value="7">7 dias</option>
+        <option value="14">14 dias</option>
+        <option value="30" selected>30 dias</option>
+        <option value="60">60 dias</option>
+        <option value="90">90 dias</option>
+        <option value="custom">Custom</option>
       </select>
-      <div class="date-range-inputs" id="ads-security-custom-dates" style="display: none;">
-        <input type="date" id="ads-security-start-date">
-        <span>ate</span>
-        <input type="date" id="ads-security-end-date">
+      <div class="date-range-inputs" id="ads-security-custom-dates" style="display: flex; align-items: center; gap: 4px;">
+        <input type="date" id="ads-security-start-date" onchange="onCustomDateChange('ads-security')" style="font-size: 11px; padding: 4px 6px;">
+        <span style="color: #64748b; font-size: 11px;">ate</span>
+        <input type="date" id="ads-security-end-date" onchange="onCustomDateChange('ads-security')" style="font-size: 11px; padding: 4px 6px;">
       </div>
     </div>
     <button class="refresh-btn" onclick="loadProjectPage('ads-security')">Atualizar</button>
@@ -152,6 +152,65 @@
       </select>
       <button class="refresh-btn" onclick="loadAdsData()">Atualizar</button>
     </div>
+  </div>
+
+  <!-- Filtros Avancados -->
+  <div id="ads-advanced-filters" style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+      <span style="font-size: 13px; font-weight: 600; color: #94a3b8;">Filtros Avancados</span>
+      <button onclick="clearAdvancedFilters()" style="font-size: 11px; padding: 4px 8px; background: #334155; border: none; border-radius: 4px; color: #94a3b8; cursor: pointer;">Limpar Filtros</button>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;">
+      <!-- Gasto -->
+      <div>
+        <label style="font-size: 11px; color: #64748b; display: block; margin-bottom: 4px;">Gasto (R$)</label>
+        <div style="display: flex; gap: 4px;">
+          <input type="number" id="filter-spend-min" placeholder="Min" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+          <input type="number" id="filter-spend-max" placeholder="Max" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+        </div>
+      </div>
+      <!-- Impressoes -->
+      <div>
+        <label style="font-size: 11px; color: #64748b; display: block; margin-bottom: 4px;">Impressoes</label>
+        <div style="display: flex; gap: 4px;">
+          <input type="number" id="filter-impressions-min" placeholder="Min" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+          <input type="number" id="filter-impressions-max" placeholder="Max" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+        </div>
+      </div>
+      <!-- Cliques -->
+      <div>
+        <label style="font-size: 11px; color: #64748b; display: block; margin-bottom: 4px;">Cliques</label>
+        <div style="display: flex; gap: 4px;">
+          <input type="number" id="filter-clicks-min" placeholder="Min" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+          <input type="number" id="filter-clicks-max" placeholder="Max" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+        </div>
+      </div>
+      <!-- CTR -->
+      <div>
+        <label style="font-size: 11px; color: #64748b; display: block; margin-bottom: 4px;">CTR (%)</label>
+        <div style="display: flex; gap: 4px;">
+          <input type="number" step="0.1" id="filter-ctr-min" placeholder="Min" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+          <input type="number" step="0.1" id="filter-ctr-max" placeholder="Max" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+        </div>
+      </div>
+      <!-- CPC -->
+      <div>
+        <label style="font-size: 11px; color: #64748b; display: block; margin-bottom: 4px;">CPC (R$)</label>
+        <div style="display: flex; gap: 4px;">
+          <input type="number" step="0.01" id="filter-cpc-min" placeholder="Min" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+          <input type="number" step="0.01" id="filter-cpc-max" placeholder="Max" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+        </div>
+      </div>
+      <!-- Pontuacao -->
+      <div>
+        <label style="font-size: 11px; color: #64748b; display: block; margin-bottom: 4px;">Pontuacao</label>
+        <div style="display: flex; gap: 4px;">
+          <input type="number" id="filter-score-min" placeholder="Min" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+          <input type="number" id="filter-score-max" placeholder="Max" onchange="applyAdvancedFilters()" style="width: 100%; font-size: 11px; padding: 4px 6px; background: #0f172a; border: 1px solid #334155; border-radius: 4px; color: #f1f5f9;">
+        </div>
+      </div>
+    </div>
+    <div style="margin-top: 8px; font-size: 11px; color: #64748b;" id="filter-results-count"></div>
   </div>
 
   <div class="table-container" style="overflow-x: auto;">

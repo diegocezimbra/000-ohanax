@@ -270,8 +270,23 @@ function onPeriodChange(page) {
   }
 }
 
+function onCustomDateChange(page) {
+  const startDate = document.getElementById(`${page}-start-date`)?.value;
+  const endDate = document.getElementById(`${page}-end-date`)?.value;
+
+  // Only reload if both dates are set
+  if (startDate && endDate) {
+    // Set period to custom
+    const periodSelect = document.getElementById(`${page}-period`);
+    if (periodSelect) periodSelect.value = 'custom';
+
+    loadPageData(page);
+  }
+}
+
 window.getDateRange = getDateRange;
 window.onPeriodChange = onPeriodChange;
+window.onCustomDateChange = onCustomDateChange;
 
 // =============================================================================
 // LOAD ALL DATA (reload current page)

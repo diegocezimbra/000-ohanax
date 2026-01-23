@@ -87,8 +87,8 @@ export const autoOptimizerRules = {
       cplMultiplier: 3,
       // Se CTR < 0.5%
       minCtr: 0.5,
-      // Se gasto > R$50 sem conversoes
-      minSpendWithoutConversion: 50,
+      // Se gasto > R$150 sem conversoes (aumentado para dar tempo de acumular dados de leads)
+      minSpendWithoutConversion: 150,
       // Minimo de impressoes para avaliar
       minImpressions: 1000,
     },

@@ -234,13 +234,18 @@ function generateAnalysis(metrics, avgCpl = 50) {
     return { action: 'REVIEW', color: '#f59e0b', reason: 'CPC acima do esperado' };
   }
   // Gasto alto sem leads (mas com cliques) = problema de landing page
-  if (spend >= 30 && leads === 0 && clicks >= 20) {
+  // Aumentado threshold para R$100 para dar tempo de acumular dados
+  if (spend >= 100 && leads === 0 && clicks >= 50) {
     return { action: 'REVIEW', color: '#f59e0b', reason: 'Sem form submits - verificar landing page' };
   }
 
   // ========================================
   // KEEP - Anuncio saudavel
   // ========================================
+  // CTR alto + CPC baixo = anuncio bom (mesmo sem dados de leads ainda)
+  if (ctr >= 2.0 && cpc <= 0.30) {
+    return { action: 'KEEP', color: '#22c55e', reason: 'CTR excelente + CPC baixo' };
+  }
   if (ctr >= 1.0 && cpc <= 0.50 && leads > 0) {
     return { action: 'KEEP', color: '#22c55e', reason: 'Performance adequada' };
   }
@@ -327,18 +332,144 @@ function handleSort(column) {
     currentSort.direction = 'desc';
   }
 
-  if (adsData && adsData.ads) {
-    const filter = document.getElementById('ads-filter-status')?.value;
-    const filteredAds = filter
-      ? adsData.ads.filter(ad => ad.optimizerStatus?.code === filter)
-      : adsData.ads;
-    const sortedAds = sortAds(filteredAds, column, currentSort.direction);
-    renderAdsTable(sortedAds);
-  }
+  // Use applyAdvancedFilters which handles all filtering and sorting
+  applyAdvancedFilters();
 }
 
 // Expose sort handler globally
 window.handleAdsSort = handleSort;
+
+/**
+ * Get advanced filter values from inputs
+ */
+function getAdvancedFilters() {
+  return {
+    spendMin: parseFloat(document.getElementById('filter-spend-min')?.value) || null,
+    spendMax: parseFloat(document.getElementById('filter-spend-max')?.value) || null,
+    impressionsMin: parseInt(document.getElementById('filter-impressions-min')?.value) || null,
+    impressionsMax: parseInt(document.getElementById('filter-impressions-max')?.value) || null,
+    clicksMin: parseInt(document.getElementById('filter-clicks-min')?.value) || null,
+    clicksMax: parseInt(document.getElementById('filter-clicks-max')?.value) || null,
+    ctrMin: parseFloat(document.getElementById('filter-ctr-min')?.value) || null,
+    ctrMax: parseFloat(document.getElementById('filter-ctr-max')?.value) || null,
+    cpcMin: parseFloat(document.getElementById('filter-cpc-min')?.value) || null,
+    cpcMax: parseFloat(document.getElementById('filter-cpc-max')?.value) || null,
+    scoreMin: parseFloat(document.getElementById('filter-score-min')?.value) || null,
+    scoreMax: parseFloat(document.getElementById('filter-score-max')?.value) || null,
+  };
+}
+
+/**
+ * Apply advanced filters to ads
+ */
+function applyAdvancedFiltersToAds(ads, filters) {
+  return ads.filter(ad => {
+    const metrics = ad.metrics || {};
+    const spend = parseFloat(metrics.spend) || 0;
+    const impressions = parseInt(metrics.impressions) || 0;
+    const clicks = parseInt(metrics.clicks) || 0;
+    const ctr = parseFloat(metrics.ctr) || 0;
+    const cpc = parseFloat(metrics.cpc) || 0;
+    const score = calculateAdScore(metrics).score;
+
+    // Spend filter
+    if (filters.spendMin !== null && spend < filters.spendMin) return false;
+    if (filters.spendMax !== null && spend > filters.spendMax) return false;
+
+    // Impressions filter
+    if (filters.impressionsMin !== null && impressions < filters.impressionsMin) return false;
+    if (filters.impressionsMax !== null && impressions > filters.impressionsMax) return false;
+
+    // Clicks filter
+    if (filters.clicksMin !== null && clicks < filters.clicksMin) return false;
+    if (filters.clicksMax !== null && clicks > filters.clicksMax) return false;
+
+    // CTR filter
+    if (filters.ctrMin !== null && ctr < filters.ctrMin) return false;
+    if (filters.ctrMax !== null && ctr > filters.ctrMax) return false;
+
+    // CPC filter
+    if (filters.cpcMin !== null && cpc < filters.cpcMin) return false;
+    if (filters.cpcMax !== null && cpc > filters.cpcMax) return false;
+
+    // Score filter
+    if (filters.scoreMin !== null && score < filters.scoreMin) return false;
+    if (filters.scoreMax !== null && score > filters.scoreMax) return false;
+
+    return true;
+  });
+}
+
+/**
+ * Apply all filters (status + advanced) and render table
+ */
+function applyAdvancedFilters() {
+  if (!adsData || !adsData.ads) return;
+
+  // Get status filter
+  const statusFilter = document.getElementById('ads-filter-status')?.value;
+
+  // Get advanced filters
+  const advancedFilters = getAdvancedFilters();
+
+  // Apply status filter first
+  let filteredAds = statusFilter
+    ? adsData.ads.filter(ad => ad.optimizerStatus?.code === statusFilter)
+    : adsData.ads;
+
+  // Apply advanced filters
+  filteredAds = applyAdvancedFiltersToAds(filteredAds, advancedFilters);
+
+  // Apply sort if active
+  if (currentSort.column) {
+    filteredAds = sortAds(filteredAds, currentSort.column, currentSort.direction);
+  }
+
+  // Update results count
+  const countEl = document.getElementById('filter-results-count');
+  if (countEl) {
+    countEl.textContent = `Mostrando ${filteredAds.length} de ${adsData.ads.length} anuncios`;
+  }
+
+  // Render filtered table
+  renderAdsTable(filteredAds);
+}
+
+/**
+ * Clear all advanced filters
+ */
+function clearAdvancedFilters() {
+  const filterIds = [
+    'filter-spend-min', 'filter-spend-max',
+    'filter-impressions-min', 'filter-impressions-max',
+    'filter-clicks-min', 'filter-clicks-max',
+    'filter-ctr-min', 'filter-ctr-max',
+    'filter-cpc-min', 'filter-cpc-max',
+    'filter-score-min', 'filter-score-max'
+  ];
+
+  filterIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  // Clear status filter too
+  const statusSelect = document.getElementById('ads-filter-status');
+  if (statusSelect) statusSelect.value = '';
+
+  // Clear results count
+  const countEl = document.getElementById('filter-results-count');
+  if (countEl) countEl.textContent = '';
+
+  // Re-render full table
+  if (adsData && adsData.ads) {
+    renderAdsTable(adsData.ads);
+  }
+}
+
+// Expose filter functions globally
+window.applyAdvancedFilters = applyAdvancedFilters;
+window.clearAdvancedFilters = clearAdvancedFilters;
 
 /**
  * Get status badge HTML
@@ -368,9 +499,30 @@ function getPriorityBadge(priority) {
 }
 
 /**
+ * Initialize date inputs with default values
+ */
+function initializeDateInputs() {
+  const startInput = document.getElementById('ads-security-start-date');
+  const endInput = document.getElementById('ads-security-end-date');
+
+  if (startInput && !startInput.value) {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+    startInput.value = startDate.toISOString().split('T')[0];
+  }
+
+  if (endInput && !endInput.value) {
+    endInput.value = new Date().toISOString().split('T')[0];
+  }
+}
+
+/**
  * Main function to load ads security page
  */
 export async function loadAdsSecurityPage() {
+  // Initialize date inputs
+  initializeDateInputs();
+
   const { startDate, endDate } = getDateRange();
 
   // Load all data in parallel
@@ -558,17 +710,10 @@ function getRecommendationColor(priority) {
 }
 
 /**
- * Filter ads table by status
+ * Filter ads table by status (now uses advanced filters too)
  */
 export function filterAdsTable() {
-  if (!adsData) return;
-
-  const filter = document.getElementById('ads-filter-status').value;
-  const filteredAds = filter
-    ? adsData.ads.filter(ad => ad.optimizerStatus?.code === filter)
-    : adsData.ads;
-
-  renderAdsTable(filteredAds);
+  applyAdvancedFilters();
 }
 
 /**
