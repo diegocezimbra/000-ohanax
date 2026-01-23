@@ -471,27 +471,9 @@ async function checkForNewCustomers() {
 }
 
 // =============================================================================
-// AUTO-UPDATE
+// AUTO-UPDATE (DESABILITADO)
 // =============================================================================
-const UPDATE_INTERVAL = 5 * 60 * 1000; // 5 minutos
-
-async function autoUpdate() {
-  console.log('Atualizando dados...', new Date().toLocaleTimeString());
-  await checkForNewCustomers();
-  await loadAllData();
-}
-
-setInterval(autoUpdate, UPDATE_INTERVAL);
-
-function updateNextRefreshTime() {
-  const now = new Date();
-  const next = new Date(now.getTime() + UPDATE_INTERVAL);
-  const timeStr = next.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  const refreshBtn = document.querySelector('.refresh-btn');
-  if (refreshBtn) {
-    refreshBtn.title = `Proxima atualizacao automatica: ${timeStr}`;
-  }
-}
+// Auto-refresh removido - atualização agora é apenas manual via botão refresh
 
 // =============================================================================
 // NOTIFICATIONS
@@ -506,7 +488,6 @@ if ('Notification' in window && Notification.permission === 'default') {
 async function init() {
   await loadPage('overview');
   await checkForNewCustomers();
-  updateNextRefreshTime();
 }
 
 init();
