@@ -576,7 +576,7 @@ async function loadAdsData(startDate, endDate) {
 
     if (data.error) {
       console.error('Error loading ads:', data.error);
-      document.getElementById('ads-table').innerHTML = `<tr><td colspan="14" style="color: #ef4444;">Erro: ${data.error}</td></tr>`;
+      document.getElementById('ads-table').innerHTML = `<tr><td colspan="15" style="color: #ef4444;">Erro: ${data.error}</td></tr>`;
       return;
     }
 
@@ -605,7 +605,7 @@ async function loadAdsData(startDate, endDate) {
 
   } catch (err) {
     console.error('Error loading ads data:', err);
-    document.getElementById('ads-table').innerHTML = `<tr><td colspan="14" style="color: #ef4444;">Erro ao carregar: ${err.message}</td></tr>`;
+    document.getElementById('ads-table').innerHTML = `<tr><td colspan="15" style="color: #ef4444;">Erro ao carregar: ${err.message}</td></tr>`;
   }
 }
 
@@ -629,7 +629,8 @@ function renderTableHeaders() {
       <th class="sortable-header" onclick="handleAdsSort('status')">Status${getSortIndicator('status')}</th>
       <th class="sortable-header" onclick="handleAdsSort('name')">Nome${getSortIndicator('name')}</th>
       <th>Targeting</th>
-      <th>Landing Page</th>
+      <th>Destino</th>
+      <th>Origem (UTM)</th>
       <th class="sortable-header" onclick="handleAdsSort('spend')">Gasto${getSortIndicator('spend')}</th>
       <th class="sortable-header" onclick="handleAdsSort('impressions')">Impressoes${getSortIndicator('impressions')}</th>
       <th class="sortable-header" onclick="handleAdsSort('clicks')">Cliques${getSortIndicator('clicks')}</th>
@@ -645,19 +646,91 @@ function renderTableHeaders() {
 }
 
 /**
- * Format landing page URL for display
+ * Parse UTM params from URL
  */
-function formatLandingPage(url) {
+function parseUtmParams(url) {
+  if (!url) return null;
+  try {
+    const urlObj = new URL(url);
+    return {
+      source: urlObj.searchParams.get('utm_source'),
+      medium: urlObj.searchParams.get('utm_medium'),
+      campaign: urlObj.searchParams.get('utm_campaign'),
+      content: urlObj.searchParams.get('utm_content'),
+      term: urlObj.searchParams.get('utm_term'),
+      path: urlObj.pathname,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Format destination path for display
+ */
+function formatDestination(url) {
   if (!url) return '<span style="color: #64748b;">--</span>';
   try {
     const urlObj = new URL(url);
     const path = urlObj.pathname;
-    // Show short version of path
-    const shortPath = path.length > 15 ? '...' + path.slice(-12) : path;
-    return `<a href="${url}" target="_blank" style="color: #3b82f6; text-decoration: none;" title="${url}">${shortPath}</a>`;
+    // Map paths to friendly names
+    const pathNames = {
+      '/scan': 'Scan Original',
+      '/scan-video': 'Scan Video',
+      '/scan-pro': 'Scan Pro',
+      '/whatsapp': 'WhatsApp',
+    };
+    const friendlyName = pathNames[path] || path;
+    const color = path === '/whatsapp' ? '#25d366' : path.includes('video') ? '#f59e0b' : path.includes('pro') ? '#8b5cf6' : '#3b82f6';
+    return `<span style="color: ${color}; font-weight: 500;" title="${path}">${friendlyName}</span>`;
   } catch {
     return '<span style="color: #64748b;">--</span>';
   }
+}
+
+/**
+ * Format UTM origin for display
+ */
+function formatUtmOrigin(url) {
+  if (!url) return '<span style="color: #64748b;">--</span>';
+  const utm = parseUtmParams(url);
+  if (!utm || (!utm.source && !utm.campaign)) {
+    return '<span style="color: #64748b;">Direto</span>';
+  }
+
+  const parts = [];
+
+  // Source badge
+  if (utm.source) {
+    const sourceColors = {
+      'meta': '#1877f2',
+      'facebook': '#1877f2',
+      'instagram': '#e4405f',
+      'google': '#4285f4',
+      'influencer': '#10b981',
+    };
+    const color = sourceColors[utm.source.toLowerCase()] || '#64748b';
+    parts.push(`<span style="background: ${color}20; color: ${color}; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;">${utm.source}</span>`);
+  }
+
+  // Medium
+  if (utm.medium) {
+    const mediumLabels = {
+      'cpc': 'CPC',
+      'cpm': 'CPM',
+      'retargeting': 'Retarget',
+      'social': 'Social',
+      'email': 'Email',
+    };
+    parts.push(`<span style="color: #94a3b8; font-size: 10px;">${mediumLabels[utm.medium.toLowerCase()] || utm.medium}</span>`);
+  }
+
+  // Campaign
+  if (utm.campaign) {
+    parts.push(`<span style="color: #f1f5f9; font-size: 10px;" title="${utm.campaign}">${utm.campaign.length > 12 ? utm.campaign.slice(0, 12) + '...' : utm.campaign}</span>`);
+  }
+
+  return parts.length > 0 ? parts.join(' ') : '<span style="color: #64748b;">--</span>';
 }
 
 /**
@@ -670,7 +743,7 @@ function renderAdsTable(ads) {
   renderTableHeaders();
 
   if (!ads || ads.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="14" style="color: #64748b;">Nenhum anuncio encontrado</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="15" style="color: #64748b;">Nenhum anuncio encontrado</td></tr>';
     return;
   }
 
@@ -692,11 +765,14 @@ function renderAdsTable(ads) {
       <tr data-status="${status.code || ''}">
         <td>${getStatusBadge(status)}</td>
         <td style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${ad.name}">${ad.name}</td>
-        <td style="font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${targeting.details?.interests?.join(', ') || targeting.summary}">
+        <td style="font-size: 11px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${targeting.details?.interests?.join(', ') || targeting.summary}">
           <span style="color: #94a3b8;">${targeting.summary}</span>
         </td>
-        <td style="font-size: 11px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          ${formatLandingPage(ad.landingPageUrl)}
+        <td style="font-size: 11px;">
+          ${formatDestination(ad.landingPageUrl)}
+        </td>
+        <td style="font-size: 10px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          ${formatUtmOrigin(ad.landingPageUrl)}
         </td>
         <td>${formatBRL(metrics.spend)}</td>
         <td>${formatLargeNumber(metrics.impressions)}</td>

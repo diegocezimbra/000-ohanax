@@ -64,32 +64,71 @@
 
 <!-- GERADOR DE LINKS -->
 <div class="section">
-  <div class="section-title">Gerador de Links</div>
+  <div class="section-title">Gerador de Links com UTM</div>
   <div class="grid-2">
     <div>
       <div style="margin-bottom: 16px;">
-        <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Influenciador</label>
+        <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Influenciador *</label>
         <select id="link-influencer" style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
           <option value="">Selecione um influenciador</option>
         </select>
       </div>
       <div style="margin-bottom: 16px;">
-        <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">URL de Destino</label>
-        <input type="text" id="link-url" placeholder="https://ohanax.com/scan" style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+        <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Landing Page de Destino *</label>
+        <select id="link-destination" style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+          <option value="https://ohanax.com/scan">Scan Original (/scan)</option>
+          <option value="https://ohanax.com/scan-video">Scan Video (/scan-video)</option>
+          <option value="https://ohanax.com/scan-pro">Scan Pro (/scan-pro)</option>
+          <option value="https://ohanax.com/whatsapp">WhatsApp (/whatsapp)</option>
+        </select>
       </div>
       <div style="margin-bottom: 16px;">
-        <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Campanha (opcional)</label>
-        <input type="text" id="link-campaign" placeholder="ex: black_friday" style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+        <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">Nome da Campanha *</label>
+        <input type="text" id="link-campaign" placeholder="ex: lancamento_janeiro, promo_natal" style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+        <span style="font-size: 11px; color: #64748b;">Use underline para separar palavras. Ex: video_review_janeiro</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+        <div>
+          <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">UTM Source</label>
+          <select id="link-source" style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+            <option value="influencer">influencer</option>
+            <option value="youtube">youtube</option>
+            <option value="instagram">instagram</option>
+            <option value="linkedin">linkedin</option>
+            <option value="tiktok">tiktok</option>
+            <option value="twitter">twitter</option>
+          </select>
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 8px; color: #94a3b8; font-size: 14px;">UTM Medium</label>
+          <select id="link-medium" style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9;">
+            <option value="social">social</option>
+            <option value="video">video</option>
+            <option value="stories">stories</option>
+            <option value="post">post</option>
+            <option value="bio">bio</option>
+            <option value="email">email</option>
+          </select>
+        </div>
       </div>
       <button onclick="generateTrackingLink()" style="width: 100%; padding: 14px; background: #3b82f6; border: none; border-radius: 8px; color: white; font-size: 16px; cursor: pointer;">Gerar Link</button>
     </div>
     <div>
-      <div style="background: #1e293b; padding: 20px; border-radius: 12px; height: 100%;">
+      <div style="background: #1e293b; padding: 20px; border-radius: 12px;">
         <div style="color: #94a3b8; font-size: 14px; margin-bottom: 12px;">Link Gerado:</div>
         <div id="generated-link" style="word-break: break-all; color: #22c55e; font-family: monospace; background: #0f172a; padding: 12px; border-radius: 8px; min-height: 60px;">
           Preencha os campos ao lado e clique em "Gerar Link"
         </div>
         <button id="copy-link-btn" onclick="copyGeneratedLink()" style="margin-top: 12px; padding: 10px 20px; background: #334155; border: none; border-radius: 6px; color: #f1f5f9; cursor: pointer; display: none;">Copiar Link</button>
+      </div>
+      <div style="background: #1e293b; padding: 20px; border-radius: 12px; margin-top: 16px;">
+        <div style="color: #94a3b8; font-size: 14px; margin-bottom: 12px;">Preview dos UTM params:</div>
+        <div id="utm-preview" style="font-size: 12px; color: #64748b;">
+          <div>utm_source: <span style="color: #3b82f6;">--</span></div>
+          <div>utm_medium: <span style="color: #f59e0b;">--</span></div>
+          <div>utm_campaign: <span style="color: #22c55e;">--</span></div>
+          <div>utm_content: <span style="color: #8b5cf6;">--</span> (codigo do influenciador)</div>
+        </div>
       </div>
     </div>
   </div>
@@ -246,14 +285,16 @@ async function loadInfluencersData() {
   }
 }
 
-// Gerador de links
+// Gerador de links com UTM completo
 async function generateTrackingLink() {
   const code = document.getElementById('link-influencer').value;
-  const url = document.getElementById('link-url').value;
+  const destination = document.getElementById('link-destination').value;
   const campaign = document.getElementById('link-campaign').value;
+  const source = document.getElementById('link-source').value;
+  const medium = document.getElementById('link-medium').value;
 
-  if (!code || !url) {
-    alert('Selecione um influenciador e informe a URL de destino');
+  if (!code || !destination || !campaign) {
+    alert('Preencha: Influenciador, Landing Page e Nome da Campanha');
     return;
   }
 
@@ -263,8 +304,10 @@ async function generateTrackingLink() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         influencer_code: code,
-        destination_url: url,
-        campaign: campaign
+        destination_url: destination,
+        campaign: campaign,
+        utm_source: source,
+        utm_medium: medium
       })
     });
 
@@ -277,10 +320,54 @@ async function generateTrackingLink() {
 
     document.getElementById('generated-link').textContent = data.tracking_url;
     document.getElementById('copy-link-btn').style.display = 'inline-block';
+
+    // Update preview
+    updateUtmPreview(data.utm_params);
   } catch (error) {
     console.error('Erro ao gerar link:', error);
     alert('Erro ao gerar link');
   }
+}
+
+// Update UTM preview in real-time
+function updateUtmPreview(utmParams) {
+  const preview = document.getElementById('utm-preview');
+  if (!preview) return;
+
+  if (utmParams) {
+    preview.innerHTML = `
+      <div>utm_source: <span style="color: #3b82f6;">${utmParams.utm_source}</span></div>
+      <div>utm_medium: <span style="color: #f59e0b;">${utmParams.utm_medium}</span></div>
+      <div>utm_campaign: <span style="color: #22c55e;">${utmParams.utm_campaign}</span></div>
+      <div>utm_content: <span style="color: #8b5cf6;">${utmParams.utm_content}</span> (codigo do influenciador)</div>
+    `;
+  }
+}
+
+// Update preview on field change
+function setupUtmPreviewListeners() {
+  const fields = ['link-influencer', 'link-campaign', 'link-source', 'link-medium'];
+  fields.forEach(fieldId => {
+    const el = document.getElementById(fieldId);
+    if (el) {
+      el.addEventListener('change', previewUtmParams);
+      el.addEventListener('input', previewUtmParams);
+    }
+  });
+}
+
+function previewUtmParams() {
+  const code = document.getElementById('link-influencer').value;
+  const campaign = document.getElementById('link-campaign').value;
+  const source = document.getElementById('link-source').value;
+  const medium = document.getElementById('link-medium').value;
+
+  updateUtmPreview({
+    utm_source: source || '--',
+    utm_medium: medium || '--',
+    utm_campaign: campaign ? `inf_${campaign}` : '--',
+    utm_content: code || '--'
+  });
 }
 
 function copyGeneratedLink() {
@@ -401,7 +488,9 @@ window.loadInfluencersData = loadInfluencersData;
 window.generateTrackingLink = generateTrackingLink;
 window.copyGeneratedLink = copyGeneratedLink;
 window.viewInfluencerLinks = viewInfluencerLinks;
+window.previewUtmParams = previewUtmParams;
 
 // Inicializar ao carregar pagina
 loadInfluencersData();
+setupUtmPreviewListeners();
 </script>

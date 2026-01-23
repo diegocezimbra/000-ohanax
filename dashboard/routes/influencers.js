@@ -353,7 +353,13 @@ router.get('/metrics/summary', async (req, res) => {
 // Gerar link rapido para influenciador existente
 router.post('/generate-link', async (req, res) => {
   try {
-    const { influencer_code, destination_url, campaign } = req.body;
+    const {
+      influencer_code,
+      destination_url,
+      campaign,
+      utm_source = 'influencer',
+      utm_medium = 'social',
+    } = req.body;
 
     if (!influencer_code || !destination_url) {
       return res.status(400).json({ error: 'Codigo do influenciador e URL de destino sao obrigatorios' });
@@ -361,7 +367,7 @@ router.post('/generate-link', async (req, res) => {
 
     // Verificar se influenciador existe
     const influencerResult = await db.analytics.query(
-      'SELECT id, code, name FROM influencers WHERE code = $1',
+      'SELECT id, code, name, platform FROM influencers WHERE code = $1',
       [influencer_code]
     );
 
@@ -371,27 +377,42 @@ router.post('/generate-link', async (req, res) => {
 
     const influencer = influencerResult.rows[0];
 
+    // Construir UTM campaign: inf_{nome_campanha}_{codigo_influenciador}
+    const utmCampaign = campaign ? `inf_${campaign}` : 'inf_default';
+
     // Construir URL com UTMs
     const url = new URL(destination_url);
-    url.searchParams.set('utm_source', 'influencer');
-    url.searchParams.set('utm_medium', 'social');
-    url.searchParams.set('utm_campaign', campaign ? `influencer_${campaign}` : 'influencer_default');
+    url.searchParams.set('utm_source', utm_source);
+    url.searchParams.set('utm_medium', utm_medium);
+    url.searchParams.set('utm_campaign', utmCampaign);
     url.searchParams.set('utm_content', influencer.code);
+
+    // Salvar link no banco para tracking
+    try {
+      await db.analytics.query(`
+        INSERT INTO tracking_links (influencer_id, campaign, destination_url, utm_source, utm_medium, utm_campaign, utm_content)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT DO NOTHING
+      `, [influencer.id, campaign, url.toString(), utm_source, utm_medium, utmCampaign, influencer.code]);
+    } catch (err) {
+      console.log('Could not save tracking link:', err.message);
+    }
 
     res.json({
       influencer: {
         id: influencer.id,
         code: influencer.code,
-        name: influencer.name
+        name: influencer.name,
+        platform: influencer.platform,
       },
       original_url: destination_url,
       tracking_url: url.toString(),
       utm_params: {
-        utm_source: 'influencer',
-        utm_medium: 'social',
-        utm_campaign: campaign ? `influencer_${campaign}` : 'influencer_default',
-        utm_content: influencer.code
-      }
+        utm_source,
+        utm_medium,
+        utm_campaign: utmCampaign,
+        utm_content: influencer.code,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
