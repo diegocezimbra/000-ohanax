@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Potencial de Investimentos V2 - Portfólio OhanaX</title>
+    <style>
+        :root {
+            --primary-dark: #1a2332;
+            --primary-blue: #2c3e50;
+            --accent-blue: #34495e;
+            --accent-gold: #c9a227;
+            --text-dark: #2c3e50;
+            --text-medium: #4a5568;
+            --text-light: #718096;
+            --border-light: #e2e8f0;
+            --bg-light: #f7fafc;
+            --bg-white: #ffffff;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: var(--text-dark);
+            background: var(--bg-white);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .document {
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 15mm;
+            background: var(--bg-white);
+        }
+
+        /* Header */
+        .header {
+            border-bottom: 3px solid var(--primary-dark);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 20pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 3px;
+        }
+
+        .header-subtitle {
+            font-size: 10pt;
+            color: var(--text-medium);
+            font-weight: 400;
+        }
+
+        .header-meta {
+            text-align: right;
+            font-size: 8pt;
+            color: var(--text-light);
+        }
+
+        .header-meta div {
+            margin-bottom: 2px;
+        }
+
+        .confidential-badge {
+            display: inline-block;
+            background: var(--primary-dark);
+            color: white;
+            padding: 3px 10px;
+            font-size: 7pt;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        /* Section Headers */
+        h2 {
+            font-size: 13pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+            border-bottom: 2px solid var(--accent-gold);
+            padding-bottom: 5px;
+            margin: 25px 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        h3 {
+            font-size: 11pt;
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin: 18px 0 8px 0;
+            padding-left: 8px;
+            border-left: 3px solid var(--accent-gold);
+        }
+
+        h4 {
+            font-size: 10pt;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 12px 0 6px 0;
+        }
+
+        h5 {
+            font-size: 9pt;
+            font-weight: 600;
+            color: var(--text-medium);
+            margin: 8px 0 4px 0;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 9pt;
+        }
+
+        th {
+            background: var(--primary-dark);
+            color: white;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        td {
+            padding: 5px 8px;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) {
+            background: var(--bg-light);
+        }
+
+        tr:hover {
+            background: #edf2f7;
+        }
+
+        .table-highlight {
+            background: #fef9e7 !important;
+            font-weight: 600;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-size: 10pt;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .card-badge {
+            font-size: 8pt;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .badge-gold {
+            background: var(--accent-gold);
+            color: white;
+        }
+
+        .badge-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        /* Grid Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Metrics */
+        .metric-box {
+            background: var(--bg-light);
+            border: 1px solid var(--border-light);
+            border-radius: 3px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 14pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+            line-height: 1.2;
+        }
+
+        .metric-label {
+            font-size: 7pt;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .metric-change {
+            font-size: 8pt;
+            font-weight: 600;
+        }
+
+        .metric-change.positive {
+            color: var(--success);
+        }
+
+        .metric-change.negative {
+            color: var(--danger);
+        }
+
+        /* Score Display */
+        .score-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .score-number {
+            font-size: 18pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .score-max {
+            font-size: 10pt;
+            color: var(--text-light);
+        }
+
+        .star-rating {
+            color: var(--accent-gold);
+            font-size: 10pt;
+            letter-spacing: -1px;
+        }
+
+        /* Status Indicators */
+        .status-check {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .status-warning {
+            color: var(--warning);
+            font-weight: bold;
+        }
+
+        .status-x {
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        /* Code/Formula Blocks */
+        .formula-block {
+            background: #f8f9fa;
+            border: 1px solid var(--border-light);
+            border-left: 3px solid var(--accent-blue);
+            padding: 10px 12px;
+            margin: 8px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 8pt;
+            line-height: 1.6;
+            color: var(--text-dark);
+            white-space: pre-wrap;
+        }
+
+        /* Lists */
+        ul, ol {
+            padding-left: 18px;
+            margin: 6px 0;
+        }
+
+        li {
+            margin: 3px 0;
+            font-size: 9pt;
+        }
+
+        /* Page Breaks */
+        .page-break {
+            page-break-before: always;
+            margin-top: 20px;
+            padding-top: 10px;
+        }
+
+        /* Executive Summary Box */
+        .exec-summary {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent-blue) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+
+        .exec-summary h3 {
+            color: white;
+            border-left-color: var(--accent-gold);
+            margin-top: 0;
+        }
+
+        .exec-summary .metric-box {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .exec-summary .metric-value {
+            color: white;
+        }
+
+        .exec-summary .metric-label {
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* Ranking Table Special */
+        .rank-1 {
+            background: linear-gradient(90deg, #fef9e7 0%, #fff 100%) !important;
+        }
+
+        .rank-badge {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            line-height: 22px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 9pt;
+        }
+
+        .rank-badge.gold {
+            background: var(--accent-gold);
+            color: white;
+        }
+
+        .rank-badge.silver {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .rank-badge.bronze {
+            background: #cd7f32;
+            color: white;
+        }
+
+        /* Project Section */
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-light);
+            padding: 12px 15px;
+            border-radius: 4px;
+            margin: 20px 0 12px 0;
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        .project-title {
+            font-size: 14pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .project-code {
+            font-size: 8pt;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .project-score {
+            text-align: right;
+        }
+
+        /* Moat Power Rating */
+        .power-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .power-item {
+            text-align: center;
+            padding: 8px 4px;
+            background: var(--bg-light);
+            border-radius: 3px;
+            border: 1px solid var(--border-light);
+        }
+
+        .power-name {
+            font-size: 6pt;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .power-stars {
+            font-size: 7pt;
+            color: var(--accent-gold);
+        }
+
+        /* Risk Matrix */
+        .risk-low { color: var(--success); }
+        .risk-medium { color: var(--warning); }
+        .risk-high { color: var(--danger); }
+
+        /* Diagram */
+        .diagram-box {
+            background: var(--bg-light);
+            border: 1px solid var(--border-light);
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 8pt;
+            white-space: pre;
+            line-height: 1.4;
+            overflow-x: auto;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px solid var(--primary-dark);
+            font-size: 7pt;
+            color: var(--text-light);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                font-size: 10pt;
+            }
+            .document {
+                padding: 10mm;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+        }
+
+        /* Comparison table */
+        .comparison-positive {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .highlight-row {
+            background: #e8f5e9 !important;
+        }
+
+        /* TOC */
+        .toc {
+            background: var(--bg-light);
+            padding: 15px 20px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .toc-title {
+            font-size: 10pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .toc-list li {
+            padding: 3px 0;
+            border-bottom: 1px dotted var(--border-light);
+        }
+
+        .toc-list a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-size: 9pt;
+        }
+
+        .toc-list a:hover {
+            color: var(--accent-gold);
+        }
+
+        /* Info box */
+        .info-box {
+            background: #e3f2fd;
+            border-left: 3px solid #2196f3;
+            padding: 10px 12px;
+            margin: 10px 0;
+            font-size: 9pt;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 3px solid #ff9800;
+            padding: 10px 12px;
+            margin: 10px 0;
+            font-size: 9pt;
+        }
+
+        /* Compact lists */
+        .compact-list {
+            margin: 4px 0;
+            padding-left: 15px;
+        }
+
+        .compact-list li {
+            margin: 1px 0;
+            font-size: 8pt;
+        }
+    </style>
+</head>
+<body>
+    <div class="document">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-top">
+                <div>
+                    <h1>ANÁLISE DE POTENCIAL DE INVESTIMENTOS V2</h1>
+                    <div class="header-subtitle">Portfólio OhanaX — Framework Completo de Análise de Investimentos em Startups e SaaS</div>
+                </div>
+                <div class="header-meta">
+                    <div><strong>Data:</strong> Janeiro 2025</div>
+                    <div><strong>Versão:</strong> 2.0 — Análise Aprofundada</div>
+                    <div><strong>Projetos Analisados:</strong> 27</div>
+                    <div class="confidential-badge">Confidencial</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- SUMÁRIO EXECUTIVO -->
+        <section id="sumario">
+            <h2>Sumário Executivo</h2>
+
+            <h3>Ranking Atualizado — TOP 3 Projetos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">Rank</th>
+                        <th>Projeto</th>
+                        <th style="width: 70px;">Score V1</th>
+                        <th style="width: 70px;">Score V2</th>
+                        <th style="width: 60px;">Delta</th>
+                        <th>Destaque</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="rank-1">
+                        <td><span class="rank-badge gold">1</span></td>
+                        <td><strong>O Entregador</strong></td>
+                        <td>78</td>
+                        <td><strong>92</strong></td>
+                        <td class="comparison-positive">+14</td>
+                        <td>LTV/CAC 184x, ARPA R$19.240/mês</td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-badge silver">2</span></td>
+                        <td><strong>Plataforma de Dados Brasil</strong></td>
+                        <td>82</td>
+                        <td><strong>85</strong></td>
+                        <td class="comparison-positive">+3</td>
+                        <td>1.126 fontes, TAM R$8.5B</td>
+                    </tr>
+                    <tr>
+                        <td><span class="rank-badge bronze">3</span></td>
+                        <td><strong>Streaming Finance</strong></td>
+                        <td>74</td>
+                        <td><strong>76</strong></td>
+                        <td class="comparison-positive">+2</td>
+                        <td>DeFi pioneiro, margem 70%+</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Métricas Consolidadas do Portfólio</h3>
+            <div class="grid-4">
+                <div class="metric-box">
+                    <div class="metric-value">R$118,2M</div>
+                    <div class="metric-label">ARR Combinado (Ano 3)</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">1.100</div>
+                    <div class="metric-label">Clientes Totais (Ano 3)</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">86%</div>
+                    <div class="metric-label">Margem Bruta (Ano 3)</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">Cash +</div>
+                    <div class="metric-label">Burn Rate (Ano 3)</div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Ano 1</th>
+                        <th>Ano 2</th>
+                        <th>Ano 3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>ARR Combinado</strong></td>
+                        <td>R$12,2M</td>
+                        <td>R$48,5M</td>
+                        <td>R$118,2M</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Clientes Totais</strong></td>
+                        <td>170</td>
+                        <td>480</td>
+                        <td>1.100</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Margem Bruta Média</strong></td>
+                        <td>82%</td>
+                        <td>84%</td>
+                        <td>86%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Burn Rate</strong></td>
+                        <td>R$800K/mês</td>
+                        <td>R$1,2M/mês</td>
+                        <td>Cash flow +</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Investimento Recomendado</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Projeto</th>
+                        <th>Rodada</th>
+                        <th>Valor</th>
+                        <th>Pre-Money</th>
+                        <th>Equity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>O Entregador</td>
+                        <td>Seed</td>
+                        <td>R$3M</td>
+                        <td>R$12M</td>
+                        <td>20%</td>
+                    </tr>
+                    <tr>
+                        <td>Plataforma de Dados</td>
+                        <td>Seed</td>
+                        <td>R$2,5M</td>
+                        <td>R$10M</td>
+                        <td>20%</td>
+                    </tr>
+                    <tr>
+                        <td>Streaming Finance</td>
+                        <td>Pre-Seed</td>
+                        <td>R$1,5M</td>
+                        <td>R$6M</td>
+                        <td>20%</td>
+                    </tr>
+                    <tr class="table-highlight">
+                        <td><strong>TOTAL</strong></td>
+                        <td>—</td>
+                        <td><strong>R$7M</strong></td>
+                        <td>—</td>
+                        <td>—</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">ROI Projetado (3 anos)</span>
+                    <span class="card-badge badge-gold">28-45x</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- PARTE I -->
+        <section class="page-break" id="parte1">
+            <h2>Parte I: Análise Aprofundada — TOP 3</h2>
+
+            <!-- O ENTREGADOR -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">1. O Entregador</div>
+                    <div class="project-code">04-app-o-entregador</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">92</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">★★★★★</div>
+                </div>
+            </div>
+
+            <h4>Modelo de Negócio (Corrigido)</h4>
+            <p><strong>Target:</strong> Hubs Logísticos (galpões de distribuição last-mile)</p>
+
+            <h5>Clientes-alvo:</h5>
+            <ul class="compact-list">
+                <li>Hubs de Mercado Livre (17-27 CDs + expansão)</li>
+                <li>Hubs de Shopee (13 CDs + 150+ hubs last-mile)</li>
+                <li>Hubs de Shein (6 CDs + expansão)</li>
+                <li>Hubs TikTok Shop (em expansão no Brasil)</li>
+                <li>Jadlog (500+ pontos de distribuição)</li>
+                <li>Correios (34 centros logísticos principais)</li>
+                <li>Outros (Amazon 12+ CDs, Magalu, B2W)</li>
+            </ul>
+
+            <h5>Produtos:</h5>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Descrição</th>
+                        <th>Preço</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>SaaS Hub</strong></td>
+                        <td>Bipagem, conferência de pacotes, rastreamento SLA</td>
+                        <td>R$3.400/mês/hub</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Checklist</strong></td>
+                        <td>Validação de documentação e veículo por motorista</td>
+                        <td>R$1,20/motorista/dia</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h5>Exemplo de Receita por Hub:</h5>
+            <div class="formula-block">Hub com 600 motoristas:
+- SaaS: R$3.400/mês
+- Checklist: 600 × R$1,20 × 22 dias = R$15.840/mês
+- Total: R$19.240/mês = R$230.880/ano</div>
+
+            <h4>Análise de Mercado (TAM/SAM/SOM)</h4>
+
+            <h5>Pesquisa de Mercado — Hubs Logísticos no Brasil:</h5>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>CDs/Hubs</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Mercado Livre</td><td>17-27</td><td>Meta 27 até 2025</td></tr>
+                    <tr><td>Shopee</td><td>163+</td><td>13 CDs + 150 hubs last-mile</td></tr>
+                    <tr><td>Shein</td><td>6+</td><td>Expansão agressiva</td></tr>
+                    <tr><td>Amazon</td><td>12+</td><td>Crescendo</td></tr>
+                    <tr><td>Jadlog</td><td>500+</td><td>Pontos de distribuição</td></tr>
+                    <tr><td>Correios</td><td>34</td><td>Centros principais</td></tr>
+                    <tr><td>Outros</td><td>100+</td><td>TikTok, Magalu, B2W</td></tr>
+                </tbody>
+            </table>
+
+            <p><strong>Estimativa Total Brasil:</strong> 800-1.000 hubs/CDs operacionais</p>
+
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">TAM</span>
+                    </div>
+                    <div class="formula-block" style="margin: 0; font-size: 7pt;">Produto 1 (SaaS): 1.000 hubs × R$3.400 × 12 = R$40,8M/ano
+Produto 2 (Checklist): 1.000 × 600 × R$1,20 × 22 × 12 = R$190M/ano
+<strong>TAM TOTAL: R$230,8M/ano</strong></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">SAM</span>
+                    </div>
+                    <p style="font-size: 8pt; margin: 5px 0;">Foco: Marketplaces principais (ML, Shopee, Shein, TikTok, Amazon)</p>
+                    <p style="font-size: 8pt;"><strong>Hubs target: ~400 unidades</strong></p>
+                    <p style="font-size: 9pt; font-weight: 600; color: var(--primary-dark);">SAM = R$92,4M/ano</p>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">SOM</span>
+                    </div>
+                    <table style="font-size: 7pt; margin: 5px 0;">
+                        <tr><td>Ano 1</td><td>20 hubs (2%)</td><td><strong>R$4,6M</strong></td></tr>
+                        <tr><td>Ano 2</td><td>80 hubs (8%)</td><td><strong>R$18,5M</strong></td></tr>
+                        <tr><td>Ano 3</td><td>200 hubs (20%)</td><td><strong>R$46,2M</strong></td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Mercado de Last-Mile Delivery Brasil (Benchmark):</strong><br>
+                2024: $4,30 bilhões | 2033: $16,30 bilhões (projetado) | CAGR: 15,9%
+            </div>
+
+            <h4>Why Now (Market Timing)</h4>
+            <div class="grid-2">
+                <div class="card">
+                    <h5><span class="status-check">✓</span> Explosão do E-commerce</h5>
+                    <ul class="compact-list">
+                        <li>E-commerce Brasil cresceu 27% em 2024</li>
+                        <li>Penetração ainda baixa (12%) vs EUA (22%) e China (47%)</li>
+                        <li>Projeção: +15% CAGR até 2030</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h5><span class="status-check">✓</span> Guerra Logística dos Marketplaces</h5>
+                    <ul class="compact-list">
+                        <li>Mercado Livre investiu R$23B em logística (2021-2024)</li>
+                        <li>Shopee expandindo agressivamente last-mile</li>
+                        <li>Shein entrando com força no Brasil</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h5><span class="status-check">✓</span> Digitalização Obrigatória</h5>
+                    <ul class="compact-list">
+                        <li>Hubs ainda usam planilhas/papel para gestão</li>
+                        <li>Pressão por SLA cada vez maior</li>
+                        <li>Rastreamento em tempo real virou exigência</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h5><span class="status-check">✓</span> Escassez de Motoristas</h5>
+                    <ul class="compact-list">
+                        <li>Turnover alto exige controle rigoroso</li>
+                        <li>Checklist previne fraudes e acidentes</li>
+                        <li>Compliance trabalhista crescente</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card" style="background: var(--bg-light);">
+                <div class="card-header">
+                    <span class="card-title">Market Timing Score</span>
+                    <span class="card-badge badge-gold">10/10</span>
+                </div>
+            </div>
+
+            <h4>Análise de Unit Economics</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Valor</th>
+                        <th>Benchmark</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>ARPA</strong></td>
+                        <td>R$19.240/mês</td>
+                        <td>—</td>
+                        <td>Excepcional</td>
+                    </tr>
+                    <tr>
+                        <td><strong>ARPA Anual</strong></td>
+                        <td>R$230.880</td>
+                        <td>—</td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CAC Estimado</strong></td>
+                        <td>R$15.000-25.000</td>
+                        <td>—</td>
+                        <td>B2B Enterprise</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LTV (5% churn)</strong></td>
+                        <td>R$4.617.600</td>
+                        <td>—</td>
+                        <td>Extraordinário</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>LTV/CAC</strong></td>
+                        <td><strong>184x - 307x</strong></td>
+                        <td>3-5x ideal</td>
+                        <td><span class="status-check">✓</span> Best-in-class</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>CAC Payback</strong></td>
+                        <td><strong>0,8-1,3 meses</strong></td>
+                        <td>&lt;18m good</td>
+                        <td><span class="status-check">✓</span> Extraordinário</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gross Margin</strong></td>
+                        <td>85%+</td>
+                        <td>&gt;70% SaaS</td>
+                        <td><span class="status-check">✓</span> Excelente</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Expected Churn</strong></td>
+                        <td>5%/ano</td>
+                        <td>&lt;5% enterprise</td>
+                        <td><span class="status-check">✓</span> Bom</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h5>Cálculos Detalhados:</h5>
+            <div class="formula-block">ARPA = R$3.400 + (600 × R$1,20 × 22) = R$19.240/mês
+
+LTV = ARPA × 12 × Gross Margin / Churn
+LTV = R$19.240 × 12 × 85% / 5% = R$3.924.960
+(Conservador com 600 motoristas médios)
+
+LTV com hub grande (1.000 motoristas):
+ARPA = R$3.400 + (1.000 × R$1,20 × 22) = R$29.800/mês
+LTV = R$29.800 × 12 × 85% / 5% = R$6.087.120
+
+CAC Payback = R$20.000 / (R$19.240 × 85%) = 1,22 meses</div>
+
+            <h5>Por que o LTV/CAC é tão alto?</h5>
+            <ol class="compact-list">
+                <li><strong>Receita recorrente dupla:</strong> SaaS fixo + variável por motorista</li>
+                <li><strong>Switching costs altíssimos:</strong> Integração com sistemas do hub</li>
+                <li><strong>Mission-critical:</strong> Hub não opera sem o software</li>
+                <li><strong>Expansão natural:</strong> Mais motoristas = mais receita</li>
+            </ol>
+
+            <h4>Projeções Financeiras (3 anos)</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Ano 1</th>
+                        <th>Ano 2</th>
+                        <th>Ano 3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Hubs Ativos</strong></td><td>20</td><td>80</td><td>200</td></tr>
+                    <tr><td><strong>MRR SaaS</strong></td><td>R$68K</td><td>R$272K</td><td>R$680K</td></tr>
+                    <tr><td><strong>MRR Checklist</strong></td><td>R$316K</td><td>R$1,27M</td><td>R$3,17M</td></tr>
+                    <tr><td><strong>MRR Total</strong></td><td>R$384K</td><td>R$1,54M</td><td>R$3,85M</td></tr>
+                    <tr class="table-highlight"><td><strong>ARR</strong></td><td>R$4,6M</td><td>R$18,5M</td><td>R$46,2M</td></tr>
+                    <tr><td><strong>Growth Rate</strong></td><td>—</td><td>302%</td><td>150%</td></tr>
+                    <tr><td><strong>Gross Margin</strong></td><td>82%</td><td>85%</td><td>87%</td></tr>
+                    <tr><td><strong>EBITDA Margin</strong></td><td>-25%</td><td>+5%</td><td>+22%</td></tr>
+                    <tr><td><strong>Rule of 40</strong></td><td>N/A</td><td>307%</td><td>172%</td></tr>
+                </tbody>
+            </table>
+
+            <p><strong>Break-even:</strong> Mês 18-20 | <strong>Cash Flow Positivo:</strong> Ano 2</p>
+
+            <h4>Análise de Moat (Hamilton Helmer's 7 Powers)</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Power</th>
+                        <th>Presente?</th>
+                        <th>Força</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Scale Economies</strong></td><td><span class="status-check">✓</span> Sim</td><td>★★★★☆</td><td>Custo marginal zero por hub adicional</td></tr>
+                    <tr><td><strong>Network Economies</strong></td><td><span class="status-check">✓</span> Sim</td><td>★★★☆☆</td><td>Dados agregados melhoram benchmarks</td></tr>
+                    <tr><td><strong>Counter-Positioning</strong></td><td><span class="status-check">✓</span> Sim</td><td>★★★★★</td><td>Incumbentes não têm solução específica</td></tr>
+                    <tr><td><strong>Switching Costs</strong></td><td><span class="status-check">✓</span> Sim</td><td>★★★★★</td><td>Integração profunda, dados críticos</td></tr>
+                    <tr><td><strong>Brand</strong></td><td><span class="status-warning">⚠</span> Fraco</td><td>★★☆☆☆</td><td>A construir</td></tr>
+                    <tr><td><strong>Cornered Resource</strong></td><td><span class="status-check">✓</span> Sim</td><td>★★★★☆</td><td>Know-how operacional de hubs</td></tr>
+                    <tr><td><strong>Process Power</strong></td><td><span class="status-check">✓</span> Sim</td><td>★★★★☆</td><td>Processos otimizados para last-mile</td></tr>
+                </tbody>
+            </table>
+
+            <p><strong>Moat Score: 4.5/5</strong> — Switching costs e counter-positioning são fortalezas principais.</p>
+
+            <h5>Defensibilidade Específica:</h5>
+            <ol class="compact-list">
+                <li><strong>Lock-in operacional:</strong> Hub depende do sistema para operar diariamente</li>
+                <li><strong>Dados proprietários:</strong> Histórico de performance de motoristas</li>
+                <li><strong>Integração com marketplaces:</strong> APIs específicas (Shopee já integrada)</li>
+                <li><strong>Curva de aprendizado:</strong> Sistema customizado para operação de hub</li>
+            </ol>
+
+            <h4>Análise de Risco</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Score</th>
+                        <th>Peso</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Market Risk</td><td class="comparison-positive">+2</td><td>15%</td><td>Mercado em explosão, demanda validada</td></tr>
+                    <tr><td>Technology Risk</td><td class="comparison-positive">+1</td><td>15%</td><td>Stack moderna (NestJS, React, MongoDB)</td></tr>
+                    <tr><td>Execution Risk</td><td class="comparison-positive">+1</td><td>15%</td><td>MVP 100% pronto, equipe técnica sólida</td></tr>
+                    <tr><td>Team Risk</td><td>0</td><td>15%</td><td>Precisa de vendas enterprise</td></tr>
+                    <tr><td>Financial Risk</td><td class="comparison-positive">+2</td><td>15%</td><td>Unit economics extraordinários</td></tr>
+                    <tr><td>Regulatory Risk</td><td class="comparison-positive">+1</td><td>10%</td><td>Compliance ajuda (checklist obrigatório)</td></tr>
+                    <tr><td>Competition</td><td class="comparison-positive">+1</td><td>10%</td><td>Sem concorrente direto especializado</td></tr>
+                    <tr><td>Timing</td><td class="comparison-positive">+2</td><td>5%</td><td>Timing perfeito (guerra logística)</td></tr>
+                </tbody>
+            </table>
+
+            <p><strong>Risk Score: +1.35</strong> (Baixo risco)</p>
+
+            <h5>Principais Riscos:</h5>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Risco</th>
+                        <th>Probabilidade</th>
+                        <th>Impacto</th>
+                        <th>Mitigação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Concentração em poucos clientes</td><td class="risk-medium">Média</td><td class="risk-high">Alto</td><td>Diversificar por marketplace</td></tr>
+                    <tr><td>Marketplace criar solução interna</td><td class="risk-low">Baixa</td><td class="risk-high">Alto</td><td>Ser mais ágil e especializado</td></tr>
+                    <tr><td>Resistência à mudança nos hubs</td><td class="risk-medium">Média</td><td class="risk-medium">Médio</td><td>Piloto gratuito + ROI comprovado</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Estágio Atual do Produto</h4>
+            <div class="grid-2">
+                <div class="card">
+                    <h5>Status Técnico</h5>
+                    <ul class="compact-list">
+                        <li>Fase 1: 100% completa (core features)</li>
+                        <li>Fase 2: 60% completa (integrações)</li>
+                        <li>Stack: NestJS 11 + React 18 + MongoDB + Redux</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h5>Features Prontas</h5>
+                    <ul class="compact-list">
+                        <li>Sistema de bipagem e conferência</li>
+                        <li>Dashboard de acompanhamento de entregas</li>
+                        <li>Integração Shopee (pré-fatura)</li>
+                        <li>Gestão de motoristas</li>
+                        <li>Checklist digital</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h5>Roadmap:</h5>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Período</th>
+                        <th>Objetivo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Q1 2025</td><td>Piloto com 3-5 hubs</td></tr>
+                    <tr><td>Q2 2025</td><td>Integração Mercado Livre</td></tr>
+                    <tr><td>Q3 2025</td><td>Escala para 20 hubs</td></tr>
+                    <tr><td>Q4 2025</td><td>Features de analytics/BI</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Valuation e Investimento</h4>
+            <div class="card">
+                <h5>Seed Round Recomendado:</h5>
+                <div class="formula-block">Investimento: R$3.000.000
+Pre-Money Valuation: R$12.000.000
+Post-Money: R$15.000.000
+Equity: 20%
+
+Use of Funds:
+- Vendas Enterprise: R$1.200.000 (40%)
+- Desenvolvimento: R$900.000 (30%)
+- Operações: R$600.000 (20%)
+- Marketing: R$300.000 (10%)</div>
+            </div>
+
+            <h5>Múltiplos de Saída (Ano 3):</h5>
+            <ul class="compact-list">
+                <li>ARR Ano 3: R$46,2M</li>
+                <li>Múltiplo SaaS B2B Logística: 8-12x ARR</li>
+                <li><strong>Valuation Ano 3: R$370M - R$554M</strong></li>
+            </ul>
+
+            <h5>ROI para Investidor Seed:</h5>
+            <div class="formula-block">Investment: R$3M por 20%
+
+Exit Year 3 (conservador 8x): R$370M × 20% = R$74M
+ROI: 24,7x em 3 anos (187% CAGR)
+
+Exit Year 3 (otimista 12x): R$554M × 20% = R$110,8M
+ROI: 36,9x em 3 anos (232% CAGR)</div>
+
+            <h4>Comparáveis de Mercado</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>País</th>
+                        <th>Foco</th>
+                        <th>Valuation</th>
+                        <th>ARR</th>
+                        <th>Múltiplo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Bringg</td><td>Israel</td><td>Last-mile</td><td>$1B</td><td>~$80M</td><td>12.5x</td></tr>
+                    <tr><td>Onfleet</td><td>EUA</td><td>Delivery</td><td>$200M</td><td>~$25M</td><td>8x</td></tr>
+                    <tr><td>Locus</td><td>Índia</td><td>Logistics</td><td>$200M</td><td>~$20M</td><td>10x</td></tr>
+                    <tr><td>LogiNext</td><td>Índia</td><td>Last-mile</td><td>$150M</td><td>~$15M</td><td>10x</td></tr>
+                </tbody>
+            </table>
+
+            <p><strong>Conclusão:</strong> Múltiplo de 8-12x ARR é conservador para o setor.</p>
+        </section>
+
+        <!-- PLATAFORMA DE DADOS -->
+        <section class="page-break">
+            <div class="project-header">
+                <div>
+                    <div class="project-title">2. Plataforma de Dados Brasil</div>
+                    <div class="project-code">se-02-app-data</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">85</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">★★★★★</div>
+                </div>
+            </div>
+
+            <h4>Visão Geral Aprofundada</h4>
+            <p><strong>Proposta de Valor:</strong> Plataforma unificada de acesso a dados públicos e privados brasileiros via API, agregando 1.126+ fontes de dados governamentais e privadas.</p>
+
+            <h5>Diferencial Competitivo:</h5>
+            <ul class="compact-list">
+                <li>Maior catálogo de APIs de dados do Brasil</li>
+                <li>Normalização e enriquecimento automático</li>
+                <li>Compliance LGPD nativo</li>
+                <li>Precificação por consulta (pay-per-use)</li>
+            </ul>
+
+            <h4>Catálogo de Dados (Detalhado)</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Quantidade</th>
+                        <th>Exemplos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Conecta Gov.br</strong></td><td>96 APIs</td><td>INSS, Receita, TSE</td></tr>
+                    <tr><td><strong>DETRANs Estaduais</strong></td><td>27</td><td>Veículos, CNH, multas</td></tr>
+                    <tr><td><strong>DATASUS</strong></td><td>70+</td><td>SUS, vacinas, internações</td></tr>
+                    <tr><td><strong>Tribunais</strong></td><td>90+</td><td>Processos judiciais</td></tr>
+                    <tr><td><strong>Cartórios</strong></td><td>50+</td><td>Protestos, certidões</td></tr>
+                    <tr><td><strong>Bureaus de Crédito</strong></td><td>5</td><td>Serasa, SPC, Boa Vista</td></tr>
+                    <tr><td><strong>Open Banking</strong></td><td>12</td><td>Contas, transações</td></tr>
+                    <tr><td><strong>Outros</strong></td><td>776+</td><td>IBGE, ANS, ANATEL</td></tr>
+                    <tr class="table-highlight"><td><strong>TOTAL</strong></td><td><strong>1.126+</strong></td><td>—</td></tr>
+                </tbody>
+            </table>
+
+            <h5>Volume de Dados Projetado:</h5>
+            <div class="grid-4">
+                <div class="metric-box">
+                    <div class="metric-value">57M+</div>
+                    <div class="metric-label">CNPJs</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">80M+</div>
+                    <div class="metric-label">CPFs</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">80M+</div>
+                    <div class="metric-label">Processos Judiciais</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">150M+</div>
+                    <div class="metric-label">Transações/mês</div>
+                </div>
+            </div>
+
+            <h4>Análise de Mercado (TAM/SAM/SOM)</h4>
+            <div class="info-box">
+                <strong>Mercado de Data-as-a-Service Brasil:</strong> 2024: $6,91 bilhões (R$34,5B) | 2033: $23,54 bilhões (projetado) | CAGR: 14,6%<br>
+                <strong>Mercado de API Marketplace Brasil:</strong> 2030: $2,75 bilhões (projetado) | CAGR: 17,9%
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h5>TAM (Total Addressable Market)</h5>
+                    <ul class="compact-list">
+                        <li>Mercado de DaaS Brasil: R$34,5B (2024)</li>
+                        <li>Segmento API/Data Aggregation: <strong>R$8,5B</strong></li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h5>SAM (Serviceable Available Market)</h5>
+                    <table style="font-size: 7pt;">
+                        <tr><td>Fintechs (1.200)</td><td>R$120K/ano</td><td>R$144M</td></tr>
+                        <tr><td>Crédito/Cobrança (850)</td><td>R$180K/ano</td><td>R$153M</td></tr>
+                        <tr><td>Compliance/KYC (2.500)</td><td>R$80K/ano</td><td>R$200M</td></tr>
+                        <tr><td>RH/Background (5.000)</td><td>R$60K/ano</td><td>R$300M</td></tr>
+                        <tr><td>Seguros (200)</td><td>R$200K/ano</td><td>R$40M</td></tr>
+                        <tr class="table-highlight"><td colspan="2"><strong>TOTAL SAM</strong></td><td><strong>R$837M</strong></td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <h5>SOM (Serviceable Obtainable Market):</h5>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ano</th>
+                        <th>Clientes</th>
+                        <th>ARPA</th>
+                        <th>ARR</th>
+                        <th>Market Share</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>50</td><td>R$60K</td><td>R$3M</td><td>0,4%</td></tr>
+                    <tr><td>2</td><td>200</td><td>R$60K</td><td>R$12M</td><td>1,4%</td></tr>
+                    <tr><td>3</td><td>600</td><td>R$60K</td><td>R$36M</td><td>4,3%</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Unit Economics Detalhado</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Valor</th>
+                        <th>Benchmark</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>ARPA</strong></td><td>R$5.000/mês</td><td>—</td><td>—</td></tr>
+                    <tr><td><strong>CAC</strong></td><td>R$8.000</td><td>—</td><td>—</td></tr>
+                    <tr><td><strong>Gross Margin</strong></td><td>92%</td><td>&gt;70% SaaS</td><td><span class="status-check">✓</span> Excepcional</td></tr>
+                    <tr><td><strong>LTV</strong></td><td>R$1.840.000</td><td>—</td><td>—</td></tr>
+                    <tr class="highlight-row"><td><strong>LTV/CAC</strong></td><td><strong>230x</strong></td><td>3-5x ideal</td><td><span class="status-check">✓</span> Extraordinário</td></tr>
+                    <tr class="highlight-row"><td><strong>CAC Payback</strong></td><td><strong>1,74 meses</strong></td><td>&lt;18m good</td><td><span class="status-check">✓</span> Best-in-class</td></tr>
+                    <tr><td><strong>Churn</strong></td><td>3%/ano</td><td>&lt;5% enterprise</td><td><span class="status-check">✓</span> Excelente</td></tr>
+                    <tr><td><strong>NRR Projetado</strong></td><td>125%</td><td>&gt;120% best</td><td><span class="status-check">✓</span> Top quartile</td></tr>
+                </tbody>
+            </table>
+
+            <h5>Modelo de Precificação:</h5>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tier</th>
+                        <th>Consultas/mês</th>
+                        <th>Preço/consulta</th>
+                        <th>MRR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Starter</td><td>10.000</td><td>R$0,08</td><td>R$800</td></tr>
+                    <tr><td>Growth</td><td>100.000</td><td>R$0,05</td><td>R$5.000</td></tr>
+                    <tr><td>Scale</td><td>500.000</td><td>R$0,03</td><td>R$15.000</td></tr>
+                    <tr><td>Enterprise</td><td>2.000.000+</td><td>R$0,02</td><td>R$40.000+</td></tr>
+                </tbody>
+            </table>
+
+            <h5>Custo por Consulta:</h5>
+            <div class="formula-block">Custo infraestrutura: R$0,001
+Custo fonte de dados: R$0,003-0,01
+Custo total: R$0,004-0,011
+Margem: 75-95% por consulta</div>
+
+            <h4>Projeções Financeiras (3 anos)</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Ano 1</th>
+                        <th>Ano 2</th>
+                        <th>Ano 3</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Clientes</strong></td><td>50</td><td>200</td><td>600</td></tr>
+                    <tr><td><strong>ARPA</strong></td><td>R$60K</td><td>R$60K</td><td>R$60K</td></tr>
+                    <tr class="table-highlight"><td><strong>ARR</strong></td><td>R$3M</td><td>R$12M</td><td>R$36M</td></tr>
+                    <tr><td><strong>Growth Rate</strong></td><td>—</td><td>300%</td><td>200%</td></tr>
+                    <tr><td><strong>Consultas/mês</strong></td><td>5M</td><td>20M</td><td>60M</td></tr>
+                    <tr><td><strong>Gross Margin</strong></td><td>92%</td><td>93%</td><td>94%</td></tr>
+                    <tr><td><strong>EBITDA Margin</strong></td><td>-35%</td><td>-15%</td><td>+8%</td></tr>
+                    <tr><td><strong>Rule of 40</strong></td><td>N/A</td><td>285%</td><td>208%</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Análise de Moat (7 Powers)</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Power</th>
+                        <th>Força</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Scale Economies</td><td>★★★★☆</td><td>Custo por consulta diminui com volume</td></tr>
+                    <tr><td>Network Economies</td><td>★★☆☆☆</td><td>Limitado</td></tr>
+                    <tr><td>Counter-Positioning</td><td>★★★★★</td><td>API-first vs legacy Serasa/Boa Vista</td></tr>
+                    <tr><td>Switching Costs</td><td>★★★★☆</td><td>Integração técnica profunda</td></tr>
+                    <tr><td>Brand</td><td>★★☆☆☆</td><td>A construir</td></tr>
+                    <tr><td>Cornered Resource</td><td>★★★★★</td><td>Acesso a 1.126 fontes normalizadas</td></tr>
+                    <tr><td>Process Power</td><td>★★★★☆</td><td>Normalização e enriquecimento</td></tr>
+                </tbody>
+            </table>
+
+            <p><strong>Moat Score: 4.2/5</strong></p>
+
+            <h4>Análise Competitiva</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Concorrente</th>
+                        <th>Forças</th>
+                        <th>Fraquezas</th>
+                        <th>Ameaça</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Serasa</strong></td><td>Brand, dados</td><td>Legacy, caro, lento</td><td class="risk-medium">Média</td></tr>
+                    <tr><td><strong>Boa Vista</strong></td><td>Presença, crédito</td><td>UI ruim, limitado</td><td class="risk-low">Baixa</td></tr>
+                    <tr><td><strong>BigDataCorp</strong></td><td>Técnico, APIs</td><td>Menos fontes, nicho</td><td class="risk-medium">Média</td></tr>
+                    <tr><td><strong>Neoway</strong></td><td>Enterprise, BI</td><td>Caro, complexo</td><td class="risk-low">Baixa</td></tr>
+                    <tr><td><strong>Crawly</strong></td><td>Barato, ágil</td><td>Pequeno, instável</td><td class="risk-medium">Média</td></tr>
+                </tbody>
+            </table>
+
+            <h5>Vantagem Competitiva:</h5>
+            <ol class="compact-list">
+                <li>Maior catálogo de fontes (1.126+)</li>
+                <li>Preço competitivo (pay-per-use)</li>
+                <li>API moderna (REST, GraphQL)</li>
+                <li>Compliance LGPD nativo</li>
+                <li>Tempo de integração rápido</li>
+            </ol>
+
+            <h4>Valuation e Investimento</h4>
+            <div class="card">
+                <h5>Seed Round:</h5>
+                <div class="formula-block">Investimento: R$2.500.000
+Pre-Money: R$10.000.000
+Post-Money: R$12.500.000
+Equity: 20%</div>
+            </div>
+
+            <h5>Exit Scenarios (Ano 3):</h5>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cenário</th>
+                        <th>ARR</th>
+                        <th>Múltiplo</th>
+                        <th>Valuation</th>
+                        <th>ROI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Conservador</td><td>R$36M</td><td>8x</td><td>R$288M</td><td><strong>23x</strong></td></tr>
+                    <tr><td>Base</td><td>R$36M</td><td>10x</td><td>R$360M</td><td><strong>29x</strong></td></tr>
+                    <tr><td>Otimista</td><td>R$36M</td><td>12x</td><td>R$432M</td><td><strong>35x</strong></td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- STREAMING FINANCE -->
+        <section class="page-break">
+            <div class="project-header">
+                <div>
+                    <div class="project-title">3. Streaming Finance</div>
+                    <div class="project-code">se-05-app-streaming-finance</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">76</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">★★★★☆</div>
+                </div>
+            </div>
+
+            <h4>Visão Geral</h4>
+            <p><strong>Proposta:</strong> Plataforma DeFi para streaming de pagamentos e contratos inteligentes aplicados a casos de uso do mundo real.</p>
+
+            <h5>Produtos:</h5>
+            <ol class="compact-list">
+                <li><strong>RentalEscrow:</strong> Aluguel com pagamento em streaming (por segundo)</li>
+                <li><strong>HotelStreaming:</strong> Diárias de hotel em tempo real</li>
+                <li><strong>UsageBasedInsurance:</strong> Seguro baseado em uso (pay-per-mile)</li>
+            </ol>
+
+            <h4>Arquitetura Técnica</h4>
+            <div class="grid-2">
+                <div class="card">
+                    <h5>Blockchain: Polygon (L2 Ethereum)</h5>
+                    <ul class="compact-list">
+                        <li>Baixo custo de gas (~$0,01-0,05 por transação)</li>
+                        <li>Alta velocidade (2s block time)</li>
+                        <li>Compatível com Ethereum</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h5>Custos de Operação</h5>
+                    <ul class="compact-list">
+                        <li>Deploy de contrato: ~$5-20</li>
+                        <li>Transação média: ~$0,05-0,25</li>
+                        <li>Margem operacional: 70%+</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h5>Smart Contracts (Solidity 0.8.24):</h5>
+            <div class="formula-block">// RentalEscrow.sol
+- Depósito de caução em USDC
+- Streaming de aluguel por segundo
+- Liberação automática para proprietário
+- Proteção contra fraudes (ReentrancyGuard)
+
+// HotelStreaming.sol
+- Check-in com depósito mínimo
+- Cobrança proporcional ao tempo
+- Check-out flexível
+- Reembolso automático do não-utilizado
+
+// UsageBasedInsurance.sol
+- Prêmio base + variável por km
+- Integração com telemetria (Chainlink)
+- Claims automatizados
+- Renovação automática</div>
+
+            <h4>Análise de Mercado</h4>
+            <div class="info-box">
+                <strong>Mercado de DeFi Real Estate:</strong> 2024: $0,3 trilhões tokenizados | 2035: $4 trilhões (projetado) | CAGR: ~30%<br>
+                <strong>Mercado de Usage-Based Insurance:</strong> 2024: $45 bilhões globalmente | 2030: $125 bilhões (projetado) | CAGR: 18%
+            </div>
+
+            <div class="grid-3">
+                <div class="card">
+                    <h5>TAM</h5>
+                    <ul class="compact-list">
+                        <li>Real Estate DeFi: R$50B (Brasil, 5 anos)</li>
+                        <li>Usage-Based Insurance: R$5B</li>
+                        <li>Hotel Streaming: R$2B</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h5>SAM</h5>
+                    <p style="font-size: 12pt; font-weight: 700; text-align: center;">R$5B</p>
+                    <p style="font-size: 8pt; text-align: center;">(early adopters, tech-forward)</p>
+                </div>
+                <div class="card">
+                    <h5>SOM</h5>
+                    <table style="font-size: 7pt;">
+                        <tr><td>Ano 1</td><td>R$25M vol.</td><td>R$500K</td></tr>
+                        <tr><td>Ano 2</td><td>R$150M vol.</td><td>R$3M</td></tr>
+                        <tr><td>Ano 3</td><td>R$500M vol.</td><td>R$10M</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <h4>Unit Economics</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Fee por transação</strong></td><td>2%</td></tr>
+                    <tr><td><strong>Custo de gas</strong></td><td>~0,1%</td></tr>
+                    <tr><td><strong>Margem bruta</strong></td><td>95%</td></tr>
+                    <tr><td><strong>Custo de aquisição</strong></td><td>R$500</td></tr>
+                    <tr><td><strong>LTV médio</strong></td><td>R$15.000</td></tr>
+                    <tr class="highlight-row"><td><strong>LTV/CAC</strong></td><td><strong>30x</strong></td></tr>
+                </tbody>
+            </table>
+
+            <h4>Riscos Específicos</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Risco</th>
+                        <th>Probabilidade</th>
+                        <th>Impacto</th>
+                        <th>Mitigação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Regulatório (CVM/BACEN)</td><td class="risk-high">Alta</td><td class="risk-high">Alto</td><td>Sandbox regulatório, compliance</td></tr>
+                    <tr><td>Adoção de crypto no Brasil</td><td class="risk-medium">Média</td><td class="risk-high">Alto</td><td>Stablecoins (USDC), UX simplificada</td></tr>
+                    <tr><td>Volatilidade de gas</td><td class="risk-low">Baixa</td><td class="risk-low">Baixo</td><td>Polygon L2, gas otimizado</td></tr>
+                    <tr><td>Bugs em smart contracts</td><td class="risk-medium">Média</td><td class="risk-high">Alto</td><td>Auditorias, bug bounty</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Valuation</h4>
+            <div class="card">
+                <h5>Pre-Seed Round:</h5>
+                <div class="formula-block">Investimento: R$1.500.000
+Pre-Money: R$6.000.000
+Post-Money: R$7.500.000
+Equity: 20%</div>
+            </div>
+
+            <h5>Exit (Ano 3):</h5>
+            <ul class="compact-list">
+                <li>Volume: R$500M</li>
+                <li>Receita: R$10M</li>
+                <li>Múltiplo: 15-20x (DeFi premium)</li>
+                <li>Valuation: R$150M - R$200M</li>
+                <li><strong>ROI: 20-27x</strong></li>
+            </ul>
+        </section>
+
+        <!-- PARTE II -->
+        <section class="page-break" id="parte2">
+            <h2>Parte II: Análise dos Demais Projetos</h2>
+
+            <h3>Tier B — Potencial Médio-Alto (Score 60-73)</h3>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">4. Subscription Manager</span>
+                    <span class="card-badge badge-warning">Score: 68/100</span>
+                </div>
+                <p><strong>Descrição:</strong> SaaS para gestão de assinaturas recorrentes de empresas.</p>
+                <div class="grid-2">
+                    <div>
+                        <h5>Mercado:</h5>
+                        <ul class="compact-list">
+                            <li>TAM: R$2B (gestão de assinaturas Brasil)</li>
+                            <li>SAM: R$400M</li>
+                            <li>SOM: R$20M (Ano 3)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5>Forças:</h5>
+                        <ul class="compact-list">
+                            <li>Mercado em crescimento (economia da recorrência)</li>
+                            <li>Modelo B2B com receita previsível</li>
+                            <li>Integração com gateways de pagamento</li>
+                        </ul>
+                        <h5>Fraquezas:</h5>
+                        <ul class="compact-list">
+                            <li>Concorrência forte (Vindi, PagSeguro, Stripe)</li>
+                            <li>Diferenciação limitada</li>
+                        </ul>
+                    </div>
+                </div>
+                <p><strong>Recomendação:</strong> Pivotar para nicho específico (ex: academias, SaaS vertical)</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">5. MEI Manager</span>
+                    <span class="card-badge badge-warning">Score: 65/100</span>
+                </div>
+                <p><strong>Descrição:</strong> Aplicativo de gestão financeira para Microempreendedores Individuais.</p>
+                <div class="grid-2">
+                    <div>
+                        <h5>Mercado:</h5>
+                        <ul class="compact-list">
+                            <li>TAM: 15M MEIs no Brasil</li>
+                            <li>SAM: 5M MEIs digitalizados</li>
+                            <li>SOM: 100K usuários (Ano 3)</li>
+                        </ul>
+                        <h5>Modelo:</h5>
+                        <p style="font-size: 8pt;">Freemium: R$0 (básico) / R$29,90 (pro) / R$59,90 (premium)</p>
+                    </div>
+                    <div>
+                        <h5>Forças:</h5>
+                        <ul class="compact-list">
+                            <li>Mercado massivo (15M+ MEIs)</li>
+                            <li>Dor real (burocracia, DAS, notas fiscais)</li>
+                            <li>Baixo CAC (viral, SEO)</li>
+                        </ul>
+                        <h5>Fraquezas:</h5>
+                        <ul class="compact-list">
+                            <li>Ticket baixo</li>
+                            <li>Competição (Conta Azul, Bling)</li>
+                        </ul>
+                    </div>
+                </div>
+                <p><strong>Recomendação:</strong> Foco em funcionalidades únicas (integração bancária, IA para categorização)</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">6. Cardápio Digital</span>
+                    <span class="card-badge badge-warning">Score: 62/100</span>
+                </div>
+                <p><strong>Descrição:</strong> Sistema de cardápio digital com QR code para restaurantes.</p>
+                <div class="grid-2">
+                    <div>
+                        <h5>Mercado:</h5>
+                        <ul class="compact-list">
+                            <li>TAM: 1M restaurantes no Brasil</li>
+                            <li>SAM: 200K digitalizados</li>
+                            <li>SOM: 5K clientes (Ano 3)</li>
+                        </ul>
+                        <h5>Modelo:</h5>
+                        <p style="font-size: 8pt;">R$99-299/mês</p>
+                    </div>
+                    <div>
+                        <h5>Forças:</h5>
+                        <ul class="compact-list">
+                            <li>Pós-pandemia acelerou digitalização</li>
+                            <li>Fácil de vender e implementar</li>
+                        </ul>
+                        <h5>Fraquezas:</h5>
+                        <ul class="compact-list">
+                            <li>Mercado saturado (iFood, Goomer, Cardápio Web)</li>
+                            <li>Baixa barreira de entrada</li>
+                        </ul>
+                    </div>
+                </div>
+                <p><strong>Recomendação:</strong> Pivotar para nicho (dark kitchens, franquias)</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">7. Post Automation</span>
+                    <span class="card-badge badge-warning">Score: 60/100</span>
+                </div>
+                <p><strong>Descrição:</strong> Ferramenta de automação de posts para redes sociais.</p>
+                <div class="grid-2">
+                    <div>
+                        <h5>Mercado:</h5>
+                        <ul class="compact-list">
+                            <li>TAM: R$500M (social media tools Brasil)</li>
+                            <li>SAM: R$100M</li>
+                            <li>SOM: R$5M</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h5>Forças:</h5>
+                        <ul class="compact-list">
+                            <li>Demanda crescente por automação</li>
+                            <li>Modelo SaaS escalável</li>
+                        </ul>
+                        <h5>Fraquezas:</h5>
+                        <ul class="compact-list">
+                            <li>Concorrência intensa (Hootsuite, Buffer, mLabs)</li>
+                            <li>APIs das redes sociais instáveis</li>
+                        </ul>
+                    </div>
+                </div>
+                <p><strong>Recomendação:</strong> Foco em IA generativa para diferenciação</p>
+            </div>
+
+            <h3>Tier C — Potencial Médio (Score 40-59)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Projeto</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                        <th>Recomendação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>01-base-template</td><td>45</td><td>Template</td><td>Manter como base</td></tr>
+                    <tr><td>02-poc-concepts</td><td>40</td><td>POC</td><td>Avaliar individualmente</td></tr>
+                    <tr><td>03-experiments</td><td>42</td><td>Experimental</td><td>Manter para P&D</td></tr>
+                    <tr><td>se-01-*</td><td>50</td><td>MVP</td><td>Validar PMF</td></tr>
+                    <tr><td>se-03-*</td><td>48</td><td>MVP</td><td>Pivotar ou descontinuar</td></tr>
+                    <tr><td>se-04-*</td><td>52</td><td>MVP</td><td>Avaliar mercado</td></tr>
+                    <tr><td>Outros</td><td>35-55</td><td>Variado</td><td>Case-by-case</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- PARTE III -->
+        <section class="page-break" id="parte3">
+            <h2>Parte III: Framework de Decisão</h2>
+
+            <h3>Matriz de Priorização</h3>
+            <div class="diagram-box">                    ALTO POTENCIAL
+                         ↑
+    ┌────────────────────┼───────────────────┐
+    │                    │                    │
+    │   CONSTRUIR        │    INVESTIR        │
+    │   (Tier B)         │    (Tier A)        │
+    │                    │                    │
+    │   - Subscription   │  ★ O Entregador    │
+ B  │   - MEI Manager    │  ★ Data Platform   │
+ A  │   - Cardápio       │  ★ Streaming Fin   │
+ I  │                    │                    │
+ X  ├────────────────────┼────────────────────┤
+ O  │                    │                    │
+    │   MANTER           │    VALIDAR         │
+ R  │   (Tier D)         │    (Tier C)        │
+ I  │                    │                    │
+ S  │   - Templates      │   - POCs           │
+ C  │   - Bases          │   - Experimentos   │
+ O  │                    │                    │
+    └────────────────────┴────────────────────┘
+                    BAIXO POTENCIAL</div>
+
+            <h3>Critérios de Go/No-Go</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Critério</th>
+                        <th>Peso</th>
+                        <th>O Entregador</th>
+                        <th>Data Platform</th>
+                        <th>Streaming</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>TAM &gt; R$100M</td>
+                        <td>20%</td>
+                        <td><span class="status-check">✓</span> R$230M</td>
+                        <td><span class="status-check">✓</span> R$837M</td>
+                        <td><span class="status-check">✓</span> R$57B</td>
+                    </tr>
+                    <tr>
+                        <td>LTV/CAC &gt; 3x</td>
+                        <td>20%</td>
+                        <td><span class="status-check">✓</span> 184x</td>
+                        <td><span class="status-check">✓</span> 230x</td>
+                        <td><span class="status-check">✓</span> 30x</td>
+                    </tr>
+                    <tr>
+                        <td>MVP Pronto</td>
+                        <td>15%</td>
+                        <td><span class="status-check">✓</span> 100%</td>
+                        <td><span class="status-warning">⚠</span> 70%</td>
+                        <td><span class="status-check">✓</span> 100%</td>
+                    </tr>
+                    <tr>
+                        <td>Moat Identificado</td>
+                        <td>15%</td>
+                        <td><span class="status-check">✓</span> 4.5/5</td>
+                        <td><span class="status-check">✓</span> 4.2/5</td>
+                        <td><span class="status-warning">⚠</span> 3/5</td>
+                    </tr>
+                    <tr>
+                        <td>Timing</td>
+                        <td>15%</td>
+                        <td><span class="status-check">✓</span> 10/10</td>
+                        <td><span class="status-check">✓</span> 10/10</td>
+                        <td><span class="status-warning">⚠</span> 7/10</td>
+                    </tr>
+                    <tr>
+                        <td>Equipe</td>
+                        <td>15%</td>
+                        <td><span class="status-warning">⚠</span> 3/5</td>
+                        <td><span class="status-warning">⚠</span> 3/5</td>
+                        <td><span class="status-warning">⚠</span> 3/5</td>
+                    </tr>
+                    <tr class="table-highlight">
+                        <td><strong>DECISÃO</strong></td>
+                        <td>100%</td>
+                        <td><strong class="comparison-positive">GO</strong></td>
+                        <td><strong class="comparison-positive">GO</strong></td>
+                        <td><strong class="comparison-positive">GO</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- PARTE IV -->
+        <section class="page-break" id="parte4">
+            <h2>Parte IV: Recomendações Estratégicas</h2>
+
+            <h3>1. Alocação de Capital</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Projeto</th>
+                        <th>Investimento</th>
+                        <th>Timing</th>
+                        <th>Prioridade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>O Entregador</td><td>R$3M</td><td>Imediato</td><td><span class="rank-badge gold">1</span></td></tr>
+                    <tr><td>Data Platform</td><td>R$2,5M</td><td>Q2 2025</td><td><span class="rank-badge silver">2</span></td></tr>
+                    <tr><td>Streaming Finance</td><td>R$1,5M</td><td>Q3 2025</td><td><span class="rank-badge bronze">3</span></td></tr>
+                    <tr class="table-highlight"><td><strong>TOTAL</strong></td><td><strong>R$7M</strong></td><td>—</td><td>—</td></tr>
+                </tbody>
+            </table>
+
+            <h3>2. Sequenciamento</h3>
+            <div class="grid-2">
+                <div class="card">
+                    <h5>Q1 2025</h5>
+                    <ul class="compact-list">
+                        <li><strong>O Entregador:</strong> Fechar 3-5 pilotos com hubs</li>
+                        <li><strong>Data Platform:</strong> Completar MVP, 5 clientes piloto</li>
+                        <li><strong>Streaming:</strong> Auditoria de smart contracts</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h5>Q2 2025</h5>
+                    <ul class="compact-list">
+                        <li><strong>O Entregador:</strong> Escalar para 20 hubs</li>
+                        <li><strong>Data Platform:</strong> Launch comercial</li>
+                        <li><strong>Streaming:</strong> Sandbox regulatório</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h5>Q3 2025</h5>
+                    <ul class="compact-list">
+                        <li><strong>O Entregador:</strong> Integração Mercado Livre</li>
+                        <li><strong>Data Platform:</strong> 100 clientes</li>
+                        <li><strong>Streaming:</strong> Primeiros clientes pagantes</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h5>Q4 2025</h5>
+                    <ul class="compact-list">
+                        <li><strong>O Entregador:</strong> 50 hubs, ARR R$10M</li>
+                        <li><strong>Data Platform:</strong> 200 clientes, ARR R$12M</li>
+                        <li><strong>Streaming:</strong> Volume R$25M, receita R$500K</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>3. Métricas de Acompanhamento</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Projeto</th>
+                        <th>KPI Primário</th>
+                        <th>Meta Q4 2025</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>O Entregador</td><td>Hubs ativos</td><td><strong>50</strong></td></tr>
+                    <tr><td>Data Platform</td><td>Clientes pagantes</td><td><strong>200</strong></td></tr>
+                    <tr><td>Streaming Finance</td><td>Volume transacionado</td><td><strong>R$25M</strong></td></tr>
+                </tbody>
+            </table>
+
+            <h3>4. Sinergias do Portfólio</h3>
+            <div class="diagram-box">┌─────────────────────────────────────────────────────┐
+│                                                     │
+│   O Entregador ────────► Data Platform              │
+│        │                     │                      │
+│        │  Dados de           │  Background check    │
+│        │  motoristas         │  de motoristas       │
+│        │                     │                      │
+│        └─────────┬───────────┘                      │
+│                  │                                  │
+│                  ▼                                  │
+│          Streaming Finance                          │
+│                  │                                  │
+│        Pagamento em streaming                       │
+│        para motoristas                              │
+│                                                     │
+└─────────────────────────────────────────────────────┘</div>
+
+            <h5>Oportunidades de Cross-sell:</h5>
+            <ol class="compact-list">
+                <li>Data Platform valida documentação de motoristas para O Entregador</li>
+                <li>Streaming Finance processa pagamentos para motoristas</li>
+                <li>Dados de entregas enriquecem modelos de crédito da Data Platform</li>
+            </ol>
+        </section>
+
+        <!-- PARTE V - CONCLUSÃO -->
+        <section class="page-break" id="parte5">
+            <h2>Parte V: Conclusão</h2>
+
+            <h3>Resumo do Investimento</h3>
+            <div class="exec-summary">
+                <div class="grid-4">
+                    <div class="metric-box">
+                        <div class="metric-value">R$7M</div>
+                        <div class="metric-label">Investimento Total</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">20%</div>
+                        <div class="metric-label">Equity Médio</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">R$92,2M</div>
+                        <div class="metric-label">ARR Ano 3 (Combinado)</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-value">20-45x</div>
+                        <div class="metric-label">ROI Esperado</div>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; font-size: 9pt; text-align: center;"><strong>Valuation Ano 3:</strong> R$700M - R$1.1B</p>
+            </div>
+
+            <h3>Por que Investir Agora</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">#</th>
+                        <th>Fator</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>1</strong></td><td><strong>Timing de Mercado</strong></td><td>Todos os 3 projetos top estão no timing ideal</td></tr>
+                    <tr><td><strong>2</strong></td><td><strong>Unit Economics</strong></td><td>LTV/CAC extraordinários (30x - 230x)</td></tr>
+                    <tr><td><strong>3</strong></td><td><strong>Defensibilidade</strong></td><td>Moats claros e sustentáveis</td></tr>
+                    <tr><td><strong>4</strong></td><td><strong>Sinergias</strong></td><td>Portfólio complementar com cross-sell</td></tr>
+                    <tr><td><strong>5</strong></td><td><strong>Equipe</strong></td><td>Base técnica sólida, MVPs prontos</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Próximos Passos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30px;">#</th>
+                        <th>Ação</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>1</strong></td><td>Due Diligence Técnica</td><td>Auditoria de código e arquitetura</td></tr>
+                    <tr><td><strong>2</strong></td><td>Validação de Mercado</td><td>Entrevistas com potenciais clientes</td></tr>
+                    <tr><td><strong>3</strong></td><td>Term Sheet</td><td>Negociação de termos de investimento</td></tr>
+                    <tr><td><strong>4</strong></td><td>Pilotos Pagos</td><td>3-5 clientes pagantes em cada projeto</td></tr>
+                    <tr><td><strong>5</strong></td><td>Montagem de Time</td><td>Contratação de vendas enterprise</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <div>
+                <strong>Documento preparado por:</strong> Análise de IA<br>
+                <strong>Data:</strong> Janeiro 2025<br>
+                <strong>Versão:</strong> 2.0
+            </div>
+            <div style="text-align: right; font-style: italic;">
+                Este documento contém projeções baseadas em dados de mercado<br>
+                e análise de documentação dos projetos.<br>
+                Resultados reais podem variar.
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

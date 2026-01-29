@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist App - Análise de Investimento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e4e4e4;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #00d4aa;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(0, 212, 170, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            color: #888;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #00d4aa, #00a885);
+            color: #1a1a2e;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h2 {
+            color: #00d4aa;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0, 212, 170, 0.3);
+        }
+
+        h3 {
+            color: #ffd700;
+            font-size: 1.3em;
+            margin: 25px 0 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(0, 212, 170, 0.2);
+            color: #00d4aa;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .highlight {
+            color: #00d4aa;
+            font-weight: bold;
+        }
+
+        .money {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: #ff6b6b;
+        }
+
+        .success {
+            color: #00d4aa;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(0, 212, 170, 0.2);
+        }
+
+        .card-value {
+            font-size: 2.5em;
+            color: #00d4aa;
+            font-weight: bold;
+        }
+
+        .card-label {
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .metric-box {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(0, 168, 133, 0.1));
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #00d4aa;
+        }
+
+        .formula {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            color: #ffd700;
+            margin: 10px 0;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        ul li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #00d4aa;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .comparison-box.pro {
+            border: 2px solid #00d4aa;
+        }
+
+        .comparison-box.con {
+            border: 2px solid #ff6b6b;
+        }
+
+        .comparison-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .pro .comparison-title {
+            color: #00d4aa;
+        }
+
+        .con .comparison-title {
+            color: #ff6b6b;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, #00d4aa, #ffd700);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -34px;
+            top: 25px;
+            width: 12px;
+            height: 12px;
+            background: #00d4aa;
+            border-radius: 50%;
+            border: 3px solid #1a1a2e;
+        }
+
+        .founder-box {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .founder-value {
+            font-size: 3em;
+            color: #ffd700;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            color: #666;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .card-value {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Checklist App</h1>
+            <p class="subtitle">Análise de Investimento - Software de Compliance de Frotas</p>
+            <span class="badge">Produto Independente</span>
+        </header>
+
+        <!-- RESUMO EXECUTIVO -->
+        <section>
+            <h2>1. Resumo Executivo</h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-value">R$1,20</div>
+                    <div class="card-label">Por motorista/dia</div>
+                </div>
+                <div class="card">
+                    <div class="card-value">500k+</div>
+                    <div class="card-label">Frotas no Brasil</div>
+                </div>
+                <div class="card">
+                    <div class="card-value">R$9M</div>
+                    <div class="card-label">ARR Ano 5 (meta)</div>
+                </div>
+                <div class="card">
+                    <div class="card-value">R$72M</div>
+                    <div class="card-label">Valuation Ano 5</div>
+                </div>
+            </div>
+
+            <div class="metric-box">
+                <strong>Proposta de Valor:</strong> App móvel para checklist diário de motoristas e veículos, garantindo compliance com legislação e reduzindo riscos operacionais e jurídicos para frotas de qualquer tamanho.
+            </div>
+        </section>
+
+        <!-- O PRODUTO -->
+        <section>
+            <h2>2. O Produto</h2>
+
+            <h3>Funcionalidades Core</h3>
+            <ul>
+                <li><strong>Checklist do Motorista:</strong> CNH (validade, categoria), exame toxicológico, atestado médico</li>
+                <li><strong>Checklist do Veículo:</strong> CRLV, pneus, freios, luzes, extintor, triângulo, macaco</li>
+                <li><strong>Registro Fotográfico:</strong> Fotos obrigatórias de itens críticos com geolocalização</li>
+                <li><strong>Assinatura Digital:</strong> Motorista assina confirmando inspeção</li>
+                <li><strong>Alertas Automáticos:</strong> CNH vencendo, CRLV atrasado, exame toxicológico</li>
+                <li><strong>Dashboard Web:</strong> Gestor visualiza compliance de toda frota</li>
+                <li><strong>Relatórios:</strong> Exportação para auditoria e fiscalização</li>
+            </ul>
+
+            <h3>Diferenciais</h3>
+            <ul>
+                <li>100% offline - funciona em áreas sem sinal</li>
+                <li>Integração com DENATRAN para validação automática de CNH</li>
+                <li>OCR para leitura automática de documentos</li>
+                <li>Templates customizáveis por tipo de operação</li>
+            </ul>
+        </section>
+
+        <!-- MERCADO -->
+        <section>
+            <h2>3. Mercado (TAM/SAM/SOM)</h2>
+
+            <h3>Segmentos-Alvo</h3>
+            <table>
+                <tr>
+                    <th>Segmento</th>
+                    <th>Empresas no BR</th>
+                    <th>Motoristas (média)</th>
+                    <th>Potencial</th>
+                </tr>
+                <tr>
+                    <td>Transportadoras</td>
+                    <td>150.000+</td>
+                    <td>15-500</td>
+                    <td class="highlight">Alto</td>
+                </tr>
+                <tr>
+                    <td>Distribuidoras</td>
+                    <td>50.000+</td>
+                    <td>10-100</td>
+                    <td class="highlight">Alto</td>
+                </tr>
+                <tr>
+                    <td>Locadoras de Veículos</td>
+                    <td>8.000+</td>
+                    <td>20-200</td>
+                    <td class="highlight">Alto</td>
+                </tr>
+                <tr>
+                    <td>Frotas Corporativas</td>
+                    <td>100.000+</td>
+                    <td>5-50</td>
+                    <td>Médio</td>
+                </tr>
+                <tr>
+                    <td>Cooperativas de Táxi</td>
+                    <td>5.000+</td>
+                    <td>50-500</td>
+                    <td>Médio</td>
+                </tr>
+                <tr>
+                    <td>Empresas de Ônibus</td>
+                    <td>3.000+</td>
+                    <td>20-300</td>
+                    <td>Médio</td>
+                </tr>
+                <tr>
+                    <td>Hubs Last-Mile</td>
+                    <td>2.000+</td>
+                    <td>100-400</td>
+                    <td class="highlight">Alto (combo)</td>
+                </tr>
+            </table>
+
+            <h3>Cálculo TAM/SAM/SOM</h3>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-value">R$2,6B</div>
+                    <div class="card-label">TAM (500k frotas × 50 mot × R$36/mês)</div>
+                </div>
+                <div class="card">
+                    <div class="card-value">R$432M</div>
+                    <div class="card-label">SAM (100k frotas +10 mot)</div>
+                </div>
+                <div class="card">
+                    <div class="card-value">R$21,6M</div>
+                    <div class="card-label">SOM Ano 5 (1.000 frotas)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRECIFICAÇÃO -->
+        <section>
+            <h2>4. Modelo de Precificação</h2>
+
+            <table>
+                <tr>
+                    <th>Modelo</th>
+                    <th>Preço</th>
+                    <th>Equivalente Mensal</th>
+                    <th>Target</th>
+                </tr>
+                <tr>
+                    <td>Por uso</td>
+                    <td class="money">R$1,20/motorista/dia</td>
+                    <td>R$36/motorista</td>
+                    <td>Frotas com alta rotatividade</td>
+                </tr>
+                <tr>
+                    <td>Mensal fixo</td>
+                    <td class="money">R$25/motorista/mês</td>
+                    <td>R$25/motorista</td>
+                    <td>Frotas estáveis (desconto)</td>
+                </tr>
+                <tr>
+                    <td>Enterprise</td>
+                    <td class="money">R$2.000 + R$15/mot</td>
+                    <td>Negociável</td>
+                    <td>+500 motoristas</td>
+                </tr>
+            </table>
+
+            <h3>Exemplos de Ticket Médio</h3>
+            <table>
+                <tr>
+                    <th>Tipo de Cliente</th>
+                    <th>Motoristas</th>
+                    <th>Ticket Mensal</th>
+                    <th>Ticket Anual</th>
+                </tr>
+                <tr>
+                    <td>Pequena transportadora</td>
+                    <td>20</td>
+                    <td class="money">R$500</td>
+                    <td>R$6.000</td>
+                </tr>
+                <tr>
+                    <td>Distribuidora média</td>
+                    <td>50</td>
+                    <td class="money">R$1.250</td>
+                    <td>R$15.000</td>
+                </tr>
+                <tr>
+                    <td>Transportadora grande</td>
+                    <td>200</td>
+                    <td class="money">R$5.000</td>
+                    <td>R$60.000</td>
+                </tr>
+                <tr>
+                    <td>Hub last-mile (combo)</td>
+                    <td>200</td>
+                    <td class="money">R$7.200</td>
+                    <td>R$86.400</td>
+                </tr>
+            </table>
+
+            <div class="metric-box">
+                <strong>ARPA Médio Esperado:</strong> R$1.500/mês (50 motoristas × R$30 médio)
+            </div>
+        </section>
+
+        <!-- UNIT ECONOMICS -->
+        <section>
+            <h2>5. Unit Economics</h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-value">R$1.500</div>
+                    <div class="card-label">ARPA (mensal)</div>
+                </div>
+                <div class="card">
+                    <div class="card-value">R$18.000</div>
+                    <div class="card-label">ARPA (anual)</div>
+                </div>
+                <div class="card">
+                    <div class="card-value">R$5.000</div>
+                    <div class="card-label">CAC estimado</div>
+                </div>
+                <div class="card">
+                    <div class="card-value">85%</div>
+                    <div class="card-label">Margem Bruta</div>
+                </div>
+            </div>
+
+            <h3>Cálculos</h3>
+            <div class="formula">
+                LTV = ARPA × Margem Bruta × Tempo Médio (meses)<br>
+                LTV = R$1.500 × 85% × 36 meses = <strong>R$45.900</strong>
+            </div>
+            <div class="formula">
+                LTV/CAC = R$45.900 / R$5.000 = <strong>9,2x</strong> ✓ (meta: >3x)
+            </div>
+            <div class="formula">
+                CAC Payback = R$5.000 / (R$1.500 × 85%) = <strong>3,9 meses</strong> ✓ (meta: <12 meses)
+            </div>
+
+            <div class="metric-box">
+                <strong>Conclusão:</strong> Unit economics saudável. LTV/CAC de 9,2x indica negócio escalável com boa margem para investir em aquisição.
+            </div>
+        </section>
+
+        <!-- CONCORRENTES -->
+        <section>
+            <h2>6. Análise Competitiva</h2>
+
+            <table>
+                <tr>
+                    <th>Concorrente</th>
+                    <th>Preço</th>
+                    <th>Foco</th>
+                    <th>Fraqueza</th>
+                </tr>
+                <tr>
+                    <td>Checklist Fácil</td>
+                    <td>R$99-499/mês</td>
+                    <td>Checklist genérico</td>
+                    <td class="warning">Não é específico para frotas</td>
+                </tr>
+                <tr>
+                    <td>iAuditor (SafetyCulture)</td>
+                    <td>US$24/usuário</td>
+                    <td>Inspeções gerais</td>
+                    <td class="warning">Caro, não BR, genérico</td>
+                </tr>
+                <tr>
+                    <td>Prolog App</td>
+                    <td>Sob consulta</td>
+                    <td>Gestão de pneus</td>
+                    <td class="warning">Foco muito específico</td>
+                </tr>
+                <tr>
+                    <td>Rabbot</td>
+                    <td>Sob consulta</td>
+                    <td>Gestão de frota</td>
+                    <td class="warning">Muito amplo, caro</td>
+                </tr>
+                <tr>
+                    <td>Planilha Excel</td>
+                    <td>Grátis</td>
+                    <td>Manual</td>
+                    <td class="warning">Não escala, sem controle</td>
+                </tr>
+            </table>
+
+            <h3>Posicionamento</h3>
+            <div class="comparison-grid">
+                <div class="comparison-box pro">
+                    <div class="comparison-title">Nossos Diferenciais</div>
+                    <ul>
+                        <li>100% focado em compliance de motoristas</li>
+                        <li>Preço por motorista (justo)</li>
+                        <li>Integração DENATRAN</li>
+                        <li>100% offline</li>
+                        <li>Suporte local em português</li>
+                        <li>Combo com O Entregador (hubs)</li>
+                    </ul>
+                </div>
+                <div class="comparison-box con">
+                    <div class="comparison-title">Riscos Competitivos</div>
+                    <ul>
+                        <li>Grandes ERPs podem adicionar feature</li>
+                        <li>Concorrentes de telemetria expandindo</li>
+                        <li>Barrier to entry baixo (app simples)</li>
+                        <li>Dependência de regulação</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROJEÇÕES -->
+        <section>
+            <h2>7. Projeções Financeiras</h2>
+
+            <h3>Crescimento de Clientes</h3>
+            <table>
+                <tr>
+                    <th>Ano</th>
+                    <th>Clientes</th>
+                    <th>Motoristas (total)</th>
+                    <th>MRR</th>
+                    <th>ARR</th>
+                </tr>
+                <tr>
+                    <td>Ano 1</td>
+                    <td>50</td>
+                    <td>2.500</td>
+                    <td class="money">R$75.000</td>
+                    <td>R$900.000</td>
+                </tr>
+                <tr>
+                    <td>Ano 2</td>
+                    <td>150</td>
+                    <td>7.500</td>
+                    <td class="money">R$225.000</td>
+                    <td>R$2.700.000</td>
+                </tr>
+                <tr>
+                    <td>Ano 3</td>
+                    <td>300</td>
+                    <td>15.000</td>
+                    <td class="money">R$450.000</td>
+                    <td>R$5.400.000</td>
+                </tr>
+                <tr>
+                    <td>Ano 4</td>
+                    <td>450</td>
+                    <td>22.500</td>
+                    <td class="money">R$675.000</td>
+                    <td>R$8.100.000</td>
+                </tr>
+                <tr>
+                    <td>Ano 5</td>
+                    <td>600</td>
+                    <td>30.000</td>
+                    <td class="money">R$900.000</td>
+                    <td>R$10.800.000</td>
+                </tr>
+            </table>
+
+            <h3>Combinado: O Entregador + Checklist App</h3>
+            <table>
+                <tr>
+                    <th>Ano</th>
+                    <th>ARR Entregador</th>
+                    <th>ARR Checklist</th>
+                    <th>ARR Total</th>
+                    <th>Valuation (8x)</th>
+                </tr>
+                <tr>
+                    <td>Ano 1</td>
+                    <td>R$612.000</td>
+                    <td>R$900.000</td>
+                    <td class="money">R$1.512.000</td>
+                    <td>R$12,1M</td>
+                </tr>
+                <tr>
+                    <td>Ano 3</td>
+                    <td>R$4.896.000</td>
+                    <td>R$5.400.000</td>
+                    <td class="money">R$10.296.000</td>
+                    <td>R$82,4M</td>
+                </tr>
+                <tr>
+                    <td>Ano 5</td>
+                    <td>R$12.240.000</td>
+                    <td>R$10.800.000</td>
+                    <td class="money">R$23.040.000</td>
+                    <td>R$184,3M</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- RETORNO FOUNDERS -->
+        <section>
+            <h2>8. Retorno dos Founders</h2>
+
+            <p>Assumindo 60% de participação após diluição (Seed + Series A + Series B) e divisão 50/50:</p>
+
+            <h3>Cenário: Dois Produtos Combinados</h3>
+            <table>
+                <tr>
+                    <th>Momento</th>
+                    <th>ARR Total</th>
+                    <th>Valuation (8x)</th>
+                    <th>Founders (60%)</th>
+                    <th>Cada Founder</th>
+                </tr>
+                <tr>
+                    <td>Saída Ano 1</td>
+                    <td>R$1,5M</td>
+                    <td>R$12,1M</td>
+                    <td>R$7,3M</td>
+                    <td class="money">R$3,6M</td>
+                </tr>
+                <tr>
+                    <td>Saída Ano 3</td>
+                    <td>R$10,3M</td>
+                    <td>R$82,4M</td>
+                    <td>R$49,4M</td>
+                    <td class="money">R$24,7M</td>
+                </tr>
+                <tr>
+                    <td>Saída Ano 5</td>
+                    <td>R$23M</td>
+                    <td>R$184,3M</td>
+                    <td>R$110,6M</td>
+                    <td class="money">R$55,3M</td>
+                </tr>
+            </table>
+
+            <div class="founder-box">
+                <p>Saída no Ano 5 (cenário base)</p>
+                <div class="founder-value">R$55,3M cada</div>
+                <p style="margin-top: 10px; color: #888;">Com os dois produtos combinados</p>
+            </div>
+
+            <h3>Comparativo: Com vs Sem Checklist Separado</h3>
+            <table>
+                <tr>
+                    <th>Cenário</th>
+                    <th>Ano 1</th>
+                    <th>Ano 5</th>
+                </tr>
+                <tr>
+                    <td>Só O Entregador (sem checklist)</td>
+                    <td>R$1,5M cada</td>
+                    <td class="warning">R$29M cada</td>
+                </tr>
+                <tr>
+                    <td>O Entregador + Checklist integrado</td>
+                    <td>R$5,7M cada</td>
+                    <td>R$184M cada</td>
+                </tr>
+                <tr>
+                    <td class="highlight">O Entregador + Checklist App (separados)</td>
+                    <td class="money">R$3,6M cada</td>
+                    <td class="money">R$55M cada</td>
+                </tr>
+            </table>
+
+            <div class="metric-box">
+                <strong>Análise:</strong> Separar os produtos reduz o retorno vs. checklist integrado (-70%), mas permite vender para mercado muito maior e diversifica o risco. Se o Checklist App escalar melhor que o projetado (TAM é enorme), o retorno pode superar o cenário integrado.
+            </div>
+        </section>
+
+        <!-- GO TO MARKET -->
+        <section>
+            <h2>9. Go-to-Market</h2>
+
+            <h3>Estratégia de Aquisição</h3>
+            <table>
+                <tr>
+                    <th>Canal</th>
+                    <th>% Leads</th>
+                    <th>CAC</th>
+                    <th>Tática</th>
+                </tr>
+                <tr>
+                    <td>Cross-sell O Entregador</td>
+                    <td>30%</td>
+                    <td class="success">R$0</td>
+                    <td>Oferecer para clientes existentes</td>
+                </tr>
+                <tr>
+                    <td>Inbound (SEO/Conteúdo)</td>
+                    <td>25%</td>
+                    <td>R$3.000</td>
+                    <td>"checklist motorista", "compliance frota"</td>
+                </tr>
+                <tr>
+                    <td>Parcerias (sindicatos, associações)</td>
+                    <td>20%</td>
+                    <td>R$2.000</td>
+                    <td>SETCESP, NTC, associações regionais</td>
+                </tr>
+                <tr>
+                    <td>Outbound (SDR)</td>
+                    <td>15%</td>
+                    <td>R$8.000</td>
+                    <td>Lista de transportadoras</td>
+                </tr>
+                <tr>
+                    <td>Indicação</td>
+                    <td>10%</td>
+                    <td>R$1.500</td>
+                    <td>Programa de referral</td>
+                </tr>
+            </table>
+
+            <h3>Vantagem Estratégica: Cross-sell</h3>
+            <div class="metric-box">
+                Cada hub do O Entregador trabalha com <strong>5-10 transportadoras</strong> parceiras. Isso gera leads qualificados para o Checklist App:
+                <br><br>
+                <strong>15 hubs × 7 transportadoras = 105 leads quentes no Ano 1</strong>
+            </div>
+        </section>
+
+        <!-- ROADMAP -->
+        <section>
+            <h2>10. Roadmap de Desenvolvimento</h2>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h3>Q1 2026 - MVP</h3>
+                    <ul>
+                        <li>App Android com checklist básico</li>
+                        <li>Dashboard web para gestor</li>
+                        <li>Alertas de vencimento (CNH, CRLV)</li>
+                        <li>Exportação PDF de relatórios</li>
+                    </ul>
+                </div>
+                <div class="timeline-item">
+                    <h3>Q2 2026 - Validação</h3>
+                    <ul>
+                        <li>App iOS</li>
+                        <li>Modo offline completo</li>
+                        <li>Templates customizáveis</li>
+                        <li>Integração com O Entregador</li>
+                    </ul>
+                </div>
+                <div class="timeline-item">
+                    <h3>Q3 2026 - Escala</h3>
+                    <ul>
+                        <li>OCR para documentos</li>
+                        <li>Integração DENATRAN (consulta CNH)</li>
+                        <li>API para ERPs</li>
+                        <li>Notificações avançadas (WhatsApp)</li>
+                    </ul>
+                </div>
+                <div class="timeline-item">
+                    <h3>Q4 2026 - Enterprise</h3>
+                    <ul>
+                        <li>SSO / SAML</li>
+                        <li>Multi-empresa (holding)</li>
+                        <li>Auditoria com assinatura digital ICP-Brasil</li>
+                        <li>Integrações com sistemas de folha</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- RISCOS -->
+        <section>
+            <h2>11. Riscos e Mitigações</h2>
+
+            <table>
+                <tr>
+                    <th>Risco</th>
+                    <th>Probabilidade</th>
+                    <th>Impacto</th>
+                    <th>Mitigação</th>
+                </tr>
+                <tr>
+                    <td>Concorrente grande entra no mercado</td>
+                    <td>Média</td>
+                    <td class="warning">Alto</td>
+                    <td>Executar rápido, criar switching costs</td>
+                </tr>
+                <tr>
+                    <td>Barrier to entry baixo</td>
+                    <td>Alta</td>
+                    <td>Médio</td>
+                    <td>Integrações profundas, rede de parcerias</td>
+                </tr>
+                <tr>
+                    <td>Mudança na legislação</td>
+                    <td>Baixa</td>
+                    <td>Alto</td>
+                    <td>Produto flexível, múltiplos use cases</td>
+                </tr>
+                <tr>
+                    <td>Churn alto em pequenas frotas</td>
+                    <td>Média</td>
+                    <td>Médio</td>
+                    <td>Focar em médias/grandes, contratos anuais</td>
+                </tr>
+                <tr>
+                    <td>Canibalização com O Entregador</td>
+                    <td>Baixa</td>
+                    <td>Baixo</td>
+                    <td>Posicionamento claro, bundles</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- CONCLUSÃO -->
+        <section>
+            <h2>12. Conclusão</h2>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-value" style="color: #00d4aa;">✓</div>
+                    <div class="card-label">TAM gigante (R$2,6B)</div>
+                </div>
+                <div class="card">
+                    <div class="card-value" style="color: #00d4aa;">✓</div>
+                    <div class="card-label">Unit economics saudável</div>
+                </div>
+                <div class="card">
+                    <div class="card-value" style="color: #00d4aa;">✓</div>
+                    <div class="card-label">Sinergia com O Entregador</div>
+                </div>
+                <div class="card">
+                    <div class="card-value" style="color: #ffd700;">!</div>
+                    <div class="card-label">Barrier to entry baixo</div>
+                </div>
+            </div>
+
+            <div class="metric-box">
+                <strong>Recomendação:</strong> Desenvolver o Checklist App como produto separado é estrategicamente válido. O TAM é 100x maior que hubs last-mile, e a sinergia de cross-sell reduz CAC significativamente.
+                <br><br>
+                <strong>Prioridade:</strong> Lançar MVP no Q1 2026 junto com O Entregador, validando primeiro com os hubs (CAC zero) antes de ir para mercado aberto.
+            </div>
+
+            <div class="founder-box">
+                <p>Potencial de Retorno Combinado (Ano 5)</p>
+                <div class="founder-value">R$55M cada founder</div>
+                <p style="margin-top: 10px; color: #888;">O Entregador + Checklist App separados</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>Documento criado: Janeiro 2026</p>
+            <p>Próxima revisão: Abril 2026</p>
+            <p style="margin-top: 15px;">Checklist App - Análise de Investimento v1.0</p>
+        </footer>
+    </div>
+</body>
+</html>

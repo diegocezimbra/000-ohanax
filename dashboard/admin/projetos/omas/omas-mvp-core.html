@@ -1,0 +1,3187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMAS MVP Core - Documentação Técnica Simplificada</title>
+    <style>
+        :root {
+            --primary: #2d3748;
+            --primary-dark: #1a202c;
+            --accent: #4a5568;
+            --success: #48bb78;
+            --warning: #ed8936;
+            --danger: #e53e3e;
+            --bg-light: #f7fafc;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: #fff;
+            font-size: 14px;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 32px 0;
+            margin-bottom: 32px;
+        }
+
+        header h1 { font-size: 1.8rem; margin-bottom: 8px; font-weight: 700; }
+        header .subtitle { font-size: 1rem; opacity: 0.9; margin-bottom: 16px; }
+        header .version {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        nav {
+            background: #fff;
+            padding: 12px 0;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            background: var(--bg-light);
+        }
+        nav a:hover { background: var(--primary); color: white; }
+
+        section {
+            margin-bottom: 48px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--accent);
+            display: inline-block;
+            font-weight: 700;
+        }
+
+        h3 {
+            color: var(--primary-dark);
+            font-size: 1.15rem;
+            margin: 28px 0 16px;
+            font-weight: 600;
+        }
+
+        h4 {
+            color: var(--text-dark);
+            font-size: 1rem;
+            margin: 20px 0 12px;
+            font-weight: 600;
+        }
+
+        p { margin-bottom: 12px; }
+
+        .info-box {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 16px 0;
+            border-left: 4px solid;
+        }
+        .info-box.blue { background: #ebf8ff; border-left-color: #3182ce; }
+        .info-box.green { background: #f0fff4; border-left-color: var(--success); }
+        .info-box.yellow { background: #fffaf0; border-left-color: var(--warning); }
+        .info-box.red { background: #fff5f5; border-left-color: var(--danger); }
+        .info-box.purple { background: #faf5ff; border-left-color: #805ad5; }
+        .info-box h5 { font-weight: 700; margin-bottom: 8px; font-size: 0.95rem; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+        th, td { padding: 12px 14px; text-align: left; border: 1px solid var(--border); }
+        th { background: var(--bg-light); font-weight: 600; }
+        tr:nth-child(even) { background: #fafafa; }
+
+        .steps { counter-reset: step; }
+        .step {
+            position: relative;
+            padding: 16px 16px 16px 48px;
+            margin: 10px 0;
+            background: var(--bg-light);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+        }
+        .step::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        .step h5 { font-size: 1rem; margin-bottom: 6px; font-weight: 600; }
+        .step p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+        .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
+        .card h4 { margin: 0 0 10px; font-size: 1.05rem; }
+        .card p { font-size: 0.9rem; margin: 0; color: var(--text-muted); }
+
+        pre {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        code {
+            background: #edf2f7;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.9em;
+        }
+        pre code { background: none; padding: 0; }
+
+        .flow-diagram {
+            background: var(--bg-light);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+        .flow-diagram pre { background: transparent; color: var(--text-dark); margin: 0; font-size: 0.8rem; }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge.core { background: #bee3f8; color: #2c5282; }
+        .badge.mvp { background: #c6f6d5; color: #276749; }
+        .badge.future { background: #feebc8; color: #c05621; }
+        .badge.critical { background: #fed7d7; color: #c53030; }
+
+        .toc {
+            background: var(--bg-light);
+            padding: 24px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border: 1px solid var(--border);
+        }
+        .toc h3 { margin-top: 0; margin-bottom: 16px; }
+        .toc ul { columns: 2; column-gap: 32px; list-style: none; }
+        .toc li { margin: 8px 0; font-size: 0.9rem; }
+        .toc a { color: var(--text-muted); text-decoration: none; }
+        .toc a:hover { color: var(--primary); }
+
+        .scope-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .scope-included { background: #f0fff4; border: 2px solid var(--success); border-radius: 10px; padding: 20px; }
+        .scope-excluded { background: #fff5f5; border: 2px solid var(--danger); border-radius: 10px; padding: 20px; }
+        .scope-included h4 { color: var(--success); margin-top: 0; }
+        .scope-excluded h4 { color: var(--danger); margin-top: 0; }
+
+        ul, ol { margin: 12px 0; padding-left: 24px; }
+        li { margin: 6px 0; }
+
+        footer {
+            text-align: center;
+            padding: 48px 0;
+            color: var(--text-muted);
+            border-top: 2px solid var(--border);
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 16px; }
+            .scope-box { grid-template-columns: 1fr; }
+            .toc ul { columns: 1; }
+            nav ul { flex-direction: row; overflow-x: auto; flex-wrap: nowrap; }
+            nav a { white-space: nowrap; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🚀 OMAS MVP Core</h1>
+            <p class="subtitle">Plataforma de Automação LinkedIn + Meta Ads com IA</p>
+            <span class="version">📋 Documentação Técnica MVP v1.0 | Janeiro 2026</span>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="#escopo">Escopo MVP</a></li>
+                <li><a href="#arquitetura">Arquitetura</a></li>
+                <li><a href="#entidades">Entidades</a></li>
+                <li><a href="#agentes">Agentes IA</a></li>
+                <li><a href="#campanhas-linkedin">Campanhas LinkedIn</a></li>
+                <li><a href="#linkedin-organico">LinkedIn Orgânico</a></li>
+                <li><a href="#meta-ads">Meta Ads</a></li>
+                <li><a href="#telas">Telas</a></li>
+                <li><a href="#database">Database</a></li>
+                <li><a href="#seguranca">Segurança</a></li>
+                <li><a href="#filas">Filas</a></li>
+                <li><a href="#otimizacao">Otimização</a></li>
+                <li><a href="#roadmap">Roadmap</a></li>
+                <li><a href="#ambiente">Ambiente</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 1: INVENTÁRIO COMPLETO DO SISTEMA -->
+        <!-- ================================================================== -->
+        <section id="escopo">
+            <h2>1. Inventário Completo do Sistema OMAS</h2>
+
+            <div class="info-box purple">
+                <h5>📋 Visão Geral: Sistema Completo vs MVP</h5>
+                <p>O documento original possui <strong>16.140 linhas</strong> e <strong>461 seções</strong> detalhando todas as funcionalidades planejadas. Este inventário mostra o escopo completo, separando o que está <strong>incluído no MVP</strong> (✅) do que fica para <strong>fases futuras</strong> (❌).</p>
+            </div>
+
+            <!-- ==================== 1. INFRAESTRUTURA ==================== -->
+            <h3>🏗️ 1.1 Infraestrutura Base</h3>
+            <table>
+                <thead>
+                    <tr><th>Funcionalidade</th><th>Descrição</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Autenticação e autorização</td><td>Login, registro, sessões JWT</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Multi-company / Multi-product</td><td>Company → Product → Campaigns</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Database PostgreSQL</td><td>Schema completo, migrations</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Sistema de filas (BullMQ + Redis)</td><td>Processamento assíncrono</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Criptografia de sessões</td><td>AES-256-GCM para tokens</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Circuit Breaker Pattern</td><td>Proteção contra falhas em cascata</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Rate Limiting Adaptativo</td><td>Ajuste dinâmico de limites</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Dead Letter Queue</td><td>Tratamento de jobs falhos</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Error handling robusto</td><td>Retry exponencial, logging</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Monitoramento Bull Board</td><td>Dashboard de filas</td><td><span class="badge mvp">✅</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 2. CANAIS ORGÂNICOS ==================== -->
+            <h3>📢 1.2 Canais de Publicação Orgânica (7 canais)</h3>
+            <table>
+                <thead>
+                    <tr><th>Canal</th><th>Formatos Suportados</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>💼 LinkedIn</strong></td><td>Posts, Artigos, Conexões, Mensagens, Comentários</td><td><span class="badge mvp">✅ Completo</span></td></tr>
+                    <tr><td><strong>📸 Instagram</strong></td><td>Feed, Carrossel, Reels, Stories</td><td><span class="badge future">❌ Fase futura</span></td></tr>
+                    <tr><td><strong>▶️ YouTube</strong></td><td>Vídeos longos, Shorts, Community Posts</td><td><span class="badge future">❌ Fase futura</span></td></tr>
+                    <tr><td><strong>🎵 TikTok</strong></td><td>Vídeos curtos</td><td><span class="badge future">❌ Fase futura</span></td></tr>
+                    <tr><td><strong>🐦 Twitter/X</strong></td><td>Tweets, Threads</td><td><span class="badge future">❌ Fase futura</span></td></tr>
+                    <tr><td><strong>📘 Facebook</strong></td><td>Posts, Reels, Stories</td><td><span class="badge future">❌ Fase futura</span></td></tr>
+                    <tr><td><strong>📰 WordPress</strong></td><td>Artigos de blog</td><td><span class="badge future">❌ Fase futura</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 3. LINKEDIN PROSPECÇÃO ==================== -->
+            <h3>🤝 1.3 LinkedIn - Prospecção (4 tipos de campanha)</h3>
+            <table>
+                <thead>
+                    <tr><th>Funcionalidade</th><th>Descrição</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>🔗 Campanha de Conexão</strong></td><td>Wizard 4 etapas, convites personalizados</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>🔥 Campanha de Aquecimento</strong></td><td>Curtir/comentar antes de conectar</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>⭐ Campanha de Autoridade</strong></td><td>Comentar em Top Voices/influenciadores</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>💬 Campanha de Relacionamento</strong></td><td>Mensagens para 1º grau (conectados)</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Sistema de Cadências</td><td>Follow-up automático com delays</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Retirada Automática de Convites</td><td>Remove convites pendentes após X dias</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Algoritmo Anti-Detecção</td><td>Delays gaussianos, horários realistas, fingerprinting</td><td><span class="badge mvp">✅</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 4. PROSPECÇÃO MULTI-CANAL ==================== -->
+            <h3>📱 1.4 Prospecção Multi-Canal (além do LinkedIn)</h3>
+            <table>
+                <thead>
+                    <tr><th>Canal</th><th>Funcionalidades</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>📸 Instagram Prospecção</strong></td><td>Follow, curtir, comentar, DM automatizado</td><td><span class="badge future">❌ Fase futura</span></td></tr>
+                    <tr><td><strong>📘 Facebook Prospecção</strong></td><td>Grupos, comunidades, DM</td><td><span class="badge future">❌ Fase futura</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 5. ANÚNCIOS PAGOS ==================== -->
+            <h3>💰 1.5 Gestão de Anúncios Pagos</h3>
+            <table>
+                <thead>
+                    <tr><th>Plataforma</th><th>Funcionalidades</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>📢 Meta Ads</strong></td><td>Campanhas, Ad Sets, Ads, Públicos, Lookalike, Otimização automática</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>🔍 Google Ads</strong></td><td>Search, Display, YouTube, Performance Max, Keywords</td><td><span class="badge future">❌ Fase futura</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 6. AGENTES DE IA ==================== -->
+            <h3>🤖 1.6 Agentes de IA (15+ tipos)</h3>
+            <h4>Incluídos no MVP:</h4>
+            <table>
+                <thead>
+                    <tr><th>Agente</th><th>Propósito</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>✉️ Agente de Mensagem de Conexão</strong></td><td>Gera mensagens personalizadas até 200 chars</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>💭 Agente de Comentários LinkedIn</strong></td><td>Comentários para aquecimento/autoridade</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>💬 Agente de Inbox</strong></td><td>Respostas para conversas LinkedIn</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>📝 Agente de Conteúdo LinkedIn</strong></td><td>Posts orgânicos, artigos</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>📢 Agente de Copy Meta Ads</strong></td><td>Textos, títulos, descrições para anúncios</td><td><span class="badge mvp">✅</span></td></tr>
+                </tbody>
+            </table>
+            <h4>Excluídos (Fases Futuras):</h4>
+            <table>
+                <thead>
+                    <tr><th>Agente</th><th>Propósito</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Agente de Conteúdo - Instagram</td><td>Legendas, hashtags para IG</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Agente de Conteúdo - YouTube</td><td>Títulos, descrições, tags</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Agente de Conteúdo - TikTok</td><td>Legendas, hooks</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Agente de Conteúdo - Twitter/X</td><td>Tweets, threads</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Agente de Conteúdo - Facebook</td><td>Posts, legendas</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Agente de Conteúdo - Blog/WordPress</td><td>Artigos, SEO</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Agente de Comentários Instagram</td><td>Engajamento IG</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Agente de Comentários YouTube</td><td>Engajamento YT</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Agente de Comentários Twitter</td><td>Engajamento Twitter</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Agente de Copy Google Ads</td><td>Headlines, descrições</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Agente de Análise de Ads</td><td>Insights e recomendações</td><td><span class="badge future">❌</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 7. OTIMIZAÇÃO AUTOMÁTICA ==================== -->
+            <h3>🎯 1.7 Sistema de Otimização Automática</h3>
+            <table>
+                <thead>
+                    <tr><th>Funcionalidade</th><th>Descrição</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>❌ PAUSAR</strong></td><td>Performance abaixo do threshold → pausa automática</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>✅ ESCALAR</strong></td><td>Performance acima da média → aumentar volume</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>🔄 NOVAS TESES</strong></td><td>IA gera ideias baseadas em padrões de sucesso</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>🚫 BLACKLIST</strong></td><td>3+ falhas = banido permanentemente</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Dashboard de Otimização</td><td>Score geral, histórico de ações</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Fila de Aprovação de Teses</td><td>Usuário revisa antes de executar</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td>Thresholds configuráveis</td><td>Customização por canal/tipo</td><td><span class="badge mvp">✅</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 8. INBOX / CRM / KANBAN ==================== -->
+            <h3>📬 1.8 Inbox / CRM / Kanban</h3>
+            <h4>Incluídos no MVP:</h4>
+            <table>
+                <thead>
+                    <tr><th>Funcionalidade</th><th>Descrição</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Inbox LinkedIn</strong></td><td>Listagem, resposta manual, sugestão IA</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Kanban de Leads</strong></td><td>Drag & drop, estágios customizáveis</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Gestão de Leads</strong></td><td>Importação CSV/URL, filtros, status</td><td><span class="badge mvp">✅</span></td></tr>
+                </tbody>
+            </table>
+            <h4>Excluídos (Fases Futuras):</h4>
+            <table>
+                <thead>
+                    <tr><th>Funcionalidade</th><th>Descrição</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Inbox Multi-Canal</td><td>Instagram DM, Facebook Messenger, WhatsApp</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Respostas Automáticas com IA</td><td>Auto-reply (não apenas sugestão)</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Lead Scoring Automático</td><td>Algoritmo 0-100 baseado em engajamento</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Temperatura de Leads</td><td>Cold, Warm, Hot (classificação)</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Automações do Kanban</td><td>Triggers automáticos ao mover lead</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Qualificação Automática com IA</td><td>Análise de conversas para qualificar</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Base de Conhecimento para IA</td><td>FAQ, objeções, preços para respostas</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>SLA de Resposta</td><td>Alertas de tempo sem responder</td><td><span class="badge future">❌</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 9. GERAÇÃO DE IMAGENS ==================== -->
+            <h3>🖼️ 1.9 Geração de Imagens com IA</h3>
+            <table>
+                <thead>
+                    <tr><th>Funcionalidade</th><th>Descrição</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Replicate/Flux</td><td>Geração de imagens com IA</td><td><span class="badge future">❌ Fase futura</span></td></tr>
+                    <tr><td>Thumbnails YouTube</td><td>Capas para vídeos</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Posts de feed Instagram</td><td>Imagens para feed</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Banners para anúncios</td><td>Criativos para Meta/Google Ads</td><td><span class="badge future">❌</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 10. INTEGRAÇÕES ==================== -->
+            <h3>🔗 1.10 Integrações e Webhooks</h3>
+            <h4>Incluídos no MVP:</h4>
+            <table>
+                <thead>
+                    <tr><th>Integração</th><th>Método</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>LinkedIn</strong></td><td>Session cookie, scraping com Puppeteer</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Meta Marketing API</strong></td><td>OAuth 2.0</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Claude API (Anthropic)</strong></td><td>API Key, modelos Sonnet/Haiku/Opus</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>AWS S3</strong></td><td>Storage de assets</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Redis</strong></td><td>Cache e filas</td><td><span class="badge mvp">✅</span></td></tr>
+                </tbody>
+            </table>
+            <h4>Excluídos (Fases Futuras):</h4>
+            <table>
+                <thead>
+                    <tr><th>Integração</th><th>Propósito</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Google Ads API</td><td>Gestão de campanhas Google</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>YouTube Data API</td><td>Publicação de vídeos</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>TikTok Content API</td><td>Publicação de vídeos</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Twitter API v2</td><td>Publicação de tweets</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Instagram Graph API</td><td>Publicação de posts</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Facebook Graph API</td><td>Publicação de posts</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>WordPress REST API</td><td>Publicação de artigos</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Webhooks de saída</td><td>HubSpot, Salesforce, Pipedrive</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Calendly</td><td>Agendamento de reuniões</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Google Calendar</td><td>Sincronização de eventos</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Slack</td><td>Notificações</td><td><span class="badge future">❌</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 11. TELAS ==================== -->
+            <h3>📊 1.11 Telas do Sistema (12+ telas)</h3>
+            <h4>Incluídas no MVP:</h4>
+            <table>
+                <thead>
+                    <tr><th>Tela</th><th>Funcionalidades</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Dashboard</strong></td><td>Métricas consolidadas, KPIs, alertas</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Contas Conectadas</strong></td><td>LinkedIn, Meta Business</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Leads</strong></td><td>Lista, importação, filtros</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Campanhas LinkedIn</strong></td><td>4 tipos, wizards, métricas</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Central de Conteúdo LinkedIn</strong></td><td>Posts orgânicos, calendário, agendamento</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Campanhas Meta Ads</strong></td><td>Wizard 7 etapas, otimização</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Agentes de IA</strong></td><td>CRUD, teste, métricas</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Inbox</strong></td><td>Conversas LinkedIn</td><td><span class="badge mvp">✅</span></td></tr>
+                    <tr><td><strong>Kanban CRM</strong></td><td>Pipeline visual</td><td><span class="badge mvp">✅</span></td></tr>
+                </tbody>
+            </table>
+            <h4>Excluídas (Fases Futuras):</h4>
+            <table>
+                <thead>
+                    <tr><th>Tela</th><th>Funcionalidades</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Tela de Conteúdo</td><td>Publicação orgânica multi-canal</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Calendário de Publicações</td><td>Visualização mensal/semanal</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Relatórios Avançados</td><td>Analytics, exportação PDF/Excel</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Configurações Avançadas</td><td>Notificações, webhooks</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Central de Notificações</td><td>Alertas em tempo real</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Tela de Google Ads</td><td>Gestão de campanhas Google</td><td><span class="badge future">❌</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 12. FUNCIONALIDADES AVANÇADAS ==================== -->
+            <h3>🧪 1.12 Funcionalidades Avançadas</h3>
+            <p><em>Todas excluídas do MVP (fases futuras):</em></p>
+            <table>
+                <thead>
+                    <tr><th>Funcionalidade</th><th>Descrição</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Testes A/B</td><td>Entre agentes, campanhas, copies</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Repurposing de Conteúdo</td><td>LinkedIn → Instagram → TikTok</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Tradução Automática</td><td>Multi-idioma com IA</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Horário de Funcionamento</td><td>Por agente (9h-18h, seg-sex)</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Limites por Agente</td><td>Diário, aprovação humana</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Editar com IA</td><td>Refinar prompts com linguagem natural</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Duplicar Agente</td><td>Clone rápido com ajustes</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Métricas por Agente</td><td>Acceptance rate, engagement</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Analytics Avançado</td><td>Histórico, comparativos</td><td><span class="badge future">❌</span></td></tr>
+                    <tr><td>Relatórios PDF/Excel</td><td>Exportação formatada</td><td><span class="badge future">❌</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== 13. MODELO DE NEGÓCIO ==================== -->
+            <h3>💰 1.13 Modelo de Negócio</h3>
+            <table>
+                <thead>
+                    <tr><th>Item</th><th>Descrição</th><th>MVP</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Análise de custos</td><td>IA (Claude), infraestrutura, proxy</td><td><span class="badge mvp">✅ Documentado</span></td></tr>
+                    <tr><td>Pricing</td><td>Starter, Professional, Business, Enterprise</td><td><span class="badge mvp">✅ Documentado</span></td></tr>
+                    <tr><td>Comparativo Vencefy</td><td>Análise de concorrência</td><td><span class="badge mvp">✅ Documentado</span></td></tr>
+                    <tr><td>Projeção financeira</td><td>MRR, custos, margem</td><td><span class="badge mvp">✅ Documentado</span></td></tr>
+                </tbody>
+            </table>
+
+            <!-- ==================== RESUMO QUANTITATIVO ==================== -->
+            <h3>📊 1.14 Resumo Quantitativo</h3>
+            <table>
+                <thead>
+                    <tr><th>Categoria</th><th>Total no Sistema</th><th>No MVP</th><th>Fase Futura</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Canais Orgânicos</strong></td><td>7</td><td>1 (LinkedIn)</td><td>6</td></tr>
+                    <tr><td><strong>LinkedIn Prospecção</strong></td><td>4 tipos</td><td>4 tipos</td><td>0</td></tr>
+                    <tr><td><strong>Prospecção Multi-canal</strong></td><td>2 (IG/FB)</td><td>0</td><td>2</td></tr>
+                    <tr><td><strong>Ads Pagos</strong></td><td>2 (Meta/Google)</td><td>1 (Meta)</td><td>1 (Google)</td></tr>
+                    <tr><td><strong>Agentes de IA</strong></td><td>15+ tipos</td><td>5 tipos</td><td>10+ tipos</td></tr>
+                    <tr><td><strong>Integrações</strong></td><td>12+</td><td>5</td><td>7+</td></tr>
+                    <tr><td><strong>Telas</strong></td><td>12+</td><td>9</td><td>3+</td></tr>
+                </tbody>
+            </table>
+
+            <div class="info-box green">
+                <h5>✅ O que está 100% coberto neste documento MVP:</h5>
+                <p>Infraestrutura completa, <strong>LinkedIn COMPLETO</strong> (4 campanhas de prospecção + publicação orgânica), Meta Ads, 5 agentes de IA, Sistema de Otimização Automática, Inbox, Kanban, Dashboard. Tudo com database schema, interfaces TypeScript, wizards detalhados e configurações.</p>
+            </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 2: ARQUITETURA -->
+        <!-- ================================================================== -->
+        <section id="arquitetura">
+            <h2>2. Arquitetura do Sistema</h2>
+
+            <h3>2.1 Diagrama de Alto Nível (MVP)</h3>
+            <div class="flow-diagram">
+<pre>
+┌───────────────────────────────────────────────────────────────────────────────────┐
+│                              FRONTEND (React + TypeScript)                          │
+├───────────────────────────────────────────────────────────────────────────────────┤
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐ │
+│  │Dashboard │ │ LinkedIn │ │ Meta Ads │ │ Agentes  │ │  Leads   │ │ Inbox/CRM  │ │
+│  │          │ │Campanhas │ │          │ │   IA     │ │          │ │            │ │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────┬──────┘ │
+└───────┼────────────┼────────────┼────────────┼────────────┼─────────────┼────────┘
+        │            │            │            │            │             │
+        ▼            ▼            ▼            ▼            ▼             ▼
+┌───────────────────────────────────────────────────────────────────────────────────┐
+│                              BACKEND (NestJS + TypeORM)                            │
+├───────────────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │  LinkedIn   │  │  Meta Ads   │  │   Agents    │  │     Queue System        │  │
+│  │   Module    │  │   Module    │  │   Module    │  │     (BullMQ)            │  │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └────────────┬────────────┘  │
+└─────────┼────────────────┼────────────────┼──────────────────────┼───────────────┘
+          │                │                │                      │
+          ▼                ▼                ▼                      ▼
+┌───────────────────────────────────────────────────────────────────────────────────┐
+│                              EXTERNAL SERVICES                                      │
+├─────────────────────────────────┬─────────────────────────────────────────────────┤
+│  LinkedIn Scraping (Puppeteer)  │  Claude API (Anthropic) - Geração de texto      │
+│  Meta Marketing API             │  PostgreSQL - Database principal                 │
+│  Meta Graph API (OAuth)         │  Redis - Cache e filas                          │
+└─────────────────────────────────┴─────────────────────────────────────────────────┘
+</pre>
+            </div>
+
+            <h3>2.2 Stack Tecnológico</h3>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>🎨 Frontend</h4>
+                    <ul>
+                        <li>React 18+</li>
+                        <li>TypeScript 5+</li>
+                        <li>TailwindCSS 3+</li>
+                        <li>React Query 5+</li>
+                        <li>Zustand 4+</li>
+                        <li>React Hook Form + Zod</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>⚙️ Backend</h4>
+                    <ul>
+                        <li>NestJS 10+</li>
+                        <li>TypeScript 5+</li>
+                        <li>TypeORM 0.3+</li>
+                        <li>PostgreSQL 15+</li>
+                        <li>Redis 7+</li>
+                        <li>BullMQ 4+</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>🤖 IA & Integrações</h4>
+                    <ul>
+                        <li>Claude API (Anthropic)</li>
+                        <li>Meta Marketing API</li>
+                        <li>LinkedIn Scraping</li>
+                        <li>AWS S3 (Storage)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>2.3 Estrutura de Pastas (MVP)</h3>
+            <pre><code>omas-mvp/
+├── apps/
+│   ├── web/                              # Frontend React
+│   │   └── src/
+│   │       ├── pages/
+│   │       │   ├── Dashboard/
+│   │       │   ├── LinkedIn/             # Campanhas LinkedIn
+│   │       │   ├── MetaAds/              # Gestão Meta Ads
+│   │       │   ├── Agents/               # Agentes de IA
+│   │       │   ├── Leads/                # Gestão de leads
+│   │       │   ├── Inbox/                # Mensagens
+│   │       │   ├── Kanban/               # Pipeline CRM
+│   │       │   └── Settings/
+│   │       ├── components/
+│   │       ├── hooks/
+│   │       ├── stores/
+│   │       └── services/
+│   │
+│   └── api/                              # Backend NestJS
+│       └── src/
+│           ├── modules/
+│           │   ├── auth/                 # Autenticação
+│           │   ├── companies/            # Multi-company
+│           │   ├── products/             # Multi-product
+│           │   ├── linkedin/             # Campanhas + Scraping
+│           │   ├── meta-ads/             # Meta Marketing API
+│           │   ├── agents/               # Agentes de IA
+│           │   ├── leads/                # Gestão de leads
+│           │   ├── inbox/                # Mensagens
+│           │   └── kanban/               # Pipeline
+│           ├── integrations/
+│           │   ├── claude/               # Anthropic API
+│           │   ├── linkedin-scraper/     # Puppeteer
+│           │   └── meta/                 # Graph + Marketing API
+│           ├── queues/                   # BullMQ workers
+│           └── database/
+│               ├── entities/
+│               └── migrations/
+│
+└── packages/
+    ├── shared/                           # Tipos compartilhados
+    └── ui/                               # Design system</code></pre>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 3: ENTIDADES CORE -->
+        <!-- ================================================================== -->
+        <section id="entidades">
+            <h2>3. Entidades Core (Multi-Company/Multi-Product)</h2>
+
+            <div class="info-box blue">
+                <h5>🏗️ Hierarquia de Dados</h5>
+                <p>A plataforma é orientada a <strong>Company</strong> e <strong>Product/Service</strong>. Um usuário pode gerenciar múltiplas empresas, cada uma com múltiplos produtos. Toda campanha e agente pertence a um produto específico.</p>
+            </div>
+
+            <div class="flow-diagram">
+<pre>
+ESTRUTURA HIERÁRQUICA
+═════════════════════
+
+USER (Conta do Usuário)
+│
+├── COMPANY 1 (Ex: "TechStart Ltda")
+│   │
+│   ├── Informações da Empresa
+│   │   • Nome, CNPJ, Segmento
+│   │   • Logo, Cores da Marca
+│   │   • Tom de Voz, Persona
+│   │
+│   ├── PRODUCT A (Ex: "CRM para PMEs")
+│   │   ├── Informações do Produto (ICP, benefícios, FAQs)
+│   │   ├── Contas Conectadas (LinkedIn, Meta)
+│   │   ├── Campanhas LinkedIn
+│   │   ├── Campanhas Meta Ads
+│   │   └── Agentes de IA (contexto do produto)
+│   │
+│   └── PRODUCT B (Ex: "Consultoria")
+│       └── ...
+│
+└── COMPANY 2 (Ex: "Outro Negócio")
+    └── PRODUCT C
+        └── ...
+</pre>
+            </div>
+
+            <h3>3.1 Interface: Company</h3>
+            <pre><code>interface Company {
+  id: string;
+  userId: string;           // Dono da empresa
+
+  // Dados básicos
+  name: string;             // Nome da empresa
+  legalName?: string;       // Razão social
+  cnpj?: string;
+  website?: string;
+
+  // Branding
+  logo?: string;            // URL do logo
+  primaryColor: string;     // Cor principal (#hex)
+  secondaryColor: string;   // Cor secundária
+
+  // Identidade verbal (usado pelos agentes IA)
+  voiceTone: 'formal' | 'casual' | 'tecnico' | 'amigavel' | 'provocativo';
+  brandPersona: string;     // "Somos uma startup inovadora que..."
+  doNotSay: string[];       // Palavras/frases proibidas
+  alwaysSay: string[];      // Palavras/frases que devemos usar
+
+  // Informações de mercado
+  industry: string;         // Segmento (SaaS, E-commerce, etc)
+  targetMarket: string;     // B2B, B2C, B2B2C
+  companySize: '1-10' | '11-50' | '51-200' | '201-500' | '500+';
+
+  // Redes sociais da empresa
+  linkedinUrl?: string;
+  instagramUrl?: string;
+  facebookUrl?: string;
+
+  // Metadata
+  createdAt: Date;
+  updatedAt: Date;
+  isActive: boolean;
+}</code></pre>
+
+            <h3>3.2 Interface: Product/Service</h3>
+            <pre><code>interface ProductOrService {
+  id: string;
+  companyId: string;        // Pertence a qual empresa
+
+  // Identificação
+  name: string;             // Nome do produto/serviço
+  type: 'product' | 'service';
+  slug: string;
+
+  // Descrição
+  shortDescription: string; // 1 frase (para anúncios)
+  fullDescription: string;  // Descrição completa
+  tagline?: string;         // Slogan
+
+  // Preço
+  priceModel: 'fixed' | 'subscription' | 'custom' | 'free' | 'freemium';
+  pricingDetails?: string;  // "A partir de R$397/mês"
+
+  // Proposta de valor
+  mainBenefit: string;      // Principal benefício
+  benefits: string[];       // Lista de benefícios
+  differentiators: string[];// O que diferencia da concorrência
+
+  // Público-alvo (ICP) - CRÍTICO para IA
+  icp: {
+    jobTitles: string[];    // CEO, CMO, Founder
+    industries: string[];   // SaaS, E-commerce
+    companySize: string[];  // PME, Enterprise
+    painPoints: string[];   // Problemas que resolve
+    goals: string[];        // Objetivos do cliente
+  };
+
+  // Conteúdo para IA
+  faq: Array<{
+    question: string;
+    answer: string;
+  }>;
+
+  objectionHandling: Array<{
+    objection: string;      // "É muito caro"
+    response: string;       // "Nossos clientes têm ROI de 300%..."
+  }>;
+
+  // Metadata
+  createdAt: Date;
+  updatedAt: Date;
+  isActive: boolean;
+}</code></pre>
+
+            <h3>3.3 Interface: LinkedIn Account</h3>
+            <pre><code>interface LinkedInAccount {
+  id: string;
+  productId: string;        // Pertence a qual produto
+
+  // Dados do perfil
+  profileUrl: string;
+  name: string;
+  headline?: string;
+  profilePicture?: string;
+
+  // Autenticação
+  sessionCookie: string;    // li_at cookie (criptografado)
+  sessionCookieEncrypted: string;
+
+  // Tipo de conta
+  accountType: 'basic' | 'premium' | 'sales_navigator';
+
+  // Limites
+  dailyConnectionLimit: number;
+  dailyMessageLimit: number;
+  usedConnectionsToday: number;
+  usedMessagesToday: number;
+
+  // Status
+  status: 'active' | 'paused' | 'warning' | 'restricted';
+  lastCheckedAt: Date;
+  lastActivityAt: Date;
+
+  // Metadata
+  createdAt: Date;
+  updatedAt: Date;
+}</code></pre>
+
+            <h3>3.4 Interface: Meta Business Account</h3>
+            <pre><code>interface MetaBusinessAccount {
+  id: string;
+  productId: string;
+
+  // Dados da conta
+  businessId: string;
+  businessName: string;
+  adAccountId: string;
+  adAccountName: string;
+
+  // Tokens OAuth
+  accessToken: string;      // Criptografado
+  accessTokenExpiry: Date;
+  refreshToken?: string;
+
+  // Páginas conectadas
+  facebookPageId?: string;
+  facebookPageName?: string;
+  instagramAccountId?: string;
+  instagramUsername?: string;
+
+  // Permissões
+  permissions: string[];    // ads_management, pages_read_engagement, etc.
+
+  // Status
+  status: 'active' | 'expired' | 'error';
+  lastSyncAt: Date;
+
+  // Metadata
+  createdAt: Date;
+  updatedAt: Date;
+}</code></pre>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 4: AGENTES DE IA -->
+        <!-- ================================================================== -->
+        <section id="agentes">
+            <h2>4. Agentes de IA</h2>
+
+            <div class="info-box green">
+                <h5>🤖 Conceito Central</h5>
+                <p>Agentes são "personalidades" de IA configuráveis que geram conteúdo personalizado. Cada agente tem um system prompt, tom de voz e métricas de performance. O contexto do Company/Product é automaticamente injetado.</p>
+            </div>
+
+            <h3>4.1 Tipos de Agentes no MVP</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Canal</th>
+                        <th>Objetivo</th>
+                        <th>Output</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>connection_message</strong></td>
+                        <td>LinkedIn</td>
+                        <td>Mensagens de convite de conexão</td>
+                        <td>Texto até 200 chars</td>
+                    </tr>
+                    <tr>
+                        <td><strong>comments</strong></td>
+                        <td>LinkedIn</td>
+                        <td>Comentários em posts (aquecimento/autoridade)</td>
+                        <td>Texto até 500 chars</td>
+                    </tr>
+                    <tr>
+                        <td><strong>inbox</strong></td>
+                        <td>LinkedIn</td>
+                        <td>Respostas a mensagens recebidas</td>
+                        <td>Texto livre</td>
+                    </tr>
+                    <tr>
+                        <td><strong>ad_copy</strong></td>
+                        <td>Meta Ads</td>
+                        <td>Copy para anúncios (headline, descrição)</td>
+                        <td>Múltiplas variações</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>4.2 Interface TypeScript</h3>
+            <pre><code>type AgentType = 'connection_message' | 'comments' | 'inbox' | 'ad_copy';
+type Platform = 'linkedin' | 'meta_ads';
+type ToneOfVoice = 'formal' | 'casual' | 'professional' | 'friendly' | 'provocative';
+type LLMModel = 'claude-3-sonnet' | 'claude-3-haiku' | 'claude-3-opus';
+
+interface Agent {
+  // Identificação
+  id: string;
+  productId: string;        // Herda contexto do produto
+  name: string;
+  description: string;
+
+  // Classificação
+  type: AgentType;
+  platform: Platform;
+
+  // Configuração do LLM
+  systemPrompt: string;     // Prompt principal
+  model: LLMModel;
+  temperature: number;      // 0.0 - 1.0
+  maxTokens: number;
+
+  // Personalização
+  language: 'pt-BR' | 'en-US' | 'es';
+  toneOfVoice: ToneOfVoice;
+
+  // Comportamento
+  requireApproval: boolean; // Requer aprovação humana
+
+  // Métricas
+  metrics: {
+    totalUses: number;
+    acceptanceRate: number;     // Para connection_message
+    avgEngagementRate: number;  // Para comments
+    conversionRate: number;     // Para ad_copy
+  };
+
+  // Status
+  status: 'active' | 'paused' | 'draft';
+  createdAt: Date;
+  updatedAt: Date;
+}</code></pre>
+
+            <h3>4.3 Exemplo: Prompt de Agente de Conexão</h3>
+            <pre><code># Role
+Você é {nome_usuario}, {cargo} da {empresa}, especializado em iniciar 
+conversas genuínas com C-levels e executivos no LinkedIn.
+
+# Objetivo
+Criar uma mensagem de conexão de no máximo 200 caracteres que será 
+enviada junto com o convite. A mensagem deve ser natural, personalizada 
+e criar curiosidade sem parecer vendedor.
+
+# Contexto do Lead
+- Nome: {nome_lead}
+- Cargo: {cargo_lead}
+- Empresa: {empresa_lead}
+- Perfil: {contexto_perfil}
+
+# Tom de Voz
+- Profissional mas casual
+- Peer-to-peer (de igual para igual)
+- Genuinamente curioso
+- Sem emojis excessivos
+- Sem mencionar produto/serviço
+
+# Restrições
+- Máximo 200 caracteres
+- Não pedir reunião/call
+- Não falar de vendas
+- Começar com "Oi {nome}" ou variação natural
+
+# Exemplos de Saída
+"Oi João, vi seu post sobre IA em vendas. Trabalhando em algo parecido. Seria legal trocar ideias!"
+"Maria, sua trajetória na XP me chamou atenção. Também estou no fintech - bora conectar?"</code></pre>
+
+            <h3>4.4 Wizard: Criar Agente</h3>
+            <div class="steps">
+                <div class="step">
+                    <h5>Tipo e Canal</h5>
+                    <p>Selecione o tipo de agente (conexão, comentários, inbox, ad copy) e canal (LinkedIn ou Meta Ads).</p>
+                </div>
+                <div class="step">
+                    <h5>Nome e Descrição</h5>
+                    <p>Dê um nome identificador e descreva o propósito do agente.</p>
+                </div>
+                <div class="step">
+                    <h5>Configurar Prompt</h5>
+                    <p>Defina o system prompt com: Role, Objetivo, Tom de Voz, Restrições e Exemplos.</p>
+                </div>
+                <div class="step">
+                    <h5>Testar</h5>
+                    <p>Execute teste com dados reais de um lead para validar a saída. Ajuste até atingir qualidade desejada.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 5: CAMPANHAS LINKEDIN -->
+        <!-- ================================================================== -->
+        <section id="campanhas-linkedin">
+            <h2>5. Campanhas de Prospecção LinkedIn</h2>
+
+            <div class="info-box blue">
+                <h5>📌 4 Tipos de Campanha</h5>
+                <p>A plataforma oferece 4 tipos de campanhas LinkedIn, cada uma com objetivo específico no funil de prospecção B2B.</p>
+            </div>
+
+            <div class="flow-diagram">
+<pre>
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   AQUECIMENTO   │────▶│    CONEXÃO      │────▶│  RELACIONAMENTO │────▶│   CONVERSÃO     │
+│  (Opcional)     │     │  (Principal)    │     │   (Nurturing)   │     │   (Reunião)     │
+├─────────────────┤     ├─────────────────┤     ├─────────────────┤     ├─────────────────┤
+│ Curtir/comentar │     │ Enviar convite  │     │ Mensagens para  │     │ Lead qualificado│
+│ posts dos leads │     │ + follow-ups    │     │ contatos 1ºgrau │     │ agenda reunião  │
+└─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
+         │                                                                      ▲
+         │              ┌─────────────────┐                                     │
+         └─────────────▶│   AUTORIDADE    │─────────────────────────────────────┘
+                        │ (Paralelo)      │
+                        ├─────────────────┤
+                        │ Comentar posts  │
+                        │ de top voices   │
+                        └─────────────────┘
+</pre>
+            </div>
+
+            <!-- CAMPANHA DE CONEXÃO -->
+            <h3 id="campanha-conexao">5.1 Campanha de Conexão 🔗</h3>
+
+            <div class="info-box green">
+                <h5>🎯 Objetivo</h5>
+                <p>Enviar solicitações de conexão personalizadas para novos leads (2º e 3º grau) e converter em relacionamento através de cadência de follow-up automatizada.</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr><th>Atributo</th><th>Valor</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Público-Alvo</td><td>Leads de 2º e 3º grau (não conectados)</td></tr>
+                    <tr><td>Limite por Campanha</td><td>Máximo 300 leads</td></tr>
+                    <tr><td>Limite Diário</td><td>20 (Premium) / 30 (Sales Navigator)</td></tr>
+                    <tr><td>Mensagem</td><td>Opcional - até 200 caracteres (gerada por IA)</td></tr>
+                    <tr><td>Follow-up</td><td>Cadência configurável após aceite</td></tr>
+                    <tr><td>Retirada Automática</td><td>Convites ignorados após 14 dias</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Wizard (4 Etapas)</h4>
+            <div class="steps">
+                <div class="step">
+                    <h5>Setup (Conta + Leads)</h5>
+                    <p>Selecione conta LinkedIn e lista de leads (até 300). Layout split-view.</p>
+                </div>
+                <div class="step">
+                    <h5>Mensagens (Tipo + Agente + Preview)</h5>
+                    <p>Toggle "Enviar com mensagem". Selecione agente de IA. Preview em tempo real de 3 mensagens.</p>
+                </div>
+                <div class="step">
+                    <h5>Cadência (Follow-up)</h5>
+                    <p>Template recomendado: Dia 0 (agradecimento), Dia 3 (valor), Dia 7 (CTA). Timeline visual editável.</p>
+                </div>
+                <div class="step">
+                    <h5>Revisar e Criar</h5>
+                    <p>Resumo em cards. Configurações avançadas colapsadas (nome, limite diário, retirada automática).</p>
+                </div>
+            </div>
+
+            <!-- CAMPANHA DE AQUECIMENTO -->
+            <h3 id="campanha-aquecimento">5.2 Campanha de Aquecimento 🔥</h3>
+
+            <div class="info-box yellow">
+                <h5>🎯 Objetivo</h5>
+                <p>Criar familiaridade com leads ANTES de enviar convite de conexão. Curtir e comentar posts para que reconheçam seu nome.</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr><th>Atributo</th><th>Valor</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Público-Alvo</td><td>Leads de 2º e 3º grau (futuros convites)</td></tr>
+                    <tr><td>Limite por Campanha</td><td>Máximo 300 leads</td></tr>
+                    <tr><td>Duração</td><td>7-14 dias antes da campanha de conexão</td></tr>
+                    <tr><td>Ações</td><td>Curtir posts + Comentar (com IA)</td></tr>
+                    <tr><td>Frequência</td><td>1-3 interações por lead</td></tr>
+                    <tr><td>Filtros</td><td>Posts originais, &lt;7 dias, sem vagas/sensível</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Wizard (6 Etapas)</h4>
+            <div class="steps">
+                <div class="step">
+                    <h5>Selecionar Conta</h5>
+                    <p>Conta LinkedIn que irá interagir.</p>
+                </div>
+                <div class="step">
+                    <h5>Selecionar Leads</h5>
+                    <p>Até 300 leads para aquecer.</p>
+                </div>
+                <div class="step">
+                    <h5>Configurar Interações</h5>
+                    <p>Opções: Só curtir | Curtir + Comentar | Plataforma decide</p>
+                </div>
+                <div class="step">
+                    <h5>Buscar Posts</h5>
+                    <p>Sistema busca posts recentes dos leads. Preview dos posts encontrados.</p>
+                </div>
+                <div class="step">
+                    <h5>Gerar Comentários (IA)</h5>
+                    <p>Agente de comentários gera respostas relevantes. Revisão em batch.</p>
+                </div>
+                <div class="step">
+                    <h5>Revisar e Criar</h5>
+                    <p>Resumo + duração + confirmar.</p>
+                </div>
+            </div>
+
+            <!-- CAMPANHA DE AUTORIDADE -->
+            <h3 id="campanha-autoridade">5.3 Campanha de Autoridade ⭐</h3>
+
+            <div class="info-box purple">
+                <h5>🎯 Objetivo</h5>
+                <p>Comentar em posts de Top Voices e influenciadores para ganhar visibilidade. Seus comentários aparecem para milhares de pessoas.</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr><th>Atributo</th><th>Valor</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Público-Alvo</td><td>Top Voices, influenciadores do nicho (perfis fixos)</td></tr>
+                    <tr><td>Limite</td><td>Até 20 perfis monitorados</td></tr>
+                    <tr><td>Frequência</td><td>2x ao dia (11h e 15h)</td></tr>
+                    <tr><td>Ação</td><td>Comentar posts novos automaticamente</td></tr>
+                    <tr><td>Benefício</td><td>5.000-50.000 impressões por comentário</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Wizard (5 Etapas)</h4>
+            <div class="steps">
+                <div class="step">
+                    <h5>Selecionar Conta</h5>
+                    <p>Conta LinkedIn que irá comentar.</p>
+                </div>
+                <div class="step">
+                    <h5>Adicionar Perfis</h5>
+                    <p>Cole URLs dos perfis a monitorar (até 20). Sistema valida e busca dados.</p>
+                </div>
+                <div class="step">
+                    <h5>Configurar Agente</h5>
+                    <p>Selecione agente de comentários ou crie novo.</p>
+                </div>
+                <div class="step">
+                    <h5>Configurar Horários</h5>
+                    <p>Defina horários de verificação (padrão: 11h e 15h).</p>
+                </div>
+                <div class="step">
+                    <h5>Criar Campanha</h5>
+                    <p>Nome + confirmar.</p>
+                </div>
+            </div>
+
+            <!-- CAMPANHA DE RELACIONAMENTO -->
+            <h3 id="campanha-relacionamento">5.4 Campanha de Relacionamento 💬</h3>
+
+            <div class="info-box blue">
+                <h5>🎯 Objetivo</h5>
+                <p>Enviar mensagens para contatos de 1º grau (já conectados). Ideal para lançamentos, eventos, conteúdos e ofertas.</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr><th>Atributo</th><th>Valor</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Público-Alvo</td><td>Contatos de 1º grau (já conectados)</td></tr>
+                    <tr><td>Limite por Campanha</td><td>Sem limite (usar com moderação)</td></tr>
+                    <tr><td>Limite Diário</td><td>50-100 mensagens (depende da conta)</td></tr>
+                    <tr><td>Mensagem</td><td>Texto livre (sem limite de chars)</td></tr>
+                    <tr><td>Cadência</td><td>Opcional - follow-ups se não responder</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Wizard (6 Etapas)</h4>
+            <div class="steps">
+                <div class="step">
+                    <h5>Selecionar Conta</h5>
+                    <p>Conta LinkedIn de origem.</p>
+                </div>
+                <div class="step">
+                    <h5>Selecionar Contatos</h5>
+                    <p>Filtrar conexões de 1º grau por cargo, empresa, tags.</p>
+                </div>
+                <div class="step">
+                    <h5>Configurar Mensagem</h5>
+                    <p>Opções: Mensagem fixa (com variáveis) | Personalizada com IA</p>
+                </div>
+                <div class="step">
+                    <h5>Preview e Gerar</h5>
+                    <p>Preview de mensagens. Se IA, gera e permite edição.</p>
+                </div>
+                <div class="step">
+                    <h5>Cadência (Opcional)</h5>
+                    <p>Configure follow-ups caso não responda.</p>
+                </div>
+                <div class="step">
+                    <h5>Revisar e Criar</h5>
+                    <p>Nome + limite diário + confirmar.</p>
+                </div>
+            </div>
+
+            <!-- COMPARATIVO -->
+            <h3>5.5 Comparativo de Campanhas</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Aspecto</th>
+                        <th>Conexão</th>
+                        <th>Aquecimento</th>
+                        <th>Autoridade</th>
+                        <th>Relacionamento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Objetivo</strong></td>
+                        <td>Novos leads</td>
+                        <td>Pré-aquecimento</td>
+                        <td>Visibilidade</td>
+                        <td>Nurturing</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Público</strong></td>
+                        <td>2º/3º grau</td>
+                        <td>2º/3º grau</td>
+                        <td>Influenciadores</td>
+                        <td>1º grau</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ação</strong></td>
+                        <td>Convite + msg</td>
+                        <td>Curtir/comentar</td>
+                        <td>Comentar</td>
+                        <td>Mensagem direta</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Follow-up</strong></td>
+                        <td>✅ Automático</td>
+                        <td>❌ N/A</td>
+                        <td>❌ N/A</td>
+                        <td>✅ Opcional</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Limite</strong></td>
+                        <td>300 leads</td>
+                        <td>300 leads</td>
+                        <td>20 perfis</td>
+                        <td>Ilimitado</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- SISTEMA DE CADÊNCIAS -->
+            <h3>5.6 Sistema de Cadências</h3>
+
+            <div class="info-box green">
+                <h5>📬 Visão Geral</h5>
+                <p>Cadências são sequências automatizadas de mensagens disparadas após eventos (aceite, resposta, etc). A cadência PARA automaticamente quando o lead responde.</p>
+            </div>
+
+            <h4>Exemplo: Cadência B2B Padrão</h4>
+            <table>
+                <thead>
+                    <tr><th>Dia</th><th>Evento/Ação</th><th>Tipo</th><th>Objetivo</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Day 0</strong></td><td>Aceite da conexão</td><td>-</td><td>Gatilho inicial</td></tr>
+                    <tr><td><strong>Day 1</strong></td><td>Mensagem de agradecimento</td><td>Agradecimento</td><td>Criar rapport</td></tr>
+                    <tr><td><strong>Day 3</strong></td><td>Compartilhar conteúdo</td><td>Valor</td><td>Demonstrar expertise</td></tr>
+                    <tr><td><strong>Day 7</strong></td><td>Pergunta sobre desafio</td><td>Engajamento</td><td>Descobrir dor</td></tr>
+                    <tr><td><strong>Day 14</strong></td><td>Oferta de call/demo</td><td>CTA</td><td>Agendar reunião</td></tr>
+                </tbody>
+            </table>
+
+            <h4>Variáveis Dinâmicas</h4>
+            <table>
+                <thead>
+                    <tr><th>Variável</th><th>Descrição</th><th>Exemplo</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>{nome}</code></td><td>Primeiro nome</td><td>Maria</td></tr>
+                    <tr><td><code>{sobrenome}</code></td><td>Último nome</td><td>Silva</td></tr>
+                    <tr><td><code>{empresa}</code></td><td>Empresa atual</td><td>TechStart</td></tr>
+                    <tr><td><code>{cargo}</code></td><td>Cargo/título</td><td>CEO</td></tr>
+                    <tr><td><code>{localizacao}</code></td><td>Cidade/região</td><td>São Paulo</td></tr>
+                    <tr><td><code>{setor}</code></td><td>Indústria</td><td>Tecnologia</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 5.6: PUBLICAÇÃO ORGÂNICA LINKEDIN -->
+        <!-- ================================================================== -->
+        <section id="linkedin-organico">
+            <h2>5.6 Publicação Orgânica LinkedIn 📝</h2>
+
+            <div class="info-box purple">
+                <h5>🎯 Objetivo</h5>
+                <p>Central de criação e agendamento de posts profissionais para LinkedIn. Conteúdo gerado por IA com base em URLs, temas ou briefings. Inclui calendário e histórico.</p>
+            </div>
+
+            <h3>Formatos Suportados</h3>
+            <table>
+                <thead>
+                    <tr><th>Formato</th><th>Descrição</th><th>Limite</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>📝 Post de Texto</strong></td><td>Post padrão com copy + hashtags + CTA</td><td>Até 3.000 caracteres</td></tr>
+                    <tr><td><strong>🖼️ Post com Imagem</strong></td><td>Texto + imagem (upload ou gerada)</td><td>Até 3.000 chars + 1 imagem</td></tr>
+                    <tr><td><strong>📄 Artigo</strong></td><td>Conteúdo longo estilo blog</td><td>Sem limite</td></tr>
+                    <tr><td><strong>📊 Documento/Carrossel</strong></td><td>PDF com múltiplas páginas</td><td>Até 300 páginas</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Wizard: Criar Conteúdo (7 Etapas)</h3>
+            <div class="steps">
+                <div class="step">
+                    <h5>1. Conta</h5>
+                    <p>Selecione qual conta LinkedIn vai publicar o conteúdo.</p>
+                </div>
+                <div class="step">
+                    <h5>2. Fonte do Conteúdo</h5>
+                    <p>Defina sobre o que será o post:
+                       <br>• <strong>URL:</strong> Cole link de matéria/notícia para IA extrair informações
+                       <br>• <strong>Descrição:</strong> Descreva o tema manualmente
+                       <br>• <strong>Produto:</strong> Use contexto do produto cadastrado</p>
+                </div>
+                <div class="step">
+                    <h5>3. Agente de Conteúdo</h5>
+                    <p>Selecione qual agente vai escrever. Exemplos: Notícia, Use Case, Provocativo, Educacional.</p>
+                </div>
+                <div class="step">
+                    <h5>4. Gerar Copy</h5>
+                    <p>IA gera o texto do post. Opções:
+                       <br>• Editar manualmente
+                       <br>• Editar com IA (descreva mudanças em linguagem natural)
+                       <br>• Regenerar completamente</p>
+                </div>
+                <div class="step">
+                    <h5>5. Imagem (Opcional)</h5>
+                    <p>Adicione imagem ao post:
+                       <br>• Upload manual
+                       <br>• Selecionar da biblioteca
+                       <br>• Gerar com IA (futuro)</p>
+                </div>
+                <div class="step">
+                    <h5>6. Agendamento</h5>
+                    <p>Defina quando publicar:
+                       <br>• Publicar agora
+                       <br>• Agendar data/hora específica
+                       <br>• Salvar como rascunho</p>
+                </div>
+                <div class="step">
+                    <h5>7. Revisar e Confirmar</h5>
+                    <p>Preview do post como aparecerá no LinkedIn. Confirme para agendar.</p>
+                </div>
+            </div>
+
+            <h3>Agente de Conteúdo LinkedIn</h3>
+            <table>
+                <thead>
+                    <tr><th>Atributo</th><th>Valor</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Função</strong></td><td>Criar posts profissionais com copy + hashtags + CTA</td></tr>
+                    <tr><td><strong>Input</strong></td><td>URL de matéria, tema ou briefing + contexto do produto</td></tr>
+                    <tr><td><strong>Output</strong></td><td>Post formatado (até 3.000 caracteres)</td></tr>
+                    <tr><td><strong>Características</strong></td><td>Tom B2B, hashtags profissionais, emojis moderados</td></tr>
+                    <tr><td><strong>Modelo IA</strong></td><td>Claude Sonnet (padrão) ou configurável</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Tela: Central de Conteúdo</h3>
+            <table>
+                <thead>
+                    <tr><th>Elemento</th><th>Tipo</th><th>Descrição</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Tabs</td><td>Tab Navigation</td><td>Histórico | Calendário | Rascunhos</td></tr>
+                    <tr><td>Botão Criar Post</td><td>Primary Button</td><td>Inicia wizard de criação</td></tr>
+                    <tr><td>Lista de Posts</td><td>Card List</td><td>Posts publicados/agendados com preview</td></tr>
+                    <tr><td>Calendário</td><td>Calendar View</td><td>Visualização mensal dos posts agendados</td></tr>
+                    <tr><td>Filtro por Status</td><td>Dropdown</td><td>Publicado | Agendado | Rascunho | Falhou</td></tr>
+                    <tr><td>Filtro por Conta</td><td>Dropdown</td><td>Seleciona conta LinkedIn</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Interface TypeScript - Conteúdo LinkedIn</h3>
+            <pre><code>interface LinkedInContent {
+  id: string;
+  linkedinAccountId: string;
+  agentId: string;
+  
+  // Fonte
+  sourceType: 'url' | 'description' | 'product';
+  sourceUrl?: string;
+  sourceDescription?: string;
+  productId?: string;
+  
+  // Conteúdo gerado
+  content: string;
+  hashtags: string[];
+  
+  // Mídia
+  mediaType?: 'none' | 'image' | 'document';
+  mediaUrl?: string;
+  
+  // Agendamento
+  status: 'draft' | 'scheduled' | 'published' | 'failed';
+  scheduledAt?: Date;
+  publishedAt?: Date;
+  
+  // Métricas (após publicação)
+  metrics?: {
+    impressions: number;
+    reactions: number;
+    comments: number;
+    shares: number;
+    clicks: number;
+    engagementRate: number;
+  };
+  
+  // LinkedIn
+  linkedinPostId?: string;
+  linkedinPostUrl?: string;
+  
+  createdAt: Date;
+  updatedAt: Date;
+}</code></pre>
+
+            <div class="info-box green">
+                <h5>💡 Integração com Otimização Automática</h5>
+                <p>Posts publicados são automaticamente analisados pelo Sistema de Otimização. Posts com boa performance geram novas teses. Posts ruins são identificados para evitar repetir erros.</p>
+            </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 6: META ADS -->
+        <!-- ================================================================== -->
+        <section id="meta-ads">
+            <h2>6. Meta Ads (Facebook + Instagram)</h2>
+
+            <div class="info-box blue">
+                <h5>📢 Gestão Completa</h5>
+                <p>Criar, gerenciar e otimizar campanhas de anúncios no Facebook e Instagram via Meta Marketing API. Inclui geração de copy com IA.</p>
+            </div>
+
+            <h3>6.1 Estrutura Hierárquica</h3>
+            <div class="flow-diagram">
+<pre>
+CAMPANHA (Objetivo + Budget)
+│
+├── AD SET 1 (Público A + Targeting)
+│   ├── AD 1 (Criativo: Imagem + Copy A)
+│   └── AD 2 (Criativo: Imagem + Copy B)
+│
+└── AD SET 2 (Público B + Targeting)
+    ├── AD 3 (Criativo: Vídeo + Copy A)
+    └── AD 4 (Criativo: Carrossel)
+</pre>
+            </div>
+
+            <h3>6.2 Wizard: Criar Campanha (7 Etapas)</h3>
+            <div class="steps">
+                <div class="step">
+                    <h5>Selecionar Conta de Anúncios</h5>
+                    <p>Dropdown com contas Meta conectadas. Mostra: Nome + ID + Status.</p>
+                </div>
+                <div class="step">
+                    <h5>Escolher Objetivo</h5>
+                    <p>Cards selecionáveis: Conversões | Tráfego | Alcance | Leads | Mensagens | Vídeo</p>
+                </div>
+                <div class="step">
+                    <h5>Definir Orçamento</h5>
+                    <p><strong>Tipo:</strong> Diário | Vitalício<br>
+                    <strong>Valor:</strong> Input numérico (mínimo R$6/dia)<br>
+                    <strong>Estratégia de Lance:</strong> Menor custo | Custo-alvo | ROAS mínimo</p>
+                </div>
+                <div class="step">
+                    <h5>Configurar Público</h5>
+                    <p><strong>Localização:</strong> Países, estados, cidades, raio<br>
+                    <strong>Idade:</strong> 18-65+<br>
+                    <strong>Gênero:</strong> Todos | Homens | Mulheres<br>
+                    <strong>Interesses:</strong> Busca com sugestões<br>
+                    <strong>Públicos Personalizados:</strong> Lookalike, Pixel, Engajamento</p>
+                </div>
+                <div class="step">
+                    <h5>Posicionamentos</h5>
+                    <p><strong>Automático:</strong> Meta escolhe (recomendado)<br>
+                    <strong>Manual:</strong> Facebook Feed/Stories/Marketplace, Instagram Feed/Stories/Reels/Explore, Messenger, Audience Network</p>
+                </div>
+                <div class="step">
+                    <h5>Criar Anúncios</h5>
+                    <p><strong>Formato:</strong> Imagem única | Vídeo | Carrossel | Collection<br>
+                    <strong>Mídia:</strong> Upload ou biblioteca<br>
+                    <strong>Texto Principal:</strong> Input + "Gerar com IA"<br>
+                    <strong>Título:</strong> Input + "Gerar com IA"<br>
+                    <strong>Descrição:</strong> Input + "Gerar com IA"<br>
+                    <strong>CTA:</strong> Saiba mais | Comprar | Cadastre-se<br>
+                    <strong>URL de Destino:</strong> Link da landing page</p>
+                </div>
+                <div class="step">
+                    <h5>Revisar e Publicar</h5>
+                    <p>Resumo completo. Opções: Publicar Agora | Agendar | Salvar Rascunho</p>
+                </div>
+            </div>
+
+            <h3>6.3 Geração de Copy com IA</h3>
+            <table>
+                <thead>
+                    <tr><th>Elemento</th><th>Input</th><th>Output</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Texto Principal</strong></td>
+                        <td>Produto + benefícios + público</td>
+                        <td>3-5 variações (PAS, AIDA, etc.)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Headline</strong></td>
+                        <td>Oferta principal</td>
+                        <td>5-10 títulos testáveis</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Descrição</strong></td>
+                        <td>CTA desejado</td>
+                        <td>3-5 descrições curtas</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Frameworks de Copy</h4>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>PAS</h4>
+                    <p>Problem → Agitate → Solution<br><em>Melhor para: Produtos que resolvem dores claras</em></p>
+                </div>
+                <div class="card">
+                    <h4>AIDA</h4>
+                    <p>Attention → Interest → Desire → Action<br><em>Melhor para: Lançamentos e ofertas</em></p>
+                </div>
+                <div class="card">
+                    <h4>Before-After-Bridge</h4>
+                    <p>Antes → Depois → Como chegar<br><em>Melhor para: Transformações e cursos</em></p>
+                </div>
+                <div class="card">
+                    <h4>4Ps</h4>
+                    <p>Promise → Picture → Proof → Push<br><em>Melhor para: High-ticket e B2B</em></p>
+                </div>
+            </div>
+
+            <h3>6.4 Métricas Monitoradas</h3>
+            <table>
+                <thead>
+                    <tr><th>Métrica</th><th>Descrição</th><th>Meta Típica</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Alcance</strong></td><td>Pessoas únicas alcançadas</td><td>-</td></tr>
+                    <tr><td><strong>Impressões</strong></td><td>Vezes que o anúncio foi exibido</td><td>-</td></tr>
+                    <tr><td><strong>CTR</strong></td><td>Taxa de cliques</td><td>&gt;1%</td></tr>
+                    <tr><td><strong>CPC</strong></td><td>Custo por clique</td><td>&lt;R$2</td></tr>
+                    <tr><td><strong>CPL</strong></td><td>Custo por lead</td><td>Varia por nicho</td></tr>
+                    <tr><td><strong>CPA</strong></td><td>Custo por aquisição</td><td>Varia por nicho</td></tr>
+                    <tr><td><strong>ROAS</strong></td><td>Retorno sobre gasto</td><td>&gt;3x</td></tr>
+                    <tr><td><strong>Frequency</strong></td><td>Média de vezes que pessoa viu</td><td>&lt;3</td></tr>
+                </tbody>
+            </table>
+
+            <h3>6.5 Interface: Meta Campaign</h3>
+            <pre><code>interface MetaCampaign {
+  id: string;
+  metaAccountId: string;
+  productId: string;
+
+  // Meta IDs
+  metaCampaignId: string;
+
+  // Dados da campanha
+  name: string;
+  objective: 'CONVERSIONS' | 'TRAFFIC' | 'REACH' | 'LEAD_GENERATION' | 'MESSAGES' | 'VIDEO_VIEWS';
+  status: 'ACTIVE' | 'PAUSED' | 'DELETED' | 'ARCHIVED';
+
+  // Budget
+  budgetType: 'daily' | 'lifetime';
+  budgetAmount: number;
+  bidStrategy: 'LOWEST_COST' | 'COST_CAP' | 'BID_CAP';
+
+  // Métricas (atualizadas periodicamente)
+  metrics: {
+    spend: number;
+    reach: number;
+    impressions: number;
+    clicks: number;
+    ctr: number;
+    cpc: number;
+    conversions: number;
+    cpa: number;
+    roas: number;
+  };
+
+  // Timestamps
+  startDate: Date;
+  endDate?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  lastSyncAt: Date;
+}
+
+interface MetaAdSet {
+  id: string;
+  campaignId: string;
+  metaAdSetId: string;
+
+  name: string;
+  status: 'ACTIVE' | 'PAUSED';
+
+  // Targeting
+  targeting: {
+    locations: string[];
+    ageMin: number;
+    ageMax: number;
+    genders: number[];
+    interests: string[];
+    customAudiences: string[];
+    lookalikes: string[];
+  };
+
+  // Posicionamentos
+  placements: 'AUTOMATIC' | string[];
+
+  // Métricas
+  metrics: MetricsObject;
+}
+
+interface MetaAd {
+  id: string;
+  adSetId: string;
+  metaAdId: string;
+
+  name: string;
+  status: 'ACTIVE' | 'PAUSED';
+
+  // Criativo
+  creative: {
+    format: 'IMAGE' | 'VIDEO' | 'CAROUSEL';
+    primaryText: string;
+    headline: string;
+    description: string;
+    callToAction: string;
+    linkUrl: string;
+    mediaUrls: string[];
+  };
+
+  // Métricas
+  metrics: MetricsObject;
+}</code></pre>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 7: TELAS DO SISTEMA -->
+        <!-- ================================================================== -->
+        <section id="telas">
+            <h2>7. Telas do Sistema (MVP)</h2>
+
+            <h3>7.1 Dashboard</h3>
+            <table>
+                <thead>
+                    <tr><th>Elemento</th><th>Descrição</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>KPIs Principais</strong></td><td>Total leads, convites enviados, taxa de aceite, mensagens</td></tr>
+                    <tr><td><strong>Campanhas Ativas</strong></td><td>Lista com status, progresso, métricas</td></tr>
+                    <tr><td><strong>Meta Ads Overview</strong></td><td>Spend, leads, CPA, ROAS das últimas 7 dias</td></tr>
+                    <tr><td><strong>Atividade Recente</strong></td><td>Timeline de ações (conexões aceitas, mensagens, etc)</td></tr>
+                    <tr><td><strong>Alertas</strong></td><td>Problemas de conta, limites atingidos, erros</td></tr>
+                </tbody>
+            </table>
+
+            <h3>7.2 Contas Conectadas</h3>
+            <table>
+                <thead>
+                    <tr><th>Canal</th><th>Tipos</th><th>Conexão</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🔗 LinkedIn</td>
+                        <td>Pessoal</td>
+                        <td>Session Cookie (li_at)</td>
+                    </tr>
+                    <tr>
+                        <td>📢 Meta Business</td>
+                        <td>Ad Account + Page</td>
+                        <td>OAuth 2.0</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>7.3 Campanhas</h3>
+            <table>
+                <thead>
+                    <tr><th>Elemento</th><th>Descrição</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Tabs</strong></td><td>LinkedIn | Meta Ads</td></tr>
+                    <tr><td><strong>Filtros</strong></td><td>Status, tipo, período, conta</td></tr>
+                    <tr><td><strong>Lista</strong></td><td>Nome, tipo, status, progresso, métricas, ações</td></tr>
+                    <tr><td><strong>Ações</strong></td><td>Ver detalhes, Editar, Pausar/Ativar, Duplicar, Excluir</td></tr>
+                </tbody>
+            </table>
+
+            <h3>7.4 Agentes de IA</h3>
+            <table>
+                <thead>
+                    <tr><th>Elemento</th><th>Descrição</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Filtros</strong></td><td>Canal (LinkedIn/Meta), Tipo, Status</td></tr>
+                    <tr><td><strong>Cards de Agente</strong></td><td>Nome, tipo, status, métricas (taxa aceite/engajamento)</td></tr>
+                    <tr><td><strong>Ações</strong></td><td>Editar, Testar, Duplicar, Pausar, Excluir</td></tr>
+                    <tr><td><strong>Área de Teste</strong></td><td>Input de lead mockado + output gerado + métricas</td></tr>
+                </tbody>
+            </table>
+
+            <h3>7.5 Central de Conteúdo (LinkedIn)</h3>
+            <table>
+                <thead>
+                    <tr><th>Elemento</th><th>Descrição</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Tabs</strong></td><td>Histórico | Calendário | Rascunhos</td></tr>
+                    <tr><td><strong>Lista de Posts</strong></td><td>Preview, status, data, métricas</td></tr>
+                    <tr><td><strong>Calendário</strong></td><td>Visualização mensal dos posts agendados</td></tr>
+                    <tr><td><strong>Filtros</strong></td><td>Status (publicado/agendado/rascunho), conta, período</td></tr>
+                    <tr><td><strong>Botão Criar Post</strong></td><td>Abre wizard de 7 etapas</td></tr>
+                    <tr><td><strong>Ações por Post</strong></td><td>Editar, Duplicar, Excluir, Ver métricas</td></tr>
+                </tbody>
+            </table>
+
+            <h3>7.6 Leads</h3>
+            <table>
+                <thead>
+                    <tr><th>Elemento</th><th>Descrição</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Importação</strong></td><td>CSV, URL do Sales Navigator, manual</td></tr>
+                    <tr><td><strong>Lista</strong></td><td>Nome, cargo, empresa, status, fonte, última interação</td></tr>
+                    <tr><td><strong>Filtros</strong></td><td>Status, campanha, tags, período</td></tr>
+                    <tr><td><strong>Detalhes do Lead</strong></td><td>Sidebar com perfil completo, histórico, timeline</td></tr>
+                </tbody>
+            </table>
+
+            <h3>7.7 Inbox (LinkedIn)</h3>
+            <table>
+                <thead>
+                    <tr><th>Elemento</th><th>Descrição</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Lista de Conversas</strong></td><td>Lado esquerdo, ordenada por recente</td></tr>
+                    <tr><td><strong>Área de Mensagens</strong></td><td>Centro, histórico da conversa</td></tr>
+                    <tr><td><strong>Campo de Resposta</strong></td><td>Input + botão "Sugerir com IA"</td></tr>
+                    <tr><td><strong>Detalhes do Lead</strong></td><td>Sidebar direita com perfil e histórico</td></tr>
+                    <tr><td><strong>Filtros</strong></td><td>Conta, não lidas, por campanha</td></tr>
+                </tbody>
+            </table>
+
+            <h3>7.8 Kanban (Pipeline CRM)</h3>
+            <table>
+                <thead>
+                    <tr><th>Elemento</th><th>Descrição</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Colunas Padrão</strong></td><td>Novo → Contactado → Qualificado → Proposta → Ganho/Perdido</td></tr>
+                    <tr><td><strong>Cards de Lead</strong></td><td>Nome, empresa, fonte, último contato</td></tr>
+                    <tr><td><strong>Drag & Drop</strong></td><td>Mover leads entre colunas</td></tr>
+                    <tr><td><strong>Ações Rápidas</strong></td><td>Abrir inbox, adicionar nota, marcar follow-up</td></tr>
+                    <tr><td><strong>Filtros</strong></td><td>Fonte (LinkedIn/Meta Ads), responsável, período</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 8: DATABASE -->
+        <!-- ================================================================== -->
+        <section id="database">
+            <h2>8. Database Schema (PostgreSQL)</h2>
+
+            <h3>8.1 Tabelas Core</h3>
+            <pre><code>-- Usuários
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  avatar_url VARCHAR(500),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Empresas
+CREATE TABLE companies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(200) NOT NULL,
+  legal_name VARCHAR(200),
+  cnpj VARCHAR(20),
+  website VARCHAR(500),
+  logo_url VARCHAR(500),
+  primary_color VARCHAR(7),
+  secondary_color VARCHAR(7),
+  voice_tone VARCHAR(50),
+  brand_persona TEXT,
+  do_not_say TEXT[],
+  always_say TEXT[],
+  industry VARCHAR(100),
+  target_market VARCHAR(50),
+  company_size VARCHAR(20),
+  linkedin_url VARCHAR(500),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Produtos/Serviços
+CREATE TABLE products (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
+  name VARCHAR(200) NOT NULL,
+  type VARCHAR(20) NOT NULL, -- product | service
+  slug VARCHAR(200),
+  short_description TEXT,
+  full_description TEXT,
+  tagline VARCHAR(500),
+  price_model VARCHAR(50),
+  pricing_details VARCHAR(500),
+  main_benefit TEXT,
+  benefits TEXT[],
+  differentiators TEXT[],
+  icp JSONB, -- {jobTitles, industries, companySize, painPoints, goals}
+  faq JSONB, -- [{question, answer}]
+  objection_handling JSONB, -- [{objection, response}]
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Contas LinkedIn
+CREATE TABLE linkedin_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  profile_url VARCHAR(500) NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  headline VARCHAR(500),
+  profile_picture VARCHAR(500),
+  session_cookie_encrypted TEXT NOT NULL,
+  account_type VARCHAR(50) DEFAULT 'premium',
+  daily_connection_limit INTEGER DEFAULT 20,
+  daily_message_limit INTEGER DEFAULT 50,
+  used_connections_today INTEGER DEFAULT 0,
+  used_messages_today INTEGER DEFAULT 0,
+  status VARCHAR(50) DEFAULT 'active',
+  last_checked_at TIMESTAMP,
+  last_activity_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Contas Meta Business
+CREATE TABLE meta_business_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  business_id VARCHAR(100) NOT NULL,
+  business_name VARCHAR(200),
+  ad_account_id VARCHAR(100) NOT NULL,
+  ad_account_name VARCHAR(200),
+  access_token_encrypted TEXT NOT NULL,
+  access_token_expiry TIMESTAMP,
+  facebook_page_id VARCHAR(100),
+  facebook_page_name VARCHAR(200),
+  instagram_account_id VARCHAR(100),
+  instagram_username VARCHAR(100),
+  permissions TEXT[],
+  status VARCHAR(50) DEFAULT 'active',
+  last_sync_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Agentes de IA
+CREATE TABLE agents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  name VARCHAR(200) NOT NULL,
+  description TEXT,
+  type VARCHAR(50) NOT NULL, -- connection_message, comments, inbox, ad_copy
+  platform VARCHAR(50) NOT NULL, -- linkedin, meta_ads
+  system_prompt TEXT NOT NULL,
+  model VARCHAR(50) DEFAULT 'claude-3-sonnet',
+  temperature DECIMAL(2,1) DEFAULT 0.7,
+  max_tokens INTEGER DEFAULT 500,
+  language VARCHAR(10) DEFAULT 'pt-BR',
+  tone_of_voice VARCHAR(50) DEFAULT 'professional',
+  require_approval BOOLEAN DEFAULT false,
+  total_uses INTEGER DEFAULT 0,
+  acceptance_rate DECIMAL(5,2),
+  avg_engagement_rate DECIMAL(5,2),
+  conversion_rate DECIMAL(5,2),
+  status VARCHAR(50) DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Leads
+CREATE TABLE leads (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  
+  -- Dados do perfil
+  linkedin_url VARCHAR(500),
+  name VARCHAR(200) NOT NULL,
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
+  headline VARCHAR(500),
+  company VARCHAR(200),
+  job_title VARCHAR(200),
+  location VARCHAR(200),
+  industry VARCHAR(100),
+  profile_picture VARCHAR(500),
+  about TEXT,
+  
+  -- Contato
+  email VARCHAR(255),
+  phone VARCHAR(50),
+  
+  -- Status e pipeline
+  status VARCHAR(50) DEFAULT 'new', -- new, contacted, qualified, proposal, won, lost
+  source VARCHAR(50), -- linkedin_connection, linkedin_warming, meta_ads, manual
+  temperature VARCHAR(20) DEFAULT 'cold', -- cold, warm, hot
+  
+  -- Tracking
+  first_contacted_at TIMESTAMP,
+  last_contacted_at TIMESTAMP,
+  last_interaction_at TIMESTAMP,
+  
+  -- Tags e notas
+  tags TEXT[],
+  notes TEXT,
+  
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Campanhas (LinkedIn + Meta)
+CREATE TABLE campaigns (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  linkedin_account_id UUID REFERENCES linkedin_accounts(id),
+  meta_account_id UUID REFERENCES meta_business_accounts(id),
+  
+  name VARCHAR(200) NOT NULL,
+  type VARCHAR(50) NOT NULL, -- connection, warming, authority, relationship, meta_ads
+  
+  -- Status
+  status VARCHAR(50) DEFAULT 'draft', -- draft, active, paused, completed
+  
+  -- Configurações
+  config JSONB, -- Configurações específicas por tipo
+  
+  -- Métricas
+  metrics JSONB, -- Métricas específicas por tipo
+  
+  -- Datas
+  start_date TIMESTAMP,
+  end_date TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Relação Campanha <-> Lead
+CREATE TABLE campaign_leads (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
+  lead_id UUID REFERENCES leads(id) ON DELETE CASCADE,
+  
+  -- Status específico na campanha
+  status VARCHAR(50) DEFAULT 'pending', -- pending, sent, accepted, responded, completed, failed
+  
+  -- Mensagem gerada
+  generated_message TEXT,
+  
+  -- Tracking
+  sent_at TIMESTAMP,
+  accepted_at TIMESTAMP,
+  responded_at TIMESTAMP,
+  
+  -- Cadência
+  current_cadence_step INTEGER DEFAULT 0,
+  next_action_at TIMESTAMP,
+  cadence_paused BOOLEAN DEFAULT false,
+  
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  
+  UNIQUE(campaign_id, lead_id)
+);
+
+-- Cadências (templates de follow-up)
+CREATE TABLE cadences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  name VARCHAR(200) NOT NULL,
+  description TEXT,
+  is_template BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Steps da Cadência
+CREATE TABLE cadence_steps (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  cadence_id UUID REFERENCES cadences(id) ON DELETE CASCADE,
+  position INTEGER NOT NULL,
+  delay_days INTEGER NOT NULL,
+  agent_id UUID REFERENCES agents(id),
+  message_template TEXT, -- Se não usar agente
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Conteúdo LinkedIn (Posts Orgânicos)
+CREATE TABLE linkedin_content (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  linkedin_account_id UUID REFERENCES linkedin_accounts(id) ON DELETE CASCADE,
+  agent_id UUID REFERENCES agents(id),
+  product_id UUID REFERENCES products(id),
+  
+  -- Fonte do conteúdo
+  source_type VARCHAR(50) NOT NULL, -- url, description, product
+  source_url TEXT,
+  source_description TEXT,
+  
+  -- Conteúdo gerado
+  content TEXT NOT NULL,
+  hashtags TEXT[],
+  
+  -- Mídia
+  media_type VARCHAR(50), -- none, image, document
+  media_url TEXT,
+  
+  -- Status e agendamento
+  status VARCHAR(50) DEFAULT 'draft', -- draft, scheduled, publishing, published, failed
+  scheduled_at TIMESTAMP,
+  published_at TIMESTAMP,
+  
+  -- LinkedIn
+  linkedin_post_id VARCHAR(255),
+  linkedin_post_url TEXT,
+  
+  -- Métricas (atualizadas periodicamente)
+  metrics JSONB, -- impressions, reactions, comments, shares, clicks
+  
+  -- Erro (se falhou)
+  error_message TEXT,
+  
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Mensagens (Inbox)
+CREATE TABLE messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  linkedin_account_id UUID REFERENCES linkedin_accounts(id) ON DELETE CASCADE,
+  lead_id UUID REFERENCES leads(id) ON DELETE CASCADE,
+  campaign_id UUID REFERENCES campaigns(id),
+  
+  direction VARCHAR(10) NOT NULL, -- inbound | outbound
+  content TEXT NOT NULL,
+  
+  -- Se gerado por IA
+  agent_id UUID REFERENCES agents(id),
+  was_ai_generated BOOLEAN DEFAULT false,
+  
+  -- Status
+  status VARCHAR(50) DEFAULT 'sent', -- sent, delivered, read, failed
+  
+  sent_at TIMESTAMP DEFAULT NOW(),
+  read_at TIMESTAMP,
+  
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Meta Campaigns
+CREATE TABLE meta_campaigns (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
+  meta_account_id UUID REFERENCES meta_business_accounts(id),
+  
+  meta_campaign_id VARCHAR(100) NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  objective VARCHAR(50) NOT NULL,
+  status VARCHAR(50) NOT NULL,
+  
+  budget_type VARCHAR(20) NOT NULL,
+  budget_amount DECIMAL(10,2) NOT NULL,
+  bid_strategy VARCHAR(50),
+  
+  -- Métricas
+  spend DECIMAL(10,2) DEFAULT 0,
+  reach INTEGER DEFAULT 0,
+  impressions INTEGER DEFAULT 0,
+  clicks INTEGER DEFAULT 0,
+  conversions INTEGER DEFAULT 0,
+  
+  start_date TIMESTAMP,
+  end_date TIMESTAMP,
+  last_sync_at TIMESTAMP,
+  
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Meta Ad Sets
+CREATE TABLE meta_adsets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  meta_campaign_id UUID REFERENCES meta_campaigns(id) ON DELETE CASCADE,
+  
+  meta_adset_id VARCHAR(100) NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  status VARCHAR(50) NOT NULL,
+  
+  targeting JSONB NOT NULL,
+  placements JSONB,
+  
+  -- Métricas
+  spend DECIMAL(10,2) DEFAULT 0,
+  reach INTEGER DEFAULT 0,
+  impressions INTEGER DEFAULT 0,
+  clicks INTEGER DEFAULT 0,
+  conversions INTEGER DEFAULT 0,
+  
+  last_sync_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Meta Ads
+CREATE TABLE meta_ads (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  meta_adset_id UUID REFERENCES meta_adsets(id) ON DELETE CASCADE,
+  
+  meta_ad_id VARCHAR(100) NOT NULL,
+  name VARCHAR(200) NOT NULL,
+  status VARCHAR(50) NOT NULL,
+  
+  -- Criativo
+  format VARCHAR(50) NOT NULL,
+  primary_text TEXT,
+  headline VARCHAR(500),
+  description VARCHAR(500),
+  call_to_action VARCHAR(50),
+  link_url VARCHAR(1000),
+  media_urls TEXT[],
+  
+  -- Se gerado por IA
+  agent_id UUID REFERENCES agents(id),
+  was_ai_generated BOOLEAN DEFAULT false,
+  
+  -- Métricas
+  spend DECIMAL(10,2) DEFAULT 0,
+  impressions INTEGER DEFAULT 0,
+  clicks INTEGER DEFAULT 0,
+  ctr DECIMAL(5,2),
+  cpc DECIMAL(10,2),
+  conversions INTEGER DEFAULT 0,
+  cpa DECIMAL(10,2),
+  
+  last_sync_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Índices
+CREATE INDEX idx_companies_user ON companies(user_id);
+CREATE INDEX idx_products_company ON products(company_id);
+CREATE INDEX idx_linkedin_accounts_product ON linkedin_accounts(product_id);
+CREATE INDEX idx_meta_accounts_product ON meta_business_accounts(product_id);
+CREATE INDEX idx_agents_product ON agents(product_id);
+CREATE INDEX idx_leads_product ON leads(product_id);
+CREATE INDEX idx_leads_status ON leads(status);
+CREATE INDEX idx_campaigns_product ON campaigns(product_id);
+CREATE INDEX idx_campaigns_status ON campaigns(status);
+CREATE INDEX idx_campaign_leads_campaign ON campaign_leads(campaign_id);
+CREATE INDEX idx_campaign_leads_lead ON campaign_leads(lead_id);
+CREATE INDEX idx_messages_account ON messages(linkedin_account_id);
+CREATE INDEX idx_messages_lead ON messages(lead_id);</code></pre>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 9: SEGURANÇA -->
+        <!-- ================================================================== -->
+        <section id="seguranca">
+            <h2>9. Segurança e Compliance</h2>
+
+            <h3>9.1 Algoritmo Anti-Detecção LinkedIn</h3>
+
+            <div class="info-box red">
+                <h5>⚠️ CRÍTICO</h5>
+                <p>LinkedIn usa Machine Learning para detectar automação. Contas detectadas são restringidas ou banidas. O sistema implementa múltiplas camadas de proteção.</p>
+            </div>
+
+            <h4>Comportamento Humano Simulado</h4>
+            <table>
+                <thead>
+                    <tr><th>Aspecto</th><th>Bot Detectável</th><th>OMAS (Humano)</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Tempo entre ações</strong></td>
+                        <td>Fixo (1-2 segundos)</td>
+                        <td>Variável (30-180s) com distribuição gaussiana</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Horário</strong></td>
+                        <td>24/7</td>
+                        <td>9h-18h, seg-sex, com variações</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Padrão diário</strong></td>
+                        <td>Mesmo horário</td>
+                        <td>30 variações diferentes por mês</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Volume</strong></td>
+                        <td>Máximo sempre</td>
+                        <td>Varia 60-100% do limite</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Delays Entre Ações</h4>
+            <pre><code>const DELAYS = {
+  betweenConnections: { min: 45, max: 180 },    // segundos
+  betweenMessages: { min: 30, max: 120 },
+  betweenLikes: { min: 5, max: 20 },
+  betweenComments: { min: 60, max: 300 },
+  afterError: { min: 300, max: 900 },           // 5-15 min
+  afterRateLimit: { min: 1800, max: 3600 },     // 30-60 min
+};
+
+// Micro-pausas aleatórias (15% chance)
+microBreaks: {
+  probability: 0.15,
+  duration: { min: 300, max: 1800 }  // 5-30 minutos
+}</code></pre>
+
+            <h3>9.2 Criptografia</h3>
+            <table>
+                <thead>
+                    <tr><th>Dado</th><th>Algoritmo</th><th>Rotação</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Session Cookies LinkedIn</td>
+                        <td>AES-256-GCM</td>
+                        <td>90 dias</td>
+                    </tr>
+                    <tr>
+                        <td>Access Tokens Meta</td>
+                        <td>AES-256-GCM</td>
+                        <td>Automática (refresh)</td>
+                    </tr>
+                    <tr>
+                        <td>Senhas de usuário</td>
+                        <td>bcrypt (cost 12)</td>
+                        <td>N/A</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>9.3 Rate Limiting</h3>
+            <pre><code>-- Tabela de limites
+CREATE TABLE rate_limits (
+  id UUID PRIMARY KEY,
+  linkedin_account_id UUID REFERENCES linkedin_accounts(id),
+  action_type VARCHAR(50) NOT NULL,
+  window_start TIMESTAMP NOT NULL,
+  count INTEGER DEFAULT 0,
+  limit_value INTEGER NOT NULL,
+  UNIQUE(linkedin_account_id, action_type, window_start)
+);
+
+-- Limites diários
+CREATE TABLE daily_limits (
+  id UUID PRIMARY KEY,
+  linkedin_account_id UUID REFERENCES linkedin_accounts(id),
+  date DATE NOT NULL,
+  action_type VARCHAR(50) NOT NULL,
+  used INTEGER DEFAULT 0,
+  limit_value INTEGER NOT NULL,
+  UNIQUE(linkedin_account_id, date, action_type)
+);</code></pre>
+
+            <h3>9.4 Circuit Breaker</h3>
+            <pre><code>// Estados: closed → open → half_open → closed
+interface CircuitBreakerState {
+  state: 'closed' | 'open' | 'half_open';
+  failureCount: number;
+  lastFailureAt: Date;
+  openedAt: Date;
+  scheduledCloseAt: Date;
+  openReason: string;  // rate_limit, captcha, restriction
+}
+
+// Regras:
+// - 3 falhas consecutivas → abre circuit
+// - Aguarda 30min → muda para half_open
+// - 1 sucesso em half_open → fecha
+// - 1 falha em half_open → reabre por 1h</code></pre>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 10: SISTEMA DE FILAS -->
+        <!-- ================================================================== -->
+        <section id="filas">
+            <h2>10. Sistema de Filas (BullMQ)</h2>
+
+            <div class="info-box blue">
+                <h5>📬 Processamento Assíncrono</h5>
+                <p>Todas as ações do LinkedIn e Meta são processadas em background via BullMQ + Redis. Isso garante: persistência, retry automático, rate limiting por conta e monitoramento.</p>
+            </div>
+
+            <h3>10.1 Filas do MVP</h3>
+            <table>
+                <thead>
+                    <tr><th>Fila</th><th>Propósito</th><th>Concorrência</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>linkedin:connections</code></td>
+                        <td>Envio de convites de conexão</td>
+                        <td>1 por conta</td>
+                    </tr>
+                    <tr>
+                        <td><code>linkedin:messages</code></td>
+                        <td>Envio de mensagens (cadência)</td>
+                        <td>1 por conta</td>
+                    </tr>
+                    <tr>
+                        <td><code>linkedin:warming</code></td>
+                        <td>Curtidas e comentários</td>
+                        <td>1 por conta</td>
+                    </tr>
+                    <tr>
+                        <td><code>linkedin:authority</code></td>
+                        <td>Comentários em top voices</td>
+                        <td>1 por conta</td>
+                    </tr>
+                    <tr>
+                        <td><code>linkedin:content</code></td>
+                        <td>Publicação de posts orgânicos</td>
+                        <td>1 por conta</td>
+                    </tr>
+                    <tr>
+                        <td><code>ai:generation</code></td>
+                        <td>Geração de conteúdo (Claude)</td>
+                        <td>10</td>
+                    </tr>
+                    <tr>
+                        <td><code>meta:sync</code></td>
+                        <td>Sincronização de métricas</td>
+                        <td>5</td>
+                    </tr>
+                    <tr>
+                        <td><code>dead-letter</code></td>
+                        <td>Jobs que falharam</td>
+                        <td>1</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>10.2 Configuração de Retry</h3>
+            <pre><code>const jobOptions = {
+  attempts: 3,
+  backoff: {
+    type: 'exponential',
+    delay: 60000,  // 1 min → 2 min → 4 min
+  },
+  removeOnComplete: {
+    age: 86400,    // 24h
+    count: 1000,
+  },
+  removeOnFail: {
+    age: 604800,   // 7 dias
+  },
+};
+
+// Worker com rate limit por conta
+const worker = new Worker(
+  'linkedin:connections',
+  processConnection,
+  {
+    connection: redisConnection,
+    concurrency: 10,
+    limiter: {
+      max: 1,
+      duration: 45000,       // 45s entre jobs
+      groupKey: 'accountId', // Rate limit POR CONTA
+    },
+  }
+);</code></pre>
+
+            <h3>10.3 Dead Letter Queue</h3>
+            <pre><code>// Jobs que falharam 3x vão para DLQ
+worker.on('failed', async (job, error) => {
+  if (job.attemptsMade >= job.opts.attempts) {
+    await deadLetterQueue.add('failed-job', {
+      originalQueue: 'linkedin:connections',
+      jobData: job.data,
+      error: error.message,
+      failedAt: new Date(),
+    });
+
+    // Alerta se muitas falhas
+    await checkAndAlertFailureRate(job.data.accountId);
+  }
+});</code></pre>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 11: SISTEMA DE OTIMIZAÇÃO AUTOMÁTICA -->
+        <!-- ================================================================== -->
+        <section id="otimizacao">
+            <h2>11. Sistema de Otimização Automática <span class="badge critical">DIFERENCIAL</span></h2>
+
+            <div class="info-box purple">
+                <h5>🎯 O Grande Diferencial: Otimização Contínua Baseada em Resultados</h5>
+                <p>Este sistema analisa automaticamente o desempenho de TODOS os conteúdos e campanhas, <strong>pausa o que não funciona, escala o que funciona, e cria novas teses</strong> baseadas em aprendizados. Nunca repete abordagens que falharam. Tudo automático.</p>
+            </div>
+
+            <h3>11.1 Ciclo de Otimização</h3>
+            <div class="flow-diagram">
+<pre>
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                         CICLO DE OTIMIZAÇÃO CONTÍNUA                              │
+│                                                                                   │
+│   PUBLICAR → COLETAR MÉTRICAS → ANALISAR → DECIDIR → EXECUTAR → PUBLICAR...     │
+│                                                                                   │
+│   ❌ PAUSAR: Performance abaixo do benchmark por X dias                           │
+│   ✅ ESCALAR: Performance acima da média → criar variações                        │
+│   🔄 ITERAR: Criar novas "teses" baseadas no que funcionou                        │
+│   🚫 BLACKLIST: Nunca repetir abordagens que falharam 3+ vezes                    │
+└──────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+            </div>
+
+            <h3>11.2 Regras de Otimização Configuráveis</h3>
+            <div class="card-grid">
+                <div class="card" style="border-left: 4px solid #e53e3e;">
+                    <h4>❌ Regra: PAUSAR</h4>
+                    <p><strong>Quando:</strong> Performance abaixo de X% da média por Y dias</p>
+                    <p><strong>Ação:</strong> Pausar (não deletar) | Notificar usuário</p>
+                </div>
+                <div class="card" style="border-left: 4px solid #48bb78;">
+                    <h4>✅ Regra: ESCALAR</h4>
+                    <p><strong>Quando:</strong> Performance acima de X% da média</p>
+                    <p><strong>Ação:</strong> Aumentar volume | Criar variações | Duplicar</p>
+                </div>
+                <div class="card" style="border-left: 4px solid #4299e1;">
+                    <h4>🔄 Regra: NOVAS TESES</h4>
+                    <p><strong>Frequência:</strong> Diário | Semanal | Mensal</p>
+                    <p><strong>Base:</strong> Top performers + padrões identificados</p>
+                </div>
+                <div class="card" style="border-left: 4px solid #805ad5;">
+                    <h4>🚫 BLACKLIST Automático</h4>
+                    <p><strong>Quando:</strong> 3+ falhas consecutivas</p>
+                    <p><strong>Efeito:</strong> IA nunca sugere abordagem novamente</p>
+                </div>
+            </div>
+
+            <h3>11.3 LinkedIn - Otimização por Tipo de Campanha</h3>
+
+            <h4>🔗 Conexões</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Ação</th>
+                        <th style="width: 22%;">Métricas Avaliadas</th>
+                        <th style="width: 33%;">O Que Acontece</th>
+                        <th style="width: 33%;">Exemplo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #fff5f5;">
+                        <td><strong>❌ PAUSAR</strong></td>
+                        <td>Taxa de aceite, tempo de resposta</td>
+                        <td>Template de convite pausado, não usado em novas solicitações</td>
+                        <td>Template com taxa de aceite &lt; 15% após 100 envios → pausar template</td>
+                    </tr>
+                    <tr style="background: #f0fff4;">
+                        <td><strong>✅ ESCALAR</strong></td>
+                        <td>Taxa aceite &gt; 40%, conversão p/ conversa</td>
+                        <td>Template vira "principal", aumenta volume, cria variações A/B</td>
+                        <td>Template com 52% aceite → aumentar de 20 para 50 envios/dia</td>
+                    </tr>
+                    <tr style="background: #ebf8ff;">
+                        <td><strong>🔄 TESES</strong></td>
+                        <td>Segmentos/cargos com melhor taxa</td>
+                        <td>IA sugere novos templates específicos para segmentos de alta conversão</td>
+                        <td>"CTOs convertem 3x mais" → criar templates específicos para C-level</td>
+                    </tr>
+                    <tr style="background: #faf5ff;">
+                        <td><strong>🚫 BLACKLIST</strong></td>
+                        <td>Segmentos com &lt; 5% aceite</td>
+                        <td>Segmento/cargo vai para exclusão automática nas buscas</td>
+                        <td>"Estagiários" com 2% aceite → excluir do targeting</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>💬 Mensagens (Cadências)</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Ação</th>
+                        <th style="width: 22%;">Métricas Avaliadas</th>
+                        <th style="width: 33%;">O Que Acontece</th>
+                        <th style="width: 33%;">Exemplo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #fff5f5;">
+                        <td><strong>❌ PAUSAR</strong></td>
+                        <td>Taxa resposta, taxa abertura, reuniões</td>
+                        <td>Sequence ou step específico pausado, leads migram para outra</td>
+                        <td>Follow-up #3 com 0% resposta em 50 envios → pausar step</td>
+                    </tr>
+                    <tr style="background: #f0fff4;">
+                        <td><strong>✅ ESCALAR</strong></td>
+                        <td>Taxa resposta &gt; 25%, conversão reunião &gt; 10%</td>
+                        <td>Sequence vira "winner", aumenta volume, cria variações</td>
+                        <td>Sequence com 32% resposta → usar como padrão</td>
+                    </tr>
+                    <tr style="background: #ebf8ff;">
+                        <td><strong>🔄 TESES</strong></td>
+                        <td>Análise de respostas positivas</td>
+                        <td>IA analisa o que levou às respostas e sugere novas abordagens</td>
+                        <td>"Msgs que mencionam case X têm 40% mais resposta" → criar sequences com cases</td>
+                    </tr>
+                    <tr style="background: #faf5ff;">
+                        <td><strong>🚫 BLACKLIST</strong></td>
+                        <td>Abordagens com respostas negativas</td>
+                        <td>Estilo/abordagem que gera respostas negativas vai para blacklist</td>
+                        <td>Abordagem "vendedor agressivo" gerou 5 respostas negativas → banir</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>💭 Comentários (Aquecimento/Autoridade)</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Ação</th>
+                        <th style="width: 22%;">Métricas Avaliadas</th>
+                        <th style="width: 33%;">O Que Acontece</th>
+                        <th style="width: 33%;">Exemplo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #fff5f5;">
+                        <td><strong>❌ PAUSAR</strong></td>
+                        <td>Likes no comentário, respostas, profile views</td>
+                        <td>Estilo de comentário pausado, tipo de post evitado</td>
+                        <td>Comentários em posts de "vagas" geram 0 interação → parar</td>
+                    </tr>
+                    <tr style="background: #f0fff4;">
+                        <td><strong>✅ ESCALAR</strong></td>
+                        <td>Likes &gt; 5, respostas &gt; 0, profile visits</td>
+                        <td>Estilo de comentário vira template, prioriza perfis similares</td>
+                        <td>Comentários "técnicos" em posts de CEOs → priorizar</td>
+                    </tr>
+                    <tr style="background: #ebf8ff;">
+                        <td><strong>🔄 TESES</strong></td>
+                        <td>Correlação perfil + tipo post + estilo</td>
+                        <td>IA sugere novos alvos e estilos de comentário</td>
+                        <td>"Comentários com pergunta geram 2x mais resposta" → adicionar perguntas</td>
+                    </tr>
+                    <tr style="background: #faf5ff;">
+                        <td><strong>🚫 BLACKLIST</strong></td>
+                        <td>Posts/perfis que nunca geram retorno</td>
+                        <td>Tipo de post ou perfil adicionado à lista de exclusão</td>
+                        <td>"Influencers genéricos" nunca convertem → blacklist categoria</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>11.4 Meta Ads - Otimização Automática</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Ação</th>
+                        <th style="width: 22%;">Métricas Avaliadas</th>
+                        <th style="width: 33%;">O Que Acontece</th>
+                        <th style="width: 33%;">Exemplo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #fff5f5;">
+                        <td><strong>❌ PAUSAR</strong></td>
+                        <td>CPA, ROAS, CTR, Frequência, CPM</td>
+                        <td>Ad/Ad Set pausado via API, budget realocado para winners</td>
+                        <td>Ad com CPA 3x acima da meta após R$100 gastos → pausar automaticamente</td>
+                    </tr>
+                    <tr style="background: #f0fff4;">
+                        <td><strong>✅ ESCALAR</strong></td>
+                        <td>ROAS &gt; 3x, CPA &lt; meta, CTR &gt; 2%</td>
+                        <td>Aumentar budget 20%, duplicar Ad Set para novos públicos</td>
+                        <td>Ad Set com ROAS 5x → aumentar budget, duplicar para lookalike 3%</td>
+                    </tr>
+                    <tr style="background: #ebf8ff;">
+                        <td><strong>🔄 TESES</strong></td>
+                        <td>Copies, criativos, públicos dos winners</td>
+                        <td>IA gera novas copies/hooks baseados nos ads de melhor performance</td>
+                        <td>"Ads com prova social convertem 2x" → gerar variações com depoimentos</td>
+                    </tr>
+                    <tr style="background: #faf5ff;">
+                        <td><strong>🚫 BLACKLIST</strong></td>
+                        <td>Públicos/interesses que nunca convertem</td>
+                        <td>Interesse/público excluído permanentemente do targeting</td>
+                        <td>"Empreendedorismo genérico" com CPA 5x meta em 3 testes → excluir</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>11.5 Thresholds Configuráveis por Canal</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Canal/Tipo</th>
+                        <th>PAUSAR se...</th>
+                        <th>ESCALAR se...</th>
+                        <th>BLACKLIST após...</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>LinkedIn Conexões</strong></td>
+                        <td>Taxa aceite &lt; 15% após 100 envios</td>
+                        <td>Taxa aceite &gt; 40%</td>
+                        <td>3 campanhas &lt; 10%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LinkedIn Mensagens</strong></td>
+                        <td>Taxa resposta &lt; 5% após 50 envios</td>
+                        <td>Taxa resposta &gt; 25%</td>
+                        <td>3 sequences &lt; 5%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>LinkedIn Comentários</strong></td>
+                        <td>0 interações após 20 comentários</td>
+                        <td>&gt; 5 likes médio</td>
+                        <td>3 categorias sem retorno</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Meta Ads</strong></td>
+                        <td>CPA &gt; 2x meta após spend mínimo</td>
+                        <td>ROAS &gt; 3x</td>
+                        <td>3 públicos com CPA &gt; 3x</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>11.6 Fila de Aprovação de Teses</h3>
+            <p>A IA gera automaticamente novas ideias baseadas em padrões de sucesso. Usuário revisa e aprova antes da execução.</p>
+            <table>
+                <thead>
+                    <tr><th>Campo</th><th>Descrição</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Hipótese</strong></td>
+                        <td>"Templates curtos têm 40% mais aceite → criar versão minimalista?"</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Baseado em</strong></td>
+                        <td>Links para campanhas/templates que inspiraram a tese</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Conteúdo Gerado</strong></td>
+                        <td>Preview do novo template/copy que a IA criou</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Confidence Score</strong></td>
+                        <td>0-100% de confiança na tese</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ações</strong></td>
+                        <td>✅ Aprovar | ✏️ Editar | ❌ Rejeitar</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>11.7 Interfaces TypeScript</h3>
+            <pre><code>// Regra de Automação
+interface AutomationRule {
+  id: string;
+  userId: string;
+  name: string;
+  type: 'auto_pause' | 'auto_scale' | 'auto_blacklist' | 'generate_thesis';
+  channel: 'linkedin_connections' | 'linkedin_messages' | 'linkedin_comments' | 'meta_ads';
+  isActive: boolean;
+
+  // Condições para disparar
+  conditions: {
+    metric: string;           // 'acceptance_rate', 'response_rate', 'cpa', 'roas'
+    operator: 'lt' | 'gt' | 'eq';
+    value: number;
+    minSampleSize: number;    // Ex: 100 envios, R$100 gastos
+    periodDays?: number;      // Ex: últimos 7 dias
+  };
+
+  // Ações a executar
+  actions: Array<{
+    type: 'pause' | 'scale' | 'blacklist' | 'notify' | 'create_variation';
+    params?: Record<string, any>;
+  }>;
+
+  // Tracking
+  lastTriggeredAt?: Date;
+  totalTriggers: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Item de Blacklist
+interface BlacklistItem {
+  id: string;
+  userId: string;
+  channel: 'linkedin' | 'meta_ads';
+  type: 'segment' | 'audience' | 'interest' | 'approach' | 'template';
+  value: string;              // Ex: "Estagiários", "interesse:empreendedorismo"
+  reason: string;             // Por que foi blacklistado
+  metrics: {
+    totalAttempts: number;
+    successRate: number;
+    failedConsecutive: number;
+  };
+  createdAt: Date;
+  expiresAt?: Date;           // Opcional: blacklist temporário
+}
+
+// Tese gerada pela IA
+interface AIThesis {
+  id: string;
+  userId: string;
+  channel: 'linkedin' | 'meta_ads';
+  type: 'new_template' | 'new_audience' | 'new_approach' | 'new_copy';
+
+  hypothesis: string;         // "Templates curtos performam 40% melhor"
+  basedOn: string[];          // IDs das campanhas/templates que inspiraram
+  confidenceScore: number;    // 0-100
+
+  // Conteúdo gerado
+  generatedContent: {
+    type: string;
+    content: string | Record<string, any>;
+    preview?: string;
+  };
+
+  status: 'pending' | 'approved' | 'rejected' | 'executed';
+  approvedBy?: string;
+  approvedAt?: Date;
+  executedAt?: Date;
+  
+  // Resultados após execução
+  results?: {
+    metric: string;
+    before: number;
+    after: number;
+    improvement: number;
+  };
+
+  createdAt: Date;
+}
+
+// Snapshot de métricas para histórico
+interface MetricsSnapshot {
+  id: string;
+  entityType: 'campaign' | 'agent' | 'template' | 'ad_set';
+  entityId: string;
+  snapshotDate: Date;
+  metrics: Record<string, number>;
+}</code></pre>
+
+            <h3>11.8 Database - Tabelas de Otimização</h3>
+            <pre><code>-- Regras de Automação
+CREATE TABLE automation_rules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  type VARCHAR(50) NOT NULL,  -- auto_pause, auto_scale, auto_blacklist, generate_thesis
+  channel VARCHAR(50) NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  conditions JSONB NOT NULL,
+  actions JSONB NOT NULL,
+  last_triggered_at TIMESTAMP,
+  total_triggers INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Log de Execuções de Automação
+CREATE TABLE automation_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  rule_id UUID REFERENCES automation_rules(id) ON DELETE CASCADE,
+  triggered_by JSONB,         -- Dados que dispararam
+  action_taken JSONB,         -- Ação executada
+  result VARCHAR(50),         -- success, failed
+  error_message TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Blacklist
+CREATE TABLE blacklist (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  channel VARCHAR(50) NOT NULL,
+  type VARCHAR(50) NOT NULL,
+  value VARCHAR(500) NOT NULL,
+  reason TEXT,
+  metrics JSONB,
+  created_at TIMESTAMP DEFAULT NOW(),
+  expires_at TIMESTAMP
+);
+
+-- Teses geradas pela IA
+CREATE TABLE ai_theses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  channel VARCHAR(50) NOT NULL,
+  type VARCHAR(50) NOT NULL,
+  hypothesis TEXT NOT NULL,
+  based_on UUID[],            -- Array de IDs das entidades base
+  confidence_score DECIMAL(5,2),
+  generated_content JSONB NOT NULL,
+  status VARCHAR(50) DEFAULT 'pending',
+  approved_by UUID REFERENCES users(id),
+  approved_at TIMESTAMP,
+  executed_at TIMESTAMP,
+  results JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Snapshots de Métricas (para histórico e análise)
+CREATE TABLE metrics_snapshots (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  entity_type VARCHAR(50) NOT NULL,
+  entity_id UUID NOT NULL,
+  snapshot_date DATE NOT NULL,
+  metrics JSONB NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(entity_type, entity_id, snapshot_date)
+);
+
+-- Índices para performance
+CREATE INDEX idx_automation_rules_user ON automation_rules(user_id, is_active);
+CREATE INDEX idx_blacklist_user_channel ON blacklist(user_id, channel);
+CREATE INDEX idx_ai_theses_user_status ON ai_theses(user_id, status);
+CREATE INDEX idx_metrics_snapshots_entity ON metrics_snapshots(entity_type, entity_id, snapshot_date);</code></pre>
+
+            <h3>11.9 Fila de Otimização (BullMQ)</h3>
+            <pre><code>// Adicionar às filas existentes
+const optimizationQueues = {
+  'optimization:analyze': {
+    purpose: 'Análise periódica de métricas',
+    schedule: '0 */6 * * *',  // A cada 6 horas
+    concurrency: 1,
+  },
+  'optimization:execute': {
+    purpose: 'Executa ações de otimização',
+    concurrency: 5,
+  },
+  'optimization:thesis': {
+    purpose: 'Geração de novas teses com IA',
+    schedule: '0 8 * * *',    // Diariamente às 8h
+    concurrency: 2,
+  },
+};
+
+// Worker de análise
+const analyzeWorker = new Worker('optimization:analyze', async (job) => {
+  const { userId, channel } = job.data;
+  
+  // 1. Coletar métricas recentes
+  const metrics = await collectRecentMetrics(userId, channel);
+  
+  // 2. Avaliar contra thresholds
+  const rules = await getActiveRules(userId, channel);
+  
+  for (const rule of rules) {
+    const shouldTrigger = evaluateConditions(rule.conditions, metrics);
+    
+    if (shouldTrigger) {
+      // 3. Adicionar job de execução
+      await optimizationExecuteQueue.add('execute', {
+        ruleId: rule.id,
+        metrics,
+        triggeredAt: new Date(),
+      });
+    }
+  }
+});
+
+// Worker de geração de teses
+const thesisWorker = new Worker('optimization:thesis', async (job) => {
+  const { userId, channel } = job.data;
+  
+  // 1. Coletar top performers
+  const topPerformers = await getTopPerformers(userId, channel, 30);
+  
+  // 2. Analisar padrões com Claude
+  const patterns = await analyzePatterns(topPerformers);
+  
+  // 3. Gerar novas teses
+  const theses = await generateTheses(patterns);
+  
+  // 4. Salvar para aprovação
+  for (const thesis of theses) {
+    await saveThesis(userId, channel, thesis);
+  }
+  
+  // 5. Notificar usuário
+  await notifyUser(userId, `${theses.length} novas teses geradas para ${channel}`);
+});</code></pre>
+
+            <div class="info-box green">
+                <h5>💡 Ciclo Completo</h5>
+                <p><strong>Coleta</strong> (6h) → <strong>Análise</strong> (automática) → <strong>Decisão</strong> (regras) → <strong>Ação</strong> (pausar/escalar) → <strong>Teses</strong> (diária) → <strong>Aprovação</strong> (usuário) → <strong>Execução</strong> → <strong>Repeat</strong></p>
+            </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 12: ROADMAP -->
+        <!-- ================================================================== -->
+        <section id="roadmap">
+            <h2>12. Roadmap de Implementação</h2>
+
+            <h3>Fase 1: Core Foundation (Semanas 1-4)</h3>
+            <table>
+                <thead>
+                    <tr><th>Módulo</th><th>Entrega</th><th>Prioridade</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Autenticação</td><td>Login, registro, sessões</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Multi-Company</td><td>CRUD empresas e produtos</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Database</td><td>Schema completo, migrations</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Filas</td><td>BullMQ setup, workers base</td><td><span class="badge critical">P0</span></td></tr>
+                </tbody>
+            </table>
+
+            <h3>Fase 2: LinkedIn Core (Semanas 5-8)</h3>
+            <table>
+                <thead>
+                    <tr><th>Módulo</th><th>Entrega</th><th>Prioridade</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Contas LinkedIn</td><td>Conexão, validação, limites</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Agentes IA</td><td>CRUD, teste, integração Claude</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Leads</td><td>Importação, listagem, filtros</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Campanha Conexão</td><td>Wizard completo + execução</td><td><span class="badge critical">P0</span></td></tr>
+                </tbody>
+            </table>
+
+            <h3>Fase 3: LinkedIn Completo (Semanas 9-12)</h3>
+            <table>
+                <thead>
+                    <tr><th>Módulo</th><th>Entrega</th><th>Prioridade</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Campanha Aquecimento</td><td>Wizard + execução</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Campanha Autoridade</td><td>Wizard + execução</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Campanha Relacionamento</td><td>Wizard + execução</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Sistema de Cadências</td><td>Templates, execução automática</td><td><span class="badge critical">P0</span></td></tr>
+                </tbody>
+            </table>
+
+            <h3>Fase 4: Meta Ads + CRM + Otimização (Semanas 13-16)</h3>
+            <table>
+                <thead>
+                    <tr><th>Módulo</th><th>Entrega</th><th>Prioridade</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Contas Meta</td><td>OAuth, conexão, sync</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Campanhas Meta Ads</td><td>Wizard 7 etapas + publicação</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Sistema Otimização</td><td>Pausar/Escalar/Teses/Blacklist</td><td><span class="badge critical">P0</span></td></tr>
+                    <tr><td>Inbox LinkedIn</td><td>Listagem, resposta, IA</td><td><span class="badge core">P1</span></td></tr>
+                    <tr><td>Kanban CRM</td><td>Pipeline visual, drag & drop</td><td><span class="badge core">P1</span></td></tr>
+                    <tr><td>Dashboard</td><td>Métricas consolidadas</td><td><span class="badge core">P1</span></td></tr>
+                </tbody>
+            </table>
+
+            <h3>Funcionalidades Futuras (Pós-MVP)</h3>
+            <div class="card-grid">
+                <div class="card">
+                    <h4>📱 Canais Orgânicos</h4>
+                    <p>Instagram, YouTube, TikTok, Twitter, Facebook, WordPress</p>
+                </div>
+                <div class="card">
+                    <h4>🔍 Google Ads</h4>
+                    <p>Search, Display, Performance Max</p>
+                </div>
+                <div class="card">
+                    <h4>📊 Lead Scoring</h4>
+                    <p>Pontuação automática, temperatura, priorização</p>
+                </div>
+                <div class="card">
+                    <h4>🔗 Webhooks</h4>
+                    <p>Integração com HubSpot, Pipedrive, Salesforce</p>
+                </div>
+                <div class="card">
+                    <h4>📨 Inbox Multi-canal</h4>
+                    <p>Instagram DM, Facebook Messenger</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================== -->
+        <!-- SEÇÃO 13: CONFIGURAÇÕES DE AMBIENTE -->
+        <!-- ================================================================== -->
+        <section id="ambiente">
+            <h2>13. Configurações de Ambiente</h2>
+
+            <h3>13.1 Variáveis de Ambiente (.env)</h3>
+            <pre><code># ====================================
+# OMAS MVP - ENVIRONMENT VARIABLES
+# ====================================
+
+# --- Core ---
+DATABASE_URL=postgresql://user:pass@host:5432/omas_db
+REDIS_URL=redis://user:pass@host:6379
+
+# --- JWT ---
+JWT_SECRET=your-super-secret-key
+JWT_EXPIRES_IN=7d
+
+# --- Criptografia ---
+ENCRYPTION_KEY=32-bytes-hex-key
+
+# --- Claude AI (Anthropic) ---
+ANTHROPIC_API_KEY=sk-ant-...
+
+# --- AWS S3 (Storage) ---
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=...
+AWS_BUCKET_NAME=omas-assets
+AWS_REGION=us-east-1
+
+# --- Meta (Facebook/Instagram) ---
+META_APP_ID=...
+META_APP_SECRET=...
+# Tokens gerados via OAuth na UI
+
+# --- LinkedIn ---
+# Session cookies configurados por usuário na UI</code></pre>
+
+            <h3>13.2 Serviços Recomendados</h3>
+            <table>
+                <thead>
+                    <tr><th>Serviço</th><th>Opção Gratuita</th><th>Opção Paga</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>PostgreSQL</strong></td>
+                        <td>Neon (free tier), Supabase</td>
+                        <td>AWS RDS, Render</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Redis</strong></td>
+                        <td>Upstash (10k/dia), Redis Cloud</td>
+                        <td>AWS ElastiCache</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Storage</strong></td>
+                        <td>-</td>
+                        <td>AWS S3, Cloudflare R2</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hosting</strong></td>
+                        <td>Railway (trial), Render</td>
+                        <td>AWS, Vercel, Railway</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+
+    <footer>
+        <p><strong>OMAS MVP Core</strong> - Plataforma de Automação LinkedIn + Meta Ads com IA</p>
+        <p>Documentação Técnica v1.0 | Janeiro 2026</p>
+        <p style="margin-top: 16px; font-size: 0.85rem;">Este documento contém o escopo mínimo viável (MVP) com todas as funcionalidades CORE necessárias para operação. Projetado para fácil evolução futura.</p>
+    </footer>
+
+</body>
+</html>

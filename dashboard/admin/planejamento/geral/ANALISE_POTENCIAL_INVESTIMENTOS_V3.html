@@ -1,0 +1,2732 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analise de Potencial de Investimentos V3 - Portfolio Completo OhanaX</title>
+    <style>
+        :root {
+            --primary-dark: #1a2332;
+            --primary-blue: #2c3e50;
+            --accent-blue: #34495e;
+            --accent-gold: #c9a227;
+            --text-dark: #2c3e50;
+            --text-medium: #4a5568;
+            --text-light: #718096;
+            --border-light: #e2e8f0;
+            --bg-light: #f7fafc;
+            --bg-white: #ffffff;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: var(--text-dark);
+            background: var(--bg-white);
+        }
+
+        .document {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--bg-white);
+        }
+
+        .header {
+            border-bottom: 3px solid var(--primary-dark);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 22pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+            letter-spacing: -0.5px;
+            margin-bottom: 3px;
+        }
+
+        .header-subtitle {
+            font-size: 11pt;
+            color: var(--text-medium);
+            font-weight: 400;
+        }
+
+        .header-meta {
+            text-align: right;
+            font-size: 9pt;
+            color: var(--text-light);
+        }
+
+        .confidential-badge {
+            display: inline-block;
+            background: var(--primary-dark);
+            color: white;
+            padding: 3px 10px;
+            font-size: 8pt;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        h2 {
+            font-size: 14pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+            border-bottom: 2px solid var(--accent-gold);
+            padding-bottom: 5px;
+            margin: 30px 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        h3 {
+            font-size: 12pt;
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin: 20px 0 10px 0;
+            padding-left: 10px;
+            border-left: 3px solid var(--accent-gold);
+        }
+
+        h4 {
+            font-size: 11pt;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin: 15px 0 8px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 9pt;
+        }
+
+        th {
+            background: var(--primary-dark);
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) {
+            background: var(--bg-light);
+        }
+
+        tr:hover {
+            background: #edf2f7;
+        }
+
+        .table-highlight {
+            background: #fef9e7 !important;
+            font-weight: 600;
+        }
+
+        .card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 12px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-size: 11pt;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .card-badge {
+            font-size: 9pt;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .badge-gold {
+            background: var(--accent-gold);
+            color: white;
+        }
+
+        .badge-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .badge-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .metric-box {
+            background: var(--bg-light);
+            border: 1px solid var(--border-light);
+            border-radius: 4px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 16pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+            line-height: 1.2;
+        }
+
+        .metric-label {
+            font-size: 8pt;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .score-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .score-number {
+            font-size: 20pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .score-max {
+            font-size: 11pt;
+            color: var(--text-light);
+        }
+
+        .star-rating {
+            color: var(--accent-gold);
+            font-size: 11pt;
+            letter-spacing: -1px;
+        }
+
+        .status-check {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .status-warning {
+            color: var(--warning);
+            font-weight: bold;
+        }
+
+        .status-x {
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        .formula-block {
+            background: #f8f9fa;
+            border: 1px solid var(--border-light);
+            border-left: 3px solid var(--accent-blue);
+            padding: 12px 15px;
+            margin: 10px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 9pt;
+            line-height: 1.6;
+            color: var(--text-dark);
+            white-space: pre-wrap;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+
+        li {
+            margin: 4px 0;
+            font-size: 10pt;
+        }
+
+        .compact-list li {
+            margin: 2px 0;
+            font-size: 9pt;
+        }
+
+        .page-break {
+            page-break-before: always;
+            margin-top: 25px;
+            padding-top: 15px;
+        }
+
+        .exec-summary {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent-blue) 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .exec-summary h3 {
+            color: white;
+            border-left-color: var(--accent-gold);
+            margin-top: 0;
+        }
+
+        .exec-summary .metric-box {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .exec-summary .metric-value {
+            color: white;
+        }
+
+        .exec-summary .metric-label {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .rank-1 {
+            background: linear-gradient(90deg, #fef9e7 0%, #fff 100%) !important;
+        }
+
+        .rank-badge {
+            display: inline-block;
+            width: 26px;
+            height: 26px;
+            line-height: 26px;
+            text-align: center;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 10pt;
+        }
+
+        .rank-badge.gold {
+            background: var(--accent-gold);
+            color: white;
+        }
+
+        .rank-badge.silver {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .rank-badge.bronze {
+            background: #cd7f32;
+            color: white;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-light);
+            padding: 15px 18px;
+            border-radius: 6px;
+            margin: 25px 0 15px 0;
+            border-left: 4px solid var(--accent-gold);
+        }
+
+        .project-title {
+            font-size: 15pt;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .project-code {
+            font-size: 9pt;
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .project-score {
+            text-align: right;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 3px solid #2196f3;
+            padding: 12px 15px;
+            margin: 12px 0;
+            font-size: 10pt;
+        }
+
+        .warning-box {
+            background: #fff3e0;
+            border-left: 3px solid #ff9800;
+            padding: 12px 15px;
+            margin: 12px 0;
+            font-size: 10pt;
+        }
+
+        .danger-box {
+            background: #ffebee;
+            border-left: 3px solid #f44336;
+            padding: 12px 15px;
+            margin: 12px 0;
+            font-size: 10pt;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 3px solid #4caf50;
+            padding: 12px 15px;
+            margin: 12px 0;
+            font-size: 10pt;
+        }
+
+        .comparison-positive {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .comparison-negative {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .highlight-row {
+            background: #e8f5e9 !important;
+        }
+
+        .tier-s { background: linear-gradient(90deg, #ffd700 0%, #fff 100%) !important; }
+        .tier-a { background: linear-gradient(90deg, #c0c0c0 0%, #fff 100%) !important; }
+        .tier-b { background: linear-gradient(90deg, #cd7f32 0%, #fff 100%) !important; }
+        .tier-c { background: #f5f5f5 !important; }
+        .tier-d { background: #ffebee !important; }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid var(--primary-dark);
+            font-size: 8pt;
+            color: var(--text-light);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @media print {
+            body { font-size: 10pt; }
+            .document { padding: 10mm; }
+            .page-break { page-break-before: always; }
+        }
+    </style>
+</head>
+<body>
+    <div class="document">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-top">
+                <div>
+                    <h1>ANALISE DE POTENCIAL DE INVESTIMENTOS V3</h1>
+                    <div class="header-subtitle">Portfolio Completo OhanaX - Analise de TODOS os Projetos</div>
+                </div>
+                <div class="header-meta">
+                    <div><strong>Data:</strong> Janeiro 2026</div>
+                    <div><strong>Versao:</strong> 3.0 - Analise Completa</div>
+                    <div><strong>Projetos Analisados:</strong> 18</div>
+                    <div class="confidential-badge">Confidencial</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- SUMARIO EXECUTIVO -->
+        <section id="sumario">
+            <h2>Sumario Executivo</h2>
+
+            <h3>Ranking Completo - TODOS os Projetos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">Rank</th>
+                        <th>Projeto</th>
+                        <th style="width: 70px;">Score</th>
+                        <th style="width: 60px;">Tier</th>
+                        <th>TAM</th>
+                        <th>Destaque</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="tier-s">
+                        <td><span class="rank-badge gold">1</span></td>
+                        <td><strong>O Entregador</strong></td>
+                        <td><strong>92</strong></td>
+                        <td><span class="card-badge badge-gold">S</span></td>
+                        <td>R$230M</td>
+                        <td>LTV/CAC 184x, ARPA R$10.600/mes, PMF validado</td>
+                    </tr>
+                    <tr class="tier-s">
+                        <td><span class="rank-badge gold">2</span></td>
+                        <td><strong>Plataforma de Dados Brasil</strong></td>
+                        <td><strong>85</strong></td>
+                        <td><span class="card-badge badge-gold">S</span></td>
+                        <td>R$8.5B</td>
+                        <td>150+ fontes catalogadas, TAM gigante</td>
+                    </tr>
+                    <tr class="tier-a">
+                        <td><span class="rank-badge silver">3</span></td>
+                        <td><strong>MetricsHub (Billing)</strong></td>
+                        <td><strong>78</strong></td>
+                        <td><span class="card-badge badge-success">A</span></td>
+                        <td>R$500M</td>
+                        <td>Asaas+Stripe, latencia sub-minuto</td>
+                    </tr>
+                    <tr class="tier-a">
+                        <td><span class="rank-badge silver">4</span></td>
+                        <td><strong>Streaming Finance</strong></td>
+                        <td><strong>76</strong></td>
+                        <td><span class="card-badge badge-success">A</span></td>
+                        <td>R$2B</td>
+                        <td>DeFi pioneiro, margem 70%+</td>
+                    </tr>
+                    <tr class="tier-a">
+                        <td><span class="rank-badge silver">5</span></td>
+                        <td><strong>Post Automation</strong></td>
+                        <td><strong>74</strong></td>
+                        <td><span class="card-badge badge-success">A</span></td>
+                        <td>R$1.2B</td>
+                        <td>Blog->Social com IA, mercado validado</td>
+                    </tr>
+                    <tr class="tier-a">
+                        <td><span class="rank-badge bronze">6</span></td>
+                        <td><strong>Authify (Auth)</strong></td>
+                        <td><strong>72</strong></td>
+                        <td><span class="card-badge badge-success">A</span></td>
+                        <td>R$800M</td>
+                        <td>Auth-as-a-Service, roadmap solido</td>
+                    </tr>
+                    <tr class="tier-a">
+                        <td><span class="rank-badge bronze">7</span></td>
+                        <td><strong>MEI Manager</strong></td>
+                        <td><strong>71</strong></td>
+                        <td><span class="card-badge badge-success">A</span></td>
+                        <td>R$2.7B</td>
+                        <td>15M MEIs no Brasil, mercado subatendido</td>
+                    </tr>
+                    <tr class="tier-a" style="background: #e8f4fd !important;">
+                        <td>8</td>
+                        <td><strong>SecAudit (Security)</strong> ⭐</td>
+                        <td><strong>82</strong></td>
+                        <td><span class="card-badge badge-success">A</span></td>
+                        <td>R$10B</td>
+                        <td>117 testes, AI-powered, DevSecOps - REANALISADO</td>
+                    </tr>
+                    <tr class="tier-b">
+                        <td>9</td>
+                        <td><strong>Horoscopo App</strong></td>
+                        <td><strong>68</strong></td>
+                        <td><span class="card-badge badge-warning">B</span></td>
+                        <td>R$500M</td>
+                        <td>Multiplos sistemas esotericos, B2C</td>
+                    </tr>
+                    <tr class="tier-b">
+                        <td>9</td>
+                        <td><strong>Subscription Manager</strong></td>
+                        <td><strong>65</strong></td>
+                        <td><span class="card-badge badge-warning">B</span></td>
+                        <td>R$400M</td>
+                        <td>Rocket Money BR, Open Finance</td>
+                    </tr>
+                    <tr class="tier-b">
+                        <td>10</td>
+                        <td><strong>Redutor INSS (Edifisco)</strong></td>
+                        <td><strong>64</strong></td>
+                        <td><span class="card-badge badge-warning">B</span></td>
+                        <td>R$300M</td>
+                        <td>Nicho construcao civil, modelo comissionado</td>
+                    </tr>
+                    <tr class="tier-b">
+                        <td>11</td>
+                        <td><strong>Cardapio Digital</strong></td>
+                        <td><strong>62</strong></td>
+                        <td><span class="card-badge badge-warning">B</span></td>
+                        <td>R$200M</td>
+                        <td>QR Code restaurantes, mercado saturado</td>
+                    </tr>
+                    <tr class="tier-b">
+                        <td>12</td>
+                        <td><strong>Finance Split (Apostas)</strong></td>
+                        <td><strong>58</strong></td>
+                        <td><span class="card-badge badge-warning">B</span></td>
+                        <td>R$150M</td>
+                        <td>Splitwise BR com Pix</td>
+                    </tr>
+                    <tr class="tier-b" style="background: #fff8e1 !important;">
+                        <td>13</td>
+                        <td><strong>Agregador Leiloes</strong> ⭐</td>
+                        <td><strong>66</strong></td>
+                        <td><span class="card-badge badge-warning">B</span></td>
+                        <td>R$500M</td>
+                        <td>Webscraping todos leiloes BR - REANALISADO</td>
+                    </tr>
+                    <!-- Security App RECLASSIFICADO para Tier A apos analise profunda -->
+                    <!-- Movido para posicao 8 - ver nova tabela abaixo -->
+                    <tr class="tier-c">
+                        <td>14</td>
+                        <td><strong>EB2-NIW App</strong></td>
+                        <td><strong>52</strong></td>
+                        <td><span class="card-badge" style="background:#888;color:white">C</span></td>
+                        <td>R$100M</td>
+                        <td>Nicho imigracao, sem documentacao</td>
+                    </tr>
+                    <!-- Agregador Leiloes RECLASSIFICADO para Tier B apos analise de mercado -->
+                    <!-- Mercado validado: R$243B leiloes B3, +86% imoveis, concorrentes existem -->
+                    <tr class="tier-c">
+                        <td>16</td>
+                        <td><strong>Filosofia Criancas</strong></td>
+                        <td><strong>48</strong></td>
+                        <td><span class="card-badge" style="background:#888;color:white">C</span></td>
+                        <td>R$50M</td>
+                        <td>Pasta vazia, ideia nao desenvolvida</td>
+                    </tr>
+                    <tr class="tier-d">
+                        <td>17</td>
+                        <td><strong>Pix Boleto Generator</strong></td>
+                        <td><strong>42</strong></td>
+                        <td><span class="card-badge badge-danger">D</span></td>
+                        <td>R$30M</td>
+                        <td>Commodity, competicao intensa</td>
+                    </tr>
+                    <tr class="tier-d">
+                        <td>18</td>
+                        <td><strong>Landing Page Generator</strong></td>
+                        <td><strong>40</strong></td>
+                        <td><span class="card-badge badge-danger">D</span></td>
+                        <td>R$50M</td>
+                        <td>Mercado saturado (Carrd, etc)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                <strong>Legenda de Tiers:</strong><br>
+                <strong>S (85+):</strong> Investir prioritariamente |
+                <strong>A (70-84):</strong> Alto potencial |
+                <strong>B (55-69):</strong> Potencial moderado |
+                <strong>C (45-54):</strong> Requer mais desenvolvimento |
+                <strong>D (&lt;45):</strong> Baixa prioridade
+            </div>
+
+            <h3>Metricas Consolidadas do Portfolio</h3>
+            <div class="grid-4">
+                <div class="metric-box">
+                    <div class="metric-value">R$118M</div>
+                    <div class="metric-label">ARR Potencial (Ano 3)</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">18</div>
+                    <div class="metric-label">Projetos Analisados</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">7</div>
+                    <div class="metric-label">Tier A ou Superior</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">63</div>
+                    <div class="metric-label">Score Medio</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ANALISES DETALHADAS -->
+        <section class="page-break" id="analises">
+            <h2>Parte I: Analises Detalhadas - Tier S e A</h2>
+
+            <!-- 1. O ENTREGADOR -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">1. O Entregador</div>
+                    <div class="project-code">04-app-o-entregador | Tier S</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">92</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">*****</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Modelo de Negocio</h4>
+                    <ul class="compact-list">
+                        <li><strong>Target:</strong> Hubs last-mile (Shopee, ML, Jadlog)</li>
+                        <li><strong>SaaS:</strong> R$3.400/mes/hub</li>
+                        <li><strong>Checklist:</strong> R$1,20/motorista/dia</li>
+                        <li><strong>ARPA:</strong> R$10.600/mes (200 motoristas)</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Unit Economics</h4>
+                    <ul class="compact-list">
+                        <li><strong>LTV/CAC:</strong> 92-115x (extraordinario)</li>
+                        <li><strong>CAC Payback:</strong> 1-2 meses</li>
+                        <li><strong>Gross Margin:</strong> 85%+</li>
+                        <li><strong>Expected Churn:</strong> &lt;5%/ano</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h4>TAM/SAM/SOM</h4>
+            <table>
+                <tr><th>Metrica</th><th>Valor</th><th>Calculo</th></tr>
+                <tr><td>TAM</td><td>R$230M/ano</td><td>2.000 hubs x R$10.600 x 12</td></tr>
+                <tr><td>SAM</td><td>R$92M/ano</td><td>800 hubs acessiveis</td></tr>
+                <tr><td>SOM Ano 5</td><td>R$38M/ano</td><td>300 hubs (15% market share)</td></tr>
+            </table>
+
+            <div class="success-box">
+                <strong>Por que Tier S:</strong> Unit economics excepcionais (LTV/CAC 100x+), mercado em explosao, produto MVP pronto, integracao Shopee validada, sem concorrente direto especializado.
+            </div>
+
+            <!-- 2. PLATAFORMA DE DADOS -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">2. Plataforma de Dados Brasil</div>
+                    <div class="project-code">se-02-app-data | Tier S</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">85</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">****</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <ul class="compact-list">
+                        <li>150+ fontes de dados catalogadas</li>
+                        <li>CPF, CNPJ, veiculos, imoveis, judiciais</li>
+                        <li>APIs, downloads, scraping mapeados</li>
+                        <li>Compliance, due diligence, fintechs</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Potencial</h4>
+                    <ul class="compact-list">
+                        <li><strong>TAM:</strong> R$8.5B (mercado de dados BR)</li>
+                        <li><strong>Clientes:</strong> Fintechs, bancos, compliance</li>
+                        <li><strong>Modelo:</strong> API por consulta + subscription</li>
+                        <li><strong>Diferencial:</strong> Agregacao unica no BR</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <strong>Por que Tier S:</strong> TAM gigante (R$8.5B), referencia unica de dados brasileiros, alta demanda de fintechs e empresas de compliance, barrier to entry alto (conhecimento de fontes).
+            </div>
+
+            <!-- 3. METRICSHUB -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">3. MetricsHub (Billing)</div>
+                    <div class="project-code">02-app-billing | Tier A</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">78</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">****</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <ul class="compact-list">
+                        <li>Consolidacao Stripe + Asaas (unico no BR)</li>
+                        <li>Latencia sub-minuto vs 3-6h concorrentes</li>
+                        <li>Pricing flat-rate (nao penaliza crescimento)</li>
+                        <li>Insights preditivos com ML</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Modelo de Negocio</h4>
+                    <ul class="compact-list">
+                        <li><strong>Starter:</strong> R$97/mes (500 clientes)</li>
+                        <li><strong>Growth:</strong> R$297/mes (5K clientes)</li>
+                        <li><strong>Scale:</strong> R$697/mes (50K clientes)</li>
+                        <li><strong>TAM:</strong> R$500M</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Por que Tier A:</strong> Diferencial claro (Asaas+Stripe), mercado de metricas SaaS consolidado, concorrentes caros (ChartMogul R$500+/mes), roadmap bem definido.
+            </div>
+
+            <!-- 4. STREAMING FINANCE -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">4. Streaming Finance</div>
+                    <div class="project-code">se-05-app-streaming-finance | Tier A</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">76</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">****</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <ul class="compact-list">
+                        <li>Player compartilhado de streaming</li>
+                        <li>Usuarios pagam por hora de uso</li>
+                        <li>Plataforma gerencia assinaturas dinamicamente</li>
+                        <li>Modelo DeFi pioneiro no Brasil</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Potencial</h4>
+                    <ul class="compact-list">
+                        <li><strong>TAM:</strong> R$2B (streaming sharing)</li>
+                        <li><strong>Margem:</strong> 70%+</li>
+                        <li><strong>Risco:</strong> ToS das plataformas</li>
+                        <li><strong>Inovacao:</strong> Alta (modelo inedito)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>Por que Tier A:</strong> Modelo inovador com alta margem, mas risco regulatorio (ToS Netflix, etc). Requer validacao juridica antes de investir pesado.
+            </div>
+
+            <!-- 5. POST AUTOMATION -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">5. Post Automation (Automarticles)</div>
+                    <div class="project-code">05-post-automation | Tier A</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">74</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">****</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <ul class="compact-list">
+                        <li>Geracao de artigos com IA (GPT-4)</li>
+                        <li>Publicacao automatica Blog->Social</li>
+                        <li>WordPress, Wix, LinkedIn, Instagram, X</li>
+                        <li>Video generation com avatares IA</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Modelo de Negocio</h4>
+                    <ul class="compact-list">
+                        <li><strong>Free:</strong> R$0 (3 artigos/mes)</li>
+                        <li><strong>Creator:</strong> $29/mes (30 artigos)</li>
+                        <li><strong>Pro:</strong> $59/mes (100 artigos)</li>
+                        <li><strong>Business:</strong> $149/mes (ilimitado)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Por que Tier A:</strong> Mercado de content automation crescendo, integracao blog->social e gap de mercado, modelo de negocio validado (Automarticles ja existe).
+            </div>
+
+            <!-- 6. AUTHIFY -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">6. Authify</div>
+                    <div class="project-code">01-app-auth | Tier A</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">72</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">***</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <ul class="compact-list">
+                        <li>Auth-as-a-Service para SaaS</li>
+                        <li>Email/senha, OAuth, Magic Link</li>
+                        <li>MFA, SSO/SAML, Organizations</li>
+                        <li>SDK React + API REST</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Roadmap</h4>
+                    <ul class="compact-list">
+                        <li><strong>v0.1:</strong> MVP (auth basico)</li>
+                        <li><strong>v1.0:</strong> Launch (sessions, magic link)</li>
+                        <li><strong>v2.0:</strong> Growth (webhooks, API)</li>
+                        <li><strong>v3.0:</strong> Enterprise (SSO, MFA)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Por que Tier A:</strong> Mercado consolidado (Auth0, Clerk), mas roadmap solido e pode ser usado internamente primeiro (dogfooding). Diferencial em simplicidade e preco BR.
+            </div>
+
+            <!-- 7. MEI MANAGER -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">7. MEI Manager</div>
+                    <div class="project-code">se-10-app-mei-manager | Tier A</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">71</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">***</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <ul class="compact-list">
+                        <li>Contabilidade simplificada para MEI</li>
+                        <li>Calculo automatico de DAS</li>
+                        <li>Alerta de limite de faturamento</li>
+                        <li>Relatorio para contador</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Mercado</h4>
+                    <ul class="compact-list">
+                        <li><strong>TAM:</strong> 15 milhoes de MEIs no Brasil</li>
+                        <li><strong>Preco:</strong> R$14,90/mes</li>
+                        <li><strong>Upsell:</strong> Emissao NFS-e integrada</li>
+                        <li><strong>Concorrentes:</strong> Contabilizei (caro)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <strong>Por que Tier A:</strong> 15 milhoes de MEIs, mercado claramente subatendido por solucoes simples e baratas. Ticket baixo mas volume altissimo. Potencial de R$2.7B TAM.
+            </div>
+
+            <!-- 8. SECAUDIT - REANALISADO -->
+            <div class="project-header" style="border-left: 4px solid #27ae60; background: #f0fff4;">
+                <div>
+                    <div class="project-title">8. SecAudit - DevSecOps Platform ⭐ REANALISADO</div>
+                    <div class="project-code">03-app-security | sec.ohanax.com | Tier A</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number" style="color:#27ae60">82</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">****</div>
+                </div>
+            </div>
+
+            <div class="info-box" style="background:#e8f4fd; border-left:4px solid #3498db;">
+                <strong>NOTA:</strong> Este projeto foi inicialmente classificado como Tier C (score 55) por "falta de documentacao". Apos analise profunda dos arquivos index.html e tests.html, descobriu-se um produto extremamente desenvolvido com diferencial competitivo significativo.
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <p>Plataforma de auditoria de seguranca automatizada com IA. Diferencial: uso de Claude AI para geracao dinamica de payloads e bypass de WAF.</p>
+                    <ul>
+                        <li><strong>117 testes automatizados</strong> em 23 categorias</li>
+                        <li><strong>6 frameworks de compliance:</strong> OWASP, PCI-DSS, SOC2, ISO 27001, GDPR, HIPAA</li>
+                        <li><strong>Multi-Agent System:</strong> Agentes especializados (SQLi, XSS, Auth, SSRF)</li>
+                        <li><strong>100% cobertura OWASP Top 10</strong></li>
+                        <li>Integracao com GitHub para code analysis</li>
+                        <li>Knowledge Base com CVEs conhecidos</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Diferenciais Competitivos</h4>
+                    <ul>
+                        <li><strong>Adaptive AI:</strong> Claude gera payloads dinamicos baseados no WAF detectado</li>
+                        <li><strong>Preco competitivo:</strong> Concorrentes cobram $1K-$22K/ano</li>
+                        <li><strong>Focus Brasil/LATAM:</strong> Interface em portugues, compliance local</li>
+                        <li><strong>PoC automatico:</strong> Gera proof-of-concept para vulnerabilidades</li>
+                        <li><strong>Stack moderna:</strong> NestJS + TypeScript + Nuclei + Nikto + SQLMap + Nmap</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Catalogo de Testes (117 Total)</h4>
+                    <table>
+                        <tr><td><strong>Injecao</strong></td><td>13 testes (SQL, XSS, SSTI, SSRF, NoSQL, etc)</td></tr>
+                        <tr><td><strong>Autenticacao</strong></td><td>15 testes (JWT, OAuth, MFA, Session, IDOR)</td></tr>
+                        <tr><td><strong>Headers</strong></td><td>11 testes (CSP, CORS, HSTS, Cookies)</td></tr>
+                        <tr><td><strong>API</strong></td><td>10 testes (GraphQL, WebSocket, Deserialization)</td></tr>
+                        <tr><td><strong>Infraestrutura</strong></td><td>10 testes (Port Scan, TLS, DNS, HTTP Smuggling)</td></tr>
+                        <tr><td><strong>Discovery</strong></td><td>10 testes (Endpoints, Files, CVE, Git)</td></tr>
+                        <tr><td><strong>Cloud</strong></td><td>7 testes (AWS S3, Metadata SSRF, Firebase)</td></tr>
+                        <tr><td><strong>WAF/Bypass</strong></td><td>4 testes (Detection, AI Bypass, Race Condition)</td></tr>
+                        <tr><td><strong>Adicionais</strong></td><td>15+ testes (WebRTC, Clickjacking, SAST, etc)</td></tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>Analise de Mercado</h4>
+                    <table>
+                        <tr><td><strong>TAM Global</strong></td><td>$10B (2025) - $37B (2035)</td></tr>
+                        <tr><td><strong>CAGR</strong></td><td>14-24% ao ano</td></tr>
+                        <tr><td><strong>DAST Market</strong></td><td>$2.5B (2023) - $8B (2030)</td></tr>
+                        <tr><td><strong>Brasil</strong></td><td>Mercado emergente, adocao acelerando</td></tr>
+                    </table>
+                    <p style="margin-top:10px"><strong>Tendencia:</strong> AI-powered tools crescendo 20% → 45% ate 2026</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h4>Analise Competitiva</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Concorrente</th>
+                            <th>Preco/Ano</th>
+                            <th>Testes</th>
+                            <th>AI</th>
+                            <th>Foco</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>SecAudit (Nos)</strong></td>
+                            <td style="color:#27ae60"><strong>~R$2.400</strong></td>
+                            <td><strong>117</strong></td>
+                            <td><strong>Claude AI ✓</strong></td>
+                            <td>SMB + Enterprise BR</td>
+                        </tr>
+                        <tr>
+                            <td>Detectify</td>
+                            <td>$1,080 - $25,000</td>
+                            <td>~200</td>
+                            <td>Parcial</td>
+                            <td>Enterprise Global</td>
+                        </tr>
+                        <tr>
+                            <td>Acunetix</td>
+                            <td>$4,500 - $7,000</td>
+                            <td>~300</td>
+                            <td>Parcial</td>
+                            <td>Mid-market</td>
+                        </tr>
+                        <tr>
+                            <td>Invicti</td>
+                            <td>$15,000 - $22,000+</td>
+                            <td>~400</td>
+                            <td>Parcial</td>
+                            <td>Enterprise</td>
+                        </tr>
+                        <tr>
+                            <td>Burp Suite Pro</td>
+                            <td>$449</td>
+                            <td>Manual</td>
+                            <td>Nao</td>
+                            <td>Pentesters</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Score Detalhado (Revisado)</h4>
+                    <table>
+                        <tr><td>Tamanho Mercado</td><td><strong>18</strong>/20</td></tr>
+                        <tr><td>Diferenciacao</td><td><strong>17</strong>/20</td></tr>
+                        <tr><td>Escalabilidade</td><td><strong>17</strong>/20</td></tr>
+                        <tr><td>Maturidade</td><td><strong>15</strong>/20</td></tr>
+                        <tr><td>Margem Potencial</td><td><strong>15</strong>/20</td></tr>
+                        <tr class="table-highlight"><td><strong>TOTAL</strong></td><td><strong>82/100</strong></td></tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>Projecao Financeira</h4>
+                    <table>
+                        <tr><td><strong>Ano 1</strong></td><td>R$480K ARR (40 clientes x R$12K)</td></tr>
+                        <tr><td><strong>Ano 2</strong></td><td>R$2.4M ARR (200 clientes)</td></tr>
+                        <tr><td><strong>Ano 3</strong></td><td>R$7.2M ARR (600 clientes)</td></tr>
+                        <tr><td><strong>Ano 5</strong></td><td>R$24M ARR (2000 clientes)</td></tr>
+                    </table>
+                    <p style="margin-top:10px"><strong>Modelo:</strong> Freemium + Tiers (Basic R$99/mes, Pro R$299, Enterprise R$999+)</p>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <strong>Por que Tier A (Score 82):</strong> Produto ja desenvolvido com diferencial real (AI-powered), mercado bilionario em crescimento rapido, competidores caros deixando espaco para solucao acessivel no Brasil. O uso de Claude AI para geracao adaptativa de payloads e um diferencial que poucos concorrentes tem. Recomendado investir em marketing e vendas B2B.
+            </div>
+        </section>
+
+        <!-- TIER B -->
+        <section class="page-break" id="tier-b">
+            <h2>Parte II: Analises - Tier B</h2>
+
+            <!-- 8. HOROSCOPO -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">8. App de Horoscopo</div>
+                    <div class="project-code">se-06-app-horoscopo | Tier B</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">68</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">***</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <ul class="compact-list">
+                        <li>Multiplos sistemas esotericos (astrologia, numerologia, taro, etc)</li>
+                        <li>Mapa astral completo com 12 casas e aspectos</li>
+                        <li>Human Design, Gene Keys, astrologia vedica</li>
+                        <li>Chat com astrologo IA, gamificacao</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Modelo de Negocio</h4>
+                    <ul class="compact-list">
+                        <li><strong>Free:</strong> Horoscopo diario basico</li>
+                        <li><strong>Premium:</strong> R$19,99/mes (leituras completas)</li>
+                        <li><strong>Compras avulsas:</strong> Relatorios especiais</li>
+                        <li><strong>TAM:</strong> R$500M (apps esotericos BR)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>Por que Tier B:</strong> Mercado B2C competitivo (Co-Star, Pattern), alto custo de aquisicao, mas documentacao detalhada e diferenciais em profundidade esoterica.
+            </div>
+
+            <!-- 9. SUBSCRIPTION MANAGER -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">9. Subscription Manager</div>
+                    <div class="project-code">se-08-app-subscription-manager | Tier B</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">65</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">***</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <ul class="compact-list">
+                        <li>Detecta assinaturas via Open Finance</li>
+                        <li>Mostra gasto mensal consolidado</li>
+                        <li>Alerta antes de renovacao</li>
+                        <li>Sugere cancelar servicos nao usados</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Modelo de Negocio</h4>
+                    <ul class="compact-list">
+                        <li><strong>Freemium:</strong> Gratis ate 5 assinaturas</li>
+                        <li><strong>Premium:</strong> R$9,90/mes ilimitado</li>
+                        <li><strong>Benchmark:</strong> Rocket Money vale bilhoes nos EUA</li>
+                        <li><strong>Risco:</strong> Open Finance ainda limitado no BR</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Por que Tier B:</strong> Modelo validado nos EUA (Rocket Money), mas Open Finance no Brasil ainda em desenvolvimento. Potencial alto se regulacao avancar.
+            </div>
+
+            <!-- 10. REDUTOR INSS -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">10. Redutor INSS (Edifisco)</div>
+                    <div class="project-code">se-03-app-redutor-inss | Tier B</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">64</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">***</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <ul class="compact-list">
+                        <li>Calcula economia de INSS para obras</li>
+                        <li>OCR automatico de documentos</li>
+                        <li>Proposta comercial instantanea</li>
+                        <li>Gestao de multiplas obras</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Modelo de Negocio</h4>
+                    <ul class="compact-list">
+                        <li><strong>V1:</strong> Landing page + OCR (validacao)</li>
+                        <li><strong>V2:</strong> SaaS completo com dashboard</li>
+                        <li><strong>Monetizacao:</strong> % da economia gerada</li>
+                        <li><strong>Nicho:</strong> Construtoras, empreiteiras</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Por que Tier B:</strong> Nicho especifico de construcao civil, modelo de comissao interessante, mas mercado pequeno e ciclo de vendas longo.
+            </div>
+
+            <!-- 11. CARDAPIO DIGITAL -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">11. Cardapio Digital</div>
+                    <div class="project-code">se-03-app-cardapio-digital | Tier B</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">62</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">***</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <ul class="compact-list">
+                        <li>QR Code para cardapio no celular</li>
+                        <li>Upload de fotos, organizacao por secoes</li>
+                        <li>Customizacao de cores e logo</li>
+                        <li>Firebase hosting (custo zero)</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Mercado</h4>
+                    <ul class="compact-list">
+                        <li><strong>Target:</strong> Restaurantes, bares, cafes</li>
+                        <li><strong>TAM:</strong> R$200M (saturado)</li>
+                        <li><strong>Concorrentes:</strong> Cardapio.app, Menu QR</li>
+                        <li><strong>Diferencial:</strong> Simplicidade</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>Por que Tier B:</strong> Mercado ja saturado com muitos players, diferencial apenas em simplicidade. Dificil escalar sem feature unica.
+            </div>
+
+            <!-- 12. FINANCE SPLIT -->
+            <div class="project-header">
+                <div>
+                    <div class="project-title">12. Finance Split (Apostas)</div>
+                    <div class="project-code">se-09-app-finance-split-apostas | Tier B</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number">58</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">**</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor</h4>
+                    <ul class="compact-list">
+                        <li>Splitwise brasileiro com Pix integrado</li>
+                        <li>Divide conta de republica, viagem, churrasco</li>
+                        <li>Gera QR Code Pix automaticamente</li>
+                        <li>Gestao de boloes e apostas</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Modelo de Negocio</h4>
+                    <ul class="compact-list">
+                        <li><strong>Free:</strong> Com ads</li>
+                        <li><strong>Premium:</strong> R$4,90/mes sem ads</li>
+                        <li><strong>TAM:</strong> R$150M</li>
+                        <li><strong>Risco:</strong> Splitwise domina</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>Por que Tier B:</strong> Diferencial do Pix e bom, mas Splitwise ja tem presenca no Brasil. Ticket muito baixo (R$4,90) dificulta escala.
+            </div>
+
+            <!-- 13. AGREGADOR DE LEILOES - REANALISADO -->
+            <div class="project-header" style="border-left: 4px solid #f39c12; background: #fffbe6;">
+                <div>
+                    <div class="project-title">13. Agregador de Leiloes ⭐ REANALISADO</div>
+                    <div class="project-code">se-11-app-agregador-leiloes | Tier B</div>
+                </div>
+                <div class="project-score">
+                    <div class="score-display">
+                        <span class="score-number" style="color:#f39c12">66</span>
+                        <span class="score-max">/100</span>
+                    </div>
+                    <div class="star-rating">***</div>
+                </div>
+            </div>
+
+            <div class="info-box" style="background:#fffbe6; border-left:4px solid #f39c12;">
+                <strong>CONCEITO:</strong> Plataforma que faz webscraping de TODOS os leiloes confiaveis do Brasil (judiciais, extrajudiciais, bancos, B3) e centraliza em um unico lugar. Usuario busca por tipo, regiao, preco e recebe alertas.
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Mercado de Leiloes no Brasil</h4>
+                    <table>
+                        <tr><td><strong>B3 (2025)</strong></td><td>R$243,8B em investimentos</td></tr>
+                        <tr><td><strong>Leiloes B3</strong></td><td>75 leiloes (recorde historico)</td></tr>
+                        <tr><td><strong>Imobiliarios</strong></td><td>+86% em 2024, +70% em 2025</td></tr>
+                        <tr><td><strong>Volume Imoveis</strong></td><td>16.000 imoveis (2024)</td></tr>
+                        <tr><td><strong>Descontos</strong></td><td>40-70% abaixo do mercado</td></tr>
+                    </table>
+                    <p style="margin-top:10px; font-size:9pt;"><em>Fonte: B3, Agencia Brasil, Portal Tela</em></p>
+                </div>
+                <div class="card">
+                    <h4>Concorrentes Existentes</h4>
+                    <table>
+                        <tr><td><strong>Nucleo Leiloes</strong></td><td>+800 leiloeiros, modelo assinatura</td></tr>
+                        <tr><td><strong>Mapa do Leilao</strong></td><td>+25.000 usuarios, WhatsApp alerts</td></tr>
+                        <tr><td><strong>Spot Leiloes</strong></td><td>Atualizacao a cada 3h</td></tr>
+                        <tr><td><strong>Leilao Aqui</strong></td><td>IA para analise de imoveis</td></tr>
+                    </table>
+                    <p style="margin-top:10px; font-size:9pt; color:#e74c3c;"><strong>⚠️ Mercado validado mas competitivo</strong></p>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Proposta de Valor (Diferencial)</h4>
+                    <ul>
+                        <li><strong>TODOS leiloes:</strong> Imoveis + Veiculos + Infraestrutura + Bens moveis</li>
+                        <li><strong>Webscraping completo:</strong> B3, bancos, leiloeiros oficiais</li>
+                        <li><strong>AI para analise:</strong> Score de oportunidade, risco, ROI estimado</li>
+                        <li><strong>Alertas inteligentes:</strong> WhatsApp, email, push</li>
+                        <li><strong>Integracao bancaria:</strong> Pre-aprovacao de financiamento</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4>Modelo de Negocio</h4>
+                    <table>
+                        <tr><td><strong>Free</strong></td><td>Busca basica, 5 alertas/mes</td></tr>
+                        <tr><td><strong>Pro</strong></td><td>R$29,90/mes - alertas ilimitados, AI</td></tr>
+                        <tr><td><strong>Premium</strong></td><td>R$99,90/mes - assessoria juridica</td></tr>
+                        <tr><td><strong>Afiliado</strong></td><td>Comissao por arrematacao via plataforma</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>Score Detalhado</h4>
+                    <table>
+                        <tr><td>Tamanho Mercado</td><td><strong>15</strong>/20</td></tr>
+                        <tr><td>Diferenciacao</td><td><strong>12</strong>/20</td></tr>
+                        <tr><td>Escalabilidade</td><td><strong>15</strong>/20</td></tr>
+                        <tr><td>Maturidade</td><td><strong>10</strong>/20</td></tr>
+                        <tr><td>Margem Potencial</td><td><strong>14</strong>/20</td></tr>
+                        <tr class="table-highlight"><td><strong>TOTAL</strong></td><td><strong>66/100</strong></td></tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>Projecao Financeira</h4>
+                    <table>
+                        <tr><td><strong>Ano 1</strong></td><td>R$180K ARR (500 assinantes)</td></tr>
+                        <tr><td><strong>Ano 2</strong></td><td>R$720K ARR (2.000 assinantes)</td></tr>
+                        <tr><td><strong>Ano 3</strong></td><td>R$2.4M ARR (6.000 assinantes)</td></tr>
+                    </table>
+                    <p style="margin-top:10px; font-size:9pt;"><strong>Referencia:</strong> Nucleo Leiloes ja tem base significativa</p>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>Por que Tier B (Score 66):</strong> Mercado validado com R$243B+ em volume e concorrentes provando demanda. Porem, competicao ja estabelecida (Nucleo, Mapa, Spot). Diferencial precisa ser claro: (1) cobertura mais ampla (B3 + imoveis + veiculos), (2) AI melhor, (3) preco competitivo. Recomendado validar com MVP antes de investir pesado.
+            </div>
+        </section>
+
+        <!-- TIER C e D -->
+        <section class="page-break" id="tier-cd">
+            <h2>Parte III: Analises - Tier C e D</h2>
+
+            <div class="warning-box">
+                <strong>Nota:</strong> Projetos Tier C e D requerem mais desenvolvimento antes de investimento. Alguns tem pastas vazias ou documentacao insuficiente.
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Projeto</th>
+                        <th>Score</th>
+                        <th>Status</th>
+                        <th>Proximos Passos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Security App RECLASSIFICADO para Tier A (score 82) -->
+                    <!-- Agora listado como SecAudit na secao Tier A -->
+                    <tr class="tier-c">
+                        <td>14</td>
+                        <td><strong>EB2-NIW App</strong></td>
+                        <td>52</td>
+                        <td>Sem documentacao</td>
+                        <td>Validar demanda no nicho de imigracao</td>
+                    </tr>
+                    <!-- Agregador Leiloes RECLASSIFICADO para Tier B (score 66) -->
+                    <!-- Agora listado na secao Tier B com analise completa -->
+                    <tr class="tier-c">
+                        <td>15</td>
+                        <td><strong>Filosofia Criancas</strong></td>
+                        <td>48</td>
+                        <td>Pasta vazia</td>
+                        <td>Definir produto e publico-alvo</td>
+                    </tr>
+                    <tr class="tier-c">
+                        <td>16</td>
+                        <td><strong>Filosofia Criancas</strong></td>
+                        <td>48</td>
+                        <td>Pasta vazia</td>
+                        <td>Definir produto e publico-alvo</td>
+                    </tr>
+                    <tr class="tier-d">
+                        <td>17</td>
+                        <td><strong>Pix Boleto Generator</strong></td>
+                        <td>42</td>
+                        <td>Commodity</td>
+                        <td>Baixa prioridade - mercado saturado</td>
+                    </tr>
+                    <tr class="tier-d">
+                        <td>18</td>
+                        <td><strong>Landing Page Generator</strong></td>
+                        <td>40</td>
+                        <td>Commodity</td>
+                        <td>Baixa prioridade - Carrd domina</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- RECOMENDACOES -->
+        <section class="page-break" id="recomendacoes">
+            <h2>Recomendacoes Estrategicas</h2>
+
+            <h3>Prioridade 1: Investir Agora (Tier S)</h3>
+            <div class="success-box">
+                <strong>O Entregador:</strong> Unit economics extraordinarios, MVP pronto, mercado em explosao. Investir R$3M para acelerar vendas e produto.
+                <br><br>
+                <strong>Plataforma de Dados:</strong> TAM gigante, referencia unica no Brasil. Investir R$2.5M para construir APIs e parcerias.
+            </div>
+
+            <h3>Prioridade 2: Desenvolver (Tier A)</h3>
+            <div class="info-box">
+                <ul>
+                    <li><strong>SecAudit ⭐:</strong> Produto ja desenvolvido com 117 testes, mercado $10B, investir em vendas B2B imediatamente</li>
+                    <li><strong>MetricsHub:</strong> Diferencial Asaas+Stripe, lancar beta em 3 meses</li>
+                    <li><strong>Authify:</strong> Usar internamente primeiro (dogfooding), depois comercializar</li>
+                    <li><strong>MEI Manager:</strong> TAM enorme (15M MEIs), MVP simples, validar rapido</li>
+                    <li><strong>Post Automation:</strong> Mercado validado, completar integracoes</li>
+                    <li><strong>Streaming Finance:</strong> Validar juridicamente antes de investir pesado</li>
+                </ul>
+            </div>
+
+            <h3>Prioridade 3: Observar (Tier B)</h3>
+            <div class="warning-box">
+                <ul>
+                    <li><strong>Horoscopo:</strong> B2C competitivo, manter como side project</li>
+                    <li><strong>Subscription Manager:</strong> Aguardar evolucao do Open Finance</li>
+                    <li><strong>Redutor INSS:</strong> Nicho pequeno, validar demanda antes</li>
+                    <li><strong>Cardapio Digital:</strong> Mercado saturado, baixa prioridade</li>
+                    <li><strong>Finance Split:</strong> Ticket baixo, dificil escalar</li>
+                </ul>
+            </div>
+
+            <h3>Prioridade 4: Pausar ou Descartar (Tier C/D)</h3>
+            <div class="danger-box">
+                Projetos sem documentacao ou pastas vazias devem ser pausados ate que haja tempo para desenvolver a ideia. Nao investir recursos agora.
+            </div>
+
+            <h3>Investimento Recomendado</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Projeto</th>
+                        <th>Tier</th>
+                        <th>Rodada</th>
+                        <th>Valor</th>
+                        <th>Prioridade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="highlight-row">
+                        <td>O Entregador</td>
+                        <td>S</td>
+                        <td>Seed</td>
+                        <td>R$3M</td>
+                        <td>ALTA</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td>Plataforma de Dados</td>
+                        <td>S</td>
+                        <td>Seed</td>
+                        <td>R$2.5M</td>
+                        <td>ALTA</td>
+                    </tr>
+                    <tr>
+                        <td>MetricsHub</td>
+                        <td>A</td>
+                        <td>Pre-Seed</td>
+                        <td>R$500K</td>
+                        <td>MEDIA</td>
+                    </tr>
+                    <tr>
+                        <td>MEI Manager</td>
+                        <td>A</td>
+                        <td>Pre-Seed</td>
+                        <td>R$300K</td>
+                        <td>MEDIA</td>
+                    </tr>
+                    <tr style="background:#e8f4fd;">
+                        <td><strong>SecAudit ⭐</strong></td>
+                        <td>A</td>
+                        <td>Pre-Seed</td>
+                        <td>R$400K</td>
+                        <td>MEDIA-ALTA</td>
+                    </tr>
+                    <tr class="table-highlight">
+                        <td><strong>TOTAL</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td><strong>R$6.7M</strong></td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">ROI Projetado (5 anos)</span>
+                    <span class="card-badge badge-gold">25-40x</span>
+                </div>
+                <p style="font-size: 10pt; margin-top: 10px;">
+                    Baseado em valuation de saida de R$150-250M para O Entregador, R$80-120M para Plataforma de Dados, e R$50-80M para SecAudit (mercado DevSecOps em rapido crescimento).
+                </p>
+            </div>
+        </section>
+
+        <!-- ========================================================================== -->
+        <!-- SECAO DE ANALISE DE RISCOS - TUDO QUE PODE DAR ERRADO -->
+        <!-- ========================================================================== -->
+        <section class="page-break" id="riscos">
+            <h2>⚠️ Parte IV: Analise de Riscos - TUDO Que Pode Dar Errado</h2>
+
+            <div class="danger-box">
+                <strong>AVISO:</strong> Esta secao detalha TODOS os riscos identificados em cada projeto. Alguns riscos sao criticos e podem inviabilizar completamente o negocio. Leia com atencao antes de investir.
+            </div>
+
+            <!-- MATRIZ DE RISCO GERAL -->
+            <h3>Matriz de Risco Consolidada</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Projeto</th>
+                        <th>Risco Tecnico</th>
+                        <th>Risco Legal</th>
+                        <th>Risco Mercado</th>
+                        <th>Risco Operacional</th>
+                        <th>Nivel Geral</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="tier-d">
+                        <td><strong>Finance Split</strong></td>
+                        <td>🟡 Medio</td>
+                        <td style="color:#e74c3c;font-weight:bold">⛔ FATAL</td>
+                        <td>🟡 Medio</td>
+                        <td>🟡 Medio</td>
+                        <td><span class="card-badge badge-danger">CRITICO</span></td>
+                    </tr>
+                    <tr class="tier-d">
+                        <td><strong>Filosofia Criancas</strong></td>
+                        <td>🟡 Medio</td>
+                        <td style="color:#e74c3c;font-weight:bold">⛔ FATAL</td>
+                        <td>🔴 Alto</td>
+                        <td>🔴 Alto</td>
+                        <td><span class="card-badge badge-danger">CRITICO</span></td>
+                    </tr>
+                    <tr class="tier-d">
+                        <td><strong>INSS Redutor</strong></td>
+                        <td>🔴 Alto</td>
+                        <td style="color:#e74c3c;font-weight:bold">⛔ FATAL</td>
+                        <td>🟡 Medio</td>
+                        <td>🔴 Alto</td>
+                        <td><span class="card-badge badge-danger">CRITICO</span></td>
+                    </tr>
+                    <tr style="background:#ffebee;">
+                        <td><strong>Authify</strong></td>
+                        <td style="color:#e74c3c;font-weight:bold">⛔ CRITICO</td>
+                        <td>🟡 Medio</td>
+                        <td>🟡 Medio</td>
+                        <td>🔴 Alto</td>
+                        <td><span class="card-badge badge-danger">CRITICO</span></td>
+                    </tr>
+                    <tr style="background:#fff3e0;">
+                        <td><strong>O Entregador</strong></td>
+                        <td>🟡 Medio</td>
+                        <td>🔴 Alto</td>
+                        <td>🟡 Medio</td>
+                        <td>🔴 Alto</td>
+                        <td><span class="card-badge badge-warning">ALTO</span></td>
+                    </tr>
+                    <tr style="background:#fff3e0;">
+                        <td><strong>Plataforma de Dados</strong></td>
+                        <td>🔴 Alto</td>
+                        <td>🔴 Alto</td>
+                        <td>🔴 Alto</td>
+                        <td>🔴 Alto</td>
+                        <td><span class="card-badge badge-warning">ALTO</span></td>
+                    </tr>
+                    <tr style="background:#fff3e0;">
+                        <td><strong>Agregador Leiloes</strong></td>
+                        <td>🔴 Alto</td>
+                        <td>🔴 Alto</td>
+                        <td>🔴 Alto</td>
+                        <td>🔴 Alto</td>
+                        <td><span class="card-badge badge-warning">ALTO</span></td>
+                    </tr>
+                    <tr style="background:#fff3e0;">
+                        <td><strong>MEI Manager</strong></td>
+                        <td>🟡 Medio</td>
+                        <td>🔴 Alto</td>
+                        <td>🟡 Medio</td>
+                        <td>🔴 Alto</td>
+                        <td><span class="card-badge badge-warning">ALTO</span></td>
+                    </tr>
+                    <tr style="background:#fff3e0;">
+                        <td><strong>SecAudit</strong></td>
+                        <td>🟡 Medio</td>
+                        <td>🔴 Alto</td>
+                        <td>🟡 Medio</td>
+                        <td>🟡 Medio</td>
+                        <td><span class="card-badge badge-warning">ALTO</span></td>
+                    </tr>
+                    <tr style="background:#fffde7;">
+                        <td><strong>Subscription Manager</strong></td>
+                        <td>🟡 Medio</td>
+                        <td>🔴 Alto</td>
+                        <td>🟡 Medio</td>
+                        <td>🟡 Medio</td>
+                        <td><span class="card-badge" style="background:#f39c12;color:white">MEDIO</span></td>
+                    </tr>
+                    <tr style="background:#fffde7;">
+                        <td><strong>MetricsHub</strong></td>
+                        <td>🔴 Alto</td>
+                        <td>🟢 Baixo</td>
+                        <td>🔴 Alto</td>
+                        <td>🟡 Medio</td>
+                        <td><span class="card-badge" style="background:#f39c12;color:white">MEDIO</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- ================================================================ -->
+            <!-- 1. O ENTREGADOR - RISCOS -->
+            <!-- ================================================================ -->
+            <div class="project-header" style="border-left: 4px solid #e74c3c; background: #ffebee;">
+                <div>
+                    <div class="project-title">🔴 1. O Entregador - Analise de Riscos</div>
+                    <div class="project-code">Nivel de Risco: ALTO | Mitigacao: OBRIGATORIA</div>
+                </div>
+                <div class="project-score">
+                    <span class="card-badge badge-warning">ALTO</span>
+                </div>
+            </div>
+
+            <div class="danger-box">
+                <strong>⚠️ RISCO CRITICO #1: VINCULO TRABALHISTA COM ENTREGADORES</strong><br><br>
+                O modelo de "marketplace de entregadores" pode configurar relacao de emprego se houver:<br>
+                • Controle de horarios e rotas<br>
+                • Pagamentos regulares via plataforma<br>
+                • Exclusividade (mesmo que informal)<br>
+                • Subordinacao atraves do sistema<br><br>
+                <strong>PRECEDENTES:</strong> iFood condenado a pagar FGTS, Rappi em acoes coletivas no TST, 99 com multas milionarias.<br>
+                <strong>IMPACTO ESTIMADO:</strong> R$180.000/entregador em passivo trabalhista retroativo (5 anos) = <strong style="color:#e74c3c">R$18 MILHOES</strong> com 100 entregadores.
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>🔴 Riscos Tecnicos</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Single Point of Failure</strong></td>
+                            <td>AWS App Runner sem redundancia, health check de 3+ min</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Secrets Expostos</strong></td>
+                            <td>JWT_SECRET e DATABASE_URL em plain text no Terraform</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dependencia Shopee</strong></td>
+                            <td>90%+ funcionalidades dependem da API Shopee/SPX</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MongoDB sem replica</strong></td>
+                            <td>Sem sharding ou replica set configurado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rate limiting</strong></td>
+                            <td>Nao implementado no backend (apenas documentado)</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>🔴 Riscos de Negocio</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Dependencia Shopee</strong></td>
+                            <td>Se Shopee mudar API ou encerrar parceria, sistema para</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Competicao brutal</strong></td>
+                            <td>Loggi, iFood, 99 com recursos infinitos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Modelo de receita</strong></td>
+                            <td>R$500/mes e ticket baixo para B2B logistica</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Regulacao pendente</strong></td>
+                            <td>Lei de apps de entrega em tramitacao no Congresso</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h4>⚡ Cenarios Catastroficos</h4>
+                <table>
+                    <tr>
+                        <th>Cenario</th>
+                        <th>Probabilidade</th>
+                        <th>Impacto</th>
+                        <th>Consequencia</th>
+                    </tr>
+                    <tr>
+                        <td>Acao coletiva trabalhista</td>
+                        <td style="color:#e74c3c">ALTA</td>
+                        <td style="color:#e74c3c">CATASTROFICO</td>
+                        <td>R$18M+ em passivo, possivel falencia</td>
+                    </tr>
+                    <tr>
+                        <td>Shopee encerra API</td>
+                        <td>MEDIA</td>
+                        <td style="color:#e74c3c">SEVERO</td>
+                        <td>Sistema inoperante, perda de clientes</td>
+                    </tr>
+                    <tr>
+                        <td>Vazamento de dados</td>
+                        <td>MEDIA</td>
+                        <td style="color:#e74c3c">CATASTROFICO</td>
+                        <td>Multa LGPD + destruicao de reputacao</td>
+                    </tr>
+                    <tr>
+                        <td>Nova lei trabalhista</td>
+                        <td style="color:#e74c3c">ALTA</td>
+                        <td style="color:#e74c3c">CATASTROFICO</td>
+                        <td>Custo por entrega TRIPLICA, modelo inviavel</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="success-box">
+                <strong>✅ MITIGACOES OBRIGATORIAS:</strong><br>
+                1. <strong>URGENTE (30 dias):</strong> Consultar advogado trabalhista ANTES de escalar<br>
+                2. <strong>URGENTE:</strong> Mover secrets do Terraform para AWS Secrets Manager<br>
+                3. <strong>URGENTE:</strong> Configurar auto-scaling (min 2 instancias)<br>
+                4. <strong>60 dias:</strong> Diversificar provedores (Mercado Livre, Amazon)<br>
+                5. <strong>90 dias:</strong> Seguro de responsabilidade civil<br>
+                <strong>CUSTO ESTIMADO DE MITIGACAO:</strong> R$30-50K
+            </div>
+
+            <!-- ================================================================ -->
+            <!-- 2. PLATAFORMA DE DADOS - RISCOS -->
+            <!-- ================================================================ -->
+            <div class="project-header" style="border-left: 4px solid #e74c3c; background: #ffebee;">
+                <div>
+                    <div class="project-title">🔴 2. Plataforma de Dados Brasil - Analise de Riscos</div>
+                    <div class="project-code">Nivel de Risco: ALTO | Validacao Juridica OBRIGATORIA</div>
+                </div>
+                <div class="project-score">
+                    <span class="card-badge badge-warning">ALTO</span>
+                </div>
+            </div>
+
+            <div class="danger-box">
+                <strong>⚠️ RISCO CRITICO #1: O MODELO DE NEGOCIO PODE SER ILEGAL</strong><br><br>
+                A LGPD <strong>NAO permite</strong> coletar dados pessoais de terceiros sem consentimento para venda.<br>
+                • "Dados publicos" ≠ "livre uso" (FALSO na LGPD)<br>
+                • "Legitimo interesse" NAO cobre venda de dados para terceiros<br>
+                • RIPD (Relatorio de Impacto) e OBRIGATORIO para tratamento em larga escala - NAO mencionado<br><br>
+                <strong>PRECEDENTE:</strong> Serasa multada em R$200K pela ANPD por venda de dados sem consentimento adequado.
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>🔴 Riscos Tecnicos Criticos</h4>
+                    <table>
+                        <tr>
+                            <td><strong>7 databases</strong></td>
+                            <td>PostgreSQL + MongoDB + Neo4j + Elasticsearch + Redis + MinIO + Kafka = INSANIDADE operacional</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Custos subestimados 4x</strong></td>
+                            <td>Documento: R$46K/mes | Realidade: R$188K/mes</td>
+                        </tr>
+                        <tr>
+                            <td><strong>60 scrapers</strong></td>
+                            <td>60 pontos de falha constante, manutencao full-time</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Entity Resolution</strong></td>
+                            <td>10-15% falsos positivos em nomes brasileiros</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Neo4j Enterprise</strong></td>
+                            <td>Licenca US$40K/ano + 64GB+ RAM para 500M relacionamentos</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>🔴 Riscos de Negocio</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Competicao esmagadora</strong></td>
+                            <td>Serasa, Neoway (R$1.8B valuation), BigData Corp, Idwall</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Competir com preco</strong></td>
+                            <td>Margem baixa = cash burn alto = dependencia de investimento</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dependencia SERPRO</strong></td>
+                            <td>Unica fonte oficial de CPF/CNPJ, pode cancelar contrato</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Scraping ilegal</strong></td>
+                            <td>Sites podem processar por acesso nao autorizado</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h4>⚡ Cenarios Catastroficos</h4>
+                <table>
+                    <tr>
+                        <th>Cenario</th>
+                        <th>Probabilidade</th>
+                        <th>Impacto</th>
+                        <th>Consequencia</th>
+                    </tr>
+                    <tr>
+                        <td>Multa LGPD por venda ilegal de dados</td>
+                        <td>MEDIA-ALTA</td>
+                        <td style="color:#e74c3c">CATASTROFICO</td>
+                        <td>Ate R$50M ou 2% faturamento + bloqueio</td>
+                    </tr>
+                    <tr>
+                        <td>Vazamento de 100M CPFs</td>
+                        <td>MEDIA</td>
+                        <td style="color:#e74c3c">DESTRUIDOR</td>
+                        <td>Notificacao impossivel, multa maxima, reputacao destruida</td>
+                    </tr>
+                    <tr>
+                        <td>SERPRO cancela contrato</td>
+                        <td>BAIXA</td>
+                        <td style="color:#e74c3c">FATAL</td>
+                        <td>30% dos dados param, empresa morre</td>
+                    </tr>
+                    <tr>
+                        <td>60 scrapers quebram simultaneamente</td>
+                        <td style="color:#e74c3c">ALTA</td>
+                        <td>SEVERO</td>
+                        <td>Dados desatualizados, clientes cancelam</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="success-box">
+                <strong>✅ MITIGACOES OBRIGATORIAS:</strong><br>
+                1. <strong>ANTES DE COMECAR:</strong> Contratar advogado ESPECIALIZADO em LGPD e bureaus de dados<br>
+                2. <strong>ANTES DE COMECAR:</strong> Fazer RIPD formal documentando TODAS as bases legais<br>
+                3. <strong>Recomendado:</strong> Comecar APENAS com dados de PJ (menos regulado)<br>
+                4. <strong>Arquitetura:</strong> SIMPLIFICAR para 3 databases maximo (PostgreSQL + Redis + Elasticsearch)<br>
+                5. <strong>Escopo:</strong> Reduzir para 15 fontes PRIORIZADAS (nao 60)<br>
+                <strong>CUSTO ESTIMADO DE MITIGACAO:</strong> R$50-100K + R$15K/mes juridico
+            </div>
+
+            <!-- ================================================================ -->
+            <!-- 3. AUTHIFY - RISCOS -->
+            <!-- ================================================================ -->
+            <div class="project-header" style="border-left: 4px solid #e74c3c; background: #ffebee;">
+                <div>
+                    <div class="project-title">⛔ 3. Authify - Analise de Riscos</div>
+                    <div class="project-code">Nivel de Risco: CRITICO | NAO PRONTO PARA PRODUCAO</div>
+                </div>
+                <div class="project-score">
+                    <span class="card-badge badge-danger">CRITICO</span>
+                </div>
+            </div>
+
+            <div class="danger-box">
+                <strong>⛔ 29 VULNERABILIDADES DE SEGURANCA IDENTIFICADAS</strong><br><br>
+                <strong>CRITICAS (corrigir IMEDIATAMENTE):</strong><br>
+                • <code>JWT_SECRET</code> com fallback para 'default-secret' (jwt.strategy.ts:16)<br>
+                • AWS credentials expostas em .env (AKIATCKANIAKN7LPHZ4Q)<br>
+                • Refresh tokens armazenados em PLAIN TEXT (session.entity.ts:25-26)<br>
+                • OAuth state NAO assinado (vulneravel a CSRF)<br>
+                • CORS completamente aberto (*)<br>
+                • IDOR em controllers (usuarios podem acessar dados de outros)
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>🔴 Vulnerabilidades Criticas (12)</h4>
+                    <table>
+                        <tr><td>JWT Secret com fallback inseguro</td><td style="color:#e74c3c">CRITICO</td></tr>
+                        <tr><td>AWS Keys expostas em .env</td><td style="color:#e74c3c">CRITICO</td></tr>
+                        <tr><td>Refresh tokens plain text</td><td style="color:#e74c3c">CRITICO</td></tr>
+                        <tr><td>OAuth state nao assinado</td><td style="color:#e74c3c">CRITICO</td></tr>
+                        <tr><td>CORS aberto (*)</td><td style="color:#e74c3c">CRITICO</td></tr>
+                        <tr><td>IDOR em user controllers</td><td style="color:#e74c3c">CRITICO</td></tr>
+                        <tr><td>Sem rate limiting</td><td style="color:#f39c12">ALTO</td></tr>
+                        <tr><td>Sem brute force protection</td><td style="color:#f39c12">ALTO</td></tr>
+                        <tr><td>Session fixation possivel</td><td style="color:#f39c12">ALTO</td></tr>
+                        <tr><td>Sem audit logging</td><td style="color:#f39c12">ALTO</td></tr>
+                        <tr><td>Email enumeration</td><td style="color:#f39c12">MEDIO</td></tr>
+                        <tr><td>Sem HTTPS enforcement</td><td style="color:#f39c12">MEDIO</td></tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>⚡ Impacto de Exploracao</h4>
+                    <table>
+                        <tr>
+                            <td><strong>JWT Secret vazado</strong></td>
+                            <td>Atacante gera tokens validos para QUALQUER usuario</td>
+                        </tr>
+                        <tr>
+                            <td><strong>AWS Keys expostas</strong></td>
+                            <td>Atacante acessa TODA infraestrutura AWS</td>
+                        </tr>
+                        <tr>
+                            <td><strong>IDOR explorado</strong></td>
+                            <td>Vazamento de dados de TODOS os clientes dos clientes</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OAuth CSRF</strong></td>
+                            <td>Account takeover em massa</td>
+                        </tr>
+                    </table>
+                    <div class="danger-box" style="margin-top:10px;">
+                        <strong>VEREDITO:</strong> Sistema NAO esta pronto para producao. Usar em producao e NEGLIGENCIA.
+                    </div>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <strong>✅ CORRECOES OBRIGATORIAS (antes de QUALQUER uso):</strong><br>
+                1. Remover fallback 'default-secret' do JWT<br>
+                2. Rotacionar AWS keys IMEDIATAMENTE e usar Secrets Manager<br>
+                3. Hashear refresh tokens com bcrypt<br>
+                4. Assinar OAuth state com HMAC<br>
+                5. Configurar CORS para dominios especificos<br>
+                6. Implementar verificacao de ownership em TODOS os endpoints<br>
+                7. Adicionar rate limiting (express-rate-limit)<br>
+                8. Audit de seguranca completo antes de producao<br>
+                <strong>CUSTO ESTIMADO:</strong> R$20-50K (audit + correcoes)
+            </div>
+
+            <!-- ================================================================ -->
+            <!-- 4. SECAUDIT - RISCOS -->
+            <!-- ================================================================ -->
+            <div class="project-header" style="border-left: 4px solid #f39c12; background: #fff3e0;">
+                <div>
+                    <div class="project-title">🟠 4. SecAudit - Analise de Riscos</div>
+                    <div class="project-code">Nivel de Risco: ALTO | Implementar verificacao de propriedade</div>
+                </div>
+                <div class="project-score">
+                    <span class="card-badge badge-warning">ALTO</span>
+                </div>
+            </div>
+
+            <div class="danger-box">
+                <strong>⚠️ RISCO CRITICO: SCANS SEM AUTORIZACAO = RESPONSABILIDADE LEGAL</strong><br><br>
+                Se um usuario usar o SecAudit para escanear sites de TERCEIROS sem autorizacao:<br>
+                • Voce pode ser RESPONSABILIZADO como "facilitador"<br>
+                • Scans agressivos podem derrubar sites de clientes (DoS acidental)<br>
+                • Legislacao de crimes ciberneticos (Lei 12.737) pode se aplicar<br>
+                • AI gerando payloads pode criar provas de ferramentas de hacking
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>🔴 Riscos Tecnicos</h4>
+                    <table>
+                        <tr>
+                            <td><strong>AI Hallucinations</strong></td>
+                            <td>Claude pode gerar payloads invalidos ou perigosos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Falsos positivos</strong></td>
+                            <td>Cliente acredita ter vulnerabilidade que nao existe</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Falsos negativos</strong></td>
+                            <td>Sistema nao detecta vulnerabilidade real = cliente hackeado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Scans crasham sites</strong></td>
+                            <td>Testes agressivos podem derrubar sites frageis</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>🔴 Riscos Legais</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Scan nao autorizado</strong></td>
+                            <td>Usuario escaneia site de terceiro = crime</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Responsabilidade vicaria</strong></td>
+                            <td>SecAudit pode ser processado como co-autor</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dano por falso negativo</strong></td>
+                            <td>Cliente confia no relatorio, e hackeado, processa</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Propriedade de payloads</strong></td>
+                            <td>AI-generated exploits: quem e o autor legal?</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <strong>✅ MITIGACOES OBRIGATORIAS:</strong><br>
+                1. <strong>CRITICO:</strong> Implementar verificacao de propriedade do dominio (DNS TXT ou arquivo)<br>
+                2. Termos de uso claros isentando responsabilidade por uso indevido<br>
+                3. Rate limiting e throttling de scans<br>
+                4. Disclaimer em TODOS os relatorios: "Requer validacao manual"<br>
+                5. Log de todos os scans para defesa legal<br>
+                <strong>CUSTO ESTIMADO:</strong> R$10-20K
+            </div>
+
+            <!-- ================================================================ -->
+            <!-- 5. MEI MANAGER - RISCOS -->
+            <!-- ================================================================ -->
+            <div class="project-header" style="border-left: 4px solid #f39c12; background: #fff3e0;">
+                <div>
+                    <div class="project-title">🟠 5. MEI Manager - Analise de Riscos</div>
+                    <div class="project-code">Nivel de Risco: ALTO | Validacao fiscal obrigatoria</div>
+                </div>
+                <div class="project-score">
+                    <span class="card-badge badge-warning">ALTO</span>
+                </div>
+            </div>
+
+            <div class="danger-box">
+                <strong>⚠️ RISCO CRITICO: CALCULOS INCORRETOS = MULTAS PARA CLIENTES</strong><br><br>
+                • Calculo de DAS errado = MEI multado pela Receita<br>
+                • Alerta de limite incorreto = MEI desenquadrado ou paga imposto errado<br>
+                • Legislacao MEI muda FREQUENTEMENTE (ultima mudanca: 2024)<br>
+                • NAO existe API oficial da Receita Federal para MEI<br><br>
+                <strong>RESPONSABILIDADE:</strong> Cliente multado pode processar alegando confianca no sistema.
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>🔴 Riscos Tecnicos</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Sem API oficial</strong></td>
+                            <td>Dados da Receita nao sao em tempo real</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Legislacao volatil</strong></td>
+                            <td>Regras MEI mudam frequentemente</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Calculos complexos</strong></td>
+                            <td>INSS, ISS, ICMS variam por estado e atividade</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Integracao NFS-e</strong></td>
+                            <td>Cada municipio tem sistema diferente</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>🔴 Riscos de Negocio</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Ticket baixo</strong></td>
+                            <td>R$14,90/mes = precisa de VOLUME massivo</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Churn alto</strong></td>
+                            <td>MEIs frequentemente fecham ou migram para ME</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Suporte intensivo</strong></td>
+                            <td>Publico MEI precisa de muito suporte</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Contabilizei</strong></td>
+                            <td>Ja atende MEIs com servico completo</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <strong>✅ MITIGACOES OBRIGATORIAS:</strong><br>
+                1. <strong>OBRIGATORIO:</strong> Validar TODOS os calculos com contador especializado<br>
+                2. Monitoramento automatico de mudancas na legislacao<br>
+                3. Disclaimers claros: "Consulte um contador para confirmacao"<br>
+                4. Seguro de responsabilidade profissional<br>
+                5. Testes automatizados com casos reais validados<br>
+                <strong>CUSTO ESTIMADO:</strong> R$30K inicial + R$5K/mes (validacao continua)
+            </div>
+
+            <!-- ================================================================ -->
+            <!-- 6. INSS REDUTOR - RISCOS -->
+            <!-- ================================================================ -->
+            <div class="project-header" style="border-left: 4px solid #e74c3c; background: #ffebee;">
+                <div>
+                    <div class="project-title">⛔ 6. INSS Redutor (Edifisco) - Analise de Riscos</div>
+                    <div class="project-code">Nivel de Risco: CRITICO | NAO LANCAR ate validacao</div>
+                </div>
+                <div class="project-score">
+                    <span class="card-badge badge-danger">CRITICO</span>
+                </div>
+            </div>
+
+            <div class="danger-box">
+                <strong>⛔ RISCO FATAL: RESPONSABILIDADE CRIMINAL POR SONEGACAO</strong><br><br>
+                <strong>Lei 8.137/90 - Crimes contra a ordem tributaria:</strong><br>
+                "Constitui crime suprimir ou reduzir tributo mediante declaracao falsa"<br><br>
+                Se o sistema gerar calculos que induzam o cliente a declarar valores incorretos:<br>
+                • Socios do Edifisco podem ser RESPONSABILIZADOS CRIMINALMENTE como coautores<br>
+                • Pena: 2 a 5 anos de reclusao + multa<br><br>
+                <strong>AGRAVANTE:</strong> Landing page diz "Metodologia aprovada pela Receita Federal" - os PERCENTUAIS usados NAO sao aprovados. Pode configurar <strong>propaganda enganosa</strong>.
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>🔴 Problemas Tecnicos Identificados</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Percentuais HARDCODED</strong></td>
+                            <td>40% reducao residencial sem base legal documentada</td>
+                        </tr>
+                        <tr>
+                            <td><strong>CUB estatico</strong></td>
+                            <td>Deveria atualizar MENSALMENTE por estado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>OCR inexistente</strong></td>
+                            <td>Pasta /ocr/ esta VAZIA - nao processa documentos</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Zero testes</strong></td>
+                            <td>Nenhum arquivo .spec.ts ou .test.ts encontrado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Detalhamento ficticio</strong></td>
+                            <td>70% materiais, 20% equip, 10% admin = INVENTADO</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>⚡ Cenarios de Desastre</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Cliente autuado</strong></td>
+                            <td>Receita diverge do calculo, multa 75-150% + juros</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Processo criminal</strong></td>
+                            <td>Representacao fiscal por sonegacao</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Acao coletiva</strong></td>
+                            <td>Clientes processam por "confianca no sistema aprovado"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Reforma tributaria</strong></td>
+                            <td>Regras de INSS obras podem mudar completamente</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>RECOMENDACAO: NAO LANCAR ATE QUE:</strong><br>
+                1. Calculos sejam validados por tributarista especializado em construcao civil<br>
+                2. REMOVER claim de "aprovado pela RFB" da landing page<br>
+                3. Implementar testes cobrindo 100% dos calculos<br>
+                4. Contratar seguro de responsabilidade civil profissional<br>
+                5. Fluxo de revisao humana OBRIGATORIA antes de emitir qualquer calculo<br>
+                <strong>CUSTO ESTIMADO:</strong> R$30-50K (parecer + seguro)
+            </div>
+
+            <!-- ================================================================ -->
+            <!-- 7. FINANCE SPLIT - RISCOS -->
+            <!-- ================================================================ -->
+            <div class="project-header" style="border-left: 4px solid #e74c3c; background: #ffebee;">
+                <div>
+                    <div class="project-title">⛔ 7. Finance Split (Apostas) - Analise de Riscos</div>
+                    <div class="project-code">Nivel de Risco: FATAL | REMOVER funcionalidades de apostas</div>
+                </div>
+                <div class="project-score">
+                    <span class="card-badge badge-danger">FATAL</span>
+                </div>
+            </div>
+
+            <div class="danger-box" style="background:#ffcdd2; border-left:5px solid #b71c1c;">
+                <strong>⛔⛔⛔ RISCO CRIMINAL: APOSTAS = JOGO DE AZAR = CRIME ⛔⛔⛔</strong><br><br>
+                <strong>Lei das Contravencoes Penais (Decreto-Lei 3.688/1941):</strong><br>
+                Art. 50: "Estabelecer ou explorar jogo de azar" - Prisao de 3 meses a 1 ano<br><br>
+                A feature de "gestao de boloes e apostas" configura EXPLORACAO DE JOGO DE AZAR.<br>
+                Nao importa se e "entre amigos" ou "sem fins lucrativos" - a LEI nao faz distincao.<br><br>
+                <strong style="color:#b71c1c">ACAO IMEDIATA: REMOVER TODAS AS FUNCIONALIDADES DE APOSTAS/BOLOES</strong>
+            </div>
+
+            <div class="card">
+                <h4>⚖️ Consequencias Legais</h4>
+                <table>
+                    <tr>
+                        <th>Infracao</th>
+                        <th>Pena</th>
+                        <th>Consequencia Adicional</th>
+                    </tr>
+                    <tr>
+                        <td>Exploracao de jogo de azar</td>
+                        <td>3 meses a 1 ano de prisao</td>
+                        <td>Apreensao de todos os equipamentos</td>
+                    </tr>
+                    <tr>
+                        <td>Lavagem de dinheiro (se houver fluxo financeiro)</td>
+                        <td>3 a 10 anos de reclusao</td>
+                        <td>Bloqueio de contas bancarias</td>
+                    </tr>
+                    <tr>
+                        <td>Organizacao criminosa (se escalar)</td>
+                        <td>3 a 8 anos de reclusao</td>
+                        <td>Investigacao da Policia Federal</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="success-box">
+                <strong>✅ UNICA SOLUCAO VIAVEL:</strong><br>
+                1. <strong>REMOVER IMEDIATAMENTE</strong> toda mencao a "apostas" e "boloes"<br>
+                2. Renomear para "Finance Split" (sem apostas)<br>
+                3. Manter APENAS funcionalidades de divisao de contas (republica, viagem, churrasco)<br>
+                4. Após limpeza, produto pode continuar como "Splitwise BR"<br>
+                <strong>CUSTO:</strong> Zero (apenas remocao de codigo)
+            </div>
+
+            <!-- ================================================================ -->
+            <!-- 8. METRICSHUB - RISCOS -->
+            <!-- ================================================================ -->
+            <div class="project-header" style="border-left: 4px solid #f39c12; background: #fffde7;">
+                <div>
+                    <div class="project-title">🟡 8. MetricsHub - Analise de Riscos</div>
+                    <div class="project-code">Nivel de Risco: MEDIO | Arquitetura inadequada</div>
+                </div>
+                <div class="project-score">
+                    <span class="card-badge" style="background:#f39c12;color:white">MEDIO</span>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ ALERTA: Promessa de "latencia sub-minuto" e IMPOSSIVEL com stack atual</strong><br><br>
+                Concorrentes com anos de otimizacao:<br>
+                • ChartMogul: 4-6 horas de delay<br>
+                • Baremetrics: 3-4 horas de delay<br>
+                • ProfitWell: Processamento overnight<br><br>
+                <strong>AGRAVANTE:</strong> ProfitWell (adquirido pela Paddle) e GRATIS. Por que pagar R$297/mes?
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>🔴 Problemas de Arquitetura</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Vercel timeout</strong></td>
+                            <td>10s limite em API Routes - insuficiente para sync</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Supabase wrong choice</strong></td>
+                            <td>PostgreSQL NAO e para time-series (usar ClickHouse)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Inngest limites</strong></td>
+                            <td>1MB payload, 10min execucao - insuficiente para sync grande</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Custos explodindo</strong></td>
+                            <td>100 clientes = R$13.760/mes infra vs R$6.000 receita</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>🔴 Riscos de Negocio</h4>
+                    <table>
+                        <tr>
+                            <td><strong>ProfitWell GRATIS</strong></td>
+                            <td>Competidor faz o mesmo de graca</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Metricas erradas</strong></td>
+                            <td>MRR/Churn mal calculado = cliente perde confianca</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Trial 15% conversao</strong></td>
+                            <td>Otimista demais - mercado e 5-8%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Nicho Asaas pequeno</strong></td>
+                            <td>~50K contas ativas - mercado limitado</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <strong>✅ RECOMENDACAO: PIVOTAR</strong><br>
+                Ao inves de MetricsHub standalone, integrar metricas como feature do Authify:<br>
+                • Reduz custo de aquisicao (clientes ja estao no Authify)<br>
+                • Dados ja estao no sistema (nao precisa sync externo)<br>
+                • Diferencial real: "Auth + Billing + Metricas num lugar so"<br>
+                • Competicao diferente (vs Clerk/Auth0, nao vs ChartMogul)
+            </div>
+
+            <!-- ================================================================ -->
+            <!-- 9. SUBSCRIPTION MANAGER - RISCOS -->
+            <!-- ================================================================ -->
+            <div class="project-header" style="border-left: 4px solid #f39c12; background: #fffde7;">
+                <div>
+                    <div class="project-title">🟡 9. Subscription Manager - Analise de Riscos</div>
+                    <div class="project-code">Nivel de Risco: MEDIO | Regulatory + Feature ilegal</div>
+                </div>
+                <div class="project-score">
+                    <span class="card-badge" style="background:#f39c12;color:white">MEDIO</span>
+                </div>
+            </div>
+
+            <div class="danger-box">
+                <strong>⚠️ ALERTA: "Compartilhar assinaturas" mencionado na docs e ILEGAL</strong><br><br>
+                Compartilhar credenciais de streaming viola ToS de Netflix, Spotify, etc.<br>
+                Facilitar isso pode configurar "concorrencia desleal" ou "facilitacao de fraude".<br><br>
+                <strong>ACAO:</strong> REMOVER qualquer mencao a compartilhamento de assinaturas.
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>🔴 Riscos Regulatorios</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Open Banking imaturo</strong></td>
+                            <td>Fase 4 ainda em implantacao no Brasil</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Agregadores limitados</strong></td>
+                            <td>Pluggy/Belvo cobram caro, cobertura limitada</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Confianca do usuario</strong></td>
+                            <td>BR desconfia de dar acesso bancario a app</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LGPD dados bancarios</strong></td>
+                            <td>Requer consentimento explicito e granular</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>🔴 Riscos de Negocio</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Rocket Money ja existe</strong></td>
+                            <td>Modelo validado, mas dificil replicar</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ticket R$9,90</strong></td>
+                            <td>Muito baixo para sustentar operacao</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bancos copiam</strong></td>
+                            <td>Nubank, Inter ja tem features similares</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Churn alto B2C</strong></td>
+                            <td>Usuario cancela apos "resolver" assinaturas</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <strong>✅ MITIGACOES:</strong><br>
+                1. REMOVER feature de compartilhamento de assinaturas<br>
+                2. Usar agregador licenciado (Pluggy ou Belvo)<br>
+                3. Aguardar maturacao do Open Banking antes de investir pesado<br>
+                4. Considerar pivot para B2B (gestao de SaaS para empresas)
+            </div>
+
+            <!-- ================================================================ -->
+            <!-- 10. AGREGADOR LEILOES - RISCOS -->
+            <!-- ================================================================ -->
+            <div class="project-header" style="border-left: 4px solid #f39c12; background: #fff3e0;">
+                <div>
+                    <div class="project-title">🟠 10. Agregador de Leiloes - Analise de Riscos</div>
+                    <div class="project-code">Nivel de Risco: ALTO | Webscraping legal questionavel</div>
+                </div>
+                <div class="project-score">
+                    <span class="card-badge badge-warning">ALTO</span>
+                </div>
+            </div>
+
+            <div class="danger-box">
+                <strong>⚠️ RISCO ALTO: WEBSCRAPING PODE GERAR ACOES LEGAIS</strong><br><br>
+                • Sites de leilao ativamente bloqueiam scrapers (IP ban, captcha, legal)<br>
+                • Concorrentes (Nucleo, Mapa) podem processar por concorrencia desleal<br>
+                • Dados incorretos podem levar usuario a perder dinheiro = responsabilidade<br>
+                • 60+ scrapers = 60 pontos de falha constante<br><br>
+                <strong>CUSTO OPERACIONAL:</strong> R$20-40K/mes so para manter scrapers funcionando
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>🔴 Riscos Tecnicos</h4>
+                    <table>
+                        <tr>
+                            <td><strong>Sites bloqueiam</strong></td>
+                            <td>Rate limiting, IP ban, cloudflare</td>
+                        </tr>
+                        <tr>
+                            <td><strong>HTML muda</strong></td>
+                            <td>Scraper quebra a cada mudanca de site</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dados desatualizados</strong></td>
+                            <td>Leilao ja aconteceu, sistema mostra como ativo</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Manutencao constante</strong></td>
+                            <td>1 pessoa FULL-TIME so para scrapers</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h4>🔴 Riscos Legais/Negocio</h4>
+                    <table>
+                        <tr>
+                            <td><strong>ToS violation</strong></td>
+                            <td>Maioria dos sites proibe scraping</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Concorrentes processam</strong></td>
+                            <td>Nucleo pode alegar uso de seus dados</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Responsabilidade por dados</strong></td>
+                            <td>Usuario perde leilao por info errada</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Competicao estabelecida</strong></td>
+                            <td>Nucleo, Mapa, Spot ja tem base</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="success-box">
+                <strong>✅ RECOMENDACAO:</strong><br>
+                1. Validar viabilidade com MVP MINIMO (5 fontes, nao 60)<br>
+                2. Buscar PARCERIAS com leiloeiros (dados oficiais vs scraping)<br>
+                3. Consultar advogado sobre legalidade de scraping<br>
+                4. Calcular unit economics realistas (custo de manutencao e ALTO)<br>
+                <strong>Se custos forem proibitivos, considerar DESCARTAR projeto.</strong>
+            </div>
+
+            <!-- ================================================================ -->
+            <!-- 11. FILOSOFIA CRIANCAS - RISCOS -->
+            <!-- ================================================================ -->
+            <div class="project-header" style="border-left: 4px solid #e74c3c; background: #ffebee;">
+                <div>
+                    <div class="project-title">⛔ 11. Filosofia para Criancas - Analise de Riscos</div>
+                    <div class="project-code">Nivel de Risco: FATAL | NAO RECOMENDADO para desenvolvimento</div>
+                </div>
+                <div class="project-score">
+                    <span class="card-badge badge-danger">FATAL</span>
+                </div>
+            </div>
+
+            <div class="danger-box" style="background:#ffcdd2; border-left:5px solid #b71c1c;">
+                <strong>⛔⛔⛔ RISCO EXTREMO: SEGURANCA INFANTIL ⛔⛔⛔</strong><br><br>
+                Qualquer app direcionado a criancas tem responsabilidades ENORMES:<br><br>
+                <strong>Riscos legais:</strong><br>
+                • LGPD: Tratamento de dados de menores requer consentimento dos PAIS<br>
+                • COPPA (se operar nos EUA): Multas de US$50K+ por violacao<br>
+                • ECA: Qualquer conteudo inadequado = responsabilidade criminal<br><br>
+                <strong>Riscos de AI:</strong><br>
+                • Claude/GPT PODEM gerar conteudo inadequado para criancas<br>
+                • "Filosofia" pode tocar em temas sensiveis (morte, religiao, politica)<br>
+                • Uma UNICA falha publica = destruicao total da marca<br><br>
+                <strong style="color:#b71c1c">RECOMENDACAO: NAO DESENVOLVER este projeto. Risco x beneficio desfavoravel.</strong>
+            </div>
+
+            <div class="card">
+                <h4>⚡ Cenarios de Desastre</h4>
+                <table>
+                    <tr>
+                        <th>Cenario</th>
+                        <th>Probabilidade</th>
+                        <th>Impacto</th>
+                        <th>Consequencia</th>
+                    </tr>
+                    <tr>
+                        <td>AI gera conteudo sexual/violento para crianca</td>
+                        <td>BAIXA (mas nao zero)</td>
+                        <td style="color:#b71c1c">DESTRUIDOR</td>
+                        <td>Processo criminal, prisao, fim da empresa</td>
+                    </tr>
+                    <tr>
+                        <td>Vazamento de dados de menores</td>
+                        <td>MEDIA</td>
+                        <td style="color:#e74c3c">CATASTROFICO</td>
+                        <td>Multa maxima LGPD, acoes coletivas dos pais</td>
+                    </tr>
+                    <tr>
+                        <td>Crianca se machuca seguindo "conselho" do app</td>
+                        <td>BAIXA</td>
+                        <td style="color:#b71c1c">DESTRUIDOR</td>
+                        <td>Responsabilidade civil e criminal</td>
+                    </tr>
+                    <tr>
+                        <td>Pais reclamam de conteudo "ideologico"</td>
+                        <td style="color:#e74c3c">ALTA</td>
+                        <td>ALTO</td>
+                        <td>Campanha de cancelamento, reviews negativas</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="warning-box">
+                <strong>VEREDITO FINAL:</strong> O mercado de apps infantis e um campo minado regulatorio e reputacional. Mesmo empresas grandes (YouTube Kids, TikTok) enfrentam multas e processos constantemente. Para uma startup, os riscos sao desproporcionais ao potencial de retorno. <strong>RECOMENDACAO: Arquivar este projeto permanentemente.</strong>
+            </div>
+
+            <!-- ================================================================ -->
+            <!-- CUSTOS DE MITIGACAO CONSOLIDADOS -->
+            <!-- ================================================================ -->
+            <h3>Custos de Mitigacao Consolidados</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Projeto</th>
+                        <th>Custo Mitigacao</th>
+                        <th>Prazo</th>
+                        <th>Prioridade</th>
+                        <th>Acao Principal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="tier-d">
+                        <td><strong>Finance Split</strong></td>
+                        <td>R$0</td>
+                        <td>Imediato</td>
+                        <td style="color:#e74c3c">URGENTE</td>
+                        <td>REMOVER features de apostas</td>
+                    </tr>
+                    <tr class="tier-d">
+                        <td><strong>Filosofia Criancas</strong></td>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td style="color:#e74c3c">URGENTE</td>
+                        <td>ARQUIVAR projeto</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Authify</strong></td>
+                        <td>R$20-50K</td>
+                        <td>30 dias</td>
+                        <td style="color:#e74c3c">CRITICO</td>
+                        <td>Audit seguranca + correcoes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>INSS Redutor</strong></td>
+                        <td>R$30-50K</td>
+                        <td>60 dias</td>
+                        <td style="color:#e74c3c">CRITICO</td>
+                        <td>Parecer tributario + seguro</td>
+                    </tr>
+                    <tr>
+                        <td><strong>O Entregador</strong></td>
+                        <td>R$30-50K</td>
+                        <td>30 dias</td>
+                        <td style="color:#f39c12">ALTA</td>
+                        <td>Consultoria trabalhista</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Plataforma de Dados</strong></td>
+                        <td>R$50-100K + R$15K/mes</td>
+                        <td>90 dias</td>
+                        <td style="color:#f39c12">ALTA</td>
+                        <td>Validacao LGPD completa</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MEI Manager</strong></td>
+                        <td>R$30K + R$5K/mes</td>
+                        <td>60 dias</td>
+                        <td style="color:#f39c12">ALTA</td>
+                        <td>Validacao fiscal continua</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SecAudit</strong></td>
+                        <td>R$10-20K</td>
+                        <td>30 dias</td>
+                        <td style="color:#f39c12">ALTA</td>
+                        <td>Verificacao de propriedade</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Agregador Leiloes</strong></td>
+                        <td>R$20-40K/mes</td>
+                        <td>Continuo</td>
+                        <td>MEDIA</td>
+                        <td>Manutencao scrapers</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Subscription Manager</strong></td>
+                        <td>R$5-10K</td>
+                        <td>30 dias</td>
+                        <td>MEDIA</td>
+                        <td>Remover compartilhamento</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MetricsHub</strong></td>
+                        <td>R$0</td>
+                        <td>N/A</td>
+                        <td>BAIXA</td>
+                        <td>Considerar pivot/integracao</td>
+                    </tr>
+                    <tr class="table-highlight">
+                        <td><strong>TOTAL ESTIMADO</strong></td>
+                        <td colspan="4"><strong>R$195-330K inicial + R$40-60K/mes recorrente</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info-box">
+                <strong>NOTA IMPORTANTE:</strong> Estes custos de mitigacao sao INVESTIMENTOS NECESSARIOS para reduzir riscos a niveis aceitaveis. Lancar produtos sem estas mitigacoes e expor a empresa a riscos legais, financeiros e reputacionais que podem ser FATAIS para o negocio.
+            </div>
+
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <div>
+                <strong>Documento:</strong> Analise de Potencial de Investimentos V3<br>
+                <strong>Criado:</strong> Janeiro 2026 | <strong>Proxima Revisao:</strong> Abril 2026
+            </div>
+            <div style="text-align: right;">
+                <strong>Classificacao:</strong> Confidencial<br>
+                <strong>Portfolio:</strong> OhanaX
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OhanaX Admin | Central de Ferramentas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #161616;
+            --bg-card-hover: #1a1a1a;
+            --accent-cyan: #22d3ee;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --border-color: #2a2a2a;
+            --gradient-primary: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-text span {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(34, 211, 238, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-cyan);
+        }
+
+        /* Main Content */
+        .main {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 3rem 0 4rem;
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .hero h2 span {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-3px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.cyan { background: rgba(34, 211, 238, 0.15); color: var(--accent-cyan); }
+        .stat-icon.purple { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.15); color: var(--accent-orange); }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .section-icon.cyan { background: rgba(34, 211, 238, 0.15); color: var(--accent-cyan); }
+        .section-icon.purple { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); }
+        .section-icon.green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .section-icon.orange { background: rgba(245, 158, 11, 0.15); color: var(--accent-orange); }
+        .section-icon.blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tool-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.75rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tool-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        .tool-card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .tool-card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .tool-card-icon.cyan { background: rgba(34, 211, 238, 0.15); color: var(--accent-cyan); }
+        .tool-card-icon.purple { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); }
+        .tool-card-icon.green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .tool-card-icon.orange { background: rgba(245, 158, 11, 0.15); color: var(--accent-orange); }
+        .tool-card-icon.blue { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+        .tool-card-icon.red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+
+        .tool-card-info {
+            flex: 1;
+        }
+
+        .tool-card-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .tool-card-type {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .type-tool { background: rgba(34, 211, 238, 0.15); color: var(--accent-cyan); }
+        .type-analysis { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); }
+        .type-strategy { background: rgba(245, 158, 11, 0.15); color: var(--accent-orange); }
+        .type-docs { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+
+        .tool-card-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+            line-height: 1.6;
+        }
+
+        .tool-card-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .feature-tag {
+            font-size: 0.75rem;
+            padding: 0.35rem 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+        }
+
+        .tool-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .tool-card-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .tool-card-action {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+        }
+
+        .tool-card-action svg {
+            transition: transform 0.2s ease;
+        }
+
+        .tool-card:hover .tool-card-action svg {
+            transform: translateX(4px);
+        }
+
+        /* Subsection */
+        .subsection {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .subsection-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .doc-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .doc-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .doc-item:hover {
+            border-color: var(--accent-cyan);
+            background: var(--bg-card-hover);
+        }
+
+        .doc-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .doc-item-info {
+            flex: 1;
+        }
+
+        .doc-item-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .doc-item-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .doc-item-arrow {
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+        }
+
+        .doc-item:hover .doc-item-arrow {
+            color: var(--accent-cyan);
+            transform: translateX(4px);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+
+        .footer p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .footer-brand {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .hero h2 {
+                font-size: 1.8rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .section:nth-child(2) { animation-delay: 0.1s; }
+        .section:nth-child(3) { animation-delay: 0.2s; }
+        .section:nth-child(4) { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">OX</div>
+                <div class="logo-text">
+                    <h1>OhanaX Admin</h1>
+                    <span>Central de Ferramentas & Documentos</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="ohanax-orcamentos.html" class="btn btn-primary">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Nova Proposta
+                </a>
+                <a href="ohanax-propostas.html" class="btn btn-secondary">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M9 12h6M9 16h6M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Ver Propostas
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Hero -->
+        <section class="hero">
+            <h2>Bem-vindo ao <span>Hub Administrativo</span></h2>
+            <p>Acesse todas as ferramentas operacionais, análises de investimento e documentação estratégica da OhanaX em um só lugar.</p>
+        </section>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-icon cyan">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
+                    </svg>
+                </div>
+                <div class="stat-value">2</div>
+                <div class="stat-label">Ferramentas Ativas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <div class="stat-value">27</div>
+                <div class="stat-label">Projetos Analisados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="stat-value">R$92M</div>
+                <div class="stat-label">ARR Projetado (Ano 3)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <div class="stat-value">92/100</div>
+                <div class="stat-label">Score Top Projeto</div>
+            </div>
+        </div>
+
+        <!-- Section: Ferramentas Operacionais -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon cyan">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="section-title">Ferramentas Operacionais</h3>
+                    <p class="section-subtitle">Ferramentas para gestão do dia-a-dia</p>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                <!-- Gerador de Orçamentos -->
+                <a href="ohanax-orcamentos.html" class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon cyan">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <div class="tool-card-info">
+                            <h4 class="tool-card-title">Gerador de Propostas</h4>
+                            <span class="tool-card-type type-tool">Ferramenta</span>
+                        </div>
+                    </div>
+                    <p class="tool-card-description">
+                        Crie propostas comerciais profissionais com preview em tempo real, cálculo automático de valores, banco de dados de 65+ cargos e geração de PDF premium.
+                    </p>
+                    <div class="tool-card-features">
+                        <span class="feature-tag">Preview PDF</span>
+                        <span class="feature-tag">Auto-cálculo</span>
+                        <span class="feature-tag">65+ Cargos</span>
+                        <span class="feature-tag">LocalStorage</span>
+                    </div>
+                    <div class="tool-card-footer">
+                        <span class="tool-card-meta">~104KB • 1,760 linhas</span>
+                        <span class="tool-card-action">
+                            Abrir
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+
+                <!-- Dashboard de Propostas -->
+                <a href="ohanax-propostas.html" class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon green">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                            </svg>
+                        </div>
+                        <div class="tool-card-info">
+                            <h4 class="tool-card-title">Dashboard de Propostas</h4>
+                            <span class="tool-card-type type-tool">Ferramenta</span>
+                        </div>
+                    </div>
+                    <p class="tool-card-description">
+                        Gerencie todas as propostas criadas. Visualize estatísticas, pesquise, edite, duplique ou exclua propostas salvas no navegador.
+                    </p>
+                    <div class="tool-card-features">
+                        <span class="feature-tag">Estatísticas</span>
+                        <span class="feature-tag">Pesquisa</span>
+                        <span class="feature-tag">Duplicar</span>
+                        <span class="feature-tag">Editar</span>
+                    </div>
+                    <div class="tool-card-footer">
+                        <span class="tool-card-meta">~23KB • 619 linhas</span>
+                        <span class="tool-card-action">
+                            Abrir
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Section: Análises de Investimento -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon purple">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="section-title">Análises de Investimento</h3>
+                    <p class="section-subtitle">Documentos estratégicos e análises financeiras</p>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                <!-- Análise Geral V3 -->
+                <a href="planejamento/geral/ANALISE_POTENCIAL_INVESTIMENTOS_V3.html" class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon purple">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                            </svg>
+                        </div>
+                        <div class="tool-card-info">
+                            <h4 class="tool-card-title">Análise Portfolio V3</h4>
+                            <span class="tool-card-type type-analysis">Análise</span>
+                        </div>
+                    </div>
+                    <p class="tool-card-description">
+                        Análise completa de 27 projetos do portfólio OhanaX. Inclui scoring, unit economics, TAM/SAM/SOM, recomendações de investimento e cenários de exit.
+                    </p>
+                    <div class="tool-card-features">
+                        <span class="feature-tag">27 Projetos</span>
+                        <span class="feature-tag">Scoring</span>
+                        <span class="feature-tag">Unit Economics</span>
+                        <span class="feature-tag">R$92M ARR</span>
+                    </div>
+                    <div class="tool-card-footer">
+                        <span class="tool-card-meta">Versão mais recente</span>
+                        <span class="tool-card-action">
+                            Abrir
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+
+                <!-- O Entregador -->
+                <a href="planejamento/entregador/ANALISE_POTENCIAL_INVESTIMENTOS_O_ENTREGADOR.html" class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon orange">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                            </svg>
+                        </div>
+                        <div class="tool-card-info">
+                            <h4 class="tool-card-title">O Entregador</h4>
+                            <span class="tool-card-type type-analysis">Análise</span>
+                        </div>
+                    </div>
+                    <p class="tool-card-description">
+                        Análise detalhada do projeto top-ranked (92/100). Plataforma SaaS para logística last-mile com LTV/CAC de 184-307x e payback de 0.8-1.3 meses.
+                    </p>
+                    <div class="tool-card-features">
+                        <span class="feature-tag">Score 92/100</span>
+                        <span class="feature-tag">LTV/CAC 307x</span>
+                        <span class="feature-tag">R$3M Seed</span>
+                        <span class="feature-tag">Top Project</span>
+                    </div>
+                    <div class="tool-card-footer">
+                        <span class="tool-card-meta">Projeto prioritário</span>
+                        <span class="tool-card-action">
+                            Abrir
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Subsection: Mais Documentos de Análise -->
+            <div class="subsection">
+                <h4 class="subsection-title">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Documentos Complementares
+                </h4>
+                <div class="doc-list">
+                    <a href="planejamento/entregador/ANALISE_POTENCIAL_INVESTIMENTOS_O_ENTREGADOR_2.html" class="doc-item">
+                        <div class="doc-item-icon purple">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <div class="doc-item-info">
+                            <div class="doc-item-title">O Entregador - Análise Detalhada V2</div>
+                            <div class="doc-item-meta">Modelagem financeira aprofundada • 3,675 linhas</div>
+                        </div>
+                        <div class="doc-item-arrow">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                    </a>
+                    <a href="planejamento/geral/ANALISE_POTENCIAL_INVESTIMENTOS_V2.html" class="doc-item">
+                        <div class="doc-item-icon purple">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <div class="doc-item-info">
+                            <div class="doc-item-title">Análise Portfolio V2</div>
+                            <div class="doc-item-meta">Versão anterior da análise de portfólio</div>
+                        </div>
+                        <div class="doc-item-arrow">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                    </a>
+                    <a href="planejamento/checklist/ANALISE_CHECKLIST_APP.html" class="doc-item">
+                        <div class="doc-item-icon green">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                            </svg>
+                        </div>
+                        <div class="doc-item-info">
+                            <div class="doc-item-title">Análise Checklist App</div>
+                            <div class="doc-item-meta">Componente de compliance para entregadores • R$1.20/motorista/dia</div>
+                        </div>
+                        <div class="doc-item-arrow">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Estratégia -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon orange">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="section-title">Planejamento Estratégico</h3>
+                    <p class="section-subtitle">Roadmaps e planos de execução</p>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                <!-- Estratégia Ano 1 -->
+                <a href="planejamento/entregador/ESTRATEGIA_ANO1_2026.html" class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon orange">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="tool-card-info">
+                            <h4 class="tool-card-title">Estratégia 2026 - O Entregador</h4>
+                            <span class="tool-card-type type-strategy">Estratégia</span>
+                        </div>
+                    </div>
+                    <p class="tool-card-description">
+                        Plano de execução detalhado para o primeiro ano. Inclui milestones trimestrais, estrutura de equipe, roadmap de features e alocação de budget.
+                    </p>
+                    <div class="tool-card-features">
+                        <span class="feature-tag">Q1-Q4 2026</span>
+                        <span class="feature-tag">Hiring Plan</span>
+                        <span class="feature-tag">KPIs</span>
+                        <span class="feature-tag">Budget</span>
+                    </div>
+                    <div class="tool-card-footer">
+                        <span class="tool-card-meta">2,909 linhas • Plano completo</span>
+                        <span class="tool-card-action">
+                            Abrir
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Section: Documentação de Projetos -->
+        <section class="section">
+            <div class="section-header">
+                <div class="section-icon blue">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="section-title">Documentação de Projetos</h3>
+                    <p class="section-subtitle">Documentação técnica e especificações</p>
+                </div>
+            </div>
+
+            <div class="cards-grid">
+                <!-- OMAS MVP -->
+                <a href="projetos/omas/omas-mvp-core.html" class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon blue">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="tool-card-info">
+                            <h4 class="tool-card-title">OMAS - MVP Core</h4>
+                            <span class="tool-card-type type-docs">Documentação</span>
+                        </div>
+                    </div>
+                    <p class="tool-card-description">
+                        Documentação técnica do MVP core do OMAS (LinkedIn Automation). Inclui especificações de features, arquitetura técnica, schema de banco e endpoints.
+                    </p>
+                    <div class="tool-card-features">
+                        <span class="feature-tag">Tech Stack</span>
+                        <span class="feature-tag">API Specs</span>
+                        <span class="feature-tag">DB Schema</span>
+                        <span class="feature-tag">Workflows</span>
+                    </div>
+                    <div class="tool-card-footer">
+                        <span class="tool-card-meta">Documentação técnica completa</span>
+                        <span class="tool-card-action">
+                            Abrir
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+
+                <!-- LinkedIn Automation Docs -->
+                <a href="projetos/omas/linkedin-automation-docs.html" class="tool-card">
+                    <div class="tool-card-header">
+                        <div class="tool-card-icon blue">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/>
+                                <circle cx="4" cy="4" r="2"/>
+                            </svg>
+                        </div>
+                        <div class="tool-card-info">
+                            <h4 class="tool-card-title">LinkedIn Automation Docs</h4>
+                            <span class="tool-card-type type-docs">Documentação</span>
+                        </div>
+                    </div>
+                    <p class="tool-card-description">
+                        Documentação da integração LinkedIn para OMAS. Cobre API integration, geração de conteúdo com IA, scheduling, analytics e multi-account.
+                    </p>
+                    <div class="tool-card-features">
+                        <span class="feature-tag">LinkedIn API</span>
+                        <span class="feature-tag">AI Content</span>
+                        <span class="feature-tag">Scheduling</span>
+                        <span class="feature-tag">Analytics</span>
+                    </div>
+                    <div class="tool-card-footer">
+                        <span class="tool-card-meta">Integração e automação</span>
+                        <span class="tool-card-action">
+                            Abrir
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 <span class="footer-brand">OhanaX</span>. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>
