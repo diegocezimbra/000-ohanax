@@ -16,6 +16,7 @@ import logsRoutes from './routes/logs.js';
 import syncRoutes from './routes/sync.js';
 import influencersRoutes from './routes/influencers.js';
 import promptsRoutes from './routes/prompts.js';
+import orcamentosRoutes from './routes/orcamentos.js';
 import { syncService } from './services/sync.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -184,6 +185,7 @@ app.use('/api/logs', logsRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/influencers', influencersRoutes);
 app.use('/api/prompts', promptsRoutes);
+app.use('/api/orcamentos', orcamentosRoutes);
 app.use('/api', overviewRoutes);
 
 // =============================================================================
