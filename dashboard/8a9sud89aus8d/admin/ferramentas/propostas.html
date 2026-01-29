@@ -510,9 +510,36 @@
     <script>
         let proposals = [];
         let deleteTargetId = null;
+        const API_BASE = '/api/orcamentos';
 
-        function getProposals() { return JSON.parse(localStorage.getItem('ohanax_proposals') || '[]'); }
-        function saveProposals(data) { localStorage.setItem('ohanax_proposals', JSON.stringify(data)); }
+        async function getProposals() {
+            const res = await fetch(API_BASE);
+            const data = await res.json();
+            if (data.success) {
+                return data.orcamentos.map(o => ({
+                    id: o.id.toString(),
+                    dbId: o.id,
+                    proposalNumber: o.numero,
+                    clientName: o.cliente_nome,
+                    clientCNPJ: o.cliente_empresa,
+                    clientContact: '',
+                    clientEmail: o.cliente_email,
+                    clientPhone: o.cliente_telefone,
+                    projectName: o.projeto_nome,
+                    projectDescription: o.projeto_descricao,
+                    serviceType: o.tipo,
+                    validityDays: o.validade_dias,
+                    proposalDate: o.created_at?.split('T')[0],
+                    additionalNotes: o.observacoes,
+                    resources: o.itens?.resources || [],
+                    services: o.itens?.services || [],
+                    status: o.status,
+                    createdAt: o.created_at,
+                    updatedAt: o.updated_at
+                }));
+            }
+            return [];
+        }
 
         function formatCurrency(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v); }
         function formatDate(d) { return d ? new Date(d).toLocaleDateString('pt-BR') : '-'; }
@@ -554,7 +581,7 @@
                     <td><span class="date">${formatDate(p.proposalDate)}</span></td>
                     <td>
                         <div class="btn-group">
-                            <a href="ohanax-orcamentos.html?load=${p.id}" class="btn btn-secondary btn-sm">Editar</a>
+                            <a href="orcamentos.html?load=${p.id}" class="btn btn-secondary btn-sm">Editar</a>
                             <button class="btn btn-ghost btn-sm" onclick="duplicateProposal('${p.id}')">Duplicar</button>
                             <button class="btn btn-danger btn-sm" onclick="openDeleteModal('${p.id}')">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -579,40 +606,62 @@
             ));
         }
 
-        function duplicateProposal(id) {
-            const p = proposals.find(x => x.id === id);
-            if (!p) return;
-            const newP = { ...p, id: Date.now().toString(), proposalNumber: p.proposalNumber + '-COPIA', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-            proposals.unshift(newP);
-            saveProposals(proposals);
-            renderProposals(proposals);
-            updateStats();
-            showNotification('Proposta duplicada!');
+        async function duplicateProposal(id) {
+            try {
+                const res = await fetch(`${API_BASE}/${id}/duplicar`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    proposals = await getProposals();
+                    renderProposals(proposals);
+                    updateStats();
+                    showNotification('Proposta duplicada!');
+                }
+            } catch (err) {
+                console.error('Erro ao duplicar:', err);
+                showNotification('Erro ao duplicar proposta');
+            }
         }
 
         function openDeleteModal(id) { deleteTargetId = id; document.getElementById('delete-modal').classList.add('show'); }
         function closeDeleteModal() { deleteTargetId = null; document.getElementById('delete-modal').classList.remove('show'); }
 
-        function confirmDelete() {
+        async function confirmDelete() {
             if (!deleteTargetId) return;
-            proposals = proposals.filter(p => p.id !== deleteTargetId);
-            saveProposals(proposals);
-            renderProposals(proposals);
-            updateStats();
-            closeDeleteModal();
-            showNotification('Proposta excluída!');
+            try {
+                const res = await fetch(`${API_BASE}/${deleteTargetId}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (data.success) {
+                    proposals = proposals.filter(p => p.id !== deleteTargetId);
+                    renderProposals(proposals);
+                    updateStats();
+                    closeDeleteModal();
+                    showNotification('Proposta excluída!');
+                }
+            } catch (err) {
+                console.error('Erro ao excluir:', err);
+                showNotification('Erro ao excluir proposta');
+                closeDeleteModal();
+            }
         }
 
         function confirmClearAll() { document.getElementById('clear-all-modal').classList.add('show'); }
         function closeClearAllModal() { document.getElementById('clear-all-modal').classList.remove('show'); }
 
-        function clearAllProposals() {
-            proposals = [];
-            saveProposals(proposals);
-            renderProposals(proposals);
-            updateStats();
-            closeClearAllModal();
-            showNotification('Tudo excluído!');
+        async function clearAllProposals() {
+            try {
+                for (const p of proposals) {
+                    await fetch(`${API_BASE}/${p.id}`, { method: 'DELETE' });
+                }
+                proposals = [];
+                renderProposals(proposals);
+                updateStats();
+                closeClearAllModal();
+                showNotification('Tudo excluído!');
+            } catch (err) {
+                console.error('Erro ao limpar:', err);
+                showNotification('Erro ao limpar propostas');
+                closeClearAllModal();
+            }
         }
 
         function showNotification(msg) {
@@ -622,8 +671,8 @@
             setTimeout(() => el.classList.remove('show'), 3000);
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            proposals = getProposals();
+        document.addEventListener('DOMContentLoaded', async function() {
+            proposals = await getProposals();
             renderProposals(proposals);
             updateStats();
         });

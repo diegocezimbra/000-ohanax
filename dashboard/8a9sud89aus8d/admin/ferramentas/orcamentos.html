@@ -1651,41 +1651,35 @@
         const API_BASE = '/api/orcamentos';
 
         async function getProposals() {
-            try {
-                const res = await fetch(API_BASE);
-                const data = await res.json();
-                if (data.success) {
-                    // Converter formato da API para formato do frontend
-                    return data.orcamentos.map(o => ({
-                        id: o.id.toString(),
-                        proposalNumber: o.numero,
-                        clientName: o.cliente_nome,
-                        clientCNPJ: o.cliente_empresa,
-                        clientContact: '',
-                        clientEmail: o.cliente_email,
-                        clientPhone: o.cliente_telefone,
-                        projectName: o.projeto_nome,
-                        projectDescription: o.projeto_descricao,
-                        serviceType: o.tipo,
-                        serviceDescription: '',
-                        validityDays: o.validade_dias,
-                        proposalDate: o.created_at?.split('T')[0],
-                        paymentMethod: '',
-                        paymentTerms: '',
-                        additionalNotes: o.observacoes,
-                        resources: o.itens?.resources || [],
-                        services: o.itens?.services || [],
-                        status: o.status,
-                        createdAt: o.created_at,
-                        updatedAt: o.updated_at
-                    }));
-                }
-                return [];
-            } catch (err) {
-                console.error('Error fetching proposals:', err);
-                // Fallback para localStorage
-                return JSON.parse(localStorage.getItem('ohanax_proposals') || '[]');
+            const res = await fetch(API_BASE);
+            const data = await res.json();
+            if (data.success) {
+                return data.orcamentos.map(o => ({
+                    id: o.id.toString(),
+                    dbId: o.id,
+                    proposalNumber: o.numero,
+                    clientName: o.cliente_nome,
+                    clientCNPJ: o.cliente_empresa,
+                    clientContact: '',
+                    clientEmail: o.cliente_email,
+                    clientPhone: o.cliente_telefone,
+                    projectName: o.projeto_nome,
+                    projectDescription: o.projeto_descricao,
+                    serviceType: o.tipo,
+                    serviceDescription: '',
+                    validityDays: o.validade_dias,
+                    proposalDate: o.created_at?.split('T')[0],
+                    paymentMethod: '',
+                    paymentTerms: '',
+                    additionalNotes: o.observacoes,
+                    resources: o.itens?.resources || [],
+                    services: o.itens?.services || [],
+                    status: o.status,
+                    createdAt: o.created_at,
+                    updatedAt: o.updated_at
+                }));
             }
+            return [];
         }
 
         async function saveProposalToAPI(proposal) {
@@ -1743,9 +1737,6 @@
             }
         }
 
-        // Legacy localStorage fallback
-        function getProposalsSync() { return JSON.parse(localStorage.getItem('ohanax_proposals') || '[]'); }
-        function saveProposalsSync(p) { localStorage.setItem('ohanax_proposals', JSON.stringify(p)); }
 
         function getFormData() {
             const resources = [], services = [];
@@ -1817,6 +1808,8 @@
             updatePreview();
         }
 
+        let currentDbId = null;
+
         async function saveProposal() {
             const formData = getFormData();
             if (!formData.clientName) { showNotification('Preencha o nome do cliente!'); return; }
@@ -1831,29 +1824,12 @@
                 const saved = await saveProposalToAPI(proposal);
                 currentDbId = saved.id;
                 currentProposalId = saved.id.toString();
-
-                // Também salva no localStorage como backup
-                const localProposals = getProposalsSync();
-                const idx = localProposals.findIndex(p => p.id === currentProposalId);
-                const localProposal = { id: currentProposalId, dbId: saved.id, ...formData, updatedAt: new Date().toISOString() };
-                if (idx >= 0) localProposals[idx] = localProposal; else localProposals.unshift(localProposal);
-                saveProposalsSync(localProposals);
-
-                showNotification('Proposta salva no banco de dados!');
+                showNotification('Proposta salva!');
             } catch (err) {
                 console.error('Erro ao salvar:', err);
-                // Fallback para localStorage
-                const proposals = getProposalsSync();
-                const idx = proposals.findIndex(p => p.id === currentProposalId);
-                const proposal = { id: currentProposalId || Date.now().toString(), ...formData, updatedAt: new Date().toISOString() };
-                if (idx >= 0) proposals[idx] = proposal; else proposals.unshift(proposal);
-                currentProposalId = proposal.id;
-                saveProposalsSync(proposals);
-                showNotification('Salvo localmente (erro na API)');
+                showNotification('Erro ao salvar proposta');
             }
         }
-
-        let currentDbId = null;
 
         function resetForm() {
             if (confirm('Limpar todos os campos?')) {
