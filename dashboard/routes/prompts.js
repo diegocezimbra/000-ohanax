@@ -35,6 +35,97 @@ async function initPromptsTable() {
 // Inicializar tabela ao carregar o módulo
 initPromptsTable();
 
+// =============================================
+// ROTAS ESTÁTICAS (ANTES de /:id para evitar conflitos)
+// =============================================
+
+// GET /api/prompts/stats/categories - Estatísticas por categoria
+router.get('/stats/categories', async (req, res) => {
+  try {
+    const result = await db.analytics.query(`
+      SELECT
+        category,
+        COUNT(*) as count,
+        COUNT(*) FILTER (WHERE is_favorite) as favorites
+      FROM admin_prompts
+      GROUP BY category
+      ORDER BY count DESC
+    `);
+
+    res.json({
+      success: true,
+      stats: result.rows
+    });
+  } catch (err) {
+    console.error('Error fetching stats:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/prompts/import - Importar múltiplos prompts
+router.post('/import', async (req, res) => {
+  try {
+    const { prompts: promptsToImport } = req.body;
+
+    if (!Array.isArray(promptsToImport) || promptsToImport.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Array de prompts é obrigatório'
+      });
+    }
+
+    const imported = [];
+    const errors = [];
+
+    for (const prompt of promptsToImport) {
+      try {
+        // Verificar se já existe um prompt com o mesmo título
+        const existing = await db.analytics.query(
+          'SELECT id FROM admin_prompts WHERE title = $1',
+          [prompt.title]
+        );
+
+        if (existing.rows.length > 0) {
+          errors.push({ title: prompt.title, error: 'Já existe' });
+          continue;
+        }
+
+        const result = await db.analytics.query(
+          `INSERT INTO admin_prompts (title, category, content, description, tags, is_favorite)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           RETURNING *`,
+          [
+            prompt.title,
+            prompt.category || 'dev',
+            prompt.content,
+            prompt.description || null,
+            prompt.tags || [],
+            prompt.is_favorite || false
+          ]
+        );
+
+        imported.push(result.rows[0]);
+      } catch (err) {
+        errors.push({ title: prompt.title, error: err.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      imported: imported.length,
+      errors: errors.length,
+      details: { imported, errors }
+    });
+  } catch (err) {
+    console.error('Error importing prompts:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// =============================================
+// ROTAS DINÂMICAS
+// =============================================
+
 // GET /api/prompts - Listar todos os prompts
 router.get('/', async (req, res) => {
   try {
@@ -75,30 +166,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/prompts/:id - Obter um prompt específico
-router.get('/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const result = await db.analytics.query(
-      'SELECT * FROM admin_prompts WHERE id = $1',
-      [id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ success: false, error: 'Prompt não encontrado' });
-    }
-
-    res.json({
-      success: true,
-      prompt: result.rows[0]
-    });
-  } catch (err) {
-    console.error('Error fetching prompt:', err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
 // POST /api/prompts - Criar novo prompt
 router.post('/', async (req, res) => {
   try {
@@ -131,6 +198,30 @@ router.post('/', async (req, res) => {
     });
   } catch (err) {
     console.error('Error creating prompt:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/prompts/:id - Obter um prompt específico
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await db.analytics.query(
+      'SELECT * FROM admin_prompts WHERE id = $1',
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Prompt não encontrado' });
+    }
+
+    res.json({
+      success: true,
+      prompt: result.rows[0]
+    });
+  } catch (err) {
+    console.error('Error fetching prompt:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -217,89 +308,6 @@ router.delete('/:id', async (req, res) => {
     });
   } catch (err) {
     console.error('Error deleting prompt:', err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// POST /api/prompts/import - Importar múltiplos prompts
-router.post('/import', async (req, res) => {
-  try {
-    const { prompts: promptsToImport } = req.body;
-
-    if (!Array.isArray(promptsToImport) || promptsToImport.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Array de prompts é obrigatório'
-      });
-    }
-
-    const imported = [];
-    const errors = [];
-
-    for (const prompt of promptsToImport) {
-      try {
-        // Verificar se já existe um prompt com o mesmo título
-        const existing = await db.analytics.query(
-          'SELECT id FROM admin_prompts WHERE title = $1',
-          [prompt.title]
-        );
-
-        if (existing.rows.length > 0) {
-          errors.push({ title: prompt.title, error: 'Já existe' });
-          continue;
-        }
-
-        const result = await db.analytics.query(
-          `INSERT INTO admin_prompts (title, category, content, description, tags, is_favorite)
-           VALUES ($1, $2, $3, $4, $5, $6)
-           RETURNING *`,
-          [
-            prompt.title,
-            prompt.category || 'dev',
-            prompt.content,
-            prompt.description || null,
-            prompt.tags || [],
-            prompt.is_favorite || false
-          ]
-        );
-
-        imported.push(result.rows[0]);
-      } catch (err) {
-        errors.push({ title: prompt.title, error: err.message });
-      }
-    }
-
-    res.json({
-      success: true,
-      imported: imported.length,
-      errors: errors.length,
-      details: { imported, errors }
-    });
-  } catch (err) {
-    console.error('Error importing prompts:', err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// GET /api/prompts/stats/categories - Estatísticas por categoria
-router.get('/stats/categories', async (req, res) => {
-  try {
-    const result = await db.analytics.query(`
-      SELECT
-        category,
-        COUNT(*) as count,
-        COUNT(*) FILTER (WHERE is_favorite) as favorites
-      FROM admin_prompts
-      GROUP BY category
-      ORDER BY count DESC
-    `);
-
-    res.json({
-      success: true,
-      stats: result.rows
-    });
-  } catch (err) {
-    console.error('Error fetching stats:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });

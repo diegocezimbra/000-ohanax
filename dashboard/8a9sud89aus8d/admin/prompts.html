@@ -3,726 +3,458 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OhanaX Admin | Biblioteca de Prompts</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>OhanaX Admin | Expert Prompts Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #111111;
-            --bg-card: #161616;
-            --bg-card-hover: #1a1a1a;
-            --accent-cyan: #22d3ee;
-            --accent-purple: #a855f7;
-            --accent-green: #10b981;
-            --accent-orange: #f59e0b;
-            --accent-red: #ef4444;
-            --accent-blue: #3b82f6;
-            --accent-pink: #ec4899;
+            --bg-primary: #050508;
+            --bg-secondary: #0a0a10;
+            --bg-tertiary: #12121c;
+            --bg-card: #0d0d14;
+            --bg-card-hover: #15152a;
+            --accent-critical: #ff2d55;
+            --accent-purple: #bf5af2;
+            --accent-cyan: #64d2ff;
+            --accent-green: #30d158;
+            --accent-orange: #ff9f0a;
+            --accent-red: #ff453a;
+            --accent-blue: #0a84ff;
+            --accent-pink: #ff375f;
             --text-primary: #ffffff;
-            --text-secondary: #888888;
-            --text-muted: #555555;
-            --border-color: #2a2a2a;
-            --gradient-primary: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            --text-secondary: #a0a0b8;
+            --text-muted: #5c5c70;
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-glow: rgba(167, 139, 250, 0.4);
+            --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
+            --shadow-glow: 0 0 40px rgba(167, 139, 250, 0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-full: 9999px;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Outfit', sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
+            line-height: 1.7;
             min-height: 100vh;
-            line-height: 1.6;
         }
+
+        /* Background Effects */
+        .bg-effects {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .bg-gradient-orb {
+            position: absolute; border-radius: 50%;
+            filter: blur(120px); opacity: 0.3;
+            animation: floatOrb 25s ease-in-out infinite;
+        }
+        .orb-1 { width: 800px; height: 800px; background: var(--accent-purple); top: -300px; right: -300px; }
+        .orb-2 { width: 600px; height: 600px; background: var(--accent-cyan); bottom: -200px; left: -200px; animation-delay: -12s; }
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-30px, 30px) scale(0.95); }
+        }
+        .grid-pattern {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+        }
+
+        /* Container */
+        .container { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 2rem; }
 
         /* Header */
-        .header {
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        .header { text-align: center; padding: 3rem 0 1.5rem; margin-bottom: 1.5rem; }
+        .header-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: var(--gradient-glass); border: 1px solid var(--border-color);
+            padding: 0.5rem 1.5rem; border-radius: var(--radius-full);
+            font-size: 0.85rem; color: var(--text-secondary);
+            margin-bottom: 1.5rem; backdrop-filter: blur(10px);
         }
-
-        .header-content {
-            max-width: 1600px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        .pulse-dot {
+            width: 8px; height: 8px; background: var(--accent-green);
+            border-radius: 50%; animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 10px var(--accent-green);
         }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #a78bfa 40%, #22d3ee 70%, #f472b6 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; margin-bottom: 1rem; letter-spacing: -0.03em;
         }
+        .header .subtitle { font-size: 1.1rem; color: var(--text-secondary); max-width: 700px; margin: 0 auto; }
+        .highlight { color: var(--accent-cyan); font-weight: 600; }
 
-        .logo-icon {
-            width: 42px;
-            height: 42px;
-            background: var(--gradient-primary);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1rem;
+        /* Stats Bar */
+        .stats-bar { display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap; margin-top: 2rem; }
+        .stat-item { text-align: center; }
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace; font-size: 2.25rem; font-weight: 700;
+            background: var(--gradient-hero); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.15em; }
 
-        .logo-text h1 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .logo-text span {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
+        /* Header Actions */
         .header-actions {
-            display: flex;
-            gap: 0.75rem;
+            display: flex; justify-content: center; gap: 0.75rem;
+            margin-top: 2rem; flex-wrap: wrap;
         }
-
         .btn {
-            padding: 0.6rem 1.25rem;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 0.5rem; padding: 0.6rem 1.25rem; border-radius: var(--radius-sm);
+            font-size: 0.85rem; font-weight: 500; cursor: pointer;
+            transition: all 0.2s ease; border: none; font-family: inherit;
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            border: none;
         }
-
-        .btn-primary {
-            background: var(--gradient-primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(34, 211, 238, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-secondary:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--accent-cyan);
-        }
-
+        .btn-primary { background: var(--gradient-hero); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
         .btn-ghost {
-            background: transparent;
-            color: var(--text-secondary);
+            background: var(--bg-tertiary); color: var(--text-secondary);
             border: 1px solid var(--border-color);
         }
+        .btn-ghost:hover { color: var(--text-primary); border-color: var(--border-glow); }
+        .btn-danger { background: rgba(255, 69, 58, 0.15); color: var(--accent-red); border: 1px solid rgba(255, 69, 58, 0.3); }
+        .btn-danger:hover { background: rgba(255, 69, 58, 0.25); }
 
-        .btn-ghost:hover {
-            color: var(--text-primary);
-            border-color: var(--text-secondary);
-        }
-
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--accent-red);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.25);
-        }
-
-        /* Main Layout */
-        .main-layout {
-            display: flex;
-            max-width: 1600px;
-            margin: 0 auto;
-            min-height: calc(100vh - 70px);
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 320px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-color);
-            padding: 1.25rem;
-            overflow-y: auto;
-            position: sticky;
-            top: 70px;
-            height: calc(100vh - 70px);
-        }
-
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-
-        .sidebar-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .prompt-count {
-            font-size: 0.75rem;
-            padding: 0.2rem 0.6rem;
-            background: var(--bg-card);
-            border-radius: 20px;
-            color: var(--accent-cyan);
-        }
-
-        /* Search */
-        .search-box {
-            position: relative;
-            margin-bottom: 1rem;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 0.75rem 1rem 0.75rem 2.5rem;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-size: 0.85rem;
-            outline: none;
-        }
-
-        .search-box input:focus {
-            border-color: var(--accent-cyan);
-        }
-
-        .search-box svg {
-            position: absolute;
-            left: 0.875rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-
-        /* Categories */
-        .categories {
-            margin-bottom: 1rem;
-        }
-
-        .category-label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-        }
-
-        .category-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.4rem;
-        }
-
-        .category-tag {
-            padding: 0.3rem 0.7rem;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .category-tag:hover,
-        .category-tag.active {
-            background: rgba(34, 211, 238, 0.1);
-            border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
-        }
-
-        /* Prompt List */
-        .prompt-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .prompt-item {
-            padding: 0.875rem 1rem;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .prompt-item:hover {
-            border-color: var(--accent-cyan);
-        }
-
-        .prompt-item.active {
-            border-color: var(--accent-cyan);
-            background: rgba(34, 211, 238, 0.05);
-        }
-
-        .prompt-item-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 0.5rem;
-            margin-bottom: 0.35rem;
-        }
-
-        .prompt-item-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-            line-height: 1.3;
-        }
-
-        .prompt-item-favorite {
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .prompt-item-favorite.active {
-            color: var(--accent-orange);
-        }
-
-        .prompt-item-category {
-            font-size: 0.65rem;
-            padding: 0.15rem 0.4rem;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-
-        .cat-dev { background: rgba(34, 211, 238, 0.15); color: var(--accent-cyan); }
-        .cat-marketing { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); }
-        .cat-business { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
-        .cat-writing { background: rgba(245, 158, 11, 0.15); color: var(--accent-orange); }
-        .cat-analysis { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
-        .cat-creative { background: rgba(236, 72, 153, 0.15); color: var(--accent-pink); }
-        .cat-products { background: rgba(255, 51, 102, 0.15); color: #ff3366; }
-
-        .prompt-item-meta {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Content Area */
-        .content-area {
-            flex: 1;
-            padding: 1.5rem;
-            overflow-y: auto;
-        }
-
-        /* Empty State */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .empty-state-icon {
-            width: 80px;
-            height: 80px;
-            background: var(--bg-card);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.25rem;
-        }
-
-        .empty-state-icon svg {
-            width: 40px;
-            height: 40px;
-            color: var(--text-muted);
-        }
-
-        .empty-state h3 {
-            font-size: 1.25rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state p {
-            color: var(--text-secondary);
-            max-width: 350px;
-            margin-bottom: 1.25rem;
-            font-size: 0.9rem;
-        }
-
-        /* Prompt Viewer */
-        .prompt-viewer {
-            display: none;
-        }
-
-        .prompt-viewer.active {
-            display: block;
-        }
-
-        .prompt-viewer-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.25rem;
+        /* Navigation */
+        .nav-container {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(5, 5, 8, 0.85); backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem; padding: 0.75rem 0;
         }
-
-        .prompt-viewer-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
+        .nav-scroll {
+            display: flex; gap: 0.5rem; overflow-x: auto; padding: 0.5rem;
+            scrollbar-width: none; align-items: center;
         }
-
-        .prompt-viewer-meta {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
+        .nav-scroll::-webkit-scrollbar { display: none; }
+        .nav-item {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 1.25rem; background: var(--bg-tertiary);
+            border: 1px solid var(--border-color); border-radius: var(--radius-full);
+            color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;
+            text-decoration: none; white-space: nowrap;
+            transition: all 0.2s ease; cursor: pointer;
         }
-
-        .prompt-viewer-meta span {
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
+        .nav-item:hover { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--border-glow); transform: translateY(-2px); }
+        .nav-item.active { background: var(--gradient-hero); color: white; border-color: transparent; }
+        .nav-count {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+            padding: 0.1rem 0.5rem; background: rgba(255,255,255,0.1);
+            border-radius: var(--radius-full);
         }
-
-        .prompt-viewer-actions {
-            display: flex;
-            gap: 0.5rem;
+        .nav-search {
+            margin-left: auto; display: flex; align-items: center;
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            border-radius: var(--radius-full); padding: 0 1rem; gap: 0.5rem;
         }
-
-        .btn-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .nav-search svg { color: var(--text-muted); flex-shrink: 0; }
+        .nav-search input {
+            background: transparent; border: none; outline: none;
+            color: var(--text-primary); font-size: 0.85rem;
+            padding: 0.5rem 0; width: 180px; font-family: inherit;
         }
+        .nav-search input::placeholder { color: var(--text-muted); }
 
-        .btn-icon:hover {
-            background: var(--bg-card-hover);
-            color: var(--text-primary);
-            border-color: var(--accent-cyan);
+        /* Prompt Card */
+        .prompt-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl); overflow: hidden;
+            margin-bottom: 1.5rem; transition: all 0.3s ease;
         }
+        .prompt-card:hover { border-color: var(--border-glow); box-shadow: var(--shadow-glow); transform: translateY(-2px); }
+        .prompt-card.master-card { border: 2px solid var(--accent-purple); }
+        .prompt-header {
+            padding: 1.5rem; background: linear-gradient(135deg, rgba(167, 139, 250, 0.08) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: flex-start;
+            gap: 1rem; flex-wrap: wrap;
+        }
+        .master-card .prompt-header { background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(34, 211, 238, 0.15) 100%); }
+        .prompt-title-area { flex: 1; min-width: 250px; }
+        .prompt-title { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+        .prompt-title h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 600; }
+        .agent-tag {
+            padding: 0.2rem 0.5rem; background: var(--gradient-glass);
+            border: 1px solid var(--border-color); border-radius: var(--radius-sm);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-muted);
+        }
+        .prompt-meta { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .meta-item { display: flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; color: var(--text-muted); }
+        .prompt-description { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; }
+        .prompt-actions { display: flex; gap: 0.5rem; align-items: flex-start; }
+        .btn-copy { background: var(--gradient-hero); color: white; min-width: 110px; }
+        .btn-copy:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4); }
+        .btn-copy.copied { background: var(--accent-green); }
+        .btn-expand {
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            color: var(--text-secondary); width: 40px; height: 38px;
+            padding: 0.5rem; border-radius: var(--radius-sm);
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-expand:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+        .btn-favorite {
+            background: transparent; border: 1px solid var(--border-color);
+            color: var(--text-muted); width: 40px; height: 38px;
+            padding: 0.5rem; border-radius: var(--radius-sm);
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-favorite:hover { color: var(--accent-orange); border-color: var(--accent-orange); }
+        .btn-favorite.active { color: var(--accent-orange); border-color: var(--accent-orange); background: rgba(255, 159, 10, 0.1); }
+        .btn-edit {
+            background: transparent; border: 1px solid var(--border-color);
+            color: var(--text-muted); width: 40px; height: 38px;
+            padding: 0.5rem; border-radius: var(--radius-sm);
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-edit:hover { color: var(--accent-cyan); border-color: var(--accent-cyan); }
 
-        .btn-icon.danger:hover {
-            border-color: var(--accent-red);
-            color: var(--accent-red);
+        /* Prompt Body */
+        .prompt-body { max-height: 500px; overflow: hidden; transition: max-height 0.5s ease; }
+        .prompt-body.expanded { max-height: none; }
+        .prompt-content {
+            padding: 1.5rem; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem; line-height: 1.9; color: #e0e0e0;
+            background: var(--bg-primary); white-space: pre-wrap; overflow-x: auto;
         }
 
         /* Markdown Content */
-        .markdown-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-            line-height: 1.7;
+        .markdown-view {
+            padding: 1.5rem; line-height: 1.7;
+            background: var(--bg-primary);
         }
-
-        .markdown-content h1, .markdown-content h2, .markdown-content h3 {
-            margin-top: 1.25em;
-            margin-bottom: 0.5em;
-            font-weight: 700;
+        .markdown-view h1, .markdown-view h2, .markdown-view h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            margin-top: 1.25em; margin-bottom: 0.5em; font-weight: 700;
         }
-
-        .markdown-content h1 { font-size: 1.5rem; }
-        .markdown-content h2 { font-size: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem; }
-        .markdown-content h3 { font-size: 1.1rem; }
-
-        .markdown-content p { margin-bottom: 0.875rem; }
-        .markdown-content ul, .markdown-content ol { margin-bottom: 0.875rem; padding-left: 1.25rem; }
-        .markdown-content li { margin-bottom: 0.35rem; }
-
-        .markdown-content code {
-            background: var(--bg-secondary);
-            padding: 0.15em 0.35em;
-            border-radius: 4px;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.85em;
-            color: var(--accent-cyan);
+        .markdown-view h1 { font-size: 1.5rem; }
+        .markdown-view h2 { font-size: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem; }
+        .markdown-view h3 { font-size: 1.1rem; }
+        .markdown-view p { margin-bottom: 0.875rem; color: var(--text-secondary); }
+        .markdown-view ul, .markdown-view ol { margin-bottom: 0.875rem; padding-left: 1.25rem; color: var(--text-secondary); }
+        .markdown-view li { margin-bottom: 0.35rem; }
+        .markdown-view code {
+            background: var(--bg-tertiary); padding: 0.15em 0.35em;
+            border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em; color: var(--accent-cyan);
         }
-
-        .markdown-content pre {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1rem;
-            overflow-x: auto;
-            margin-bottom: 0.875rem;
+        .markdown-view pre {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 1rem; overflow-x: auto; margin-bottom: 0.875rem;
         }
-
-        .markdown-content pre code {
-            background: none;
-            padding: 0;
-            color: var(--text-primary);
-        }
-
-        .markdown-content blockquote {
+        .markdown-view pre code { background: none; padding: 0; color: var(--text-primary); }
+        .markdown-view blockquote {
             border-left: 3px solid var(--accent-purple);
-            padding-left: 1rem;
-            margin: 0.875rem 0;
-            color: var(--text-secondary);
+            padding-left: 1rem; margin: 0.875rem 0; color: var(--text-secondary);
         }
+        .markdown-view strong { color: var(--text-primary); }
+        .markdown-view hr { border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0; }
+
+        /* Prompt Footer */
+        .prompt-footer {
+            padding: 0.75rem 1.5rem; background: var(--bg-tertiary);
+            border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 0.75rem;
+        }
+        .footer-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .tag {
+            padding: 0.2rem 0.5rem; background: rgba(100, 210, 255, 0.1);
+            border: 1px solid rgba(100, 210, 255, 0.2); border-radius: var(--radius-sm);
+            font-size: 0.7rem; color: var(--accent-cyan);
+        }
+        .expand-indicator {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.8rem; color: var(--text-muted); cursor: pointer;
+        }
+        .expand-indicator:hover { color: var(--text-secondary); }
+
+        /* Category colors for tags */
+        .cat-dev { background: rgba(100, 210, 255, 0.15); color: var(--accent-cyan); border-color: rgba(100, 210, 255, 0.3); }
+        .cat-marketing { background: rgba(191, 90, 242, 0.15); color: var(--accent-purple); border-color: rgba(191, 90, 242, 0.3); }
+        .cat-business { background: rgba(48, 209, 88, 0.15); color: var(--accent-green); border-color: rgba(48, 209, 88, 0.3); }
+        .cat-writing { background: rgba(255, 159, 10, 0.15); color: var(--accent-orange); border-color: rgba(255, 159, 10, 0.3); }
+        .cat-analysis { background: rgba(10, 132, 255, 0.15); color: var(--accent-blue); border-color: rgba(10, 132, 255, 0.3); }
+        .cat-creative { background: rgba(255, 55, 95, 0.15); color: var(--accent-pink); border-color: rgba(255, 55, 95, 0.3); }
+        .cat-products { background: rgba(255, 45, 85, 0.15); color: var(--accent-critical); border-color: rgba(255, 45, 85, 0.3); }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center; padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+        .empty-state svg { width: 60px; height: 60px; margin-bottom: 1rem; opacity: 0.3; }
+        .empty-state h3 { font-size: 1.25rem; margin-bottom: 0.5rem; color: var(--text-secondary); }
+        .empty-state p { max-width: 400px; margin: 0 auto; }
 
         /* Modal */
         .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.2s ease;
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.2s ease;
         }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
+        .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            width: 90%;
-            max-width: 700px;
-            max-height: 90vh;
-            overflow: hidden;
-            transform: scale(0.95);
-            transition: transform 0.2s ease;
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl); width: 90%; max-width: 750px;
+            max-height: 90vh; overflow: hidden;
+            transform: scale(0.95); transition: transform 0.2s ease;
         }
-
-        .modal-overlay.active .modal {
-            transform: scale(1);
-        }
-
+        .modal-overlay.active .modal { transform: scale(1); }
         .modal-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between;
         }
-
-        .modal-header h2 {
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
+        .modal-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; }
         .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 0.25rem;
+            background: none; border: none; color: var(--text-muted);
+            cursor: pointer; padding: 0.25rem;
         }
-
-        .modal-close:hover {
-            color: var(--text-primary);
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-            overflow-y: auto;
-            max-height: calc(90vh - 140px);
-        }
-
+        .modal-close:hover { color: var(--text-primary); }
+        .modal-body { padding: 1.5rem; overflow-y: auto; max-height: calc(90vh - 140px); }
         .modal-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.75rem;
+            padding: 1rem 1.5rem; border-top: 1px solid var(--border-color);
+            display: flex; justify-content: flex-end; gap: 0.75rem;
         }
 
         /* Form */
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
+        .form-group { margin-bottom: 1.25rem; }
         .form-label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
+            display: block; font-size: 0.8rem; font-weight: 600;
+            color: var(--text-secondary); margin-bottom: 0.5rem;
         }
-
         .form-input, .form-textarea, .form-select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            font-family: inherit;
+            width: 100%; padding: 0.75rem 1rem;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm); color: var(--text-primary);
+            font-size: 0.9rem; font-family: inherit;
         }
-
         .form-input:focus, .form-textarea:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--accent-cyan);
+            outline: none; border-color: var(--accent-cyan);
         }
-
         .form-textarea {
-            min-height: 300px;
-            resize: vertical;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.85rem;
-            line-height: 1.6;
+            min-height: 300px; resize: vertical;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem; line-height: 1.6;
         }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
         /* Toast */
         .toast {
-            position: fixed;
-            bottom: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            padding: 0.875rem 1.25rem;
-            background: var(--bg-card);
-            border: 1px solid var(--accent-green);
-            border-radius: 10px;
-            color: var(--accent-green);
-            font-weight: 500;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            opacity: 0;
+            position: fixed; bottom: 30px; right: 30px;
+            padding: 0.75rem 1.5rem; background: var(--bg-card);
+            border: 1px solid var(--accent-green); border-radius: var(--radius-md);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(48, 209, 88, 0.2);
+            display: flex; align-items: center; gap: 0.75rem;
+            z-index: 1000; transform: translateY(100px); opacity: 0;
             transition: all 0.3s ease;
-            z-index: 1001;
         }
-
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.error { border-color: var(--accent-red); }
+        .toast .icon {
+            width: 24px; height: 24px; background: var(--accent-green);
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; color: white; font-size: 0.8rem;
         }
-
-        .toast.error {
-            border-color: var(--accent-red);
-            color: var(--accent-red);
-        }
-
-        /* Copy Button */
-        .copy-btn {
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            padding: 0.875rem 1.25rem;
-            background: var(--gradient-primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 10px 30px rgba(34, 211, 238, 0.3);
-            transition: all 0.2s ease;
-            z-index: 50;
-        }
-
-        .copy-btn.visible {
-            display: flex;
-        }
-
-        .copy-btn:hover {
-            transform: translateY(-3px);
-        }
-
-        .copy-btn.copied {
-            background: var(--accent-green);
-        }
+        .toast.error .icon { background: var(--accent-red); }
+        .toast .message { font-size: 0.9rem; color: var(--text-primary); }
 
         /* Loading */
-        .loading-spinner {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
+        .loading { text-align: center; padding: 3rem; }
         .spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--border-color);
-            border-top-color: var(--accent-cyan);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            width: 36px; height: 36px; border: 3px solid var(--border-color);
+            border-top-color: var(--accent-cyan); border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 0 auto;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        /* Footer */
+        .page-footer {
+            text-align: center; padding: 3rem 0 2rem;
+            border-top: 1px solid var(--border-color); margin-top: 3rem;
         }
+        .footer-logo {
+            font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem;
+            font-weight: 700; background: var(--gradient-hero);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 0.75rem;
+        }
+        .page-footer p { color: var(--text-muted); font-size: 0.9rem; }
+        .page-footer .version { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; margin-top: 0.75rem; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-tertiary); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-card-hover); border-radius: var(--radius-full); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
         /* Responsive */
-        @media (max-width: 900px) {
-            .main-layout { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; position: relative; top: 0; max-height: 40vh; }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .header h1 { font-size: 1.75rem; }
+            .stats-bar { gap: 1.5rem; }
+            .stat-value { font-size: 1.5rem; }
+            .prompt-header { flex-direction: column; }
+            .prompt-actions { width: 100%; }
+            .btn-copy { flex: 1; }
             .form-row { grid-template-columns: 1fr; }
+            .nav-search input { width: 120px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <div class="logo-icon">OX</div>
-                <div class="logo-text">
-                    <h1>Biblioteca de Prompts</h1>
-                    <span>Crie, organize e copie seus prompts</span>
-                </div>
+    <div class="bg-effects">
+        <div class="grid-pattern"></div>
+        <div class="bg-gradient-orb orb-1"></div>
+        <div class="bg-gradient-orb orb-2"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-badge">
+                <span class="pulse-dot"></span>
+                OhanaX Expert Prompts Library
+            </div>
+            <h1>Expert Prompts Library</h1>
+            <p class="subtitle">
+                Biblioteca completa de <span class="highlight" id="totalPrompts">0</span> Prompts Especialistas.
+                Crie, organize e copie seus prompts com qualidade enterprise.
+            </p>
+            <div class="stats-bar" id="statsBar">
+                <div class="stat-item"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Prompts</div></div>
+                <div class="stat-item"><div class="stat-value" id="statDev">0</div><div class="stat-label">Dev</div></div>
+                <div class="stat-item"><div class="stat-value" id="statFavorites">0</div><div class="stat-label">Favoritos</div></div>
+                <div class="stat-item"><div class="stat-value" id="statCategories">0</div><div class="stat-label">Categorias</div></div>
             </div>
             <div class="header-actions">
                 <a href="/admin/" class="btn btn-ghost">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
                     Admin
                 </a>
-                <a href="/analytics/" class="btn btn-secondary">
+                <a href="/analytics/" class="btn btn-ghost">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                     Analytics
                 </a>
@@ -731,87 +463,38 @@
                     Novo Prompt
                 </button>
             </div>
+        </header>
+
+        <!-- Navigation / Categories -->
+        <nav class="nav-container">
+            <div class="nav-scroll" id="navScroll">
+                <span class="nav-item active" data-category="all">Todos <span class="nav-count" id="countAll">0</span></span>
+                <span class="nav-item" data-category="dev">Dev <span class="nav-count" id="countDev">0</span></span>
+                <span class="nav-item" data-category="products">Products</span>
+                <span class="nav-item" data-category="marketing">Marketing</span>
+                <span class="nav-item" data-category="business">Business</span>
+                <span class="nav-item" data-category="writing">Writing</span>
+                <span class="nav-item" data-category="analysis">Analysis</span>
+                <span class="nav-item" data-category="creative">Creative</span>
+                <div class="nav-search">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                    <input type="text" id="searchInput" placeholder="Buscar prompts...">
+                </div>
+            </div>
+        </nav>
+
+        <!-- Prompts List -->
+        <div id="promptsList">
+            <div class="loading"><div class="spinner"></div></div>
         </div>
-    </header>
 
-    <!-- Main Layout -->
-    <div class="main-layout">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <span class="sidebar-title">Meus Prompts</span>
-                <span class="prompt-count" id="promptCount">0</span>
-            </div>
-
-            <div class="search-box">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                <input type="text" id="searchInput" placeholder="Buscar prompts...">
-            </div>
-
-            <div class="categories">
-                <div class="category-label">Categorias</div>
-                <div class="category-tags" id="categoryTags">
-                    <span class="category-tag active" data-category="all">Todos</span>
-                    <span class="category-tag" data-category="dev">Dev</span>
-                    <span class="category-tag" data-category="products">Products</span>
-                    <span class="category-tag" data-category="marketing">Marketing</span>
-                    <span class="category-tag" data-category="business">Business</span>
-                    <span class="category-tag" data-category="writing">Writing</span>
-                    <span class="category-tag" data-category="analysis">Analysis</span>
-                    <span class="category-tag" data-category="creative">Creative</span>
-                </div>
-            </div>
-
-            <div class="prompt-list" id="promptList">
-                <div class="loading-spinner"><div class="spinner"></div></div>
-            </div>
-        </aside>
-
-        <!-- Content Area -->
-        <main class="content-area">
-            <div class="empty-state" id="emptyState">
-                <div class="empty-state-icon">
-                    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
-                </div>
-                <h3>Nenhum prompt selecionado</h3>
-                <p>Selecione um prompt da lista ou crie um novo clicando em "Novo Prompt"</p>
-                <button class="btn btn-primary" onclick="openModal()">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-                    Criar Primeiro Prompt
-                </button>
-            </div>
-
-            <div class="prompt-viewer" id="promptViewer">
-                <div class="prompt-viewer-header">
-                    <div>
-                        <h2 class="prompt-viewer-title" id="viewerTitle"></h2>
-                        <div class="prompt-viewer-meta">
-                            <span id="viewerCategory"></span>
-                            <span id="viewerDate"></span>
-                        </div>
-                    </div>
-                    <div class="prompt-viewer-actions">
-                        <button class="btn-icon" onclick="toggleFavorite()" title="Favoritar" id="favoriteBtn">
-                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                        </button>
-                        <button class="btn-icon" onclick="editPrompt()" title="Editar">
-                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        </button>
-                        <button class="btn-icon danger" onclick="deletePrompt()" title="Excluir">
-                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        </button>
-                    </div>
-                </div>
-                <div class="markdown-content" id="markdownContent"></div>
-            </div>
-        </main>
+        <!-- Footer -->
+        <footer class="page-footer">
+            <div class="footer-logo">OhanaX Expert Prompts</div>
+            <p>Biblioteca de prompts para criacao de codigo de qualidade enterprise</p>
+            <p class="version">v2.0 | Powered by OhanaX Admin</p>
+        </footer>
     </div>
-
-    <!-- Copy Button -->
-    <button class="copy-btn" id="copyBtn" onclick="copyToClipboard()">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-        Copiar Prompt
-    </button>
 
     <!-- Modal -->
     <div class="modal-overlay" id="modalOverlay">
@@ -828,7 +511,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Titulo *</label>
-                            <input type="text" class="form-input" id="promptTitle" required placeholder="Ex: Code Review Expert">
+                            <input type="text" class="form-input" id="promptTitle" required placeholder="Ex: SOLID Principles Master Agent">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Categoria</label>
@@ -848,6 +531,10 @@
                         <input type="text" class="form-input" id="promptDescription" placeholder="Breve descricao do prompt">
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Tags (separadas por virgula)</label>
+                        <input type="text" class="form-input" id="promptTags" placeholder="Ex: SOLID, Clean Code, Architecture">
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">Conteudo (Markdown) *</label>
                         <textarea class="form-textarea" id="promptContent" required placeholder="# Titulo&#10;&#10;Voce e um especialista em..."></textarea>
                     </div>
@@ -865,23 +552,25 @@
 
     <!-- Toast -->
     <div class="toast" id="toast">
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-        <span id="toastMessage">Salvo!</span>
+        <div class="icon">&#10003;</div>
+        <div class="message" id="toastMessage">Salvo!</div>
     </div>
 
     <script>
         // Config
         marked.setOptions({
-            highlight: (code, lang) => lang && hljs.getLanguage(lang) ? hljs.highlight(code, { language: lang }).value : hljs.highlightAuto(code).value,
+            highlight: (code, lang) => lang && hljs.getLanguage(lang)
+                ? hljs.highlight(code, { language: lang }).value
+                : hljs.highlightAuto(code).value,
             breaks: true,
             gfm: true
         });
 
         // State
         let prompts = [];
-        let currentPrompt = null;
         let currentCategory = 'all';
-        let isEditing = false;
+        let searchQuery = '';
+        let viewMode = 'markdown'; // 'raw' or 'markdown'
 
         const categoryMap = {
             dev: { label: 'Dev', class: 'cat-dev' },
@@ -896,17 +585,21 @@
         // Init
         document.addEventListener('DOMContentLoaded', () => {
             loadPrompts();
+            loadStats();
             setupEventListeners();
         });
 
         function setupEventListeners() {
-            document.getElementById('searchInput').addEventListener('input', debounce(loadPrompts, 300));
+            document.getElementById('searchInput').addEventListener('input', debounce(() => {
+                searchQuery = document.getElementById('searchInput').value;
+                loadPrompts();
+            }, 300));
 
-            document.querySelectorAll('.category-tag').forEach(tag => {
-                tag.addEventListener('click', () => {
-                    document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
-                    tag.classList.add('active');
-                    currentCategory = tag.dataset.category;
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    currentCategory = item.dataset.category;
                     loadPrompts();
                 });
             });
@@ -914,22 +607,22 @@
             document.getElementById('modalOverlay').addEventListener('click', (e) => {
                 if (e.target.id === 'modalOverlay') closeModal();
             });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
         }
 
         function debounce(fn, ms) {
             let timeout;
-            return (...args) => {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => fn(...args), ms);
-            };
+            return (...args) => { clearTimeout(timeout); timeout = setTimeout(() => fn(...args), ms); };
         }
 
         // API
         async function loadPrompts() {
-            const search = document.getElementById('searchInput').value;
             const params = new URLSearchParams();
             if (currentCategory !== 'all') params.append('category', currentCategory);
-            if (search) params.append('search', search);
+            if (searchQuery) params.append('search', searchQuery);
 
             try {
                 const res = await fetch(`/api/prompts?${params}`);
@@ -937,92 +630,165 @@
 
                 if (data.success) {
                     prompts = data.prompts;
-                    renderPromptList();
+                    renderPrompts();
                 }
             } catch (err) {
                 showToast('Erro ao carregar prompts', true);
             }
         }
 
-        function renderPromptList() {
-            const list = document.getElementById('promptList');
-            document.getElementById('promptCount').textContent = prompts.length;
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/prompts/stats/categories');
+                const data = await res.json();
+
+                if (data.success) {
+                    let total = 0, favorites = 0, devCount = 0;
+                    const categories = data.stats.length;
+
+                    data.stats.forEach(s => {
+                        total += parseInt(s.count);
+                        favorites += parseInt(s.favorites);
+                        if (s.category === 'dev') devCount = parseInt(s.count);
+                    });
+
+                    document.getElementById('totalPrompts').textContent = total;
+                    document.getElementById('statTotal').textContent = total;
+                    document.getElementById('statDev').textContent = devCount;
+                    document.getElementById('statFavorites').textContent = favorites;
+                    document.getElementById('statCategories').textContent = categories;
+                    document.getElementById('countAll').textContent = total;
+                    document.getElementById('countDev').textContent = devCount;
+                }
+            } catch (err) {
+                // silent
+            }
+        }
+
+        function renderPrompts() {
+            const container = document.getElementById('promptsList');
 
             if (prompts.length === 0) {
-                list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);">Nenhum prompt encontrado</div>';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                        </svg>
+                        <h3>Nenhum prompt encontrado</h3>
+                        <p>Crie um novo prompt clicando em "Novo Prompt" ou altere os filtros.</p>
+                    </div>`;
                 return;
             }
 
-            list.innerHTML = prompts.map(p => {
+            container.innerHTML = prompts.map(p => {
                 const cat = categoryMap[p.category] || { label: p.category, class: 'cat-dev' };
+                const tags = (p.tags || []);
+                const isMaster = p.title.toLowerCase().includes('master code creation');
                 const date = new Date(p.updated_at).toLocaleDateString('pt-BR');
+
                 return `
-                    <div class="prompt-item ${currentPrompt?.id === p.id ? 'active' : ''}" onclick="selectPrompt(${p.id})">
-                        <div class="prompt-item-header">
-                            <span class="prompt-item-title">${p.title}</span>
-                            <span class="prompt-item-favorite ${p.is_favorite ? 'active' : ''}" onclick="event.stopPropagation();toggleFavoriteById(${p.id})">
-                                <svg width="14" height="14" fill="${p.is_favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                            </span>
+                <div class="prompt-card ${isMaster ? 'master-card' : ''}" id="card-${p.id}">
+                    <div class="prompt-header">
+                        <div class="prompt-title-area">
+                            <div class="prompt-title">
+                                <h3>${escapeHtml(p.title)}</h3>
+                                <span class="agent-tag ${cat.class}">${cat.label}</span>
+                            </div>
+                            <div class="prompt-meta">
+                                <span class="meta-item">${date}</span>
+                                ${p.description ? `<span class="meta-item">${escapeHtml(p.description.substring(0, 80))}${p.description.length > 80 ? '...' : ''}</span>` : ''}
+                            </div>
                         </div>
-                        <div class="prompt-item-meta">
-                            <span class="prompt-item-category ${cat.class}">${cat.label}</span>
-                            <span>${date}</span>
+                        <div class="prompt-actions">
+                            <button class="btn btn-copy" onclick="copyPrompt(this, ${p.id})">Copiar</button>
+                            <button class="btn-favorite ${p.is_favorite ? 'active' : ''}" onclick="toggleFavorite(${p.id})" title="Favoritar">
+                                <svg width="18" height="18" fill="${p.is_favorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                            </button>
+                            <button class="btn-edit" onclick="editPrompt(${p.id})" title="Editar">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button class="btn-expand" onclick="toggleExpand(this, ${p.id})" title="Expandir">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                            </button>
                         </div>
                     </div>
-                `;
+                    <div class="prompt-body" id="body-${p.id}">
+                        <div class="markdown-view" id="content-${p.id}"></div>
+                    </div>
+                    ${tags.length > 0 ? `
+                    <div class="prompt-footer">
+                        <div class="footer-tags">
+                            ${tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+                        </div>
+                        <div class="expand-indicator" onclick="toggleExpand(document.querySelector('#card-${p.id} .btn-expand'), ${p.id})">Ver mais</div>
+                    </div>` : ''}
+                </div>`;
             }).join('');
+
+            // Render markdown for each prompt
+            prompts.forEach(p => {
+                const el = document.getElementById(`content-${p.id}`);
+                if (el) {
+                    el.innerHTML = marked.parse(p.content);
+                    el.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+                }
+            });
         }
 
-        function selectPrompt(id) {
-            currentPrompt = prompts.find(p => p.id === id);
-            if (!currentPrompt) return;
-
-            document.getElementById('emptyState').style.display = 'none';
-            document.getElementById('promptViewer').classList.add('active');
-            document.getElementById('copyBtn').classList.add('visible');
-
-            document.getElementById('viewerTitle').textContent = currentPrompt.title;
-
-            const cat = categoryMap[currentPrompt.category] || { label: currentPrompt.category };
-            document.getElementById('viewerCategory').innerHTML = `<span class="prompt-item-category ${categoryMap[currentPrompt.category]?.class || 'cat-dev'}">${cat.label}</span>`;
-
-            const date = new Date(currentPrompt.updated_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-            document.getElementById('viewerDate').textContent = date;
-
-            updateFavoriteButton();
-            document.getElementById('markdownContent').innerHTML = marked.parse(currentPrompt.content);
-            document.querySelectorAll('.markdown-content pre code').forEach(block => hljs.highlightElement(block));
-
-            renderPromptList();
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
-        function updateFavoriteButton() {
-            const btn = document.getElementById('favoriteBtn');
-            if (currentPrompt?.is_favorite) {
-                btn.innerHTML = '<svg width="18" height="18" fill="currentColor" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
-                btn.style.color = 'var(--accent-orange)';
-            } else {
-                btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>';
-                btn.style.color = '';
+        // Actions
+        function copyPrompt(button, id) {
+            const prompt = prompts.find(p => p.id === id);
+            if (!prompt) return;
+
+            navigator.clipboard.writeText(prompt.content).then(() => {
+                const original = button.innerHTML;
+                button.innerHTML = '&#10003; Copiado!';
+                button.classList.add('copied');
+                showToast('Prompt copiado!');
+
+                setTimeout(() => {
+                    button.innerHTML = original;
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        function toggleExpand(button, id) {
+            const body = document.getElementById(`body-${id}`);
+            body.classList.toggle('expanded');
+            const isExpanded = body.classList.contains('expanded');
+            button.innerHTML = isExpanded
+                ? '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>'
+                : '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>';
+        }
+
+        async function toggleFavorite(id) {
+            try {
+                const res = await fetch(`/api/prompts/${id}/favorite`, { method: 'PATCH' });
+                const data = await res.json();
+                if (data.success) {
+                    await loadPrompts();
+                    loadStats();
+                }
+            } catch (err) {
+                showToast('Erro ao favoritar', true);
             }
         }
 
         // CRUD
         function openModal(editing = false) {
-            isEditing = editing;
             document.getElementById('modalTitle').textContent = editing ? 'Editar Prompt' : 'Novo Prompt';
-
-            if (editing && currentPrompt) {
-                document.getElementById('promptId').value = currentPrompt.id;
-                document.getElementById('promptTitle').value = currentPrompt.title;
-                document.getElementById('promptCategory').value = currentPrompt.category;
-                document.getElementById('promptDescription').value = currentPrompt.description || '';
-                document.getElementById('promptContent').value = currentPrompt.content;
-            } else {
+            if (!editing) {
                 document.getElementById('promptForm').reset();
                 document.getElementById('promptId').value = '';
+                document.getElementById('promptTags').value = '';
             }
-
             document.getElementById('modalOverlay').classList.add('active');
         }
 
@@ -1030,13 +796,30 @@
             document.getElementById('modalOverlay').classList.remove('active');
         }
 
+        function editPrompt(id) {
+            const prompt = prompts.find(p => p.id === id);
+            if (!prompt) return;
+
+            document.getElementById('promptId').value = prompt.id;
+            document.getElementById('promptTitle').value = prompt.title;
+            document.getElementById('promptCategory').value = prompt.category;
+            document.getElementById('promptDescription').value = prompt.description || '';
+            document.getElementById('promptTags').value = (prompt.tags || []).join(', ');
+            document.getElementById('promptContent').value = prompt.content;
+            openModal(true);
+        }
+
         async function savePrompt() {
             const id = document.getElementById('promptId').value;
+            const tagsStr = document.getElementById('promptTags').value;
+            const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+
             const data = {
                 title: document.getElementById('promptTitle').value,
                 category: document.getElementById('promptCategory').value,
                 description: document.getElementById('promptDescription').value,
-                content: document.getElementById('promptContent').value
+                content: document.getElementById('promptContent').value,
+                tags: tags
             };
 
             if (!data.title || !data.content) {
@@ -1060,7 +843,7 @@
                     showToast(id ? 'Prompt atualizado!' : 'Prompt criado!');
                     closeModal();
                     await loadPrompts();
-                    if (result.prompt) selectPrompt(result.prompt.id);
+                    loadStats();
                 } else {
                     showToast(result.error || 'Erro ao salvar', true);
                 }
@@ -1069,67 +852,22 @@
             }
         }
 
-        function editPrompt() {
-            if (currentPrompt) openModal(true);
-        }
-
-        async function deletePrompt() {
-            if (!currentPrompt) return;
-            if (!confirm(`Excluir "${currentPrompt.title}"?`)) return;
+        async function deletePrompt(id) {
+            const prompt = prompts.find(p => p.id === id);
+            if (!prompt) return;
+            if (!confirm(`Excluir "${prompt.title}"?`)) return;
 
             try {
-                const res = await fetch(`/api/prompts/${currentPrompt.id}`, { method: 'DELETE' });
+                const res = await fetch(`/api/prompts/${id}`, { method: 'DELETE' });
                 const result = await res.json();
-
                 if (result.success) {
                     showToast('Prompt excluido!');
-                    currentPrompt = null;
-                    document.getElementById('emptyState').style.display = 'flex';
-                    document.getElementById('promptViewer').classList.remove('active');
-                    document.getElementById('copyBtn').classList.remove('visible');
-                    loadPrompts();
+                    await loadPrompts();
+                    loadStats();
                 }
             } catch (err) {
                 showToast('Erro ao excluir', true);
             }
-        }
-
-        async function toggleFavorite() {
-            if (currentPrompt) await toggleFavoriteById(currentPrompt.id);
-        }
-
-        async function toggleFavoriteById(id) {
-            try {
-                const res = await fetch(`/api/prompts/${id}/favorite`, { method: 'PATCH' });
-                const result = await res.json();
-
-                if (result.success) {
-                    await loadPrompts();
-                    if (currentPrompt?.id === id) {
-                        currentPrompt = result.prompt;
-                        updateFavoriteButton();
-                    }
-                }
-            } catch (err) {
-                showToast('Erro ao favoritar', true);
-            }
-        }
-
-        function copyToClipboard() {
-            if (!currentPrompt) return;
-
-            navigator.clipboard.writeText(currentPrompt.content).then(() => {
-                const btn = document.getElementById('copyBtn');
-                btn.classList.add('copied');
-                btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg> Copiado!';
-
-                showToast('Copiado para a area de transferencia!');
-
-                setTimeout(() => {
-                    btn.classList.remove('copied');
-                    btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copiar Prompt';
-                }, 2000);
-            });
         }
 
         function showToast(message, isError = false) {
