@@ -1,0 +1,2198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Launchpad 2.0 | Hybrid Method | 0 → $100K MRR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Shared Components -->
+    <link rel="stylesheet" href="shared/shared-variables.css">
+    <link rel="stylesheet" href="shared/shared-base.css">
+    <link rel="stylesheet" href="shared/shared-buttons.css">
+    <link rel="stylesheet" href="shared/shared-cards.css">
+    <link rel="stylesheet" href="shared/shared-sidebar.css">
+    <style>
+        /* ========================================
+           LAUNCHPAD 2 - PAGE SPECIFIC STYLES
+           ======================================== */
+
+        /* Override accent color for Launchpad 2 (orange/yellow theme) */
+        :root {
+            --accent-primary: #f59e0b;
+            --accent-secondary: #d97706;
+            --accent-tertiary: #b45309;
+            --gradient-1: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --shadow-glow: 0 0 40px rgba(245, 158, 11, 0.15);
+        }
+
+        .method-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .app-container { display: flex; min-height: 100vh; padding-top: 64px; }
+
+        /* Sidebar Override */
+        .sidebar {
+            left: 0;
+            flex-direction: column;
+            position: fixed;
+            top: 64px;
+            height: calc(100vh - 64px);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 16px; }
+
+        .product-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .product-item:hover { background: var(--bg-tertiary); }
+        .product-item.active { background: var(--bg-elevated); border-color: var(--accent-primary); }
+
+        .product-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            flex-shrink: 0;
+            color: white;
+        }
+
+        .product-info { flex: 1; min-width: 0; }
+        .product-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .product-phase { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .product-progress-bar { height: 4px; background: var(--bg-tertiary); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+        .product-progress-fill { height: 100%; background: var(--gradient-1); border-radius: 2px; transition: width 0.5s ease; }
+
+        .add-product-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 12px;
+        }
+
+        .add-product-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .sidebar-footer { padding: 16px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; }
+
+        .main-content { flex: 1; margin-left: 300px; min-height: 100vh; }
+
+        .main-header {
+            position: sticky;
+            top: 64px;
+            background: rgba(10, 10, 11, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 32px;
+            z-index: 50;
+        }
+
+        .header-content { display: flex; align-items: center; justify-content: space-between; }
+        .header-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+        .header-subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+        .header-actions { display: flex; gap: 12px; }
+
+        .main-body { padding: 32px; max-width: 1400px; }
+
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 200px);
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-icon {
+            width: 120px;
+            height: 120px;
+            background: var(--gradient-1);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 52px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .welcome-title { font-size: 40px; font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
+        .welcome-description { font-size: 18px; color: var(--text-secondary); max-width: 600px; margin-bottom: 32px; line-height: 1.7; }
+
+        .welcome-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 800px;
+            margin: 40px 0;
+        }
+
+        .welcome-stat {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .welcome-stat-value { font-size: 28px; font-weight: 800; color: var(--accent-primary); font-family: 'JetBrains Mono', monospace; }
+        .welcome-stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+        .welcome-founders {
+            display: flex;
+            gap: 24px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .founder-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            text-align: left;
+            width: 200px;
+        }
+
+        .founder-name { font-weight: 700; font-size: 14px; }
+        .founder-product { font-size: 12px; color: var(--text-muted); }
+        .founder-mrr { font-size: 18px; font-weight: 800; color: var(--green); margin-top: 8px; font-family: 'JetBrains Mono', monospace; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary { background: var(--gradient-1); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), var(--shadow-glow); }
+        .btn-secondary { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { border-color: var(--border-hover); background: var(--bg-tertiary); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-sm { padding: 8px 16px; font-size: 13px; }
+        .btn-lg { padding: 16px 32px; font-size: 16px; }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal { transform: scale(1) translateY(0); }
+        .modal-header { padding: 24px; border-bottom: 1px solid var(--border-color); }
+        .modal-title { font-size: 22px; font-weight: 700; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .color-options { display: flex; gap: 8px; flex-wrap: wrap; }
+        .color-btn {
+            width: 36px;
+            height: 36px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .color-btn:hover { transform: scale(1.1); }
+        .color-btn.selected { border-color: white; box-shadow: 0 0 0 2px var(--bg-primary); }
+
+        .progress-overview {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin-bottom: 32px;
+        }
+
+        .progress-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .progress-title { font-size: 18px; font-weight: 700; }
+
+        .progress-stats { display: flex; gap: 32px; }
+        .progress-stat { text-align: right; }
+        .progress-stat-value { font-size: 28px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+        .progress-stat-value.gold { color: var(--accent-primary); }
+        .progress-stat-label { font-size: 12px; color: var(--text-muted); }
+
+        .progress-bar-large { height: 14px; background: var(--bg-tertiary); border-radius: 7px; overflow: hidden; margin-bottom: 28px; }
+        .progress-bar-fill { height: 100%; background: var(--gradient-1); border-radius: 7px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .progress-phases { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+
+        .progress-phase {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 14px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .progress-phase:hover { border-color: var(--border-hover); }
+        .progress-phase.active { border-color: var(--accent-primary); background: rgba(245, 158, 11, 0.05); }
+        .progress-phase.completed { border-color: var(--green); }
+
+        .progress-phase-icon { font-size: 20px; margin-bottom: 6px; }
+        .progress-phase-number { font-size: 10px; color: var(--text-muted); font-weight: 600; margin-bottom: 2px; }
+        .progress-phase-name { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .progress-phase-bar { height: 4px; background: var(--bg-elevated); border-radius: 2px; overflow: hidden; margin-top: 10px; }
+        .progress-phase-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+        .progress-phase-percent { font-size: 11px; color: var(--text-muted); margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+
+        .phase-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .phase-header:hover { background: var(--bg-tertiary); }
+
+        .phase-header-left { display: flex; align-items: center; gap: 16px; }
+
+        .phase-number {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            flex-shrink: 0;
+            color: white;
+        }
+
+        .phase-info h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+        .phase-info p { font-size: 13px; color: var(--text-secondary); }
+
+        .phase-header-right { display: flex; align-items: center; gap: 20px; }
+
+        .phase-progress-mini { display: flex; align-items: center; gap: 12px; }
+        .phase-progress-mini-bar { width: 100px; height: 6px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden; }
+        .phase-progress-mini-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+        .phase-progress-mini-text { font-size: 14px; font-weight: 600; color: var(--text-secondary); min-width: 45px; font-family: 'JetBrains Mono', monospace; }
+
+        .phase-toggle {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+            color: var(--text-muted);
+        }
+
+        .phase-toggle svg { transition: transform 0.3s ease; }
+        .phase-section.expanded .phase-toggle svg { transform: rotate(180deg); }
+
+        .phase-content {
+            display: none;
+            padding: 0 24px 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .phase-section.expanded .phase-content { display: block; }
+
+        .subsection { margin-top: 28px; }
+
+        .subsection-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .subsection-header-left { display: flex; align-items: center; gap: 12px; }
+        .subsection-number { font-size: 13px; font-weight: 700; color: var(--accent-primary); font-family: 'JetBrains Mono', monospace; }
+        .subsection-title { font-size: 16px; font-weight: 700; }
+        .subsection-progress { font-size: 13px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+        .checklist { display: flex; flex-direction: column; gap: 8px; }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .checklist-item:hover { background: var(--bg-elevated); border-color: var(--border-color); }
+        .checklist-item.completed { opacity: 0.6; }
+
+        .checklist-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border-hover);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            margin-top: 1px;
+        }
+
+        .checklist-item.completed .checklist-checkbox { background: var(--accent-primary); border-color: var(--accent-primary); }
+
+        .checklist-checkbox svg { width: 14px; height: 14px; opacity: 0; transform: scale(0.5); transition: all 0.2s ease; color: white; }
+        .checklist-item.completed .checklist-checkbox svg { opacity: 1; transform: scale(1); }
+
+        .checklist-content { flex: 1; }
+        .checklist-text-row { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .checklist-text { font-size: 14px; line-height: 1.5; }
+        .checklist-item.completed .checklist-text { text-decoration: line-through; color: var(--text-muted); }
+        .checklist-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+        .checklist-info {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: var(--info);
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: help;
+            flex-shrink: 0;
+        }
+
+        .checklist-info:hover { background: #2563eb; }
+
+        .checklist-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 10px;
+            padding: 16px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-hover);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            width: 320px;
+            max-width: 90vw;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            text-align: left;
+        }
+
+        .checklist-info:hover .checklist-tooltip { opacity: 1; visibility: visible; }
+
+        .checklist-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: var(--border-hover);
+        }
+
+        .checklist-tooltip-title { font-weight: 700; color: var(--accent-primary); margin-bottom: 8px; font-size: 13px; }
+        .checklist-tooltip-content { font-size: 12px; line-height: 1.6; color: var(--text-secondary); }
+        .checklist-tooltip-content strong { color: var(--text-primary); }
+        .checklist-tooltip-example { background: var(--bg-tertiary); padding: 10px; border-radius: var(--radius-sm); margin-top: 10px; font-size: 11px; border-left: 3px solid var(--accent-primary); }
+
+        .principle-box {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            margin: 20px 0;
+        }
+
+        .principle-box-title { font-size: 13px; font-weight: 600; color: var(--accent-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .principle-box-content { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+
+        .scoring-section {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            margin-top: 16px;
+        }
+
+        .scoring-title { font-size: 15px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .scoring-grid { display: flex; flex-direction: column; gap: 20px; }
+
+        .scoring-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .scoring-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .scoring-item-info h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .scoring-item-info p { font-size: 12px; color: var(--text-muted); }
+
+        .scoring-item-input { display: flex; align-items: center; gap: 10px; }
+
+        .scoring-input {
+            width: 70px;
+            padding: 10px 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .scoring-input:focus { outline: none; border-color: var(--accent-primary); }
+        .scoring-max { font-size: 14px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+        .scoring-total {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-md);
+            margin-top: 20px;
+        }
+
+        .scoring-total-label { font-size: 15px; font-weight: 700; }
+        .scoring-total-value { font-size: 32px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+        .scoring-total-value.pass { color: var(--green); }
+        .scoring-total-value.fail { color: var(--danger); }
+
+        .scoring-verdict {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 700;
+            margin-left: 16px;
+        }
+
+        .scoring-verdict.pass { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+        .scoring-verdict.fail { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 20px; }
+
+        .metric-card {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+
+        .metric-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-input:focus { outline: none; border-color: var(--accent-primary); }
+        .metric-target { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+        .metric-target span { color: var(--accent-primary); font-weight: 600; }
+
+        .gate-box {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .gate-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+        .gate-criteria { display: flex; flex-direction: column; gap: 10px; }
+
+        .gate-criterion {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .gate-criterion:hover { background: var(--bg-primary); }
+
+        .gate-criterion-check {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-hover);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .gate-criterion.checked .gate-criterion-check { background: var(--green); border-color: var(--green); }
+        .gate-criterion-check svg { width: 12px; height: 12px; opacity: 0; color: white; }
+        .gate-criterion.checked .gate-criterion-check svg { opacity: 1; }
+        .gate-criterion-text { font-size: 14px; flex: 1; }
+
+        .gate-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 16px;
+        }
+
+        .gate-status-badge.pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .gate-status-badge.passed { background: rgba(16, 185, 129, 0.15); color: var(--green); }
+        .gate-status-badge.failed { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+        .decision-box {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin-top: 24px;
+            border: 2px solid var(--border-color);
+        }
+
+        .decision-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .decision-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+        .decision-option {
+            padding: 24px 20px;
+            background: var(--bg-elevated);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .decision-option:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+        .decision-option.selected { border-color: var(--accent-primary); background: rgba(245, 158, 11, 0.05); }
+        .decision-option.selected.go { border-color: var(--green); }
+        .decision-option.selected.pivot { border-color: var(--warning); }
+        .decision-option.selected.kill { border-color: var(--danger); }
+
+        .decision-option-icon { font-size: 32px; margin-bottom: 12px; }
+        .decision-option-label { font-size: 16px; font-weight: 700; }
+        .decision-option-desc { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+        .notes-section { margin-top: 20px; }
+        .notes-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: block; }
+
+        .notes-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .notes-textarea:focus { outline: none; border-color: var(--accent-primary); }
+
+        .timeline-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 20px; }
+
+        .timeline-day {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .timeline-day.completed { border-color: var(--green); background: rgba(16, 185, 129, 0.05); }
+
+        .timeline-day-header {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timeline-day.completed .timeline-day-header { color: var(--green); }
+        .timeline-day-task { font-size: 13px; line-height: 1.5; }
+        .timeline-day-deliverable { font-size: 11px; color: var(--text-muted); margin-top: 8px; font-style: italic; }
+
+        .milestone-track {
+            display: flex;
+            gap: 16px;
+            margin-top: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .milestone-item {
+            flex: 0 0 180px;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .milestone-item.achieved { border-color: var(--green); background: rgba(16, 185, 129, 0.05); }
+        .milestone-item.current { border-color: var(--accent-primary); background: rgba(245, 158, 11, 0.05); }
+
+        .milestone-value { font-size: 24px; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--accent-primary); }
+        .milestone-item.achieved .milestone-value { color: var(--green); }
+        .milestone-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .milestone-time { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+
+        .fifty-fifty-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .fifty-fifty-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+        .fifty-fifty-bars { display: flex; gap: 12px; }
+        .fifty-fifty-bar {
+            flex: 1;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .fifty-fifty-bar.coding { background: var(--info); color: white; }
+        .fifty-fifty-bar.marketing { background: var(--accent-primary); color: white; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.3s ease forwards; }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 1200px) {
+            .progress-phases { grid-template-columns: repeat(3, 1fr); }
+            .welcome-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 900px) {
+            .sidebar { width: 260px; }
+            .main-content { margin-left: 260px; }
+            .decision-options { grid-template-columns: 1fr; }
+            .timeline-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; }
+            .welcome-stats { grid-template-columns: 1fr; }
+            .welcome-founders { flex-direction: column; align-items: center; }
+            .top-nav { display: none; }
+        }
+    </style>
+    <script src="../shared/shared-header.js"></script>
+</head>
+<body data-saas-header="launchpad2">
+
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">Seus Projetos</div>
+                <button class="add-product-btn" onclick="openNewProductModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Novo Projeto
+                </button>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="product-list" id="productList"></div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-secondary btn-sm" style="width: 100%;" onclick="exportAllData()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Exportar
+                </button>
+                <button class="btn btn-secondary btn-sm" style="width: 100%;" onclick="importData()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    Importar
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-content">
+                    <div>
+                        <h1 class="header-title" id="headerTitle">Launchpad 2.0 - Hybrid Method</h1>
+                        <p class="header-subtitle" id="headerSubtitle">O caminho comprovado de $0 → $100K MRR para solo founders</p>
+                    </div>
+                    <div class="header-actions" id="headerActions"></div>
+                </div>
+            </header>
+
+            <div class="main-body" id="mainBody"></div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="newProductModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">🚀 Novo Projeto</h2>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nome do Projeto *</label>
+                    <input type="text" class="form-input" id="productName" placeholder="Ex: TaskFlow, InvoiceBot...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrição (uma frase)</label>
+                    <input type="text" class="form-input" id="productDescription" placeholder="O que o produto faz">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de Produto</label>
+                    <select class="form-select" id="productType">
+                        <option value="stair-step">🪜 Stair-Step (Plugin/Extension/Info Product)</option>
+                        <option value="saas">💎 SaaS Recorrente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cor</label>
+                    <div class="color-options" id="colorOptions">
+                        <button type="button" class="color-btn selected" data-color="#f59e0b" style="background:#f59e0b;" onclick="selectColor(this)"></button>
+                        <button type="button" class="color-btn" data-color="#10b981" style="background:#10b981;" onclick="selectColor(this)"></button>
+                        <button type="button" class="color-btn" data-color="#3b82f6" style="background:#3b82f6;" onclick="selectColor(this)"></button>
+                        <button type="button" class="color-btn" data-color="#8b5cf6" style="background:#8b5cf6;" onclick="selectColor(this)"></button>
+                        <button type="button" class="color-btn" data-color="#ec4899" style="background:#ec4899;" onclick="selectColor(this)"></button>
+                        <button type="button" class="color-btn" data-color="#06b6d4" style="background:#06b6d4;" onclick="selectColor(this)"></button>
+                        <button type="button" class="color-btn" data-color="#ef4444" style="background:#ef4444;" onclick="selectColor(this)"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeNewProductModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="createProduct()">Criar Projeto</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">⚠️ Excluir Projeto</h2>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir "<strong id="deleteProductName"></strong>"?</p>
+                <p style="color: var(--text-muted); margin-top: 12px; font-size: 14px;">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ========================================
+    // PHASES - Metodologia Híbrida Comprovada
+    // ========================================
+    const PHASES = [
+        { id: 'phase1', name: 'Foundation', fullName: 'Skill-Building Foundation', color: '#f59e0b', icon: '🪜', time: 'Meses 1-6' },
+        { id: 'phase2', name: 'Validation', fullName: 'Validation Sprint (Mom Test)', color: '#10b981', icon: '🎯', time: 'Semanas 1-2' },
+        { id: 'phase3', name: 'Ship Fast', fullName: 'MVP Build (2-4 Semanas)', color: '#3b82f6', icon: '🚀', time: 'Semanas 2-4' },
+        { id: 'phase4', name: 'Launch', fullName: 'Launch & Iterate', color: '#8b5cf6', icon: '📢', time: 'Meses 2-4' },
+        { id: 'phase5', name: '$10K MRR', fullName: 'Scale to $10K MRR', color: '#ec4899', icon: '📈', time: 'Meses 4-12' },
+        { id: 'phase6', name: '$100K MRR', fullName: 'Path to $100K MRR', color: '#06b6d4', icon: '💎', time: 'Meses 12-36' }
+    ];
+
+    // ========================================
+    // TOOLTIPS - Explicações detalhadas
+    // ========================================
+    const TOOLTIPS = {
+        // FASE 1: Foundation
+        'f1_stair': { title: 'Stair-Step Approach (Rob Walling)', content: 'Não comece com SaaS. Construa <strong>2-3 produtos simples</strong> em plataformas existentes primeiro. WordPress plugins, Chrome extensions, Shopify apps ou info products. O objetivo é aprender empreendedorismo com risco mínimo.', example: 'TinySeed portfolio: 43% dos founders que seguiram esse caminho se tornaram milionários.' },
+        'f1_channel': { title: 'Domine UM Canal', content: 'Escolha <strong>SEO ou Twitter/X</strong> e domine completamente. Não tente todos os canais ao mesmo tempo. A maioria dos founders de sucesso construiu audiência em paralelo com o produto.', example: 'Pieter Levels, Tony Dinh, Jon Yongfook - todos construíram audiência no Twitter primeiro.' },
+        'f1_simple': { title: 'Produtos Simples Primeiro', content: 'Target: produtos com <strong>$10-15 LTV</strong> que vendem por descoberta orgânica. O objetivo não é ficar rico - é aprender a fazer dinheiro online.', example: 'WordPress plugin $29 one-time, Chrome extension $9/mês, Template pack $49.' },
+        'f1_income': { title: '$1-5K/mês', content: 'Meta da fase foundation: gerar <strong>$1-5K/mês</strong> provando que você consegue vender. Isso financia a próxima fase e valida suas skills de distribuição.', example: 'Rob Walling começou com DotNetInvoice ($30K/ano) antes de criar Drip.' },
+
+        // FASE 2: Validation
+        'v_momtest': { title: 'The Mom Test', content: 'Conduza 10-15 entrevistas perguntando sobre <strong>comportamentos passados específicos</strong>, não opiniões sobre o futuro. Nunca pergunte "você usaria isso?"', example: '"Me conta a última vez que você enfrentou esse problema. Como resolveu? Quanto custou?"' },
+        'v_no_idea': { title: 'Não Mencione Sua Ideia', content: 'Se possível, <strong>não fale da sua solução</strong>. Se não sabem da sua ideia, não podem dar validação falsa. O objetivo é descobrir se o problema é real.', example: '"Qual a parte mais difícil do seu trabalho com X?" - deixe eles revelarem os problemas.' },
+        'v_50emails': { title: '50 Emails OU 5 Pré-vendas', content: 'Threshold de validação: <strong>50 signups na landing page</strong> OU 5 pessoas pagando antes de existir código. Se não conseguir isso, a ideia provavelmente não tem demanda.', example: 'Pieter Levels: Nomad List começou como Google Spreadsheet. Se engajaram com a versão crua, pagarão pela polida.' },
+        'v_landing': { title: 'Landing Page Simples', content: 'Use <strong>Carrd ($19/ano)</strong> ou similar. Headline + problema + mockup + form de email. Máximo 2-3 horas para criar.', example: 'Não precisa de código. Perfeição é inimiga da validação.' },
+
+        // FASE 3: Ship Fast
+        's_boring': { title: 'Tecnologia Boring', content: 'Use tecnologia que você <strong>JÁ conhece</strong>. Pieter Levels usa PHP e SQLite propositalmente. Tony Dinh criou Typing Mind como app estático sem backend.', example: '"Don\'t learn new technology while building a business. Technical elegance is a vanity metric."' },
+        's_2weeks': { title: '2-4 Semanas Máximo', content: 'Danny Postma: HeadshotPro em 30 dias. Tony Dinh: Typing Mind em 5 dias. Jon Yongfook: sprints de 7 dias. <strong>Otimize para velocidade de aprendizado</strong>, não completude de features.', example: 'O produto que você lança é o ponto de partida, não o destino. Tony Dinh fez 171 updates no primeiro ano.' },
+        's_one_feature': { title: 'UMA Feature Core', content: 'Foque em <strong>um único workflow</strong> que resolve o problema principal. Resista à tentação de adicionar features. MVP = versão mais simples que permite começar a aprender.', example: 'Se é gerador de relatórios, gerar relatório deve funcionar 100%. Nada mais importa no dia 1.' },
+        's_stripe': { title: 'Stripe Dia 1', content: '<strong>Nunca lance sem pagamento</strong>. Se pessoas não pagam pelo protótipo, não pagarão pelo produto polido. Stripe Checkout leva 30 minutos para integrar.', example: '"Revenue from day one - If people won\'t pay for a prototype, they won\'t pay for a product."' },
+        's_boilerplate': { title: 'Use Boilerplates', content: 'Use <strong>SaaS boilerplates</strong> (ShipFast, Open SaaS) ou no-code (Bubble) para acelerar. Não reinvente auth, billing, emails.', example: 'Open SaaS: auth + Stripe + emails + dashboard em 10 minutos. Foque no que diferencia seu produto.' },
+
+        // FASE 4: Launch
+        'l_ph': { title: 'Product Hunt', content: 'Lance no PH para <strong>spike de credibilidade</strong>. Espere 1K-5K visitantes se featured, 100-500 se não. Mas PH é "validation theater" - não é estratégia de crescimento.', example: 'Apenas 10% dos lançamentos são featured agora. Não dependa disso.' },
+        'l_5050': { title: 'Regra 50/50', content: 'Jon Yongfook: <strong>metade do tempo em marketing desde o dia 1</strong>. Seu bi-weekly sprint (7 dias código, 7 dias marketing) levou de $1K a $10K MRR em 7 meses.', example: 'Se está codando 8 horas por dia, está falhando em marketing. 99% dos indie hackers falham em marketing, não produto.' },
+        'l_daily': { title: 'Engajamento Diário', content: 'Twitter/LinkedIn diário, SEO long-tail, <strong>10 cold outreaches por dia</strong>, presença ativa em comunidades onde seus clientes estão.', example: 'Reddit, Discord, Facebook groups do seu nicho. Seja membro genuíno, não spammer.' },
+        'l_iterate': { title: 'Itere Publicamente', content: '<strong>Build in public</strong>: cria accountability, atrai early customers, gera conteúdo naturalmente, constrói confiança antes de ter social proof.', example: 'Todos os top earners (Levels, Postma, Dinh, Yongfook) construíram audiência no Twitter junto com produtos.' },
+
+        // FASE 5: Scale
+        'sc_1k': { title: '$1K MRR (Média 9 meses)', content: '"Ramen profitable" - validação que o produto tem potencial. <strong>Celebre este milestone</strong> - poucos chegam aqui.', example: '20 clientes a $50/mês. Prova que pessoas pagam pelo que você construiu.' },
+        'sc_5k': { title: '$5K MRR', content: 'Seguro considerar largar emprego se tem <strong>12+ meses de runway</strong>. Negócio começa a parecer real.', example: '100 clientes a $50 ou 50 a $100. Validação forte de product-market fit.' },
+        'sc_10k': { title: '$10K MRR (Média 18-24 meses)', content: '"Escape velocity" - <strong>negócio real se formando</strong>. $120K ARR. Em muitos países, suficiente para viver confortavelmente.', example: 'A cada milestone, avalie: crescimento acelerando? Churn <6%? Clientes referindo outros?' },
+        'sc_churn': { title: 'Churn < 6%', content: 'Se churn mensal está <strong>acima de 6%</strong>, pause o crescimento e conserte retenção. Não adianta encher balde furado.', example: 'Churn alto = produto não entrega valor ou atrai persona errada. Investigue antes de crescer.' },
+
+        // FASE 6: $100K
+        'h_double': { title: 'Double Down', content: 'Dobre a aposta nos <strong>canais que funcionam</strong>. Não diversifique cedo demais. Se SEO traz 80% dos clientes, invista mais em SEO.', example: 'Paid marketing só quando LTV > $150 (para pagar CAC). Antes disso, orgânico.' },
+        'h_moat': { title: 'Construa Moats', content: '<strong>Moats defensáveis</strong>: SEO content, ecossistema de integrações, comunidade, brand recognition. Dificulte cópia pelos concorrentes.', example: 'Bannerbear: 50+ integrações. Difícil um novo competidor replicar isso rapidamente.' },
+        'h_25k': { title: '$25K MRR: Sistematize', content: 'Hora de <strong>documentar processos</strong>. SOPs para suporte, onboarding, marketing. Prepare para não ser gargalo.', example: 'Se você é o único que sabe fazer X, o negócio não escala.' },
+        'h_50k': { title: '$50K MRR: Primeiro Hire', content: 'Considere <strong>primeiro contractor</strong> para funções não-core. Suporte ao cliente é geralmente o primeiro.', example: '$600K ARR. Micro-PE interessado. Opções: vender ($1-3M), investimento, ou escalar orgânico.' },
+        'h_100k': { title: '$100K MRR = $1.2M ARR', content: '<strong>Top 1% de indie SaaS</strong>. Valuation $3-6M+. Decisões estratégicas maiores: vender, investir, ou lifestyle business premium.', example: 'Pieter Levels: $3M+/ano com zero empregados. Modelo possível mas raro.' },
+
+        // Princípios gerais
+        'p_scratch': { title: 'Scratch Your Own Itch', content: 'Todo founder de sucesso construiu algo que <strong>pessoalmente precisava</strong>. Tony Dinh: Typing Mind como melhor interface ChatGPT que ele usava diariamente.', example: 'Garante entendimento profundo do problema e motivação intrínseca nos momentos difíceis.' },
+        'p_price': { title: 'Preço Maior que Confortável', content: 'Jon Yongfook começou a $9/mês - seu <strong>maior erro</strong>. A esse preço, precisava de 2.000 clientes. A $49-399/mês, precisa de ~300.', example: 'Target: $50-200/mês mínimo para B2B micro-SaaS. Mais fácil atender menos clientes bem.' },
+        'p_fail': { title: 'Espere 5-10+ Falhas', content: 'Pieter Levels: <strong>70+ projetos falhados</strong> antes dos hits. Jon Yongfook: 7 produtos no primeiro ano com $0 revenue. Persistência é o diferenciador universal.', example: 'Sucesso = sobreviver o suficiente para encontrar o que funciona.' },
+        'p_wave': { title: 'Ride Technology Waves', content: 'Todo sucesso 2023-2024 ligado a <strong>AI</strong>. Tony Dinh lançou Typing Mind 5 dias após API da OpenAI - first-mover advantage gerou $500K no ano 1.', example: 'Ser primeiro vence ser perfeito. Qualidade melhora depois, oportunidade não volta.' },
+        'p_zero': { title: 'Overhead Zero', content: 'Pieter Levels: $3M+/ano com <strong>zero empregados</strong>. Server costs $12-200/mês. Hire contractors para skills específicas, nunca empregados até $100K+ MRR.', example: 'Mantenha margem alta. Quanto menos overhead, mais runway para sobreviver e experimentar.' },
+        'p_time': { title: '2-5 Anos de Timeline', content: 'Mesmo fast movers levaram <strong>18-24 meses para $100K MRR</strong>. Jon Yongfook: 4+ anos de primeiro projeto até $50K MRR atual. Sucesso requer tempo.', example: 'A chave não é velocidade, é não desistir. Plan for marathon, not sprint.' }
+    };
+
+    // ========================================
+    // CHECKLIST_DATA - Fases 1-2
+    // ========================================
+    const CHECKLIST_DATA = {
+        phase1: {
+            subsections: [
+                {
+                    id: '1.1', title: '🪜 Stair-Step: Produto Simples #1', type: 'principle',
+                    principle: {
+                        icon: '💡',
+                        title: 'Por que não começar com SaaS?',
+                        content: 'A maioria dos founders técnicos falha porque tenta construir SaaS complexo antes de dominar distribuição. O Stair-Step approach (Rob Walling) prescreve começar com produtos simples em plataformas existentes para aprender empreendedorismo com risco mínimo.'
+                    },
+                    items: [
+                        { id: 'f1_1_1', text: 'Escolher plataforma (WordPress/Shopify/Chrome/Notion)', meta: 'Onde seus clientes já estão' },
+                        { id: 'f1_1_2', text: 'Identificar gap/oportunidade na plataforma', meta: 'Reviews 2-3 estrelas de competidores' },
+                        { id: 'f1_1_3', text: 'Definir produto simples ($10-50 one-time ou $5-15/mês)', meta: 'LTV baixo = risco baixo' },
+                        { id: 'f1_1_4', text: 'Construir MVP em 1-2 semanas', meta: 'Não mais que isso' },
+                        { id: 'f1_1_5', text: 'Publicar na marketplace da plataforma', meta: 'Descoberta orgânica' },
+                        { id: 'f1_1_6', text: 'Primeiras 10 vendas/instalações', meta: '🎯 Validação inicial' },
+                        { id: 'f1_1_7', text: 'Primeiro $100 de receita', meta: '💰' }
+                    ]
+                },
+                {
+                    id: '1.2', title: '📣 Dominar UM Canal de Aquisição',
+                    items: [
+                        { id: 'f1_2_1', text: 'Escolher canal: SEO ou Twitter/X', meta: 'Apenas UM' },
+                        { id: 'f1_2_2', text: 'Criar conta/perfil otimizado', meta: 'Bio clara, links' },
+                        { id: 'f1_2_3', text: 'Postar consistentemente (diário Twitter / semanal SEO)', meta: '30 dias mínimo' },
+                        { id: 'f1_2_4', text: 'Engajar genuinamente na comunidade', meta: 'Não apenas promover' },
+                        { id: 'f1_2_5', text: '500+ followers ou 1000+ visitas/mês', meta: '🎯 Tração inicial' },
+                        { id: 'f1_2_6', text: 'Primeira venda vinda do canal', meta: '💰 Validação do canal' }
+                    ]
+                },
+                {
+                    id: '1.3', title: '🪜 Stair-Step: Produto Simples #2 (Opcional)',
+                    items: [
+                        { id: 'f1_3_1', text: 'Segundo produto em plataforma diferente', meta: 'Diversificar aprendizado' },
+                        { id: 'f1_3_2', text: 'Aplicar learnings do produto #1', meta: 'Iterar no processo' },
+                        { id: 'f1_3_3', text: 'Atingir $500/mês combinado', meta: '🎯 Milestone' }
+                    ]
+                },
+                {
+                    id: '1.4', title: '🎯 Gate: Pronto para SaaS?', type: 'gate',
+                    gateCriteria: [
+                        { id: 'g1_c1', text: 'Gerando $1-5K/mês com produtos simples' },
+                        { id: 'g1_c2', text: 'Dominando 1 canal de aquisição comprovado' },
+                        { id: 'g1_c3', text: 'Entendendo unit economics básico (CAC, LTV)' },
+                        { id: 'g1_c4', text: 'Tem 6+ meses de runway pessoal' }
+                    ]
+                },
+                {
+                    id: '1.5', title: '💡 Ideação SaaS: Scratch Your Own Itch',
+                    items: [
+                        { id: 'f1_5_1', text: 'Listar 10 problemas que VOCÊ enfrenta frequentemente', meta: 'Problemas reais seus' },
+                        { id: 'f1_5_2', text: 'Identificar qual desses problemas outros também têm', meta: 'Validar universalidade' },
+                        { id: 'f1_5_3', text: 'Verificar competidores existentes (5+ = bom sinal)', meta: 'Mercado validado' },
+                        { id: 'f1_5_4', text: 'Estimar WTP (Willingness to Pay) $50-200/mês', meta: 'B2B preferível' },
+                        { id: 'f1_5_5', text: 'Escolher ideia final para validar', meta: '🎯 Decisão' }
+                    ]
+                }
+            ]
+        },
+        phase2: {
+            subsections: [
+                {
+                    id: '2.1', title: '🎯 Mom Test: Entrevistas de Problema', type: 'principle',
+                    principle: {
+                        icon: '🗣️',
+                        title: 'The Mom Test - Regras de Ouro',
+                        content: 'Nunca pergunte "Você usaria isso?" ou "Isso é uma boa ideia?". Foque em COMPORTAMENTOS PASSADOS: "Me conta a última vez que...", "Como você resolve isso hoje?", "Quanto isso te custa?". Se não sabem da sua ideia, não podem mentir.'
+                    },
+                    items: [
+                        { id: 'v_2_1', text: 'Definir 5 perguntas sobre comportamento passado', meta: 'Não sobre futuro' },
+                        { id: 'v_2_2', text: 'Encontrar 15 pessoas do público-alvo', meta: 'LinkedIn, Reddit, comunidades' },
+                        { id: 'v_2_3', text: 'Entrevista #1', meta: 'Não mencione sua solução' },
+                        { id: 'v_2_4', text: 'Entrevista #2' }, { id: 'v_2_5', text: 'Entrevista #3' },
+                        { id: 'v_2_6', text: 'Entrevista #4' }, { id: 'v_2_7', text: 'Entrevista #5' },
+                        { id: 'v_2_8', text: 'Entrevista #6' }, { id: 'v_2_9', text: 'Entrevista #7' },
+                        { id: 'v_2_10', text: 'Entrevista #8' }, { id: 'v_2_11', text: 'Entrevista #9' },
+                        { id: 'v_2_12', text: 'Entrevista #10' },
+                        { id: 'v_2_13', text: 'Documentar padrões encontrados', meta: 'Dores recorrentes' }
+                    ]
+                },
+                {
+                    id: '2.2', title: '🎯 Gate: Validação de Problema', type: 'gate',
+                    gateCriteria: [
+                        { id: 'g2_c1', text: '70%+ confirmam que o problema é real e frequente' },
+                        { id: 'g2_c2', text: '50%+ já pagam ou pagariam para resolver' },
+                        { id: 'g2_c3', text: 'WTP médio ≥ $30/mês (viabilidade econômica)' }
+                    ]
+                },
+                {
+                    id: '2.3', title: '🌐 Landing Page MVP',
+                    items: [
+                        { id: 'v_3_1', text: 'Criar landing page (Carrd/Framer)', meta: 'Máx 3 horas' },
+                        { id: 'v_3_2', text: 'Headline: [Verbo] + [Resultado] para [Persona]', meta: 'Benefício em 5 segundos' },
+                        { id: 'v_3_3', text: 'Seção de problema (3 dores específicas)', meta: 'Palavras das entrevistas' },
+                        { id: 'v_3_4', text: 'Mockup/Screenshot fake no Figma', meta: 'Visual da visão' },
+                        { id: 'v_3_5', text: 'Preview de pricing ($X/mês)', meta: 'Filtrar curiosos' },
+                        { id: 'v_3_6', text: 'Form de email (ConvertKit/Buttondown)', meta: 'Capturar interesse' },
+                        { id: 'v_3_7', text: 'CTA: "Get Early Access" ou "Join Waitlist"' }
+                    ]
+                },
+                {
+                    id: '2.4', title: '📊 Tráfego para Landing Page',
+                    items: [
+                        { id: 'v_4_1', text: 'Postar em 3 subreddits relevantes', meta: 'Valor primeiro, não spam' },
+                        { id: 'v_4_2', text: 'Thread Twitter/X sobre o problema', meta: 'Storytelling' },
+                        { id: 'v_4_3', text: 'Posts LinkedIn (3-5)', meta: 'Se B2B' },
+                        { id: 'v_4_4', text: 'Comunidades de nicho (Discord/FB)', meta: 'Onde seu público está' },
+                        { id: 'v_4_5', text: 'DMs para pessoas das entrevistas', meta: 'Eles já conhecem o problema' }
+                    ],
+                    metrics: [
+                        { id: 'v_m1', label: 'Visitantes', target: '200+' },
+                        { id: 'v_m2', label: 'Signups', target: '50+' },
+                        { id: 'v_m3', label: 'Conversão', target: '10%+' }
+                    ]
+                },
+                {
+                    id: '2.5', title: '💰 Pré-Venda (Validação Final)',
+                    items: [
+                        { id: 'v_5_1', text: 'Email para lista: oferta Founding Member', meta: '50% off lifetime' },
+                        { id: 'v_5_2', text: 'Criar página de checkout (Stripe/Gumroad)', meta: 'Mesmo sem produto' },
+                        { id: 'v_5_3', text: 'Definir garantia (30-60 dias refund)', meta: 'Reduz fricção' },
+                        { id: 'v_5_4', text: 'Pré-venda #1 💰' }, { id: 'v_5_5', text: 'Pré-venda #2 💰' },
+                        { id: 'v_5_6', text: 'Pré-venda #3 💰' }, { id: 'v_5_7', text: 'Pré-venda #4 💰' },
+                        { id: 'v_5_8', text: 'Pré-venda #5 💰' }
+                    ]
+                },
+                {
+                    id: '2.6', title: '🚦 DECISÃO: Go / Pivot / Kill', type: 'decision',
+                    options: [
+                        { id: 'go', label: 'GO', icon: '🚀', desc: '50+ emails OU 5+ pré-vendas', class: 'go' },
+                        { id: 'pivot', label: 'PIVOT', icon: '🔄', desc: 'Interesse mas não paga - ajustar', class: 'pivot' },
+                        { id: 'kill', label: 'KILL', icon: '💀', desc: '<20 emails e 0 pré-vendas', class: 'kill' }
+                    ]
+                }
+            ]
+        },
+        phase3: {
+            subsections: [
+                {
+                    id: '3.1', title: '🚀 Ship Fast: Princípios', type: 'principle',
+                    principle: {
+                        icon: '⚡',
+                        title: 'Pieter Levels\' Ship Fast Philosophy',
+                        content: 'Build MVP em DIAS, não meses. Use tecnologia BORING que você já conhece (PHP, SQLite, whatever). Foque em UMA feature core. O produto que você lança é o ponto de partida, não o destino. Tony Dinh lançou Typing Mind em 5 dias. Danny Postma lançou HeadshotPro em 30 dias.'
+                    },
+                    items: [
+                        { id: 's_1_1', text: 'Definir UMA feature core (o único workflow essencial)', meta: 'Resista adicionar mais' },
+                        { id: 's_1_2', text: 'Escolher tech stack que você JÁ conhece', meta: 'Não aprenda novo agora' },
+                        { id: 's_1_3', text: 'Definir deadline: 2-4 semanas máximo', meta: 'Data no calendário' },
+                        { id: 's_1_4', text: 'Usar boilerplate (ShipFast/Open SaaS) ou no-code', meta: 'Não reinvente a roda' }
+                    ]
+                },
+                {
+                    id: '3.2', title: '📅 Semana 1: Fundação', type: 'timeline',
+                    days: [
+                        { day: 'D1', task: 'Setup projeto + Auth', deliverable: 'Login funcionando' },
+                        { day: 'D2', task: 'Database + Models', deliverable: 'Schema básico' },
+                        { day: 'D3', task: 'Stripe Checkout', deliverable: 'Pagamento funcional' },
+                        { day: 'D4', task: 'UI Shell + Dashboard', deliverable: 'App navegável' },
+                        { day: 'D5', task: 'Core Feature pt1', deliverable: '30% da feature' }
+                    ]
+                },
+                {
+                    id: '3.3', title: '📅 Semana 2: Core + Polish', type: 'timeline',
+                    days: [
+                        { day: 'D6-7', task: 'Core Feature pt2', deliverable: '100% funcional' },
+                        { day: 'D8', task: 'Integrar pagamento → acesso', deliverable: 'Fluxo completo' },
+                        { day: 'D9', task: 'Emails transacionais', deliverable: 'Welcome + Receipt' },
+                        { day: 'D10', task: 'Deploy + DNS', deliverable: 'App LIVE' }
+                    ]
+                },
+                {
+                    id: '3.4', title: '✅ Checklist MVP Mínimo',
+                    items: [
+                        { id: 's_4_1', text: 'Core feature funciona sem crashes', meta: 'Bugs menores OK' },
+                        { id: 's_4_2', text: 'Signup/Login funcionando', meta: 'Email ou OAuth' },
+                        { id: 's_4_3', text: 'Stripe Checkout processa pagamento', meta: 'Testar com 4242...' },
+                        { id: 's_4_4', text: 'Pago → Acesso premium automático', meta: 'Webhook funcionando' },
+                        { id: 's_4_5', text: 'Email de boas-vindas enviado', meta: 'Resend/Postmark' },
+                        { id: 's_4_6', text: 'Termos de uso + Privacy policy', meta: 'Templates OK' },
+                        { id: 's_4_7', text: 'HTTPS + Domínio próprio', meta: 'Profissionalismo mínimo' },
+                        { id: 's_4_8', text: 'Analytics básico (Plausible/Umami)', meta: 'Medir desde dia 1' }
+                    ]
+                },
+                {
+                    id: '3.5', title: '💰 Pricing Dia 1', type: 'principle',
+                    principle: {
+                        icon: '💵',
+                        title: 'Preço Maior que Confortável',
+                        content: 'Jon Yongfook começou a $9/mês - seu MAIOR ERRO. A esse preço, precisava de 2.000 clientes para $18K MRR. A $49-199/mês, precisa de ~100-400 clientes. Target: $50-200/mês para B2B micro-SaaS.'
+                    },
+                    items: [
+                        { id: 's_5_1', text: 'Definir preço mínimo $49/mês', meta: 'Ou $29 se muito simples' },
+                        { id: 's_5_2', text: 'Criar 2-3 tiers simples', meta: 'Não complique' },
+                        { id: 's_5_3', text: 'Opção anual com 15-20% desconto', meta: 'Cash upfront' },
+                        { id: 's_5_4', text: 'Trial 14 dias COM cartão', meta: '48% conversão vs 10%' }
+                    ]
+                },
+                {
+                    id: '3.6', title: '🎯 Gate: Ready to Launch', type: 'gate',
+                    gateCriteria: [
+                        { id: 'g3_c1', text: 'Core feature funciona 100%' },
+                        { id: 'g3_c2', text: 'Pagamento processa corretamente' },
+                        { id: 'g3_c3', text: 'App está live em domínio próprio' },
+                        { id: 'g3_c4', text: 'Pelo menos 1 pessoa testou além de você' }
+                    ]
+                }
+            ]
+        },
+        phase4: {
+            subsections: [
+                {
+                    id: '4.1', title: '📢 Launch: Product Hunt', type: 'principle',
+                    principle: {
+                        icon: '🎯',
+                        title: 'Product Hunt = Credibilidade, Não Crescimento',
+                        content: 'PH é "validation theater". Apenas 10% dos lançamentos são featured. Espere 1K-5K visitantes se featured, 100-500 se não. Use para credibilidade e primeiro spike, mas não dependa disso para crescimento sustentável.'
+                    },
+                    items: [
+                        { id: 'l_1_1', text: 'Criar página Coming Soon no PH', meta: 'Coletar subscribers' },
+                        { id: 'l_1_2', text: 'Preparar assets (logo, screenshots, GIF)', meta: 'Qualidade importa' },
+                        { id: 'l_1_3', text: 'Escrever tagline <60 chars', meta: 'O que + para quem' },
+                        { id: 'l_1_4', text: 'Gravar vídeo demo 1-2 min', meta: 'Loom suficiente' },
+                        { id: 'l_1_5', text: 'Recrutar hunter (opcional)', meta: 'Aumenta exposure' },
+                        { id: 'l_1_6', text: 'Alinhar early users para votar D1', meta: 'Momentum inicial' },
+                        { id: 'l_1_7', text: 'Lançar 00:01 PT (Terça-Quinta)', meta: 'Dia inteiro de votos' },
+                        { id: 'l_1_8', text: 'Responder TODOS comentários', meta: 'Engagement = ranking' }
+                    ]
+                },
+                {
+                    id: '4.2', title: '⚖️ Regra 50/50: Coding vs Marketing', type: 'fifty_fifty',
+                    principle: {
+                        icon: '⚖️',
+                        title: 'A Lição Mais Importante de Jon Yongfook',
+                        content: '99% dos indie hackers falham em MARKETING, não produto. Jon Yongfook atribui seu sucesso ($1K→$10K MRR em 7 meses) ao bi-weekly sprint: 7 dias coding, 7 dias marketing. Se você está codando 8h/dia, está falhando em marketing.'
+                    },
+                    items: [
+                        { id: 'l_2_1', text: 'Definir schedule: X dias código, X dias marketing', meta: 'Literalmente bloquear' },
+                        { id: 'l_2_2', text: 'Criar lista de tarefas de marketing semanal', meta: 'Igual lista de features' },
+                        { id: 'l_2_3', text: 'Tracking: horas em código vs marketing', meta: 'Medir para melhorar' }
+                    ]
+                },
+                {
+                    id: '4.3', title: '📣 Marketing Diário',
+                    items: [
+                        { id: 'l_3_1', text: 'Twitter/X: 1 post + 10 replies/dia', meta: 'Build in public' },
+                        { id: 'l_3_2', text: 'LinkedIn: 3 posts/semana', meta: 'Se B2B' },
+                        { id: 'l_3_3', text: 'Reddit: 1 post value/semana em subreddits relevantes', meta: 'Não spam' },
+                        { id: 'l_3_4', text: 'Cold outreach: 10 pessoas/dia', meta: 'Email ou DM' },
+                        { id: 'l_3_5', text: 'Comunidades do nicho: participação ativa', meta: 'Discord, FB groups' },
+                        { id: 'l_3_6', text: 'SEO: 1 artigo long-tail/semana', meta: 'Compound growth' }
+                    ]
+                },
+                {
+                    id: '4.4', title: '🔄 Iterate Publicamente',
+                    items: [
+                        { id: 'l_4_1', text: 'Compartilhar updates de desenvolvimento', meta: 'Screenshots, learnings' },
+                        { id: 'l_4_2', text: 'Compartilhar métricas (revenue, users)', meta: 'Transparência = trust' },
+                        { id: 'l_4_3', text: 'Responder feedback publicamente', meta: 'Mostrar que ouve' },
+                        { id: 'l_4_4', text: 'Documentar pivots/decisões', meta: 'Storytelling natural' }
+                    ]
+                },
+                {
+                    id: '4.5', title: '📊 Métricas Semana 1-4', type: 'metrics_early',
+                    metrics: [
+                        { id: 'l_m1', label: 'Visitantes', target: '500+' },
+                        { id: 'l_m2', label: 'Signups', target: '50+' },
+                        { id: 'l_m3', label: 'Trials', target: '20+' },
+                        { id: 'l_m4', label: 'Pagantes', target: '5+' },
+                        { id: 'l_m5', label: 'Primeiro $', target: '$1+' }
+                    ]
+                },
+                {
+                    id: '4.6', title: '🎯 Gate: Tração Inicial', type: 'gate',
+                    gateCriteria: [
+                        { id: 'g4_c1', text: '5+ clientes pagantes no primeiro mês' },
+                        { id: 'g4_c2', text: 'Pelo menos 1 cliente veio de marketing (não network pessoal)' },
+                        { id: 'g4_c3', text: 'Feedback indica product-market fit inicial' },
+                        { id: 'g4_c4', text: 'Churn do primeiro mês <20%' }
+                    ]
+                }
+            ]
+        },
+        phase5: {
+            subsections: [
+                {
+                    id: '5.1', title: '🎯 Milestone: $1K MRR', type: 'milestone',
+                    milestone: { value: '$1K', label: 'MRR', time: 'Média: 9 meses', desc: '"Ramen Profitable" - Validação que o produto tem pernas' },
+                    items: [
+                        { id: 'sc_1_1', text: 'Atingir $1K MRR', meta: '🎉 CELEBRE!' },
+                        { id: 'sc_1_2', text: 'Documentar de onde vieram os clientes', meta: 'Qual canal funcionou?' },
+                        { id: 'sc_1_3', text: 'Coletar 5+ testimonials', meta: 'Social proof' },
+                        { id: 'sc_1_4', text: 'Identificar padrão nos clientes', meta: 'Quem são os melhores?' }
+                    ]
+                },
+                {
+                    id: '5.2', title: '📈 Dobrar o que Funciona',
+                    items: [
+                        { id: 'sc_2_1', text: 'Identificar top 2 canais de aquisição', meta: 'Dados reais' },
+                        { id: 'sc_2_2', text: 'Dobrar investimento nesses canais', meta: 'Tempo e/ou dinheiro' },
+                        { id: 'sc_2_3', text: 'Pausar canais que não funcionam', meta: 'Foco > diversificação' },
+                        { id: 'sc_2_4', text: 'SEO: 5+ páginas alternatives/vs', meta: 'High-intent traffic' },
+                        { id: 'sc_2_5', text: 'SEO: 10+ artigos how-to', meta: 'Long-tail keywords' }
+                    ]
+                },
+                {
+                    id: '5.3', title: '🔄 Otimizar Funil',
+                    items: [
+                        { id: 'sc_3_1', text: 'Analisar trial→paid conversion', meta: 'Meta: >40%' },
+                        { id: 'sc_3_2', text: 'Melhorar onboarding se conversão baixa', meta: 'Time-to-value' },
+                        { id: 'sc_3_3', text: 'Implementar email sequence trial', meta: 'Dia 1, 7, 12, 14' },
+                        { id: 'sc_3_4', text: 'A/B test landing page headline', meta: 'Otimizar conversão' },
+                        { id: 'sc_3_5', text: 'Adicionar social proof na homepage', meta: 'Testimonials, logos' }
+                    ]
+                },
+                {
+                    id: '5.4', title: '📊 Métricas de Saúde', type: 'health_metrics',
+                    metrics: [
+                        { id: 'h_m1', label: 'MRR', prefix: '$' },
+                        { id: 'h_m2', label: 'Clientes Ativos' },
+                        { id: 'h_m3', label: 'Churn Mensal %', suffix: '%', target: '<6%' },
+                        { id: 'h_m4', label: 'Trial→Paid %', suffix: '%', target: '>40%' },
+                        { id: 'h_m5', label: 'ARPU', prefix: '$', target: '>$50' }
+                    ]
+                },
+                {
+                    id: '5.5', title: '🎯 Milestone: $5K MRR', type: 'milestone',
+                    milestone: { value: '$5K', label: 'MRR', time: 'Considerar quit job', desc: 'Seguro largar emprego se 12+ meses runway' },
+                    items: [
+                        { id: 'sc_5_1', text: 'Atingir $5K MRR', meta: '🎉' },
+                        { id: 'sc_5_2', text: 'Calcular runway atual', meta: 'Meses de sobrevivência' },
+                        { id: 'sc_5_3', text: 'Decidir: full-time ou manter emprego', meta: 'Decisão pessoal' }
+                    ]
+                },
+                {
+                    id: '5.6', title: '🎯 Milestone: $10K MRR', type: 'milestone',
+                    milestone: { value: '$10K', label: 'MRR', time: 'Média: 18-24 meses', desc: '"Escape Velocity" - $120K ARR, negócio real' },
+                    items: [
+                        { id: 'sc_6_1', text: 'Atingir $10K MRR', meta: '🎉🎉🎉' },
+                        { id: 'sc_6_2', text: 'Avaliar: crescimento acelerando?', meta: 'Tendência positiva?' },
+                        { id: 'sc_6_3', text: 'Avaliar: churn controlado (<6%)?', meta: 'Retenção saudável?' },
+                        { id: 'sc_6_4', text: 'Avaliar: clientes referindo outros?', meta: 'Organic growth?' }
+                    ]
+                },
+                {
+                    id: '5.7', title: '🚦 Gate: Pronto para $100K?', type: 'gate',
+                    gateCriteria: [
+                        { id: 'g5_c1', text: '$10K+ MRR estável por 3+ meses' },
+                        { id: 'g5_c2', text: 'Churn mensal <6%' },
+                        { id: 'g5_c3', text: 'Canal de aquisição escalável identificado' },
+                        { id: 'g5_c4', text: 'Unit economics positivo (LTV > 3x CAC)' }
+                    ]
+                }
+            ]
+        },
+        phase6: {
+            subsections: [
+                {
+                    id: '6.1', title: '💎 Path to $100K MRR', type: 'principle',
+                    principle: {
+                        icon: '💎',
+                        title: 'A Jornada Final: $10K → $100K MRR',
+                        content: 'Esta fase requer 12-24+ meses adicionais. Foco em: dobrar canais que funcionam, construir moats defensáveis, sistematizar operações, e eventualmente considerar primeiro hire. $100K MRR = $1.2M ARR = Top 1% indie SaaS.'
+                    },
+                    items: [
+                        { id: 'h_1_1', text: 'Definir meta: $25K → $50K → $100K', meta: 'Milestones intermediários' },
+                        { id: 'h_1_2', text: 'Criar roadmap de 12 meses', meta: 'Iniciativas principais' }
+                    ]
+                },
+                {
+                    id: '6.2', title: '🏰 Construir Moats',
+                    items: [
+                        { id: 'h_2_1', text: 'SEO: 50+ páginas indexadas', meta: 'Content moat' },
+                        { id: 'h_2_2', text: 'Integrações: 10+ integrações', meta: 'Ecossistema moat' },
+                        { id: 'h_2_3', text: 'Comunidade: Discord/Slack ativo', meta: 'Community moat' },
+                        { id: 'h_2_4', text: 'Brand: reconhecimento no nicho', meta: 'Brand moat' },
+                        { id: 'h_2_5', text: 'Data: insights únicos dos dados', meta: 'Data moat' }
+                    ]
+                },
+                {
+                    id: '6.3', title: '🎯 Milestone: $25K MRR', type: 'milestone',
+                    milestone: { value: '$25K', label: 'MRR', time: '$300K ARR', desc: 'Hora de sistematizar operações' },
+                    items: [
+                        { id: 'h_3_1', text: 'Atingir $25K MRR', meta: '🎉' },
+                        { id: 'h_3_2', text: 'Documentar todos os processos (SOPs)', meta: 'Suporte, onboarding, marketing' },
+                        { id: 'h_3_3', text: 'Automatizar o que for possível', meta: 'Zapier, scripts, etc' },
+                        { id: 'h_3_4', text: 'Identificar gargalos de tempo', meta: 'Onde você é o bottleneck?' }
+                    ]
+                },
+                {
+                    id: '6.4', title: '🎯 Milestone: $50K MRR', type: 'milestone',
+                    milestone: { value: '$50K', label: 'MRR', time: '$600K ARR', desc: 'Primeiro hire possível. Micro-PE interessado.' },
+                    items: [
+                        { id: 'h_4_1', text: 'Atingir $50K MRR', meta: '🎉🎉' },
+                        { id: 'h_4_2', text: 'Avaliar: contratar primeiro VA/contractor?', meta: 'Suporte geralmente primeiro' },
+                        { id: 'h_4_3', text: 'Avaliar: vender vs continuar crescendo', meta: 'Valuation $1-3M possível' },
+                        { id: 'h_4_4', text: 'Paid marketing se LTV > $150', meta: 'Agora pode pagar CAC' }
+                    ]
+                },
+                {
+                    id: '6.5', title: '🎯 Milestone: $100K MRR', type: 'milestone',
+                    milestone: { value: '$100K', label: 'MRR', time: '$1.2M ARR', desc: 'TOP 1% de indie SaaS. Você conseguiu!' },
+                    items: [
+                        { id: 'h_5_1', text: 'Atingir $100K MRR', meta: '🎉🎉🎉🎉🎉' },
+                        { id: 'h_5_2', text: 'Decisão estratégica: vender, investir, ou lifestyle', meta: 'Valuation $3-6M+' },
+                        { id: 'h_5_3', text: 'Se continuar: planejar próximo estágio', meta: '$100K → $500K?' }
+                    ]
+                },
+                {
+                    id: '6.6', title: '📊 Timelines Reais de Founders', type: 'founders_table',
+                    founders: [
+                        { name: 'Danny Postma', product: 'HeadshotPro', t1k: 'Dia 1', t10k: 'Semana 2', t100k: '~6 meses', factor: 'First-mover AI + SEO' },
+                        { name: 'Tony Dinh', product: 'Typing Mind', t1k: 'Dia 7', t10k: 'Mês 1', t100k: '~12 meses', factor: '5-day build, first ChatGPT wrapper' },
+                        { name: 'Pieter Levels', product: 'Photo AI', t1k: 'Dia 2', t10k: 'Mês 2', t100k: '18 meses', factor: 'AI wave + existing audience' },
+                        { name: 'Jon Yongfook', product: 'Bannerbear', t1k: 'Mês 8', t10k: 'Mês 15', t100k: '4+ anos', factor: '50/50 rule, pricing optimization' }
+                    ]
+                },
+                {
+                    id: '6.7', title: '🧠 Mindset Final', type: 'principle',
+                    principle: {
+                        icon: '🧠',
+                        title: 'O Que Diferencia Quem Chega',
+                        content: 'Pieter Levels: 70+ projetos falhados antes dos hits. Jon Yongfook: 7 produtos no primeiro ano com $0. Danny Postma: múltiplos serviços falhados antes do Headlime. A diferença não é talento - é persistência através de anos de fracasso.'
+                    }
+                }
+            ]
+        }
+    };
+
+    // ========================================
+    // STATE & STORAGE
+    // ========================================
+    const STORAGE_KEY = 'launchpad2_hybrid_data';
+    let products = [];
+    let currentProductId = null;
+    let productToDelete = null;
+
+    function loadData() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const data = JSON.parse(saved);
+            products = data.products || [];
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ products }));
+    }
+
+    function generateId() {
+        return 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // ========================================
+    // PRODUCT MANAGEMENT
+    // ========================================
+    function createProduct() {
+        const name = document.getElementById('productName').value.trim();
+        if (!name) { alert('Nome é obrigatório'); return; }
+
+        const product = {
+            id: generateId(),
+            name,
+            description: document.getElementById('productDescription').value.trim(),
+            type: document.getElementById('productType').value,
+            color: document.querySelector('.color-btn.selected')?.dataset.color || '#f59e0b',
+            createdAt: new Date().toISOString(),
+            checklist: {},
+            scores: {},
+            metrics: {},
+            gates: {},
+            decisions: {},
+            notes: {}
+        };
+
+        products.push(product);
+        saveData();
+        closeNewProductModal();
+        selectProduct(product.id);
+        renderSidebar();
+    }
+
+    function selectProduct(id) {
+        currentProductId = id;
+        renderSidebar();
+        renderMainContent();
+    }
+
+    function getCurrentProduct() {
+        return products.find(p => p.id === currentProductId);
+    }
+
+    // ========================================
+    // RENDER FUNCTIONS
+    // ========================================
+    function renderSidebar() {
+        const list = document.getElementById('productList');
+        if (products.length === 0) {
+            list.innerHTML = '<p style="color: var(--text-muted); font-size: 13px; padding: 20px; text-align: center;">Nenhum projeto ainda.<br>Clique em "Novo Projeto" para começar.</p>';
+            return;
+        }
+
+        list.innerHTML = products.map(p => {
+            const progress = calculateTotalProgress(p);
+            const phase = getCurrentPhase(p);
+            return `
+                <div class="product-item ${p.id === currentProductId ? 'active' : ''}" onclick="selectProduct('${p.id}')">
+                    <div class="product-icon" style="background: ${p.color};">${p.name.charAt(0).toUpperCase()}</div>
+                    <div class="product-info">
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-phase">${phase}</div>
+                        <div class="product-progress-bar">
+                            <div class="product-progress-fill" style="width: ${progress}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderMainContent() {
+        const mainBody = document.getElementById('mainBody');
+        const product = getCurrentProduct();
+
+        if (!product) {
+            renderWelcomeScreen();
+            return;
+        }
+
+        document.getElementById('headerTitle').textContent = product.name;
+        document.getElementById('headerSubtitle').textContent = product.description || 'Hybrid Method: Stair-Step + Ship Fast + Mom Test';
+        document.getElementById('headerActions').innerHTML = `
+            <button class="btn btn-secondary btn-sm" onclick="openDeleteModal('${product.id}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                Excluir
+            </button>
+        `;
+
+        mainBody.innerHTML = `
+            ${renderProgressOverview(product)}
+            ${renderPhases(product)}
+        `;
+    }
+
+    function renderWelcomeScreen() {
+        document.getElementById('headerTitle').textContent = 'Launchpad 2.0 - Hybrid Method';
+        document.getElementById('headerSubtitle').textContent = 'O caminho comprovado de $0 → $100K MRR para solo founders';
+        document.getElementById('headerActions').innerHTML = '';
+
+        document.getElementById('mainBody').innerHTML = `
+            <div class="welcome-screen">
+                <div class="welcome-icon">🚀</div>
+                <h1 class="welcome-title">Hybrid Method</h1>
+                <p class="welcome-description">
+                    A combinação mais eficiente para solo founders técnicos:
+                    <strong>Stair-Step</strong> (Rob Walling) + <strong>Ship Fast</strong> (Pieter Levels) + <strong>Mom Test</strong> (Rob Fitzpatrick).
+                    Produz mais founders $100K+ MRR documentados que qualquer outro framework.
+                </p>
+                <button class="btn btn-primary btn-lg" onclick="openNewProductModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Começar Novo Projeto
+                </button>
+
+                <div class="welcome-stats">
+                    <div class="welcome-stat">
+                        <div class="welcome-stat-value">9-24</div>
+                        <div class="welcome-stat-label">meses para $100K MRR</div>
+                    </div>
+                    <div class="welcome-stat">
+                        <div class="welcome-stat-value">43%</div>
+                        <div class="welcome-stat-label">taxa de sucesso TinySeed</div>
+                    </div>
+                    <div class="welcome-stat">
+                        <div class="welcome-stat-value">50/50</div>
+                        <div class="welcome-stat-label">código vs marketing</div>
+                    </div>
+                    <div class="welcome-stat">
+                        <div class="welcome-stat-value">2-4</div>
+                        <div class="welcome-stat-label">semanas para MVP</div>
+                    </div>
+                </div>
+
+                <div class="welcome-founders">
+                    <div class="founder-card">
+                        <div class="founder-name">Pieter Levels</div>
+                        <div class="founder-product">Photo AI</div>
+                        <div class="founder-mrr">$300K/mês</div>
+                    </div>
+                    <div class="founder-card">
+                        <div class="founder-name">Danny Postma</div>
+                        <div class="founder-product">HeadshotPro</div>
+                        <div class="founder-mrr">$300K/mês</div>
+                    </div>
+                    <div class="founder-card">
+                        <div class="founder-name">Tony Dinh</div>
+                        <div class="founder-product">Typing Mind</div>
+                        <div class="founder-mrr">$50K/mês</div>
+                    </div>
+                    <div class="founder-card">
+                        <div class="founder-name">Jon Yongfook</div>
+                        <div class="founder-product">Bannerbear</div>
+                        <div class="founder-mrr">$50K/mês</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderProgressOverview(product) {
+        const totalProgress = calculateTotalProgress(product);
+        const completedItems = countCompletedItems(product);
+        const totalItems = countTotalItems();
+
+        return `
+            <div class="progress-overview">
+                <div class="progress-header">
+                    <div class="progress-title">Progresso Geral</div>
+                    <div class="progress-stats">
+                        <div class="progress-stat">
+                            <div class="progress-stat-value gold">${totalProgress}%</div>
+                            <div class="progress-stat-label">Completo</div>
+                        </div>
+                        <div class="progress-stat">
+                            <div class="progress-stat-value">${completedItems}/${totalItems}</div>
+                            <div class="progress-stat-label">Tarefas</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="progress-bar-large">
+                    <div class="progress-bar-fill" style="width: ${totalProgress}%;"></div>
+                </div>
+                <div class="progress-phases">
+                    ${PHASES.map(phase => {
+                        const phaseProgress = calculatePhaseProgress(product, phase.id);
+                        return `
+                            <div class="progress-phase ${phaseProgress === 100 ? 'completed' : ''}" onclick="scrollToPhase('${phase.id}')">
+                                <div class="progress-phase-icon">${phase.icon}</div>
+                                <div class="progress-phase-number">${phase.time}</div>
+                                <div class="progress-phase-name">${phase.name}</div>
+                                <div class="progress-phase-bar">
+                                    <div class="progress-phase-fill" style="width: ${phaseProgress}%; background: ${phase.color};"></div>
+                                </div>
+                                <div class="progress-phase-percent">${phaseProgress}%</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderPhases(product) {
+        return PHASES.map(phase => {
+            const phaseData = CHECKLIST_DATA[phase.id];
+            const progress = calculatePhaseProgress(product, phase.id);
+
+            return `
+                <div class="phase-section" id="${phase.id}">
+                    <div class="phase-header" onclick="togglePhase('${phase.id}')">
+                        <div class="phase-header-left">
+                            <div class="phase-number" style="background: ${phase.color};">${phase.icon}</div>
+                            <div class="phase-info">
+                                <h3>${phase.fullName}</h3>
+                                <p>${phase.time} • ${phaseData.subsections.length} seções</p>
+                            </div>
+                        </div>
+                        <div class="phase-header-right">
+                            <div class="phase-progress-mini">
+                                <div class="phase-progress-mini-bar">
+                                    <div class="phase-progress-mini-fill" style="width: ${progress}%; background: ${phase.color};"></div>
+                                </div>
+                                <div class="phase-progress-mini-text">${progress}%</div>
+                            </div>
+                            <div class="phase-toggle">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="phase-content">
+                        ${phaseData.subsections.map(sub => renderSubsection(product, sub, phase)).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderSubsection(product, sub, phase) {
+        let content = '';
+
+        // Principle box
+        if (sub.principle) {
+            content += `
+                <div class="principle-box">
+                    <div class="principle-box-title">${sub.principle.icon} ${sub.principle.title}</div>
+                    <div class="principle-box-content">${sub.principle.content}</div>
+                </div>
+            `;
+        }
+
+        // Milestone box
+        if (sub.milestone) {
+            content += `
+                <div class="milestone-item current" style="margin: 20px 0; max-width: 100%; flex: 1;">
+                    <div class="milestone-value">${sub.milestone.value}</div>
+                    <div class="milestone-label">${sub.milestone.label}</div>
+                    <div class="milestone-time">${sub.milestone.time}</div>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">${sub.milestone.desc}</p>
+                </div>
+            `;
+        }
+
+        // Checklist items
+        if (sub.items && sub.items.length > 0) {
+            const completed = sub.items.filter(item => product.checklist[item.id]).length;
+            content += `
+                <div class="checklist">
+                    ${sub.items.map(item => renderChecklistItem(product, item)).join('')}
+                </div>
+            `;
+        }
+
+        // Timeline
+        if (sub.type === 'timeline' && sub.days) {
+            content += `
+                <div class="timeline-grid">
+                    ${sub.days.map(day => `
+                        <div class="timeline-day ${product.checklist['day_' + sub.id + '_' + day.day] ? 'completed' : ''}"
+                             onclick="toggleChecklist('day_${sub.id}_${day.day}')">
+                            <div class="timeline-day-header">
+                                ${product.checklist['day_' + sub.id + '_' + day.day] ? '✓' : '○'} ${day.day}
+                            </div>
+                            <div class="timeline-day-task">${day.task}</div>
+                            <div class="timeline-day-deliverable">${day.deliverable}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Gate criteria
+        if (sub.gateCriteria) {
+            const allChecked = sub.gateCriteria.every(c => product.gates[c.id]);
+            content += `
+                <div class="gate-box">
+                    <div class="gate-title">🚦 Critérios do Gate</div>
+                    <div class="gate-criteria">
+                        ${sub.gateCriteria.map(c => `
+                            <div class="gate-criterion ${product.gates[c.id] ? 'checked' : ''}" onclick="toggleGate('${c.id}')">
+                                <div class="gate-criterion-check">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                </div>
+                                <span class="gate-criterion-text">${c.text}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="gate-status-badge ${allChecked ? 'passed' : 'pending'}">
+                        ${allChecked ? '✓ GATE PASSED' : '○ Pendente'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Decision
+        if (sub.type === 'decision' && sub.options) {
+            content += `
+                <div class="decision-box">
+                    <div class="decision-title">🚦 Decisão</div>
+                    <div class="decision-options">
+                        ${sub.options.map(opt => `
+                            <div class="decision-option ${opt.class} ${product.decisions[sub.id] === opt.id ? 'selected' : ''}"
+                                 onclick="setDecision('${sub.id}', '${opt.id}')">
+                                <div class="decision-option-icon">${opt.icon}</div>
+                                <div class="decision-option-label">${opt.label}</div>
+                                <div class="decision-option-desc">${opt.desc}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Metrics
+        if (sub.metrics) {
+            content += `
+                <div class="metrics-grid">
+                    ${sub.metrics.map(m => `
+                        <div class="metric-card">
+                            <div class="metric-label">${m.label}</div>
+                            <input type="text" class="metric-input"
+                                   value="${product.metrics[m.id] || ''}"
+                                   placeholder="${m.prefix || ''}0${m.suffix || ''}"
+                                   onchange="updateMetric('${m.id}', this.value)">
+                            ${m.target ? `<div class="metric-target">Meta: <span>${m.target}</span></div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // 50/50 visualization
+        if (sub.type === 'fifty_fifty') {
+            content += `
+                <div class="fifty-fifty-box">
+                    <div class="fifty-fifty-title">⚖️ Regra 50/50</div>
+                    <div class="fifty-fifty-bars">
+                        <div class="fifty-fifty-bar coding">50% Código</div>
+                        <div class="fifty-fifty-bar marketing">50% Marketing</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Founders table
+        if (sub.type === 'founders_table' && sub.founders) {
+            content += `
+                <div style="overflow-x: auto; margin-top: 20px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <th style="text-align: left; padding: 12px; color: var(--text-muted);">Founder</th>
+                                <th style="text-align: left; padding: 12px; color: var(--text-muted);">Produto</th>
+                                <th style="text-align: center; padding: 12px; color: var(--text-muted);">$1K MRR</th>
+                                <th style="text-align: center; padding: 12px; color: var(--text-muted);">$10K MRR</th>
+                                <th style="text-align: center; padding: 12px; color: var(--text-muted);">$100K MRR</th>
+                                <th style="text-align: left; padding: 12px; color: var(--text-muted);">Fator Chave</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${sub.founders.map(f => `
+                                <tr style="border-bottom: 1px solid var(--border-color);">
+                                    <td style="padding: 12px; font-weight: 600;">${f.name}</td>
+                                    <td style="padding: 12px; color: var(--text-secondary);">${f.product}</td>
+                                    <td style="padding: 12px; text-align: center; color: var(--green);">${f.t1k}</td>
+                                    <td style="padding: 12px; text-align: center; color: var(--accent-primary);">${f.t10k}</td>
+                                    <td style="padding: 12px; text-align: center; color: var(--purple);">${f.t100k}</td>
+                                    <td style="padding: 12px; font-size: 11px; color: var(--text-muted);">${f.factor}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Notes
+        content += `
+            <div class="notes-section">
+                <label class="notes-label">📝 Notas</label>
+                <textarea class="notes-textarea"
+                          placeholder="Suas anotações para esta seção..."
+                          onchange="updateNotes('${sub.id}', this.value)">${product.notes[sub.id] || ''}</textarea>
+            </div>
+        `;
+
+        const itemCount = sub.items ? sub.items.length : 0;
+        const completedCount = sub.items ? sub.items.filter(i => product.checklist[i.id]).length : 0;
+
+        return `
+            <div class="subsection">
+                <div class="subsection-header">
+                    <div class="subsection-header-left">
+                        <span class="subsection-number">${sub.id}</span>
+                        <span class="subsection-title">${sub.title}</span>
+                    </div>
+                    ${itemCount > 0 ? `<span class="subsection-progress">${completedCount}/${itemCount}</span>` : ''}
+                </div>
+                ${content}
+            </div>
+        `;
+    }
+
+    function renderChecklistItem(product, item) {
+        const isCompleted = product.checklist[item.id];
+        const tooltip = TOOLTIPS[item.id];
+
+        return `
+            <div class="checklist-item ${isCompleted ? 'completed' : ''}" onclick="toggleChecklist('${item.id}')">
+                <div class="checklist-checkbox">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="checklist-content">
+                    <div class="checklist-text-row">
+                        <span class="checklist-text">${item.text}</span>
+                        ${tooltip ? `
+                            <span class="checklist-info">i
+                                <div class="checklist-tooltip">
+                                    <div class="checklist-tooltip-title">${tooltip.title}</div>
+                                    <div class="checklist-tooltip-content">${tooltip.content}</div>
+                                    ${tooltip.example ? `<div class="checklist-tooltip-example"><strong>Exemplo:</strong> ${tooltip.example}</div>` : ''}
+                                </div>
+                            </span>
+                        ` : ''}
+                    </div>
+                    ${item.meta ? `<div class="checklist-meta">${item.meta}</div>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    // ========================================
+    // CALCULATION FUNCTIONS
+    // ========================================
+    function calculateTotalProgress(product) {
+        let total = 0;
+        let completed = 0;
+
+        Object.values(CHECKLIST_DATA).forEach(phase => {
+            phase.subsections.forEach(sub => {
+                if (sub.items) {
+                    total += sub.items.length;
+                    completed += sub.items.filter(i => product.checklist[i.id]).length;
+                }
+                if (sub.gateCriteria) {
+                    total += sub.gateCriteria.length;
+                    completed += sub.gateCriteria.filter(c => product.gates[c.id]).length;
+                }
+            });
+        });
+
+        return total === 0 ? 0 : Math.round((completed / total) * 100);
+    }
+
+    function calculatePhaseProgress(product, phaseId) {
+        const phase = CHECKLIST_DATA[phaseId];
+        if (!phase) return 0;
+
+        let total = 0;
+        let completed = 0;
+
+        phase.subsections.forEach(sub => {
+            if (sub.items) {
+                total += sub.items.length;
+                completed += sub.items.filter(i => product.checklist[i.id]).length;
+            }
+            if (sub.gateCriteria) {
+                total += sub.gateCriteria.length;
+                completed += sub.gateCriteria.filter(c => product.gates[c.id]).length;
+            }
+        });
+
+        return total === 0 ? 0 : Math.round((completed / total) * 100);
+    }
+
+    function countCompletedItems(product) {
+        let count = 0;
+        Object.values(CHECKLIST_DATA).forEach(phase => {
+            phase.subsections.forEach(sub => {
+                if (sub.items) {
+                    count += sub.items.filter(i => product.checklist[i.id]).length;
+                }
+            });
+        });
+        return count;
+    }
+
+    function countTotalItems() {
+        let count = 0;
+        Object.values(CHECKLIST_DATA).forEach(phase => {
+            phase.subsections.forEach(sub => {
+                if (sub.items) count += sub.items.length;
+            });
+        });
+        return count;
+    }
+
+    function getCurrentPhase(product) {
+        for (let i = 0; i < PHASES.length; i++) {
+            const progress = calculatePhaseProgress(product, PHASES[i].id);
+            if (progress < 100) {
+                return `Fase ${i + 1}: ${PHASES[i].name}`;
+            }
+        }
+        return 'Completo!';
+    }
+
+    // ========================================
+    // EVENT HANDLERS
+    // ========================================
+    function toggleChecklist(id) {
+        const product = getCurrentProduct();
+        if (!product) return;
+
+        product.checklist[id] = !product.checklist[id];
+        saveData();
+        renderMainContent();
+        renderSidebar();
+    }
+
+    function toggleGate(id) {
+        const product = getCurrentProduct();
+        if (!product) return;
+
+        product.gates[id] = !product.gates[id];
+        saveData();
+        renderMainContent();
+    }
+
+    function setDecision(subId, optionId) {
+        const product = getCurrentProduct();
+        if (!product) return;
+
+        product.decisions[subId] = optionId;
+        saveData();
+        renderMainContent();
+    }
+
+    function updateMetric(id, value) {
+        const product = getCurrentProduct();
+        if (!product) return;
+
+        product.metrics[id] = value;
+        saveData();
+    }
+
+    function updateNotes(subId, value) {
+        const product = getCurrentProduct();
+        if (!product) return;
+
+        product.notes[subId] = value;
+        saveData();
+    }
+
+    function togglePhase(phaseId) {
+        const section = document.getElementById(phaseId);
+        if (section) {
+            section.classList.toggle('expanded');
+        }
+    }
+
+    function scrollToPhase(phaseId) {
+        const section = document.getElementById(phaseId);
+        if (section) {
+            section.classList.add('expanded');
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // ========================================
+    // MODAL FUNCTIONS
+    // ========================================
+    function openNewProductModal() {
+        document.getElementById('newProductModal').classList.add('active');
+        document.getElementById('productName').value = '';
+        document.getElementById('productDescription').value = '';
+        document.getElementById('productType').value = 'stair-step';
+        document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+        document.querySelector('.color-btn[data-color="#f59e0b"]').classList.add('selected');
+        document.getElementById('productName').focus();
+    }
+
+    function closeNewProductModal() {
+        document.getElementById('newProductModal').classList.remove('active');
+    }
+
+    function selectColor(btn) {
+        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }
+
+    function openDeleteModal(id) {
+        productToDelete = id;
+        const product = products.find(p => p.id === id);
+        document.getElementById('deleteProductName').textContent = product?.name || '';
+        document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        productToDelete = null;
+    }
+
+    function confirmDelete() {
+        if (productToDelete) {
+            products = products.filter(p => p.id !== productToDelete);
+            if (currentProductId === productToDelete) {
+                currentProductId = products.length > 0 ? products[0].id : null;
+            }
+            saveData();
+            renderSidebar();
+            renderMainContent();
+        }
+        closeDeleteModal();
+    }
+
+    // ========================================
+    // IMPORT/EXPORT
+    // ========================================
+    function exportAllData() {
+        const data = JSON.stringify({ products, exportedAt: new Date().toISOString() }, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `launchpad2-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    if (data.products) {
+                        products = data.products;
+                        currentProductId = products.length > 0 ? products[0].id : null;
+                        saveData();
+                        renderSidebar();
+                        renderMainContent();
+                        alert('Dados importados com sucesso!');
+                    }
+                } catch (err) {
+                    alert('Erro ao importar arquivo');
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    }
+
+    // ========================================
+    // KEYBOARD SHORTCUTS
+    // ========================================
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeNewProductModal();
+            closeDeleteModal();
+        }
+        if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            openNewProductModal();
+        }
+    });
+
+    // Click outside modal to close
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.classList.remove('active');
+            }
+        });
+    });
+
+    // ========================================
+    // INIT
+    // ========================================
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData();
+        renderSidebar();
+
+        if (products.length > 0) {
+            currentProductId = products[0].id;
+        }
+
+        renderMainContent();
+
+        // Expand first phase by default
+        const firstPhase = document.getElementById('phase1');
+        if (firstPhase) {
+            firstPhase.classList.add('expanded');
+        }
+    });
+    </script>
+</body>
+</html>

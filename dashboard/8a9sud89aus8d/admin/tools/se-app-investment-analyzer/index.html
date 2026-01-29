@@ -1,0 +1,2285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Analyzer | SaaS Toolkit</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Shared Components -->
+    <link rel="stylesheet" href="shared/shared-variables.css">
+    <link rel="stylesheet" href="shared/shared-base.css">
+    <link rel="stylesheet" href="shared/shared-buttons.css">
+    <link rel="stylesheet" href="shared/shared-forms.css">
+    <link rel="stylesheet" href="shared/shared-cards.css">
+    <link rel="stylesheet" href="shared/shared-sidebar.css">
+    <style>
+        /* ========================================
+           INVESTMENT ANALYZER - PAGE SPECIFIC STYLES
+           ======================================== */
+
+        .app-container { display: flex; min-height: 100vh; padding-top: 64px; }
+
+        /* Left Sidebar - Analysis List */
+        .sidebar-left {
+            width: 280px;
+        }
+
+        /* Right Sidebar - Score Panel */
+        .sidebar-right {
+            width: 320px;
+            padding: 24px;
+            overflow-y: auto;
+            position: fixed;
+            right: 0;
+            top: 64px;
+            height: calc(100vh - 64px);
+            z-index: 100;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .score-panel-header { margin-bottom: 20px; }
+
+        .score-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .score-breakdown-section {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .breakdown-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .score-actions {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 16px; }
+
+        .analysis-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .analysis-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .analysis-item:hover { background: var(--bg-tertiary); }
+        .analysis-item.active { background: var(--bg-elevated); border-color: var(--info); }
+
+        .analysis-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            flex-shrink: 0;
+            color: white;
+        }
+
+        .analysis-info { flex: 1; min-width: 0; }
+        .analysis-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .analysis-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .analysis-score {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .analysis-score.invest { color: var(--accent-primary); }
+        .analysis-score.caution { color: var(--warning); }
+        .analysis-score.reject { color: var(--danger); }
+
+        .add-analysis-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 12px;
+        }
+
+        .add-analysis-btn:hover {
+            border-color: var(--info);
+            color: var(--info);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* Score Panel in Sidebar */
+        .score-panel {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .score-header { text-align: center; margin-bottom: 16px; }
+
+        .score-value {
+            font-size: 56px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1;
+        }
+
+        .score-value.invest { color: var(--accent-primary); }
+        .score-value.caution { color: var(--warning); }
+        .score-value.reject { color: var(--danger); }
+
+        .score-label { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+
+        .verdict-badge {
+            display: block;
+            text-align: center;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 16px;
+        }
+
+        .verdict-badge.invest { background: rgba(16, 185, 129, 0.15); color: var(--accent-primary); border: 1px solid var(--accent-primary); }
+        .verdict-badge.caution { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+        .verdict-badge.reject { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+
+        .score-breakdown { margin-top: 20px; }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .breakdown-item:last-child { border-bottom: none; }
+        .breakdown-name { font-size: 13px; color: var(--text-secondary); }
+
+        .breakdown-score {
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .breakdown-score.good { color: var(--accent-primary); }
+        .breakdown-score.warning { color: var(--warning); }
+        .breakdown-score.bad { color: var(--danger); }
+
+        .red-flags-box {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .red-flags-title { font-size: 13px; font-weight: 600; color: var(--danger); margin-bottom: 10px; }
+
+        .red-flag-item {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+        }
+
+        .red-flag-item:last-child { border-bottom: none; }
+
+        .sidebar-footer { padding: 16px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; }
+
+        /* Main Content */
+        .main-content { flex: 1; margin-left: 280px; margin-right: 320px; min-height: calc(100vh - 64px); }
+
+        .main-header {
+            position: sticky;
+            top: 64px;
+            background: rgba(10, 10, 11, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 32px;
+            z-index: 50;
+        }
+
+        .header-content { display: flex; align-items: center; justify-content: space-between; }
+        .header-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+        .header-subtitle { font-size: 14px; color: var(--text-secondary); margin-top: 4px; }
+        .header-actions { display: flex; gap: 12px; }
+
+        .main-body { padding: 32px; max-width: 1100px; }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 250px);
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-icon {
+            width: 100px;
+            height: 100px;
+            background: var(--gradient-3);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 44px;
+            margin-bottom: 28px;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.2);
+        }
+
+        .welcome-title { font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+        .welcome-description { font-size: 16px; color: var(--text-secondary); max-width: 450px; margin-bottom: 28px; line-height: 1.7; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary { background: var(--gradient-3); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg), 0 0 40px rgba(59, 130, 246, 0.2); }
+        .btn-secondary { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { border-color: var(--border-hover); background: var(--bg-tertiary); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-sm { padding: 8px 16px; font-size: 13px; }
+        .btn-lg { padding: 16px 32px; font-size: 16px; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 480px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal { transform: scale(1) translateY(0); }
+        .modal-header { padding: 24px; border-bottom: 1px solid var(--border-color); }
+        .modal-title { font-size: 20px; font-weight: 700; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
+
+        /* Alert Box */
+        .alert-box {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .alert-box-title { font-size: 14px; font-weight: 600; color: var(--info); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .alert-box-content { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+
+        /* Sections */
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .section-header:hover { background: var(--bg-tertiary); }
+
+        .section-header-left { display: flex; align-items: center; gap: 16px; }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+            color: white;
+        }
+
+        .section-info h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+        .section-info p { font-size: 13px; color: var(--text-secondary); }
+
+        .section-header-right { display: flex; align-items: center; gap: 16px; }
+
+        .section-weight {
+            background: var(--bg-tertiary);
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .section-toggle {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+            color: var(--text-muted);
+        }
+
+        .section-toggle svg { transition: transform 0.3s ease; }
+        .section.expanded .section-toggle svg { transform: rotate(180deg); }
+
+        .section-content {
+            display: none;
+            padding: 0 24px 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .section.expanded .section-content { display: block; }
+
+        /* Forms */
+        .form-group { margin-top: 20px; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+        .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--info);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input[type="number"] {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2371717a' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 20px;
+            padding-right: 44px;
+        }
+
+        /* Calc Display */
+        .calc-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--info);
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            margin-top: 12px;
+        }
+
+        .calc-label { font-size: 13px; color: var(--text-secondary); }
+
+        .calc-value {
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--info);
+        }
+
+        .calc-display.highlight {
+            border-left-color: var(--accent-primary);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .calc-display.highlight .calc-value {
+            color: var(--accent-primary);
+            font-size: 18px;
+        }
+
+        /* Calculator Groups */
+        .calc-group {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .calc-group-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .calc-group-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .calc-inputs-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .calc-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .calc-input-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .calc-input-sm {
+            padding: 10px 12px !important;
+            font-size: 14px !important;
+        }
+
+        .calc-result {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        .calc-result-formula {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .calc-result-value {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-primary);
+        }
+
+        .calc-auto-display {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            margin-bottom: 12px;
+        }
+
+        .calc-auto-label {
+            font-size: 12px;
+            color: var(--info);
+            font-style: italic;
+        }
+
+        /* Tooltips */
+        .label-row { display: flex; align-items: center; gap: 8px; }
+
+        .info-icon {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: var(--info);
+            color: white;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: help;
+            flex-shrink: 0;
+        }
+
+        .info-icon.mini {
+            width: 14px;
+            height: 14px;
+            font-size: 9px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        .calc-input-label {
+            display: flex;
+            align-items: center;
+        }
+
+        .info-icon:hover { background: #2563eb; }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 10px;
+            padding: 16px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-hover);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            width: 320px;
+            max-width: 90vw;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            text-align: left;
+        }
+
+        .info-icon:hover .tooltip { opacity: 1; visibility: visible; }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: var(--border-hover);
+        }
+
+        .tooltip-title { font-weight: 700; color: var(--info); margin-bottom: 8px; font-size: 13px; }
+        .tooltip-content { font-size: 12px; line-height: 1.6; color: var(--text-secondary); }
+        .tooltip-content p { margin-bottom: 6px; }
+        .tooltip-content strong { color: var(--text-primary); }
+        .tooltip-example { background: var(--bg-tertiary); padding: 8px 10px; border-radius: var(--radius-sm); margin-top: 8px; font-size: 11px; }
+
+        /* Checkbox Group */
+        .checkbox-group { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-item:hover { background: var(--bg-elevated); border-color: var(--border-hover); }
+        .checkbox-item.checked { border-color: var(--danger); background: rgba(239, 68, 68, 0.05); }
+
+        .checkbox-box {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-hover);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-item.checked .checkbox-box { background: var(--danger); border-color: var(--danger); }
+        .checkbox-box svg { width: 14px; height: 14px; opacity: 0; color: white; }
+        .checkbox-item.checked .checkbox-box svg { opacity: 1; }
+        .checkbox-text { font-size: 14px; }
+
+        /* Color Options */
+        .color-options { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .color-btn {
+            width: 36px;
+            height: 36px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .color-btn:hover { transform: scale(1.1); }
+        .color-btn.selected { border-color: white; box-shadow: 0 0 0 2px var(--bg-primary); }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .sidebar-right { width: 280px; }
+            .main-content { margin-right: 280px !important; }
+        }
+
+        @media (max-width: 1200px) {
+            .sidebar-right { display: none !important; }
+            .main-content { margin-right: 0 !important; }
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar-left { display: none; }
+            .main-content { margin-left: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .top-nav { display: none; }
+        }
+
+        /* Print Styles - Professional PDF */
+        @media print {
+            @page {
+                margin: 1.5cm;
+                size: A4;
+            }
+
+            body {
+                background: white !important;
+                color: #111 !important;
+                font-size: 10pt;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .top-header, .sidebar-left, .sidebar-right, .header-actions, .btn, .alert-box, .section-toggle { display: none !important; }
+            .main-content { margin-left: 0 !important; margin-right: 0 !important; padding-top: 0 !important; }
+            .main-header { position: static !important; background: white !important; border: none !important; padding: 0 !important; }
+            .main-body { padding: 0 !important; max-width: 100% !important; }
+
+            /* Print Summary Page */
+            #print-summary {
+                page-break-after: always;
+                padding: 0;
+                text-align: center;
+            }
+
+            .print-header-bar {
+                background: #3b82f6 !important;
+                color: white !important;
+                padding: 20px;
+                margin-bottom: 30px;
+            }
+
+            .print-main-title {
+                font-size: 24pt;
+                font-weight: 700;
+                margin: 0;
+            }
+
+            .print-subtitle {
+                font-size: 11pt;
+                opacity: 0.9;
+                margin-top: 5px;
+            }
+
+            .print-company-name {
+                font-size: 28pt;
+                font-weight: 700;
+                color: #111;
+                margin: 40px 0 10px;
+            }
+
+            .print-date {
+                font-size: 11pt;
+                color: #666;
+                margin-bottom: 40px;
+            }
+
+            .print-score-box {
+                background: #f8fafc !important;
+                border: 3px solid #3b82f6;
+                border-radius: 16px;
+                padding: 40px;
+                margin: 0 auto 40px;
+                max-width: 400px;
+            }
+
+            .print-score-value {
+                font-size: 80pt;
+                font-weight: 800;
+                line-height: 1;
+                margin-bottom: 10px;
+            }
+
+            .print-score-value.invest { color: #059669 !important; }
+            .print-score-value.caution { color: #d97706 !important; }
+            .print-score-value.reject { color: #dc2626 !important; }
+
+            .print-score-label {
+                font-size: 12pt;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }
+
+            .print-verdict-box {
+                display: inline-block;
+                padding: 15px 40px;
+                border-radius: 8px;
+                font-size: 16pt;
+                font-weight: 700;
+                margin-top: 20px;
+            }
+
+            .print-verdict-box.invest {
+                background: #ecfdf5 !important;
+                color: #059669 !important;
+                border: 2px solid #059669;
+            }
+
+            .print-verdict-box.caution {
+                background: #fffbeb !important;
+                color: #d97706 !important;
+                border: 2px solid #d97706;
+            }
+
+            .print-verdict-box.reject {
+                background: #fef2f2 !important;
+                color: #dc2626 !important;
+                border: 2px solid #dc2626;
+            }
+
+            .print-breakdown-section {
+                margin-top: 50px;
+                text-align: left;
+            }
+
+            .print-breakdown-title {
+                font-size: 14pt;
+                font-weight: 700;
+                color: #3b82f6;
+                border-bottom: 2px solid #3b82f6;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+
+            .print-breakdown-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .print-breakdown-table td {
+                padding: 12px 15px;
+                border-bottom: 1px solid #e5e7eb;
+                font-size: 11pt;
+            }
+
+            .print-breakdown-table tr:nth-child(even) td {
+                background: #f9fafb !important;
+            }
+
+            .print-breakdown-table td:last-child {
+                text-align: right;
+                font-weight: 700;
+                color: #3b82f6;
+                font-size: 12pt;
+            }
+
+            /* Sections in PDF */
+            .section {
+                break-inside: avoid;
+                border: 1px solid #e5e7eb !important;
+                margin-bottom: 20px !important;
+                background: white !important;
+            }
+
+            .section-header {
+                background: #f9fafb !important;
+                border-bottom: 1px solid #e5e7eb !important;
+            }
+
+            .section-icon { display: none !important; }
+
+            .section-info h3 {
+                color: #111 !important;
+                font-size: 12pt !important;
+            }
+
+            .section-info p { display: none !important; }
+
+            .section-weight {
+                background: #e5e7eb !important;
+                color: #374151 !important;
+            }
+
+            .section-content {
+                display: block !important;
+                border-top: none !important;
+            }
+
+            .form-group {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                padding: 8px 0;
+                border-bottom: 1px solid #f3f4f6;
+            }
+
+            .form-label {
+                font-size: 10pt;
+                color: #374151 !important;
+                flex: 0 0 55%;
+            }
+
+            .form-input, .form-select {
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                font-size: 10pt;
+                font-weight: 600;
+                color: #3b82f6 !important;
+                text-align: right;
+                flex: 0 0 40%;
+            }
+
+            .form-hint, .info-icon, .tooltip { display: none !important; }
+
+            .calc-display {
+                background: #f0f9ff !important;
+                border: none !important;
+                border-left: 3px solid #3b82f6 !important;
+                margin: 8px 0 !important;
+            }
+
+            .calc-label { color: #374151 !important; }
+            .calc-value { color: #3b82f6 !important; }
+
+            .checkbox-group { margin-top: 10px !important; }
+
+            .checkbox-item {
+                padding: 8px 0 !important;
+                background: transparent !important;
+                border: none !important;
+                border-bottom: 1px solid #f3f4f6 !important;
+            }
+
+            .checkbox-box { display: none !important; }
+
+            .checkbox-item::before {
+                content: '[ ]';
+                font-family: monospace;
+                margin-right: 10px;
+                color: #9ca3af;
+            }
+
+            .checkbox-item.checked::before {
+                content: '[X]';
+                color: #dc2626;
+            }
+
+            .checkbox-text {
+                font-size: 10pt;
+                color: #374151 !important;
+            }
+        }
+    </style>
+    <script src="shared/shared-header.js"></script>
+</head>
+<body data-saas-header="investment">
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <!-- Left Sidebar - Analysis List -->
+        <aside class="sidebar-left">
+            <div class="sidebar-header">
+                <div class="sidebar-title">Suas An&#225;lises</div>
+                <button class="add-analysis-btn" onclick="createNewAnalysis()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Nova An&#225;lise
+                </button>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="analysis-list" id="analysisList">
+                    <!-- Analyses will be rendered here -->
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Right Sidebar - Score Panel -->
+        <aside class="sidebar-right" id="scoreSidebar" style="display: none;">
+            <div class="score-panel-header">
+                <div class="score-title">Pontua&#231;&#227;o</div>
+            </div>
+
+            <div class="score-panel" id="scorePanel">
+                <div class="score-header">
+                    <div class="score-value invest" id="finalScore">0</div>
+                    <div class="score-label">de 100 pontos</div>
+                </div>
+                <div class="verdict-badge invest" id="verdict">Preencha os campos</div>
+            </div>
+
+            <div class="score-breakdown-section">
+                <div class="breakdown-title">Detalhamento</div>
+                <div class="score-breakdown">
+                    <div class="breakdown-item">
+                        <span class="breakdown-name">Financeiro</span>
+                        <span class="breakdown-score good" id="scoreFinancial">0/40</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-name">Mercado</span>
+                        <span class="breakdown-score good" id="scoreMarket">0/25</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-name">Equipe</span>
+                        <span class="breakdown-score good" id="scoreTeam">0/20</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-name">Crescimento</span>
+                        <span class="breakdown-score good" id="scoreGrowth">0/10</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-name">Red Flags</span>
+                        <span class="breakdown-score bad" id="scoreRedFlags">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="red-flags-box" id="redFlagsDisplay" style="display: none;">
+                <div class="red-flags-title">&#128681; Red Flags Ativos</div>
+                <div id="redFlagsList"></div>
+            </div>
+
+            <div class="score-actions">
+                <button class="btn btn-primary" onclick="exportPDF()" style="width: 100%;" id="exportBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                    Exportar PDF
+                </button>
+                <button class="btn btn-secondary" onclick="deleteCurrentAnalysis()" style="width: 100%; margin-top: 8px;" id="deleteBtnRight">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    Excluir An&#225;lise
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Welcome Screen -->
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="welcome-icon">&#128200;</div>
+                <h1 class="welcome-title">Investment Analyzer</h1>
+                <p class="welcome-description">
+                    Framework profissional para avalia&#231;&#227;o de oportunidades de investimento em SaaS.
+                    Crie sua primeira an&#225;lise para come&#231;ar.
+                </p>
+                <button class="btn btn-primary btn-lg" onclick="createNewAnalysis()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Criar Nova An&#225;lise
+                </button>
+            </div>
+
+            <!-- Analysis Form -->
+            <div id="analysisForm" style="display: none;">
+                <div class="main-body">
+                    <!-- Alert Info -->
+                    <div class="alert-box">
+                        <div class="alert-box-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                            M&#233;todo Pareto 80/20
+                        </div>
+                        <div class="alert-box-content">
+                            An&#225;lise baseada em m&#233;tricas validadas por Bessemer, a16z e Sequoia Capital.
+                            <strong>Salvamento autom&#225;tico</strong> - seus dados s&#227;o preservados automaticamente.
+                        </div>
+                    </div>
+
+                    <!-- Section 1: Basic Info -->
+                    <div class="section expanded" data-section="basic">
+                        <div class="section-header" onclick="toggleSection(this.parentElement)">
+                            <div class="section-header-left">
+                                <div class="section-icon" style="background: var(--gradient-2);">&#128203;</div>
+                                <div class="section-info">
+                                    <h3>Informa&#231;&#245;es B&#225;sicas</h3>
+                                    <p>Dados gerais da empresa</p>
+                                </div>
+                            </div>
+                            <div class="section-header-right">
+                                <div class="section-toggle">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <div class="label-row">
+                                        <span>Nome da Empresa</span>
+                                        <span class="info-icon">i
+                                            <div class="tooltip">
+                                                <div class="tooltip-title">Como preencher</div>
+                                                <div class="tooltip-content">Nome completo da empresa sendo analisada. <strong>Fonte:</strong> Pitch deck, site ou contrato social.</div>
+                                            </div>
+                                        </span>
+                                    </div>
+                                </label>
+                                <input type="text" class="form-input" id="companyName" placeholder="Digite o nome da empresa">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <div class="label-row">
+                                        <span>Est&#225;gio da Empresa</span>
+                                        <span class="info-icon">i
+                                            <div class="tooltip">
+                                                <div class="tooltip-title">Como identificar</div>
+                                                <div class="tooltip-content">
+                                                    <p><strong>Pre-Seed:</strong> MVP/Ideia. <strong>Seed:</strong> $0-1M ARR. <strong>Series A:</strong> $1-5M ARR. <strong>Series B:</strong> $5M+ ARR.</p>
+                                                </div>
+                                            </div>
+                                        </span>
+                                    </div>
+                                </label>
+                                <select class="form-select" id="companyStage">
+                                    <option value="">Selecione...</option>
+                                    <option value="pre-seed">Pre-Seed (MVP)</option>
+                                    <option value="seed">Seed (US$ 0-1M ARR)</option>
+                                    <option value="series-a">Series A (US$ 1-5M ARR)</option>
+                                    <option value="series-b">Series B (US$ 5M+ ARR)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <div class="label-row">
+                                        <span>Valuation Solicitada (Pre-Money USD)</span>
+                                        <span class="info-icon">i
+                                            <div class="tooltip">
+                                                <div class="tooltip-title">Pre-Money Valuation</div>
+                                                <div class="tooltip-content">
+                                                    <p>Valor da empresa <strong>antes</strong> do investimento. <strong>Fonte:</strong> Term sheet ou pitch deck.</p>
+                                                    <div class="tooltip-example">Se pedem $2M por 20% = Pre-money de $8M</div>
+                                                </div>
+                                            </div>
+                                        </span>
+                                    </div>
+                                </label>
+                                <input type="text" class="form-input" id="requestedValuation" placeholder="Ex: 10,000,000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Financial Metrics -->
+                    <div class="section expanded" data-section="financial">
+                        <div class="section-header" onclick="toggleSection(this.parentElement)">
+                            <div class="section-header-left">
+                                <div class="section-icon" style="background: var(--gradient-1);">&#128176;</div>
+                                <div class="section-info">
+                                    <h3>M&#233;tricas Financeiras</h3>
+                                    <p>Receita, reten&#231;&#227;o e unit economics</p>
+                                </div>
+                            </div>
+                            <div class="section-header-right">
+                                <span class="section-weight">40 pts</span>
+                                <div class="section-toggle">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <div class="label-row">
+                                        <span>MRR &#8212; Monthly Recurring Revenue (USD)</span>
+                                        <span class="info-icon">i
+                                            <div class="tooltip">
+                                                <div class="tooltip-title">Como calcular MRR</div>
+                                                <div class="tooltip-content">
+                                                    <p>Soma de todas receitas recorrentes mensais. <strong>Fonte:</strong> Stripe, Chargebee.</p>
+                                                    <div class="tooltip-example">100 clientes &#215; $500/m&#234;s = $50,000 MRR</div>
+                                                </div>
+                                            </div>
+                                        </span>
+                                    </div>
+                                </label>
+                                <input type="text" class="form-input" id="mrr" placeholder="50,000">
+                            </div>
+                            <div class="calc-display">
+                                <span class="calc-label">ARR (Annual Recurring Revenue)</span>
+                                <span class="calc-value" id="arrDisplay">US$ 0</span>
+                            </div>
+
+                            <!-- NRR Calculator -->
+                            <div class="calc-group">
+                                <div class="calc-group-header">
+                                    <span class="calc-group-title">NRR &#8212; Net Revenue Retention</span>
+                                    <span class="info-icon">i
+                                        <div class="tooltip">
+                                            <div class="tooltip-title">Net Revenue Retention</div>
+                                            <div class="tooltip-content">
+                                                <p><strong>F&#243;rmula:</strong> ((MRR + Expans&#227;o - Churn) / MRR) &#215; 100</p>
+                                                <p>Mede quanto da receita voc&#234; mant&#233;m ap&#243;s um per&#237;odo, considerando expans&#245;es (upsells) e cancelamentos.</p>
+                                                <div class="tooltip-example">&gt;120% excelente | 100-120% ok | &lt;100% problema</div>
+                                            </div>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="calc-auto-display">
+                                    <span class="calc-auto-label">Usa o MRR informado acima como base</span>
+                                </div>
+                                <div class="calc-inputs-row">
+                                    <div class="calc-input-group">
+                                        <label class="calc-input-label">
+                                            Expans&#227;o (USD)
+                                            <span class="info-icon mini">i
+                                                <div class="tooltip">
+                                                    <div class="tooltip-title">Expans&#227;o de Receita</div>
+                                                    <div class="tooltip-content">
+                                                        <p>Receita <strong>adicional</strong> de clientes existentes: upgrades, upsells, add-ons.</p>
+                                                        <div class="tooltip-example">Cliente de $100 virou $150 = $50 expans&#227;o</div>
+                                                    </div>
+                                                </div>
+                                            </span>
+                                        </label>
+                                        <input type="text" class="form-input calc-input-sm" id="nrr_expansao" placeholder="8,000">
+                                    </div>
+                                    <div class="calc-input-group">
+                                        <label class="calc-input-label">
+                                            Churn de Receita (USD)
+                                            <span class="info-icon mini">i
+                                                <div class="tooltip">
+                                                    <div class="tooltip-title">Churn de Receita (MRR Lost)</div>
+                                                    <div class="tooltip-content">
+                                                        <p>Receita <strong>perdida</strong> por cancelamentos e downgrades.</p>
+                                                        <p><strong>&#8800; Churn Rate!</strong> Aqui &#233; valor em USD, n&#227;o %.</p>
+                                                        <div class="tooltip-example">2 clientes de $500 cancelaram = $1,000 churn</div>
+                                                    </div>
+                                                </div>
+                                            </span>
+                                        </label>
+                                        <input type="text" class="form-input calc-input-sm" id="nrr_churn" placeholder="3,000">
+                                    </div>
+                                </div>
+                                <div class="calc-result">
+                                    <span class="calc-result-formula">((MRR + Expans&#227;o - Churn) / MRR) &#215; 100 =</span>
+                                    <span class="calc-result-value" id="nrrDisplay">0%</span>
+                                </div>
+                                <input type="hidden" id="nrr" value="0">
+                                <div class="form-hint">M&#233;trica mais importante de SaaS</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">ARPA &#8212; Receita M&#233;dia por Conta (USD/m&#234;s)</label>
+                                <input type="text" class="form-input" id="arpa" placeholder="500">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Margem Bruta (%)</label>
+                                <input type="number" class="form-input" id="grossMargin" placeholder="75">
+                                <div class="form-hint">Ideal &#8805;70% para SaaS</div>
+                            </div>
+
+                            <!-- Churn Rate Calculator -->
+                            <div class="calc-group">
+                                <div class="calc-group-header">
+                                    <span class="calc-group-title">Churn Rate &#8212; Taxa de Cancelamento (%)</span>
+                                    <span class="info-icon">i
+                                        <div class="tooltip">
+                                            <div class="tooltip-title">Churn Rate (% de Clientes)</div>
+                                            <div class="tooltip-content">
+                                                <p><strong>F&#243;rmula:</strong> (Clientes perdidos / Clientes no in&#237;cio) &#215; 100</p>
+                                                <p><strong>&#8800; Churn de Receita!</strong> Aqui &#233; % de clientes, usado para calcular LTV.</p>
+                                                <div class="tooltip-example">&lt;2% excelente | 2-5% ok | &gt;5% preocupante</div>
+                                            </div>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="calc-inputs-row">
+                                    <div class="calc-input-group">
+                                        <label class="calc-input-label">Total de Clientes</label>
+                                        <input type="number" class="form-input calc-input-sm" id="churn_clientesInicio" placeholder="100">
+                                    </div>
+                                    <div class="calc-input-group">
+                                        <label class="calc-input-label">Clientes Perdidos</label>
+                                        <input type="number" class="form-input calc-input-sm" id="churn_clientesPerdidos" placeholder="3">
+                                    </div>
+                                </div>
+                                <div class="calc-result">
+                                    <span class="calc-result-formula">(Perdidos / In&#237;cio) &#215; 100 =</span>
+                                    <span class="calc-result-value" id="churnRateDisplay">0%</span>
+                                </div>
+                                <input type="hidden" id="churnRate" value="0">
+                            </div>
+
+                            <!-- LTV Calculator -->
+                            <div class="calc-group">
+                                <div class="calc-group-header">
+                                    <span class="calc-group-title">LTV &#8212; Lifetime Value</span>
+                                    <span class="info-icon">i
+                                        <div class="tooltip">
+                                            <div class="tooltip-title">Lifetime Value</div>
+                                            <div class="tooltip-content">
+                                                <p><strong>F&#243;rmula:</strong> (ARPA &#215; Margem Bruta) / Churn Rate</p>
+                                                <p>Valor total que um cliente gera ao longo de sua vida.</p>
+                                                <div class="tooltip-example">($500 &#215; 75%) / 3% = $12,500 LTV</div>
+                                            </div>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="calc-auto-display">
+                                    <span class="calc-auto-label">Calculado automaticamente com ARPA, Margem e Churn Rate</span>
+                                </div>
+                                <div class="calc-result">
+                                    <span class="calc-result-formula">(ARPA &#215; Margem) / Churn =</span>
+                                    <span class="calc-result-value" id="ltvDisplay">US$ 0</span>
+                                </div>
+                                <input type="hidden" id="ltv" value="0">
+                            </div>
+
+                            <!-- CAC Calculator -->
+                            <div class="calc-group">
+                                <div class="calc-group-header">
+                                    <span class="calc-group-title">CAC &#8212; Customer Acquisition Cost</span>
+                                    <span class="info-icon">i
+                                        <div class="tooltip">
+                                            <div class="tooltip-title">Customer Acquisition Cost</div>
+                                            <div class="tooltip-content">
+                                                <p><strong>F&#243;rmula:</strong> Gastos com S&M / Novos Clientes Adquiridos</p>
+                                                <p>Quanto custa para adquirir um novo cliente.</p>
+                                                <div class="tooltip-example">$100k S&M / 10 clientes = $10,000 CAC</div>
+                                            </div>
+                                        </div>
+                                    </span>
+                                </div>
+                                <div class="calc-inputs-row">
+                                    <div class="calc-input-group">
+                                        <label class="calc-input-label">Gastos S&M (USD/m&#234;s)</label>
+                                        <input type="text" class="form-input calc-input-sm" id="cac_gastosSmMes" placeholder="25,000">
+                                    </div>
+                                    <div class="calc-input-group">
+                                        <label class="calc-input-label">Novos Clientes/m&#234;s</label>
+                                        <input type="number" class="form-input calc-input-sm" id="cac_novosClientes" placeholder="5">
+                                    </div>
+                                </div>
+                                <div class="calc-result">
+                                    <span class="calc-result-formula">Gastos S&M / Novos Clientes =</span>
+                                    <span class="calc-result-value" id="cacDisplay">US$ 0</span>
+                                </div>
+                                <input type="hidden" id="cac" value="0">
+                            </div>
+
+                            <div class="calc-display highlight">
+                                <span class="calc-label">Ratio LTV/CAC</span>
+                                <span class="calc-value" id="ltvCacDisplay">0.0&#215;</span>
+                            </div>
+                            <div class="calc-display">
+                                <span class="calc-label">CAC Payback Period</span>
+                                <span class="calc-value" id="cacPaybackDisplay">0 meses</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Burn Rate Mensal (USD)</label>
+                                <input type="text" class="form-input" id="burnRate" placeholder="50,000">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Caixa Dispon&#237;vel (USD)</label>
+                                <input type="text" class="form-input" id="cashInBank" placeholder="600,000">
+                            </div>
+                            <div class="calc-display">
+                                <span class="calc-label">Runway</span>
+                                <span class="calc-value" id="runwayDisplay">0 meses</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Product & Market -->
+                    <div class="section" data-section="market">
+                        <div class="section-header" onclick="toggleSection(this.parentElement)">
+                            <div class="section-header-left">
+                                <div class="section-icon" style="background: var(--gradient-3);">&#127919;</div>
+                                <div class="section-info">
+                                    <h3>Produto & Mercado</h3>
+                                    <p>PMF, TAM, SAM e crescimento</p>
+                                </div>
+                            </div>
+                            <div class="section-header-right">
+                                <span class="section-weight">25 pts</span>
+                                <div class="section-toggle">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <div class="label-row">
+                                        <span>Sean Ellis Score &#8212; PMF (%)</span>
+                                        <span class="info-icon">i
+                                            <div class="tooltip">
+                                                <div class="tooltip-title">Product-Market Fit</div>
+                                                <div class="tooltip-content">
+                                                    <p>% de usu&#225;rios que ficariam "muito decepcionados" sem o produto.</p>
+                                                    <div class="tooltip-example">PMF validado = &#8805;40%</div>
+                                                </div>
+                                            </div>
+                                        </span>
+                                    </div>
+                                </label>
+                                <input type="number" class="form-input" id="seanEllis" placeholder="45">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">TAM &#8212; Total Addressable Market (USD)</label>
+                                <input type="text" class="form-input" id="tam" placeholder="5,000,000,000">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">SAM &#8212; Serviceable Available Market (USD)</label>
+                                <input type="text" class="form-input" id="sam" placeholder="1,000,000,000">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Taxa de Crescimento do Mercado (% anual)</label>
+                                <input type="number" class="form-input" id="marketGrowth" placeholder="25">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Team -->
+                    <div class="section" data-section="team">
+                        <div class="section-header" onclick="toggleSection(this.parentElement)">
+                            <div class="section-header-left">
+                                <div class="section-icon" style="background: var(--gradient-4);">&#128101;</div>
+                                <div class="section-info">
+                                    <h3>Equipe & Fundadores</h3>
+                                    <p>Experi&#234;ncia, comprometimento e ownership</p>
+                                </div>
+                            </div>
+                            <div class="section-header-right">
+                                <span class="section-weight">20 pts</span>
+                                <div class="section-toggle">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label class="form-label">Experi&#234;ncia dos Fundadores</label>
+                                <select class="form-select" id="founderExperience">
+                                    <option value="0">Selecione...</option>
+                                    <option value="5">Serial entrepreneur com exits (5 pts)</option>
+                                    <option value="4">Experi&#234;ncia em startups de sucesso (4 pts)</option>
+                                    <option value="3">Experi&#234;ncia corporativa relevante (3 pts)</option>
+                                    <option value="2">Experi&#234;ncia limitada (2 pts)</option>
+                                    <option value="1">Primeiro empreendimento (1 pt)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Comprometimento</label>
+                                <select class="form-select" id="founderCommitment">
+                                    <option value="0">Selecione...</option>
+                                    <option value="5">Full-time, 100% dedicados (5 pts)</option>
+                                    <option value="3">Full-time com atividades paralelas (3 pts)</option>
+                                    <option value="1">Part-time / Side project (1 pt)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Ownership dos Fundadores (%)</label>
+                                <input type="number" class="form-input" id="founderOwnership" placeholder="65">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Qualidade da Equipe T&#233;cnica</label>
+                                <select class="form-select" id="technicalTeam">
+                                    <option value="0">Selecione...</option>
+                                    <option value="5">CTO experiente + equipe forte (5 pts)</option>
+                                    <option value="4">Equipe competente (4 pts)</option>
+                                    <option value="3">Equipe adequada (3 pts)</option>
+                                    <option value="2">Gaps significativos (2 pts)</option>
+                                    <option value="1">Capacidade insuficiente (1 pt)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Growth -->
+                    <div class="section" data-section="growth">
+                        <div class="section-header" onclick="toggleSection(this.parentElement)">
+                            <div class="section-header-left">
+                                <div class="section-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);">&#128200;</div>
+                                <div class="section-info">
+                                    <h3>Crescimento & Efici&#234;ncia</h3>
+                                    <p>Magic number e YoY growth</p>
+                                </div>
+                            </div>
+                            <div class="section-header-right">
+                                <span class="section-weight">10 pts</span>
+                                <div class="section-toggle">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-content">
+                            <div class="form-group">
+                                <label class="form-label">Gastos em S&M &#8212; &#218;ltimo Trimestre (USD)</label>
+                                <input type="text" class="form-input" id="smSpend" placeholder="150,000">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">MRR &#8212; 3 Meses Atr&#225;s (USD)</label>
+                                <input type="text" class="form-input" id="mrrPrevious" placeholder="40,000">
+                            </div>
+                            <div class="calc-display">
+                                <span class="calc-label">Magic Number</span>
+                                <span class="calc-value" id="magicNumberDisplay">0.00</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">ARR &#8212; Ano Anterior (USD)</label>
+                                <input type="text" class="form-input" id="arrPrevYear" placeholder="300,000">
+                            </div>
+                            <div class="calc-display">
+                                <span class="calc-label">Crescimento ARR YoY</span>
+                                <span class="calc-value" id="arrGrowthDisplay">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 6: Red Flags -->
+                    <div class="section" data-section="redflags">
+                        <div class="section-header" onclick="toggleSection(this.parentElement)">
+                            <div class="section-header-left">
+                                <div class="section-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">&#128681;</div>
+                                <div class="section-info">
+                                    <h3>Red Flags Cr&#237;ticos</h3>
+                                    <p>Fatores de risco eliminat&#243;rios (-3 pts cada)</p>
+                                </div>
+                            </div>
+                            <div class="section-header-right">
+                                <span class="section-weight">Veto</span>
+                                <div class="section-toggle">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="section-content">
+                            <p style="color: var(--danger); margin-bottom: 16px; font-size: 13px;">
+                                Cada item marcado resulta em -3 pontos. Alguns podem ser eliminat&#243;rios.
+                            </p>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item" onclick="toggleCheckbox(this)" data-id="redFlag1">
+                                    <div class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="checkbox-text">IP n&#227;o transferida formalmente para a empresa</span>
+                                </div>
+                                <div class="checkbox-item" onclick="toggleCheckbox(this)" data-id="redFlag2">
+                                    <div class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="checkbox-text">83(b) elections n&#227;o arquivadas (risco fiscal)</span>
+                                </div>
+                                <div class="checkbox-item" onclick="toggleCheckbox(this)" data-id="redFlag3">
+                                    <div class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="checkbox-text">Lit&#237;gio material pendente</span>
+                                </div>
+                                <div class="checkbox-item" onclick="toggleCheckbox(this)" data-id="redFlag4">
+                                    <div class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="checkbox-text">Concentra&#231;&#227;o de receita &gt;60% em um cliente</span>
+                                </div>
+                                <div class="checkbox-item" onclick="toggleCheckbox(this)" data-id="redFlag5">
+                                    <div class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="checkbox-text">Churn mensal &gt;7% (produto n&#227;o validado)</span>
+                                </div>
+                                <div class="checkbox-item" onclick="toggleCheckbox(this)" data-id="redFlag6">
+                                    <div class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="checkbox-text">Conflito grave entre fundadores</span>
+                                </div>
+                                <div class="checkbox-item" onclick="toggleCheckbox(this)" data-id="redFlag7">
+                                    <div class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="checkbox-text">Incidente de seguran&#231;a grave</span>
+                                </div>
+                                <div class="checkbox-item" onclick="toggleCheckbox(this)" data-id="redFlag8">
+                                    <div class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <span class="checkbox-text">Runway &lt;6 meses (urg&#234;ncia extrema)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- New Analysis Modal -->
+    <div class="modal-overlay" id="newAnalysisModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Nova An&#225;lise de Investimento</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-top: 0;">
+                    <label class="form-label">Nome da Empresa</label>
+                    <input type="text" class="form-input" id="newAnalysisName" placeholder="Ex: Acme Corp, TechStartup Inc">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cor do &#205;cone</label>
+                    <div class="color-options">
+                        <button type="button" class="color-btn selected" style="background: var(--gradient-3);" data-color="gradient-3" onclick="selectColor(this)"></button>
+                        <button type="button" class="color-btn" style="background: var(--gradient-1);" data-color="gradient-1" onclick="selectColor(this)"></button>
+                        <button type="button" class="color-btn" style="background: var(--gradient-2);" data-color="gradient-2" onclick="selectColor(this)"></button>
+                        <button type="button" class="color-btn" style="background: var(--gradient-4);" data-color="gradient-4" onclick="selectColor(this)"></button>
+                        <button type="button" class="color-btn" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);" data-color="gradient-5" onclick="selectColor(this)"></button>
+                        <button type="button" class="color-btn" style="background: linear-gradient(135deg, #ef4444, #f97316);" data-color="gradient-6" onclick="selectColor(this)"></button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmNewAnalysis()">Criar An&#225;lise</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===========================================
+        // STATE MANAGEMENT
+        // ===========================================
+        let analyses = [];
+        let currentAnalysisId = null;
+        let currentColor = 'gradient-3';
+        const redFlagsState = {};
+
+        const COLORS = {
+            'gradient-1': 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            'gradient-2': 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+            'gradient-3': 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+            'gradient-4': 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+            'gradient-5': 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+            'gradient-6': 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)'
+        };
+
+        // ===========================================
+        // INITIALIZATION
+        // ===========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAnalyses();
+            setupEventListeners();
+            renderAnalysisList();
+            updateUI();
+        });
+
+        function setupEventListeners() {
+            const moneyFields = ['requestedValuation', 'mrr', 'arpa', 'burnRate', 'cashInBank', 'smSpend', 'mrrPrevious', 'arrPrevYear', 'tam', 'sam', 'nrr_expansao', 'nrr_churn', 'cac_gastosSmMes'];
+
+            moneyFields.forEach(fieldId => {
+                const input = document.getElementById(fieldId);
+                if (input) {
+                    input.addEventListener('input', function() {
+                        formatCurrency(this);
+                        calculateAll();
+                        saveCurrentAnalysis();
+                    });
+                }
+            });
+
+            document.querySelectorAll('input').forEach(el => {
+                if (el.id && !moneyFields.includes(el.id)) {
+                    el.addEventListener('input', function() {
+                        calculateAll();
+                        saveCurrentAnalysis();
+                        if (el.id === 'companyName') {
+                            updateAnalysisName();
+                        }
+                    });
+                }
+            });
+
+            document.querySelectorAll('select').forEach(el => {
+                el.addEventListener('change', function() {
+                    calculateAll();
+                    saveCurrentAnalysis();
+                });
+            });
+        }
+
+        // ===========================================
+        // ANALYSIS MANAGEMENT
+        // ===========================================
+        function loadAnalyses() {
+            const saved = localStorage.getItem('investmentAnalyses');
+            if (saved) {
+                analyses = JSON.parse(saved);
+            }
+        }
+
+        function saveAnalyses() {
+            localStorage.setItem('investmentAnalyses', JSON.stringify(analyses));
+        }
+
+        function createNewAnalysis() {
+            document.getElementById('newAnalysisName').value = '';
+            document.getElementById('newAnalysisModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('newAnalysisModal').classList.remove('active');
+        }
+
+        function selectColor(btn) {
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            currentColor = btn.dataset.color;
+        }
+
+        function confirmNewAnalysis() {
+            const name = document.getElementById('newAnalysisName').value.trim() || 'Nova An\u00e1lise';
+
+            const newAnalysis = {
+                id: Date.now().toString(),
+                name: name,
+                color: currentColor,
+                createdAt: new Date().toISOString(),
+                score: 0,
+                data: { companyName: name },
+                redFlags: {}
+            };
+
+            analyses.push(newAnalysis);
+            saveAnalyses();
+            closeModal();
+
+            selectAnalysis(newAnalysis.id);
+            renderAnalysisList();
+        }
+
+        function selectAnalysis(id) {
+            currentAnalysisId = id;
+
+            // Clear form
+            clearFormFields();
+
+            // Load analysis data
+            const analysis = analyses.find(a => a.id === id);
+            if (analysis && analysis.data) {
+                const moneyFieldsForFormat = ['requestedValuation', 'mrr', 'arpa', 'burnRate', 'cashInBank', 'smSpend', 'mrrPrevious', 'arrPrevYear', 'tam', 'sam', 'nrr_expansao', 'nrr_churn', 'cac_gastosSmMes'];
+                Object.keys(analysis.data).forEach(fieldId => {
+                    const el = document.getElementById(fieldId);
+                    if (el) {
+                        el.value = analysis.data[fieldId];
+                        if (moneyFieldsForFormat.includes(fieldId)) {
+                            formatCurrency(el);
+                        }
+                    }
+                });
+
+                // Load red flags
+                Object.keys(redFlagsState).forEach(k => delete redFlagsState[k]);
+                if (analysis.redFlags) {
+                    Object.keys(analysis.redFlags).forEach(flagId => {
+                        if (analysis.redFlags[flagId]) {
+                            const item = document.querySelector(`[data-id="${flagId}"]`);
+                            if (item) {
+                                item.classList.add('checked');
+                                redFlagsState[flagId] = true;
+                            }
+                        }
+                    });
+                }
+            }
+
+            calculateAll();
+            renderAnalysisList();
+            updateUI();
+        }
+
+        function clearFormFields() {
+            document.querySelectorAll('#analysisForm input').forEach(el => {
+                el.value = '';
+                el.removeAttribute('data-raw-value');
+            });
+            document.querySelectorAll('#analysisForm select').forEach(el => el.value = '');
+            document.querySelectorAll('.checkbox-item').forEach(el => el.classList.remove('checked'));
+            Object.keys(redFlagsState).forEach(k => delete redFlagsState[k]);
+        }
+
+        function saveCurrentAnalysis() {
+            if (!currentAnalysisId) return;
+
+            const analysis = analyses.find(a => a.id === currentAnalysisId);
+            if (!analysis) return;
+
+            // Save form data
+            analysis.data = {};
+            document.querySelectorAll('#analysisForm input').forEach(el => {
+                if (el.id) {
+                    const rawValue = el.getAttribute('data-raw-value');
+                    analysis.data[el.id] = rawValue || el.value;
+                }
+            });
+            document.querySelectorAll('#analysisForm select').forEach(el => {
+                if (el.id) analysis.data[el.id] = el.value;
+            });
+
+            // Save red flags
+            analysis.redFlags = { ...redFlagsState };
+
+            // Save score
+            analysis.score = parseInt(document.getElementById('finalScore').textContent) || 0;
+
+            // Update name if changed
+            if (analysis.data.companyName) {
+                analysis.name = analysis.data.companyName;
+            }
+
+            saveAnalyses();
+            renderAnalysisList();
+        }
+
+        function updateAnalysisName() {
+            if (!currentAnalysisId) return;
+            const analysis = analyses.find(a => a.id === currentAnalysisId);
+            if (analysis) {
+                const name = document.getElementById('companyName').value.trim();
+                if (name) {
+                    analysis.name = name;
+                    document.getElementById('analysisTitle').textContent = name;
+                    saveAnalyses();
+                    renderAnalysisList();
+                }
+            }
+        }
+
+        function deleteCurrentAnalysis() {
+            if (!currentAnalysisId) return;
+
+            if (confirm('Deseja excluir esta an\u00e1lise? Esta a\u00e7\u00e3o n\u00e3o pode ser desfeita.')) {
+                analyses = analyses.filter(a => a.id !== currentAnalysisId);
+                saveAnalyses();
+                currentAnalysisId = null;
+                clearFormFields();
+                renderAnalysisList();
+                updateUI();
+            }
+        }
+
+        function renderAnalysisList() {
+            const list = document.getElementById('analysisList');
+            list.innerHTML = '';
+
+            analyses.forEach(analysis => {
+                const isActive = analysis.id === currentAnalysisId;
+                const scoreClass = analysis.score >= 75 ? 'invest' : (analysis.score >= 50 ? 'caution' : 'reject');
+                const date = new Date(analysis.createdAt).toLocaleDateString('pt-BR');
+
+                list.innerHTML += `
+                    <div class="analysis-item ${isActive ? 'active' : ''}" onclick="selectAnalysis('${analysis.id}')">
+                        <div class="analysis-icon" style="background: ${COLORS[analysis.color] || COLORS['gradient-3']};">
+                            ${analysis.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="analysis-info">
+                            <div class="analysis-name">${analysis.name}</div>
+                            <div class="analysis-date">${date}</div>
+                        </div>
+                        <div class="analysis-score ${scoreClass}">${analysis.score}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateUI() {
+            const hasAnalysis = currentAnalysisId !== null;
+            document.getElementById('welcomeScreen').style.display = hasAnalysis ? 'none' : 'flex';
+            document.getElementById('analysisForm').style.display = hasAnalysis ? 'block' : 'none';
+            document.getElementById('scoreSidebar').style.display = hasAnalysis ? 'block' : 'none';
+
+            // Ajustar margin do main-content quando sidebar direita est\u00e1 oculta
+            const mainContent = document.querySelector('.main-content');
+            if (hasAnalysis) {
+                mainContent.style.marginRight = '320px';
+            } else {
+                mainContent.style.marginRight = '0';
+            }
+        }
+
+        // ===========================================
+        // SECTION TOGGLE
+        // ===========================================
+        function toggleSection(section) {
+            section.classList.toggle('expanded');
+        }
+
+        // ===========================================
+        // CHECKBOX TOGGLE
+        // ===========================================
+        function toggleCheckbox(item) {
+            item.classList.toggle('checked');
+            const id = item.dataset.id;
+            redFlagsState[id] = item.classList.contains('checked');
+            calculateAll();
+            saveCurrentAnalysis();
+        }
+
+        // ===========================================
+        // CURRENCY FORMATTING
+        // ===========================================
+        function formatCurrency(input) {
+            let value = input.value.replace(/\D/g, '');
+            if (!value) {
+                input.value = '';
+                input.setAttribute('data-raw-value', '');
+                return;
+            }
+            const numValue = parseInt(value);
+            input.setAttribute('data-raw-value', numValue);
+            input.value = numValue.toLocaleString('en-US');
+        }
+
+        function getCurrencyValue(inputId) {
+            const input = document.getElementById(inputId);
+            if (!input) return 0;
+            const rawValue = input.getAttribute('data-raw-value');
+            if (!rawValue || rawValue === '') {
+                const directValue = input.value.replace(/\D/g, '');
+                return parseFloat(directValue) || 0;
+            }
+            return parseFloat(rawValue) || 0;
+        }
+
+        function formatMoney(value) {
+            if (!value || value === 0) return 'US$ 0';
+            return 'US$ ' + value.toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+
+        // ===========================================
+        // CALCULATION ENGINE
+        // ===========================================
+
+        // Calculate derived metrics from component inputs
+        function calculateDerivedMetrics() {
+            // NRR Calculation - uses main MRR field
+            const mrr = getCurrencyValue('mrr');
+            const nrrExpansao = getCurrencyValue('nrr_expansao');
+            const nrrChurn = getCurrencyValue('nrr_churn');
+
+            let nrr = 0;
+            if (mrr > 0) {
+                nrr = ((mrr + nrrExpansao - nrrChurn) / mrr) * 100;
+                document.getElementById('nrrDisplay').textContent = nrr.toFixed(1) + '%';
+                document.getElementById('nrr').value = nrr;
+            } else {
+                document.getElementById('nrrDisplay').textContent = 'Preencha MRR';
+                document.getElementById('nrr').value = 0;
+            }
+
+            // Churn Rate Calculation
+            const churnClientesInicio = parseFloat(document.getElementById('churn_clientesInicio').value) || 0;
+            const churnClientesPerdidos = parseFloat(document.getElementById('churn_clientesPerdidos').value) || 0;
+
+            let churnRate = 0;
+            if (churnClientesInicio > 0) {
+                churnRate = (churnClientesPerdidos / churnClientesInicio) * 100;
+                document.getElementById('churnRateDisplay').textContent = churnRate.toFixed(2) + '%';
+                document.getElementById('churnRate').value = churnRate;
+            } else {
+                document.getElementById('churnRateDisplay').textContent = '0%';
+                document.getElementById('churnRate').value = 0;
+            }
+
+            // LTV Calculation (automatic from ARPA, Margin, Churn)
+            const arpa = getCurrencyValue('arpa');
+            const grossMargin = parseFloat(document.getElementById('grossMargin').value) || 0;
+
+            let ltv = 0;
+            if (arpa > 0 && grossMargin > 0 && churnRate > 0) {
+                ltv = (arpa * (grossMargin / 100)) / (churnRate / 100);
+                document.getElementById('ltvDisplay').textContent = formatMoney(ltv);
+                document.getElementById('ltv').value = ltv;
+            } else {
+                document.getElementById('ltvDisplay').textContent = 'Preencha ARPA, Margem e Churn';
+                document.getElementById('ltv').value = 0;
+            }
+
+            // CAC Calculation
+            const cacGastosSm = getCurrencyValue('cac_gastosSmMes');
+            const cacNovosClientes = parseFloat(document.getElementById('cac_novosClientes').value) || 0;
+
+            let cac = 0;
+            if (cacGastosSm > 0 && cacNovosClientes > 0) {
+                cac = cacGastosSm / cacNovosClientes;
+                document.getElementById('cacDisplay').textContent = formatMoney(cac);
+                document.getElementById('cac').value = cac;
+            } else {
+                document.getElementById('cacDisplay').textContent = 'US$ 0';
+                document.getElementById('cac').value = 0;
+            }
+
+            return { nrr, churnRate, ltv, cac };
+        }
+
+        function calculateAll() {
+            // First calculate derived metrics
+            const derived = calculateDerivedMetrics();
+
+            const mrr = getCurrencyValue('mrr');
+            const nrr = derived.nrr;
+            const ltv = derived.ltv;
+            const cac = derived.cac;
+            const arpa = getCurrencyValue('arpa');
+            const grossMargin = parseFloat(document.getElementById('grossMargin').value) || 0;
+            const burnRate = getCurrencyValue('burnRate');
+            const cashInBank = getCurrencyValue('cashInBank');
+            const seanEllis = parseFloat(document.getElementById('seanEllis').value) || 0;
+            const tam = getCurrencyValue('tam');
+            const sam = getCurrencyValue('sam');
+            const founderExperience = parseInt(document.getElementById('founderExperience').value) || 0;
+            const founderCommitment = parseInt(document.getElementById('founderCommitment').value) || 0;
+            const founderOwnership = parseFloat(document.getElementById('founderOwnership').value) || 0;
+            const technicalTeam = parseInt(document.getElementById('technicalTeam').value) || 0;
+            const smSpend = getCurrencyValue('smSpend');
+            const mrrPrevious = getCurrencyValue('mrrPrevious');
+            const arrPrevYear = getCurrencyValue('arrPrevYear');
+            const companyStage = document.getElementById('companyStage').value;
+
+            // Derived metrics
+            const arr = mrr * 12;
+            document.getElementById('arrDisplay').textContent = formatMoney(arr);
+
+            let ltvCac = 0;
+            if (ltv > 0 && cac > 0) {
+                ltvCac = ltv / cac;
+                document.getElementById('ltvCacDisplay').textContent = ltvCac.toFixed(1) + '\u00d7';
+            } else {
+                document.getElementById('ltvCacDisplay').textContent = 'N/A';
+            }
+
+            let cacPayback = 0;
+            if (cac > 0 && arpa > 0 && grossMargin > 0) {
+                cacPayback = cac / (arpa * (grossMargin / 100));
+                document.getElementById('cacPaybackDisplay').textContent = cacPayback.toFixed(1) + ' meses';
+            } else {
+                document.getElementById('cacPaybackDisplay').textContent = 'N/A';
+            }
+
+            let runway = 0;
+            if (burnRate > 0 && cashInBank > 0) {
+                runway = cashInBank / burnRate;
+                document.getElementById('runwayDisplay').textContent = runway.toFixed(0) + ' meses';
+            } else {
+                document.getElementById('runwayDisplay').textContent = 'N/A';
+            }
+
+            let magicNumber = 0;
+            if (mrr > 0 && mrrPrevious > 0 && smSpend > 0) {
+                const deltaArr = (mrr - mrrPrevious) * 12;
+                magicNumber = deltaArr / smSpend;
+                document.getElementById('magicNumberDisplay').textContent = magicNumber.toFixed(2);
+            } else {
+                document.getElementById('magicNumberDisplay').textContent = 'N/A';
+            }
+
+            let arrGrowth = 0;
+            if (arr > 0 && arrPrevYear > 0) {
+                arrGrowth = ((arr - arrPrevYear) / arrPrevYear * 100);
+                document.getElementById('arrGrowthDisplay').textContent = arrGrowth.toFixed(0) + '%';
+            } else {
+                document.getElementById('arrGrowthDisplay').textContent = 'N/A';
+            }
+
+            // SCORING - Same logic as original
+            let financialScore = 0;
+
+            // NRR (15 points)
+            if (nrr >= 120) financialScore += 15;
+            else if (nrr >= 110) financialScore += 12;
+            else if (nrr >= 100) financialScore += 8;
+            else if (nrr >= 90) financialScore += 4;
+
+            // LTV/CAC (12 points)
+            if (ltvCac >= 3) financialScore += 12;
+            else if (ltvCac >= 2.5) financialScore += 10;
+            else if (ltvCac >= 2) financialScore += 6;
+            else if (ltvCac >= 1.5) financialScore += 3;
+
+            // CAC Payback (8 points)
+            if (cacPayback > 0 && cacPayback < 12) financialScore += 8;
+            else if (cacPayback < 15) financialScore += 6;
+            else if (cacPayback < 18) financialScore += 4;
+            else if (cacPayback > 0) financialScore += 2;
+
+            // Gross Margin (5 points)
+            if (grossMargin >= 70) financialScore += 5;
+            else if (grossMargin >= 65) financialScore += 4;
+            else if (grossMargin >= 60) financialScore += 3;
+            else if (grossMargin >= 50) financialScore += 1;
+
+            let marketScore = 0;
+
+            // Sean Ellis PMF (15 points)
+            if (seanEllis >= 40) marketScore += 15;
+            else if (seanEllis >= 35) marketScore += 12;
+            else if (seanEllis >= 30) marketScore += 8;
+            else if (seanEllis >= 25) marketScore += 4;
+
+            // Market Size (10 points)
+            if (tam >= 5000000000 && sam >= 1000000000) marketScore += 10;
+            else if (tam >= 2000000000 && sam >= 500000000) marketScore += 8;
+            else if (tam >= 1000000000 && sam >= 200000000) marketScore += 5;
+            else if (tam >= 500000000) marketScore += 2;
+
+            let teamScore = 0;
+
+            // Founder Experience (12 points)
+            teamScore += founderExperience * 2.4;
+
+            // Founder Commitment (8 points)
+            teamScore += founderCommitment * 1.6;
+
+            // Ownership check
+            let ownershipThreshold = 40;
+            if (companyStage === 'pre-seed') ownershipThreshold = 80;
+            else if (companyStage === 'seed') ownershipThreshold = 65;
+            else if (companyStage === 'series-a') ownershipThreshold = 50;
+            else if (companyStage === 'series-b') ownershipThreshold = 35;
+
+            if (founderOwnership < ownershipThreshold * 0.7) teamScore -= 5;
+
+            // Technical Team
+            if (technicalTeam >= 4) teamScore += 2;
+            else if (technicalTeam >= 3) teamScore += 1;
+
+            teamScore = Math.min(20, teamScore);
+
+            let growthScore = 0;
+
+            // Magic Number (5 points)
+            if (magicNumber >= 0.75) growthScore += 5;
+            else if (magicNumber >= 0.6) growthScore += 4;
+            else if (magicNumber >= 0.5) growthScore += 3;
+            else if (magicNumber >= 0.3) growthScore += 1;
+
+            // Runway (5 points)
+            if (runway >= 18) growthScore += 5;
+            else if (runway >= 15) growthScore += 4;
+            else if (runway >= 12) growthScore += 3;
+            else if (runway >= 9) growthScore += 1;
+            else if (runway > 0 && runway < 6) growthScore -= 3;
+
+            // Red flags
+            const redFlagLabels = {
+                redFlag1: 'IP n\u00e3o transferida',
+                redFlag2: '83(b) n\u00e3o arquivada',
+                redFlag3: 'Lit\u00edgio pendente',
+                redFlag4: 'Concentra\u00e7\u00e3o >60%',
+                redFlag5: 'Churn >7%',
+                redFlag6: 'Conflito fundadores',
+                redFlag7: 'Incidente seguran\u00e7a',
+                redFlag8: 'Runway <6 meses'
+            };
+
+            const activeFlags = [];
+            Object.keys(redFlagsState).forEach(id => {
+                if (redFlagsState[id]) activeFlags.push(redFlagLabels[id]);
+            });
+
+            const redFlagPenalty = activeFlags.length * 3;
+
+            // Final score
+            let finalScore = financialScore + marketScore + teamScore + growthScore - redFlagPenalty;
+            finalScore = Math.max(0, Math.min(100, finalScore));
+
+            // Update UI
+            document.getElementById('scoreFinancial').textContent = financialScore.toFixed(0) + '/40';
+            document.getElementById('scoreFinancial').className = 'breakdown-score ' + getScoreClass(financialScore / 40);
+
+            document.getElementById('scoreMarket').textContent = marketScore.toFixed(0) + '/25';
+            document.getElementById('scoreMarket').className = 'breakdown-score ' + getScoreClass(marketScore / 25);
+
+            document.getElementById('scoreTeam').textContent = teamScore.toFixed(0) + '/20';
+            document.getElementById('scoreTeam').className = 'breakdown-score ' + getScoreClass(teamScore / 20);
+
+            document.getElementById('scoreGrowth').textContent = growthScore.toFixed(0) + '/10';
+            document.getElementById('scoreGrowth').className = 'breakdown-score ' + getScoreClass(growthScore / 10);
+
+            document.getElementById('scoreRedFlags').textContent = '-' + redFlagPenalty;
+
+            document.getElementById('finalScore').textContent = Math.round(finalScore);
+
+            const verdictEl = document.getElementById('verdict');
+            const scoreEl = document.getElementById('finalScore');
+
+            if (finalScore >= 75) {
+                scoreEl.className = 'score-value invest';
+                verdictEl.className = 'verdict-badge invest';
+                verdictEl.textContent = 'Recomenda\u00e7\u00e3o: Investir';
+            } else if (finalScore >= 50) {
+                scoreEl.className = 'score-value caution';
+                verdictEl.className = 'verdict-badge caution';
+                verdictEl.textContent = 'Analisar com Cautela';
+            } else {
+                scoreEl.className = 'score-value reject';
+                verdictEl.className = 'verdict-badge reject';
+                verdictEl.textContent = 'N\u00e3o Investir';
+            }
+
+            // Red flags display
+            const redFlagsDisplay = document.getElementById('redFlagsDisplay');
+            const redFlagsList = document.getElementById('redFlagsList');
+            if (activeFlags.length > 0) {
+                redFlagsDisplay.style.display = 'block';
+                redFlagsList.innerHTML = activeFlags.map(flag => `<div class="red-flag-item">\u2022 ${flag}</div>`).join('');
+            } else {
+                redFlagsDisplay.style.display = 'none';
+            }
+        }
+
+        function getScoreClass(ratio) {
+            if (ratio >= 0.7) return 'good';
+            if (ratio >= 0.5) return 'warning';
+            return 'bad';
+        }
+
+        // ===========================================
+        // PDF EXPORT
+        // ===========================================
+        function exportPDF() {
+            if (!currentAnalysisId) return;
+
+            const analysis = analyses.find(a => a.id === currentAnalysisId);
+            if (!analysis) return;
+
+            const companyName = document.getElementById('companyName').value || 'An\u00e1lise';
+            const finalScore = document.getElementById('finalScore').textContent;
+            const verdict = document.getElementById('verdict').textContent;
+            const scoreClass = parseInt(finalScore) >= 75 ? 'invest' : (parseInt(finalScore) >= 50 ? 'caution' : 'reject');
+            const hoje = new Date();
+            const dataFormatada = hoje.toLocaleDateString('pt-BR');
+
+            const printSummary = document.createElement('div');
+            printSummary.id = 'print-summary';
+            printSummary.innerHTML = `
+                <div class="print-header-bar">
+                    <div class="print-main-title">An\u00e1lise de Investimento SaaS</div>
+                    <div class="print-subtitle">Due Diligence Framework | SaaS Toolkit</div>
+                </div>
+
+                <div class="print-company-name">${companyName}</div>
+                <div class="print-date">Data da An\u00e1lise: ${dataFormatada}</div>
+
+                <div class="print-score-box">
+                    <div class="print-score-value ${scoreClass}">${finalScore}</div>
+                    <div class="print-score-label">Pontua\u00e7\u00e3o Final</div>
+                </div>
+
+                <div class="print-verdict-box ${scoreClass}">${verdict}</div>
+
+                <div class="print-breakdown-section">
+                    <div class="print-breakdown-title">Distribui\u00e7\u00e3o por Categoria</div>
+                    <table class="print-breakdown-table">
+                        <tr><td>M\u00e9tricas Financeiras</td><td>${document.getElementById('scoreFinancial').textContent}</td></tr>
+                        <tr><td>Produto & Mercado</td><td>${document.getElementById('scoreMarket').textContent}</td></tr>
+                        <tr><td>Equipe & Fundadores</td><td>${document.getElementById('scoreTeam').textContent}</td></tr>
+                        <tr><td>Crescimento & Efici\u00eancia</td><td>${document.getElementById('scoreGrowth').textContent}</td></tr>
+                        <tr><td>Dedu\u00e7\u00e3o (Red Flags)</td><td>${document.getElementById('scoreRedFlags').textContent}</td></tr>
+                    </table>
+                </div>
+            `;
+
+            document.body.insertBefore(printSummary, document.body.firstChild);
+            document.title = `An\u00e1lise SaaS - ${companyName} - ${dataFormatada}`;
+
+            // Expand all sections
+            document.querySelectorAll('.section').forEach(s => s.classList.add('expanded'));
+
+            setTimeout(() => window.print(), 100);
+
+            setTimeout(() => {
+                printSummary.remove();
+                document.title = 'Investment Analyzer | SaaS Toolkit';
+            }, 200);
+        }
+    </script>
+</body>
+</html>

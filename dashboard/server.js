@@ -157,6 +157,13 @@ app.get(`${SECRET_ROUTE}/logout`, (req, res) => {
 // DASHBOARD STATIC FILES (protegido por autenticacao)
 // =============================================================================
 
+// Analytics em /analytics
+app.use('/analytics', authMiddleware, express.static(join(__dirname, '8a9sud89aus8d')));
+
+// Admin na raiz (/) - será o index padrão
+app.use('/admin', authMiddleware, express.static(join(__dirname, '8a9sud89aus8d/admin')));
+
+// Manter rota antiga para compatibilidade
 app.use(SECRET_ROUTE, authMiddleware, express.static(join(__dirname, '8a9sud89aus8d')));
 
 // =============================================================================

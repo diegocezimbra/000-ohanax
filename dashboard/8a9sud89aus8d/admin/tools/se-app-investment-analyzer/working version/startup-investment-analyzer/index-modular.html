@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startup Investment Analyzer - Análise Completa de Investimentos</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="8" fill="url(#gradient)"/>
+                    <path d="M20 10L28 16V24L20 30L12 24V16L20 10Z" stroke="white" stroke-width="2" stroke-linejoin="round"/>
+                    <circle cx="20" cy="20" r="3" fill="white"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#6366f1"/>
+                            <stop offset="100%" stop-color="#8b5cf6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div>
+                    <h1>Startup Investment Analyzer</h1>
+                    <p class="subtitle">Framework Completo de Análise VC</p>
+                </div>
+            </div>
+            <div class="score-display" id="liveScore">
+                <span class="score-label">Score Atual</span>
+                <span class="score-value">-</span>
+            </div>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-steps">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Informações Básicas</div>
+                </div>
+                <div class="step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Equipe</div>
+                </div>
+                <div class="step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Mercado</div>
+                </div>
+                <div class="step" data-step="4">
+                    <div class="step-number">4</div>
+                    <div class="step-label">Produto</div>
+                </div>
+                <div class="step" data-step="5">
+                    <div class="step-number">5</div>
+                    <div class="step-label">Métricas</div>
+                </div>
+                <div class="step" data-step="6">
+                    <div class="step-number">6</div>
+                    <div class="step-label">Financeiro</div>
+                </div>
+                <div class="step" data-step="7">
+                    <div class="step-number">7</div>
+                    <div class="step-label">Relatório</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <form id="investmentForm">
+
+                <!-- Step 1: Informações Básicas -->
+                <div class="form-step active" data-step="1">
+                    <h2>Informações Básicas da Startup</h2>
+                    <p class="step-description">Comece com as informações fundamentais sobre a empresa</p>
+
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="companyName">Nome da Empresa *</label>
+                            <input type="text" id="companyName" name="companyName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="stage">Estágio *</label>
+                            <select id="stage" name="stage" required>
+                                <option value="">Selecione...</option>
+                                <option value="pre-seed">Pre-Seed</option>
+                                <option value="seed">Seed ($0-$1M ARR)</option>
+                                <option value="series-a">Series A ($1-$5M ARR)</option>
+                                <option value="series-b">Series B ($5-$15M ARR)</option>
+                                <option value="series-c">Series C+ ($15M+ ARR)</option>
+                                <option value="growth">Growth Stage</option>
+                            </select>
+                            <small class="helper-text">O estágio determina os benchmarks aplicados</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="vertical">Vertical *</label>
+                            <select id="vertical" name="vertical" required>
+                                <option value="">Selecione...</option>
+                                <option value="ai-native">AI-Native SaaS</option>
+                                <option value="cybersecurity">Cybersecurity</option>
+                                <option value="devtools">DevTools</option>
+                                <option value="fintech">Fintech</option>
+                                <option value="vertical-saas">Vertical SaaS</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="horizontal-saas">Horizontal SaaS</option>
+                                <option value="other">Outros</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="foundedYear">Ano de Fundação *</label>
+                            <input type="number" id="foundedYear" name="foundedYear" min="2000" max="2026" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Localização *</label>
+                            <input type="text" id="location" name="location" placeholder="Ex: São Paulo, Brasil" required>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="problemSolution">Problema & Solução *</label>
+                            <textarea id="problemSolution" name="problemSolution" rows="4"
+                                placeholder="Descreva brevemente o problema que a startup resolve e como..." required></textarea>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="uniqueInsight">Insight Único / "Why Now" *</label>
+                            <textarea id="uniqueInsight" name="uniqueInsight" rows="3"
+                                placeholder="O que esta startup sabe que ninguém mais sabe? Por que agora é o momento certo?" required></textarea>
+                            <small class="helper-text">Market timing: tecnologias enablers, mudanças regulatórias, behavioral shifts</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Avaliação da Equipe -->
+                <div class="form-step" data-step="2">
+                    <h2>Avaliação da Equipe Fundadora</h2>
+                    <p class="step-description">95% dos VCs citam "equipe" como fator essencial</p>
+
+                    <div class="card-info">
+                        <strong>Founder-Market Fit Framework (NFX)</strong>
+                        <p>Avalie cada componente de 1 a 5. Score total: 7-14 = Fraco | 15-21 = Moderado | 22-35 = Excepcional</p>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="numFounders">Número de Co-Founders *</label>
+                            <input type="number" id="numFounders" name="numFounders" min="1" max="10" value="2" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="founderCommitment">Comprometimento *</label>
+                            <select id="founderCommitment" name="founderCommitment" required>
+                                <option value="">Selecione...</option>
+                                <option value="5">100% full-time, all-in</option>
+                                <option value="4">Full-time recente</option>
+                                <option value="3">Maioria full-time</option>
+                                <option value="2">Part-time significativo</option>
+                                <option value="1">Side project</option>
+                            </select>
+                        </div>
+
+                        <!-- Founder-Market Fit Scoring -->
+                        <div class="form-group">
+                            <label for="obsession">Obsession (1-5) *</label>
+                            <input type="range" id="obsession" name="obsession" min="1" max="5" value="3" required>
+                            <div class="range-labels">
+                                <span>1</span><span class="range-value" id="obsessionValue">3</span><span>5</span>
+                            </div>
+                            <small class="helper-text">Você perseguiria isso por 10 anos?</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="domainKnowledge">Domain Knowledge (1-5) *</label>
+                            <input type="range" id="domainKnowledge" name="domainKnowledge" min="1" max="5" value="3" required>
+                            <div class="range-labels">
+                                <span>1</span><span class="range-value" id="domainKnowledgeValue">3</span><span>5</span>
+                            </div>
+                            <small class="helper-text">Fala a linguagem do mercado?</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="trackRecord">Track Record (1-5) *</label>
+                            <input type="range" id="trackRecord" name="trackRecord" min="1" max="5" value="3" required>
+                            <div class="range-labels">
+                                <span>1</span><span class="range-value" id="trackRecordValue">3</span><span>5</span>
+                            </div>
+                            <small class="helper-text">Já construiu/shipped algo antes?</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="networkAccess">Network Access (1-5) *</label>
+                            <input type="range" id="networkAccess" name="networkAccess" min="1" max="5" value="3" required>
+                            <div class="range-labels">
+                                <span>1</span><span class="range-value" id="networkAccessValue">3</span><span>5</span>
+                            </div>
+                            <small class="helper-text">Relacionamentos com potenciais clientes?</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="personalExperience">Personal Experience (1-5) *</label>
+                            <input type="range" id="personalExperience" name="personalExperience" min="1" max="5" value="3" required>
+                            <div class="range-labels">
+                                <span>1</span><span class="range-value" id="personalExperienceValue">3</span><span>5</span>
+                            </div>
+                            <small class="helper-text">Viveu a dor que está resolvendo?</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="industryExperience">Experiência no Setor *</label>
+                            <select id="industryExperience" name="industryExperience" required>
+                                <option value="">Selecione...</option>
+                                <option value="5">10+ anos, expertise reconhecida</option>
+                                <option value="4">5-10 anos</option>
+                                <option value="3">2-5 anos</option>
+                                <option value="2">1-2 anos</option>
+                                <option value="1">Sem experiência</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="previousStartup">Experiência Prévia em Startup *</label>
+                            <select id="previousStartup" name="previousStartup" required>
+                                <option value="">Selecione...</option>
+                                <option value="5">Exit $10M+</option>
+                                <option value="4">Startup com tração</option>
+                                <option value="3">Experiência corporativa tech</option>
+                                <option value="2">Primeiro empreendimento mas background forte</option>
+                                <option value="1">Primeiro empreendimento</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="technicalTeam">Composição Técnica *</label>
+                            <select id="technicalTeam" name="technicalTeam" required>
+                                <option value="">Selecione...</option>
+                                <option value="5">CTO experiente + time senior</option>
+                                <option value="4">Founder técnico + time em construção</option>
+                                <option value="3">Time adequado mas júnior</option>
+                                <option value="2">Capacidade técnica limitada</option>
+                                <option value="1">Sem capacidade técnica interna</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="teamDynamics">Dinâmica Co-Founders *</label>
+                            <select id="teamDynamics" name="teamDynamics" required>
+                                <option value="">Selecione...</option>
+                                <option value="5">Trabalharam juntos com sucesso antes</option>
+                                <option value="4">Se conhecem bem, roles claros</option>
+                                <option value="3">Recém-formados mas alinhados</option>
+                                <option value="2">Alguma tensão mas gerenciável</option>
+                                <option value="1">Conflitos evidentes</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="founderOwnership">Founder Ownership (%) *</label>
+                            <input type="number" id="founderOwnership" name="founderOwnership" min="0" max="100" step="0.1" required>
+                            <small class="helper-text" id="ownershipBenchmark">Benchmark será calculado baseado no estágio</small>
+                        </div>
+                    </div>
+
+                    <div class="metric-display">
+                        <div class="metric-card">
+                            <span class="metric-label">Founder-Market Fit Score</span>
+                            <span class="metric-value" id="founderMarketFitScore">-</span>
+                            <span class="metric-rating" id="founderMarketFitRating">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Análise de Mercado -->
+                <div class="form-step" data-step="3">
+                    <h2>Análise de Mercado</h2>
+                    <p class="step-description">TAM/SAM/SOM e Market Timing</p>
+
+                    <div class="card-info">
+                        <strong>Bottom-Up Approach (Preferido por VCs)</strong>
+                        <p>Market Size = Número de Clientes Potenciais × Receita Média por Cliente</p>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="tam">TAM - Total Addressable Market (USD) *</label>
+                            <input type="number" id="tam" name="tam" min="0" step="1000000" required>
+                            <small class="helper-text">Mercado total em USD (ex: 1000000000 para $1B)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sam">SAM - Serviceable Available Market (USD) *</label>
+                            <input type="number" id="sam" name="sam" min="0" step="1000000" required>
+                            <small class="helper-text">Parcela do TAM que você pode servir</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="som">SOM - Serviceable Obtainable Market (USD) *</label>
+                            <input type="number" id="som" name="som" min="0" step="100000" required>
+                            <small class="helper-text">Mercado realista de captura (primeiros 3-5 anos)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="potentialCustomers">Potenciais Clientes (nº) *</label>
+                            <input type="number" id="potentialCustomers" name="potentialCustomers" min="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="avgRevenuePerCustomer">Receita Média por Cliente/Ano (USD) *</label>
+                            <input type="number" id="avgRevenuePerCustomer" name="avgRevenuePerCustomer" min="0" step="100" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="marketGrowthRate">Taxa de Crescimento do Mercado (% anual) *</label>
+                            <input type="number" id="marketGrowthRate" name="marketGrowthRate" min="-50" max="500" step="1" value="20" required>
+                        </div>
+
+                        <!-- Market Timing / Why Now -->
+                        <div class="form-group full-width">
+                            <label>Enablers de Mercado (Selecione todos que aplicam)</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="enablers" value="technology">
+                                    <span>Technology Enablers (AI, Cloud, Mobile, etc)</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="enablers" value="regulatory">
+                                    <span>Mudanças Regulatórias</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="enablers" value="behavioral">
+                                    <span>Behavioral Shifts (mudanças de comportamento)</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="enablers" value="market-structure">
+                                    <span>Market Structure Changes</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="enablers" value="economics">
+                                    <span>Economic Conditions (unit economics viáveis)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Porter's Five Forces -->
+                        <div class="form-group full-width">
+                            <h3 style="margin-top: 2rem;">Porter's Five Forces (1-5, menor = melhor)</h3>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newEntrants">Ameaça de Novos Entrantes *</label>
+                            <input type="range" id="newEntrants" name="newEntrants" min="1" max="5" value="3" required>
+                            <div class="range-labels">
+                                <span>Baixa</span><span class="range-value" id="newEntrantsValue">3</span><span>Alta</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="supplierPower">Poder dos Fornecedores *</label>
+                            <input type="range" id="supplierPower" name="supplierPower" min="1" max="5" value="3" required>
+                            <div class="range-labels">
+                                <span>Baixo</span><span class="range-value" id="supplierPowerValue">3</span><span>Alto</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="buyerPower">Poder dos Compradores *</label>
+                            <input type="range" id="buyerPower" name="buyerPower" min="1" max="5" value="3" required>
+                            <div class="range-labels">
+                                <span>Baixo</span><span class="range-value" id="buyerPowerValue">3</span><span>Alto</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="substitutes">Ameaça de Substitutos *</label>
+                            <input type="range" id="substitutes" name="substitutes" min="1" max="5" value="3" required>
+                            <div class="range-labels">
+                                <span>Baixa</span><span class="range-value" id="substitutesValue">3</span><span>Alta</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rivalry">Rivalidade Competitiva *</label>
+                            <input type="range" id="rivalry" name="rivalry" min="1" max="5" value="3" required>
+                            <div class="range-labels">
+                                <span>Baixa</span><span class="range-value" id="rivalryValue">3</span><span>Alta</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="numCompetitors">Número de Competidores Diretos *</label>
+                            <input type="number" id="numCompetitors" name="numCompetitors" min="0" max="100" value="3" required>
+                        </div>
+                    </div>
+
+                    <div class="metric-display">
+                        <div class="metric-card">
+                            <span class="metric-label">Market Attractiveness Score</span>
+                            <span class="metric-value" id="marketAttractivenessScore">-</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">Bottom-Up TAM Validation</span>
+                            <span class="metric-value" id="bottomUpTAM">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Produto e PMF -->
+                <div class="form-step" data-step="4">
+                    <h2>Produto e Product-Market Fit</h2>
+                    <p class="step-description">Sean Ellis Test: ≥40% "Very Disappointed" = PMF atingido</p>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="productStage">Estágio do Produto *</label>
+                            <select id="productStage" name="productStage" required>
+                                <option value="">Selecione...</option>
+                                <option value="5">Produto maduro em produção</option>
+                                <option value="4">MVP com clientes pagantes</option>
+                                <option value="3">Beta com early adopters</option>
+                                <option value="2">Protótipo funcional</option>
+                                <option value="1">Conceito/Wireframes</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="differentiation">Diferenciação vs Competidores *</label>
+                            <select id="differentiation" name="differentiation" required>
+                                <option value="">Selecione...</option>
+                                <option value="5">10x melhor que alternativas</option>
+                                <option value="4">Claramente superior em múltiplos aspectos</option>
+                                <option value="3">Diferenciação moderada</option>
+                                <option value="2">Similar aos competidores</option>
+                                <option value="1">Me-too product</option>
+                            </select>
+                        </div>
+
+                        <!-- Sean Ellis Test -->
+                        <div class="form-group">
+                            <label for="seanEllis">Sean Ellis Score (%) *</label>
+                            <input type="number" id="seanEllis" name="seanEllis" min="0" max="100" step="1" required>
+                            <small class="helper-text">"Very disappointed" se não pudessem mais usar. ≥40% = PMF forte</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="nps">NPS - Net Promoter Score *</label>
+                            <input type="number" id="nps" name="nps" min="-100" max="100" step="1" required>
+                            <small class="helper-text">Score de -100 a +100. >50 = Excelente</small>
+                        </div>
+
+                        <!-- Engagement Metrics -->
+                        <div class="form-group">
+                            <label for="dau">DAU - Daily Active Users</label>
+                            <input type="number" id="dau" name="dau" min="0" step="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mau">MAU - Monthly Active Users</label>
+                            <input type="number" id="mau" name="mau" min="0" step="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cohortRetention">Cohort Retention Flatten (%) *</label>
+                            <input type="number" id="cohortRetention" name="cohortRetention" min="0" max="100" step="1" required>
+                            <small class="helper-text">% onde a curva de retenção se estabiliza. >35% = Strong PMF</small>
+                        </div>
+
+                        <!-- Technical Assessment -->
+                        <div class="form-group">
+                            <label for="techQuality">Qualidade Técnica *</label>
+                            <select id="techQuality" name="techQuality" required>
+                                <option value="">Selecione...</option>
+                                <option value="5">Arquitetura excelente, CI/CD maduro</option>
+                                <option value="4">Boa qualidade, minor issues</option>
+                                <option value="3">Adequado, requer investimento</option>
+                                <option value="2">Tech debt significativo</option>
+                                <option value="1">Problemas severos</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="scalability">Escalabilidade *</label>
+                            <select id="scalability" name="scalability" required>
+                                <option value="">Selecione...</option>
+                                <option value="5">Cloud-native, auto-scaling</option>
+                                <option value="4">Bem arquitetado, escala com esforço</option>
+                                <option value="3">Adequado para escala atual</option>
+                                <option value="2">Limitações conhecidas</option>
+                                <option value="1">Single point of failure</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="security">Segurança *</label>
+                            <select id="security" name="security" required>
+                                <option value="">Selecione...</option>
+                                <option value="5">SOC 2 Type II + certificações</option>
+                                <option value="4">SOC 2 em andamento</option>
+                                <option value="3">Segurança básica implementada</option>
+                                <option value="2">Gaps conhecidos</option>
+                                <option value="1">Problemas significativos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="metric-display">
+                        <div class="metric-card">
+                            <span class="metric-label">PMF Status</span>
+                            <span class="metric-value" id="pmfStatus">-</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">DAU/MAU Ratio</span>
+                            <span class="metric-value" id="dauMauRatio">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Métricas SaaS -->
+                <div class="form-step" data-step="5">
+                    <h2>Métricas de Tração e Growth</h2>
+                    <p class="step-description">MRR, ARR, Growth Rate e Retention Metrics</p>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="mrr">MRR - Monthly Recurring Revenue (USD) *</label>
+                            <input type="number" id="mrr" name="mrr" min="0" step="1000" value="0" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="arr">ARR - Annual Recurring Revenue (USD)</label>
+                            <input type="number" id="arr" name="arr" min="0" step="1000" readonly>
+                            <small class="helper-text">Calculado automaticamente (MRR × 12)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalCustomers">Total de Clientes Pagantes *</label>
+                            <input type="number" id="totalCustomers" name="totalCustomers" min="0" step="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="arpa">ARPA - Average Revenue Per Account (USD) *</label>
+                            <input type="number" id="arpa" name="arpa" min="0" step="10" required>
+                            <small class="helper-text">Receita média mensal por cliente</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="growthRate">Growth Rate YoY (%) *</label>
+                            <input type="number" id="growthRate" name="growthRate" min="-100" max="1000" step="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="monthlyChurn">Monthly Churn Rate (%) *</label>
+                            <input type="number" id="monthlyChurn" name="monthlyChurn" min="0" max="100" step="0.1" required>
+                        </div>
+
+                        <!-- Retention Metrics -->
+                        <div class="form-group">
+                            <label for="nrr">NRR - Net Revenue Retention (%) *</label>
+                            <input type="number" id="nrr" name="nrr" min="0" max="200" step="1" required>
+                            <small class="helper-text">≥120% = Best | 110% = Better | 100% = Good</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="grr">GRR - Gross Revenue Retention (%) *</label>
+                            <input type="number" id="grr" name="grr" min="0" max="100" step="1" required>
+                            <small class="helper-text">Revenue retido sem expansion</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="logoRetention">Logo Retention (% anual) *</label>
+                            <input type="number" id="logoRetention" name="logoRetention" min="0" max="100" step="1" required>
+                            <small class="helper-text">>90% = Strong</small>
+                        </div>
+
+                        <!-- MRR Components -->
+                        <div class="form-group">
+                            <label for="newMRR">New MRR (último mês, USD)</label>
+                            <input type="number" id="newMRR" name="newMRR" min="0" step="100">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="expansionMRR">Expansion MRR (último mês, USD)</label>
+                            <input type="number" id="expansionMRR" name="expansionMRR" min="0" step="100">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="churnedMRR">Churned MRR (último mês, USD)</label>
+                            <input type="number" id="churnedMRR" name="churnedMRR" min="0" step="100">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contractionMRR">Contraction MRR (último mês, USD)</label>
+                            <input type="number" id="contractionMRR" name="contractionMRR" min="0" step="100">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="customerConcentration">Top 10 Customer Concentration (%) *</label>
+                            <input type="number" id="customerConcentration" name="customerConcentration" min="0" max="100" step="1" required>
+                            <small class="helper-text">Ideal <50%. Single customer <15%</small>
+                        </div>
+                    </div>
+
+                    <div class="metric-display">
+                        <div class="metric-card">
+                            <span class="metric-label">ARR Calculado</span>
+                            <span class="metric-value" id="arrCalculated">$0</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">SaaS Quick Ratio</span>
+                            <span class="metric-value" id="quickRatio">-</span>
+                            <span class="metric-rating" id="quickRatioRating">-</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">NRR Rating</span>
+                            <span class="metric-value" id="nrrRating">-</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">Annual Churn</span>
+                            <span class="metric-value" id="annualChurn">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: Unit Economics e Financeiro -->
+                <div class="form-step" data-step="6">
+                    <h2>Unit Economics e Métricas Financeiras</h2>
+                    <p class="step-description">CAC, LTV, Rule of 40 e Eficiência</p>
+
+                    <div class="form-grid">
+                        <!-- CAC Calculation -->
+                        <div class="form-group">
+                            <label for="salesMarketingSpend">Sales & Marketing Spend (último trimestre, USD) *</label>
+                            <input type="number" id="salesMarketingSpend" name="salesMarketingSpend" min="0" step="1000" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newCustomersQuarter">Novos Clientes (último trimestre) *</label>
+                            <input type="number" id="newCustomersQuarter" name="newCustomersQuarter" min="0" step="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="grossMargin">Gross Margin (%) *</label>
+                            <input type="number" id="grossMargin" name="grossMargin" min="0" max="100" step="0.1" required>
+                            <small class="helper-text">SaaS saudável: ≥70%</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ebitdaMargin">EBITDA Margin (%) *</label>
+                            <input type="number" id="ebitdaMargin" name="ebitdaMargin" min="-200" max="100" step="0.1" required>
+                            <small class="helper-text">Pode ser negativo em early-stage</small>
+                        </div>
+
+                        <!-- Calculated Metrics Display -->
+                        <div class="form-group">
+                            <label>CAC - Customer Acquisition Cost</label>
+                            <input type="text" id="cacDisplay" readonly>
+                            <small class="helper-text">Calculado: S&M Spend / Novos Clientes</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>LTV - Lifetime Value</label>
+                            <input type="text" id="ltvDisplay" readonly>
+                            <small class="helper-text">Calculado: (ARPA × Gross Margin%) / Churn Rate%</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>LTV/CAC Ratio</label>
+                            <input type="text" id="ltvCacDisplay" readonly>
+                            <small class="helper-text">Ideal: 3:1 | Bom: 3-5:1</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>CAC Payback Period (meses)</label>
+                            <input type="text" id="cacPaybackDisplay" readonly>
+                            <small class="helper-text">Best: <6m | Good: 12-18m</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Rule of 40 Score</label>
+                            <input type="text" id="ruleOf40Display" readonly>
+                            <small class="helper-text">Growth% + EBITDA% | ≥40% = Excelente</small>
+                        </div>
+
+                        <!-- Additional Financial Metrics -->
+                        <div class="form-group">
+                            <label for="cash">Cash/Equivalentes (USD) *</label>
+                            <input type="number" id="cash" name="cash" min="0" step="10000" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="monthlyBurn">Monthly Burn Rate (USD) *</label>
+                            <input type="number" id="monthlyBurn" name="monthlyBurn" min="0" step="1000" required>
+                            <small class="helper-text">Quanto você gasta por mês (valor absoluto)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="runway">Runway (meses)</label>
+                            <input type="text" id="runwayDisplay" readonly>
+                            <small class="helper-text">Cash / Monthly Burn</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalRaised">Total Capital Levantado (USD)</label>
+                            <input type="number" id="totalRaised" name="totalRaised" min="0" step="100000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="currentValuation">Valuation Atual (Pre-Money, USD)</label>
+                            <input type="number" id="currentValuation" name="currentValuation" min="0" step="100000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="seekingAmount">Investimento Buscado (USD)</label>
+                            <input type="number" id="seekingAmount" name="seekingAmount" min="0" step="100000">
+                        </div>
+
+                        <!-- Magic Number -->
+                        <div class="form-group">
+                            <label for="previousQuarterARR">ARR Trimestre Anterior (USD)</label>
+                            <input type="number" id="previousQuarterARR" name="previousQuarterARR" min="0" step="1000">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Magic Number</label>
+                            <input type="text" id="magicNumberDisplay" readonly>
+                            <small class="helper-text">Eficiência S&M. ≥0.75 = Eficiente</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="revenuePerEmployee">Revenue per Employee (USD)</label>
+                            <input type="number" id="revenuePerEmployee" name="revenuePerEmployee" min="0" step="1000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalEmployees">Total de Funcionários</label>
+                            <input type="number" id="totalEmployees" name="totalEmployees" min="0" step="1">
+                        </div>
+                    </div>
+
+                    <div class="metric-display">
+                        <div class="metric-card success">
+                            <span class="metric-label">LTV/CAC Ratio</span>
+                            <span class="metric-value" id="ltvCacRatioDisplay">-</span>
+                            <span class="metric-rating" id="ltvCacRating">-</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">CAC Payback</span>
+                            <span class="metric-value" id="cacPaybackMonths">-</span>
+                            <span class="metric-rating" id="cacPaybackRating">-</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">Rule of 40</span>
+                            <span class="metric-value" id="ruleOf40Score">-</span>
+                            <span class="metric-rating" id="ruleOf40Rating">-</span>
+                        </div>
+                        <div class="metric-card warning">
+                            <span class="metric-label">Runway</span>
+                            <span class="metric-value" id="runwayMonths">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 7: Relatório Final -->
+                <div class="form-step" data-step="7">
+                    <h2>Relatório de Análise de Investimento</h2>
+                    <p class="step-description">Score final e recomendação</p>
+
+                    <div id="finalReport">
+                        <!-- Report will be generated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="form-navigation">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">
+                        <span>← Anterior</span>
+                    </button>
+                    <button type="button" class="btn btn-primary" id="nextBtn">
+                        <span>Próximo →</span>
+                    </button>
+                    <button type="button" class="btn btn-success" id="generateReportBtn" style="display: none;">
+                        <span>🎯 Gerar Relatório Final</span>
+                    </button>
+                </div>
+            </form>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Baseado em frameworks de Bessemer Venture Partners, Sequoia, a16z, Y Combinator, NFX & Hamilton Helmer</p>
+            <p>Versão 1.0 | Janeiro 2025</p>
+        </footer>
+    </div>
+
+    <!-- Core Modules (load first) -->
+    <script src="js/modules/state.js"></script>
+    <script src="js/modules/utils.js"></script>
+    <script src="js/modules/validation.js"></script>
+    <script src="js/modules/navigation.js"></script>
+
+    <!-- Calculation Modules -->
+    <script src="js/calculations/founderMarketFit.js"></script>
+    <script src="js/calculations/marketAttractiveness.js"></script>
+    <script src="js/calculations/pmf.js"></script>
+    <script src="js/calculations/saasMetrics.js"></script>
+    <script src="js/calculations/unitEconomics.js"></script>
+
+    <!-- Feature Modules -->
+    <script src="js/modules/scoring.js"></script>
+    <script src="js/modules/reportHelpers.js"></script>
+    <script src="js/modules/report.js"></script>
+    <script src="js/modules/events.js"></script>
+
+    <!-- Tooltips -->
+    <script src="js/tooltips.js"></script>
+
+    <!-- Main Application (load last) -->
+    <script src="js/main.js"></script>
+</body>
+</html>

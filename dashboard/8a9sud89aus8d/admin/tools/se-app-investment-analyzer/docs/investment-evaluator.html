@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Due Diligence Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #16161f;
+            --bg-input: #1e1e2a;
+            --border-color: #2a2a3a;
+            --text-primary: #f4f4f6;
+            --text-secondary: #a0a0b0;
+            --text-muted: #6a6a7a;
+            --accent-gold: #d4af37;
+            --accent-emerald: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f59e0b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 40px;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-gold), var(--accent-emerald), var(--accent-gold));
+        }
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #f4d03f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        .header p { color: var(--text-secondary); font-size: 1.1rem; }
+        .lang-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+        }
+        .lang-btn {
+            padding: 8px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .lang-btn.active, .lang-btn:hover {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border-color: var(--accent-gold);
+        }
+        .progress-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-input);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-gold), var(--accent-emerald));
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+        }
+        .section:hover { border-color: var(--accent-gold); box-shadow: 0 0 30px rgba(212,175,55,0.1); }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent-gold), #f4d03f);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .section-title { font-size: 1.4rem; font-weight: 600; }
+        .section-subtitle { font-size: 0.9rem; color: var(--text-muted); }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+        .form-group label small {
+            display: block;
+            color: var(--text-muted);
+            font-weight: 400;
+            font-size: 0.8rem;
+            margin-top: 3px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.2);
+        }
+        input[type="number"] { font-family: 'JetBrains Mono', monospace; }
+        select { cursor: pointer; }
+        select option { background: var(--bg-secondary); }
+        .calc-field {
+            background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.05));
+            border: 1px dashed var(--accent-gold);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .calc-field .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent-gold);
+        }
+        .calc-field .label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 5px; }
+        .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .score-card {
+            background: var(--bg-input);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        .score-card .score {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .score-card .score.good { color: var(--accent-emerald); }
+        .score-card .score.warning { color: var(--accent-orange); }
+        .score-card .score.bad { color: var(--accent-red); }
+        .score-card .title { font-size: 0.85rem; color: var(--text-muted); margin-top: 5px; }
+        .benchmark {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+        .benchmark-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .benchmark-dot.good { background: var(--accent-emerald); }
+        .benchmark-dot.warning { background: var(--accent-orange); }
+        .benchmark-dot.bad { background: var(--accent-red); }
+        .toggle-group { display: flex; flex-wrap: wrap; gap: 10px; }
+        .toggle-option {
+            padding: 12px 20px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .toggle-option:hover { border-color: var(--accent-gold); }
+        .toggle-option.selected {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border-color: var(--accent-gold);
+        }
+        .toggle-option input { display: none; }
+        #results {
+            display: none;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            border: 2px solid var(--accent-gold);
+            box-shadow: 0 0 60px rgba(212,175,55,0.2);
+        }
+        .final-score-container {
+            text-align: center;
+            padding: 40px;
+            background: var(--bg-input);
+            border-radius: 16px;
+            margin-bottom: 30px;
+        }
+        .final-score {
+            font-family: 'Playfair Display', serif;
+            font-size: 6rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .final-score.invest { color: var(--accent-emerald); }
+        .final-score.caution { color: var(--accent-orange); }
+        .final-score.reject { color: var(--accent-red); }
+        .verdict {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 20px 0;
+            padding: 15px 30px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        .verdict.invest { background: rgba(16,185,129,0.2); color: var(--accent-emerald); }
+        .verdict.caution { background: rgba(245,158,11,0.2); color: var(--accent-orange); }
+        .verdict.reject { background: rgba(239,68,68,0.2); color: var(--accent-red); }
+        .breakdown { margin-top: 30px; }
+        .breakdown-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: var(--bg-input);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .breakdown-item .name { font-weight: 500; }
+        .breakdown-item .bar {
+            flex: 1;
+            height: 8px;
+            background: var(--bg-primary);
+            border-radius: 4px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+        .breakdown-item .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+        .breakdown-item .score-val { font-family: 'JetBrains Mono', monospace; font-weight: 600; min-width: 60px; text-align: right; }
+        .red-flags {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid var(--accent-red);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .red-flags h4 { color: var(--accent-red); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .red-flag-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(239,68,68,0.2);
+        }
+        .red-flag-item:last-child { border-bottom: none; }
+        .green-flags {
+            background: rgba(16,185,129,0.1);
+            border: 1px solid var(--accent-emerald);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .green-flags h4 { color: var(--accent-emerald); margin-bottom: 15px; }
+        .green-flag-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(16,185,129,0.2);
+        }
+        .green-flag-item:last-child { border-bottom: none; }
+        .btn {
+            padding: 16px 40px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-gold), #f4d03f);
+            color: var(--bg-primary);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(212,175,55,0.3); }
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        .btn-container { display: flex; gap: 15px; justify-content: center; margin-top: 40px; flex-wrap: wrap; }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+        }
+        .tooltip-icon {
+            width: 16px;
+            height: 16px;
+            background: var(--border-color);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .tooltip-text {
+            visibility: hidden;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            position: absolute;
+            z-index: 100;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 250px;
+            font-size: 0.8rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        .tooltip:hover .tooltip-text { visibility: visible; }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .form-grid { grid-template-columns: 1fr; }
+            .final-score { font-size: 4rem; }
+            .lang-toggle { position: static; justify-content: center; margin-bottom: 20px; }
+        }
+        @media print {
+            body { background: white; color: black; }
+            .section { break-inside: avoid; border: 1px solid #ddd; }
+            .btn-container { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="lang-toggle">
+                <button class="lang-btn active" onclick="setLanguage('pt')">PT-BR</button>
+                <button class="lang-btn" onclick="setLanguage('en')">EN</button>
+            </div>
+            <h1>Investment Due Diligence</h1>
+            <p class="subtitle" data-pt="Análise completa para decisão de investimento em Startups e SaaS" data-en="Complete analysis for investment decisions in Startups and SaaS">Análise completa para decisão de investimento em Startups e SaaS</p>
+        </header>
+
+        <div class="progress-container">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="progress-text">
+                <span data-pt="Progresso do formulário" data-en="Form progress">Progresso do formulário</span>
+                <span id="progressPercent">0%</span>
+            </div>
+        </div>
+
+        <form id="investmentForm">
+            <!-- SECTION 1: BASIC INFO -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">📋</div>
+                    <div>
+                        <div class="section-title" data-pt="1. Informações Básicas" data-en="1. Basic Information">1. Informações Básicas</div>
+                        <div class="section-subtitle" data-pt="Dados gerais da oportunidade" data-en="General opportunity data">Dados gerais da oportunidade</div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label data-pt="Nome da Empresa/Projeto" data-en="Company/Project Name">Nome da Empresa/Projeto</label>
+                        <input type="text" id="companyName" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Estágio da Empresa" data-en="Company Stage">Estágio da Empresa</label>
+                        <select id="companyStage" required>
+                            <option value="">Selecione...</option>
+                            <option value="pre-seed">Pre-Seed (Ideia/MVP)</option>
+                            <option value="seed">Seed ($0-$1M ARR)</option>
+                            <option value="series-a">Series A ($1M-$5M ARR)</option>
+                            <option value="series-b">Series B ($5M-$15M ARR)</option>
+                            <option value="growth">Growth/Series C+ ($15M+ ARR)</option>
+                            <option value="mature">Mature/Late Stage ($50M+ ARR)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Tipo de Análise" data-en="Analysis Type">Tipo de Análise</label>
+                        <select id="analysisType" required>
+                            <option value="">Selecione...</option>
+                            <option value="invest">Investir (Equity)</option>
+                            <option value="build">Criar/Desenvolver</option>
+                            <option value="acquire">Adquirir</option>
+                            <option value="sell">Preparar para Venda</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Vertical/Setor" data-en="Vertical/Sector">Vertical/Setor</label>
+                        <select id="vertical" required>
+                            <option value="">Selecione...</option>
+                            <option value="fintech">Fintech</option>
+                            <option value="healthtech">Healthtech</option>
+                            <option value="edtech">Edtech</option>
+                            <option value="cybersecurity">Cybersecurity</option>
+                            <option value="ai-ml">AI/Machine Learning</option>
+                            <option value="devtools">DevTools/Infrastructure</option>
+                            <option value="hr-tech">HR Tech</option>
+                            <option value="martech">MarTech</option>
+                            <option value="vertical-saas">Vertical SaaS</option>
+                            <option value="horizontal-saas">Horizontal SaaS</option>
+                            <option value="ecommerce">E-commerce/Marketplace</option>
+                            <option value="logistics">Logistics/Supply Chain</option>
+                            <option value="other">Outro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><span data-pt="Valor do Investimento/Deal" data-en="Investment/Deal Value">Valor do Investimento/Deal</span></label>
+                        <input type="number" id="investmentAmount" placeholder="Ex: 500000">
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Moeda" data-en="Currency">Moeda</label>
+                        <select id="currency">
+                            <option value="USD">USD ($)</option>
+                            <option value="BRL">BRL (R$)</option>
+                            <option value="EUR">EUR (€)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: TEAM -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">👥</div>
+                    <div>
+                        <div class="section-title" data-pt="2. Avaliação da Equipe (25%)" data-en="2. Team Evaluation (25%)">2. Avaliação da Equipe (25%)</div>
+                        <div class="section-subtitle" data-pt="95% dos VCs citam equipe como fator essencial" data-en="95% of VCs cite team as essential">95% dos VCs citam equipe como fator essencial</div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label><span data-pt="Experiência dos Founders no Setor" data-en="Founders' Industry Experience">Experiência dos Founders no Setor</span></label>
+                        <select id="founderExperience" class="scored-field" data-weight="5" data-category="team">
+                            <option value="">Selecione...</option>
+                            <option value="5">10+ anos no setor, expertise reconhecida</option>
+                            <option value="4">5-10 anos, bom conhecimento</option>
+                            <option value="3">2-5 anos, conhecimento moderado</option>
+                            <option value="2">1-2 anos ou experiência adjacente</option>
+                            <option value="1">Sem experiência prévia no setor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Track Record dos Founders" data-en="Founders' Track Record">Track Record dos Founders</label>
+                        <select id="founderTrackRecord" class="scored-field" data-weight="5" data-category="team">
+                            <option value="">Selecione...</option>
+                            <option value="5">Exit anterior bem-sucedido ($10M+)</option>
+                            <option value="4">Startup anterior com tração significativa</option>
+                            <option value="3">Experiência em scale-up ou big tech</option>
+                            <option value="2">Primeira startup, experiência corporativa</option>
+                            <option value="1">Primeiro empreendimento</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Founder-Market Fit" data-en="Founder-Market Fit">Founder-Market Fit</label>
+                        <select id="founderMarketFit" class="scored-field" data-weight="5" data-category="team">
+                            <option value="">Selecione...</option>
+                            <option value="5">Viveu a dor + expertise técnica + network</option>
+                            <option value="4">2 dos 3 elementos acima</option>
+                            <option value="3">1 elemento forte</option>
+                            <option value="2">Conexão fraca com o problema</option>
+                            <option value="1">Sem conexão com o mercado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Composição da Equipe Técnica" data-en="Technical Team">Composição da Equipe Técnica</label>
+                        <select id="technicalTeam" class="scored-field" data-weight="4" data-category="team">
+                            <option value="">Selecione...</option>
+                            <option value="5">CTO experiente + time senior completo</option>
+                            <option value="4">Founder técnico forte + time em construção</option>
+                            <option value="3">Time técnico adequado mas júnior</option>
+                            <option value="2">Dependência de terceiros/outsourcing</option>
+                            <option value="1">Sem capacidade técnica interna</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Comprometimento dos Founders" data-en="Founders' Commitment">Comprometimento dos Founders</label>
+                        <select id="founderCommitment" class="scored-field" data-weight="4" data-category="team">
+                            <option value="">Selecione...</option>
+                            <option value="5">100% full-time, all-in</option>
+                            <option value="4">Full-time com transição recente</option>
+                            <option value="3">Maioria full-time</option>
+                            <option value="2">Part-time significativo</option>
+                            <option value="1">Side project</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Dinâmica Entre Co-founders" data-en="Co-founders Dynamics">Dinâmica Entre Co-founders</label>
+                        <select id="cofounderDynamics" class="scored-field" data-weight="3" data-category="team">
+                            <option value="">Selecione...</option>
+                            <option value="5">Trabalharam juntos antes com sucesso</option>
+                            <option value="4">Se conhecem bem, roles claros</option>
+                            <option value="3">Recém-formados mas alinhados</option>
+                            <option value="2">Sinais de tensão ou roles confusos</option>
+                            <option value="1">Conflitos evidentes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Número Total de Funcionários" data-en="Total Employees">Número Total de Funcionários</label>
+                        <input type="number" id="totalEmployees" placeholder="Ex: 15">
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="% Ownership dos Founders" data-en="Founders' Ownership %">% Ownership dos Founders</label>
+                        <input type="number" id="founderOwnership" placeholder="Ex: 70" min="0" max="100">
+                        <div class="benchmark" id="ownershipBenchmark"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: MARKET -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">📊</div>
+                    <div>
+                        <div class="section-title" data-pt="3. Análise de Mercado (20%)" data-en="3. Market Analysis (20%)">3. Análise de Mercado (20%)</div>
+                        <div class="section-subtitle" data-pt="TAM/SAM/SOM e dinâmicas competitivas" data-en="TAM/SAM/SOM and competitive dynamics">TAM/SAM/SOM e dinâmicas competitivas</div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>TAM (Total Addressable Market)<small data-pt="Mercado total global" data-en="Total global market">Mercado total global</small></label>
+                        <input type="number" id="tam" placeholder="Ex: 50000000000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>SAM (Serviceable Available Market)<small data-pt="Mercado que você pode servir" data-en="Market you can serve">Mercado que você pode servir</small></label>
+                        <input type="number" id="sam" placeholder="Ex: 5000000000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>SOM (Serviceable Obtainable Market)<small data-pt="Mercado realista 3-5 anos" data-en="Realistic market 3-5 years">Mercado realista 3-5 anos</small></label>
+                        <input type="number" id="som" placeholder="Ex: 500000000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Taxa de Crescimento do Mercado (% anual)" data-en="Market Growth Rate (% annual)">Taxa de Crescimento do Mercado (% anual)</label>
+                        <input type="number" id="marketGrowthRate" placeholder="Ex: 25">
+                    </div>
+                </div>
+                <div class="score-grid">
+                    <div class="calc-field">
+                        <div class="value" id="tamSamRatio">-</div>
+                        <div class="label">SAM/TAM Ratio</div>
+                    </div>
+                    <div class="calc-field">
+                        <div class="value" id="samSomRatio">-</div>
+                        <div class="label">SOM/SAM Ratio</div>
+                    </div>
+                </div>
+                <div class="form-grid" style="margin-top: 25px;">
+                    <div class="form-group">
+                        <label data-pt="Timing de Mercado (Why Now?)" data-en="Market Timing (Why Now?)">Timing de Mercado (Why Now?)</label>
+                        <select id="marketTiming" class="scored-field" data-weight="4" data-category="market">
+                            <option value="">Selecione...</option>
+                            <option value="5">Múltiplos enablers convergindo</option>
+                            <option value="4">Claro enabler recente</option>
+                            <option value="3">Mercado em crescimento estável</option>
+                            <option value="2">Timing questionável</option>
+                            <option value="1">Tarde ou cedo demais</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Intensidade Competitiva" data-en="Competitive Intensity">Intensidade Competitiva</label>
+                        <select id="competitiveIntensity" class="scored-field" data-weight="3" data-category="market">
+                            <option value="">Selecione...</option>
+                            <option value="5">Blue ocean, poucos competidores</option>
+                            <option value="4">Competição moderada, diferenciação clara</option>
+                            <option value="3">Mercado competitivo mas fragmentado</option>
+                            <option value="2">Competidores fortes estabelecidos</option>
+                            <option value="1">Dominado por big techs</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Barreiras de Entrada" data-en="Entry Barriers">Barreiras de Entrada</label>
+                        <select id="entryBarriers" class="scored-field" data-weight="3" data-category="market">
+                            <option value="">Selecione...</option>
+                            <option value="5">Muito altas (regulação, capital, tech)</option>
+                            <option value="4">Altas (expertise, integrações)</option>
+                            <option value="3">Moderadas</option>
+                            <option value="2">Baixas</option>
+                            <option value="1">Muito baixas (commoditizado)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Poder de Barganha dos Clientes" data-en="Customer Power">Poder de Barganha dos Clientes</label>
+                        <select id="customerPower" class="scored-field" data-weight="2" data-category="market">
+                            <option value="">Selecione...</option>
+                            <option value="5">Baixo (mission-critical)</option>
+                            <option value="4">Baixo-moderado</option>
+                            <option value="3">Moderado</option>
+                            <option value="2">Alto</option>
+                            <option value="1">Muito alto (commodity)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: PRODUCT -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">💡</div>
+                    <div>
+                        <div class="section-title" data-pt="4. Produto e Tecnologia (15%)" data-en="4. Product & Technology (15%)">4. Produto e Tecnologia (15%)</div>
+                        <div class="section-subtitle" data-pt="Product-Market Fit e diferenciação" data-en="Product-Market Fit and differentiation">Product-Market Fit e diferenciação</div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label><span data-pt="Sean Ellis Score (PMF)" data-en="Sean Ellis Score (PMF)">Sean Ellis Score (PMF)</span>
+                            <span class="tooltip"><span class="tooltip-icon">?</span><span class="tooltip-text">% usuários "muito desapontados" se produto sumisse. ≥40% = PMF</span></span>
+                        </label>
+                        <input type="number" id="seanEllisScore" placeholder="Ex: 45" min="0" max="100" oninput="calculateMetrics()">
+                        <div class="benchmark" id="pmfBenchmark"></div>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Estágio do Produto" data-en="Product Stage">Estágio do Produto</label>
+                        <select id="productStage" class="scored-field" data-weight="3" data-category="product">
+                            <option value="">Selecione...</option>
+                            <option value="5">Produto maduro, PMF comprovado</option>
+                            <option value="4">Produto funcional com tração</option>
+                            <option value="3">MVP com early adopters pagantes</option>
+                            <option value="2">MVP funcional, validação inicial</option>
+                            <option value="1">Protótipo ou conceito</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Diferenciação do Produto" data-en="Product Differentiation">Diferenciação do Produto</label>
+                        <select id="productDifferentiation" class="scored-field" data-weight="4" data-category="product">
+                            <option value="">Selecione...</option>
+                            <option value="5">10x melhor que alternativas</option>
+                            <option value="4">Claramente superior em múltiplos aspectos</option>
+                            <option value="3">Diferenciação moderada</option>
+                            <option value="2">Similar aos competidores</option>
+                            <option value="1">Me-too product</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Qualidade Técnica / Tech Debt" data-en="Technical Quality">Qualidade Técnica / Tech Debt</label>
+                        <select id="techQuality" class="scored-field" data-weight="3" data-category="product">
+                            <option value="">Selecione...</option>
+                            <option value="5">Excelente arquitetura, CI/CD maduro</option>
+                            <option value="4">Boa qualidade com minor issues</option>
+                            <option value="3">Adequado mas requer investimento</option>
+                            <option value="2">Tech debt significativo</option>
+                            <option value="1">Problemas severos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Escalabilidade" data-en="Scalability">Escalabilidade</label>
+                        <select id="scalability" class="scored-field" data-weight="3" data-category="product">
+                            <option value="">Selecione...</option>
+                            <option value="5">Cloud-native, auto-scaling</option>
+                            <option value="4">Bem arquitetado, escala com esforço moderado</option>
+                            <option value="3">Adequado para escala atual</option>
+                            <option value="2">Limitações conhecidas</option>
+                            <option value="1">Single point of failure</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Segurança e Compliance" data-en="Security & Compliance">Segurança e Compliance</label>
+                        <select id="security" class="scored-field" data-weight="3" data-category="product">
+                            <option value="">Selecione...</option>
+                            <option value="5">SOC 2 Type II + certificações</option>
+                            <option value="4">SOC 2 em andamento</option>
+                            <option value="3">Segurança básica</option>
+                            <option value="2">Gaps conhecidos</option>
+                            <option value="1">Problemas significativos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>NPS (Net Promoter Score)</label>
+                        <input type="number" id="nps" placeholder="Ex: 45" min="-100" max="100" oninput="calculateMetrics()">
+                        <div class="benchmark" id="npsBenchmark"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>DAU/MAU Ratio (%)</label>
+                        <input type="number" id="dauMau" placeholder="Ex: 25" min="0" max="100" oninput="calculateMetrics()">
+                        <div class="benchmark" id="dauMauBenchmark"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: MOAT -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">🏰</div>
+                    <div>
+                        <div class="section-title" data-pt="5. Moat e Vantagens Competitivas (10%)" data-en="5. Moat & Competitive Advantages (10%)">5. Moat e Vantagens Competitivas (10%)</div>
+                        <div class="section-subtitle" data-pt="7 Powers Framework - defensibilidade" data-en="7 Powers Framework - defensibility">7 Powers Framework - defensibilidade</div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label><span>Network Effects</span>
+                            <span class="tooltip"><span class="tooltip-icon">?</span><span class="tooltip-text">70% do valor em tech vem de network effects</span></span>
+                        </label>
+                        <select id="networkEffects" class="scored-field" data-weight="3" data-category="moat">
+                            <option value="">Selecione...</option>
+                            <option value="5">Network effects fortes e comprovados</option>
+                            <option value="4">Network effects moderados</option>
+                            <option value="3">Em desenvolvimento</option>
+                            <option value="2">Potencial não realizado</option>
+                            <option value="1">Sem network effects</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Switching Costs</label>
+                        <select id="switchingCosts" class="scored-field" data-weight="3" data-category="moat">
+                            <option value="">Selecione...</option>
+                            <option value="5">Muito altos (data, workflow, retraining)</option>
+                            <option value="4">Altos (integrações, customizações)</option>
+                            <option value="3">Moderados</option>
+                            <option value="2">Baixos</option>
+                            <option value="1">Muito baixos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Economies of Scale</label>
+                        <select id="scaleEconomies" class="scored-field" data-weight="2" data-category="moat">
+                            <option value="">Selecione...</option>
+                            <option value="5">Fortes economies of scale</option>
+                            <option value="4">Moderadas</option>
+                            <option value="3">Algum benefício</option>
+                            <option value="2">Benefício limitado</option>
+                            <option value="1">Sem economies of scale</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Brand/Trust</label>
+                        <select id="brandTrust" class="scored-field" data-weight="2" data-category="moat">
+                            <option value="">Selecione...</option>
+                            <option value="5">Marca forte e reconhecida</option>
+                            <option value="4">Marca em crescimento</option>
+                            <option value="3">Marca emergente</option>
+                            <option value="2">Pouco reconhecimento</option>
+                            <option value="1">Sem brand equity</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Counter-Positioning</label>
+                        <select id="counterPositioning" class="scored-field" data-weight="2" data-category="moat">
+                            <option value="">Selecione...</option>
+                            <option value="5">Modelo que incumbentes não podem copiar</option>
+                            <option value="4">Posicionamento difícil de replicar</option>
+                            <option value="3">Alguma diferenciação</option>
+                            <option value="2">Facilmente replicável</option>
+                            <option value="1">Competindo de frente</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Cornered Resource</label>
+                        <select id="corneredResource" class="scored-field" data-weight="2" data-category="moat">
+                            <option value="">Selecione...</option>
+                            <option value="5">Acesso exclusivo a dados/talentos/parcerias</option>
+                            <option value="4">Vantagem significativa</option>
+                            <option value="3">Alguma vantagem</option>
+                            <option value="2">Vantagem limitada</option>
+                            <option value="1">Sem recursos exclusivos</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 6: FINANCIALS -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">💰</div>
+                    <div>
+                        <div class="section-title" data-pt="6. Métricas Financeiras SaaS (15%)" data-en="6. SaaS Financial Metrics (15%)">6. Métricas Financeiras SaaS (15%)</div>
+                        <div class="section-subtitle" data-pt="Unit economics, MRR, churn" data-en="Unit economics, MRR, churn">Unit economics, MRR, churn</div>
+                    </div>
+                </div>
+                
+                <h4 style="color: var(--accent-gold); margin-bottom: 15px;">📈 Revenue Metrics</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>MRR (Monthly Recurring Revenue)</label>
+                        <input type="number" id="mrr" placeholder="Ex: 150000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>ARR (Annual Recurring Revenue)</label>
+                        <input type="number" id="arr" placeholder="Calculado" readonly style="background: rgba(212,175,55,0.1);">
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="MRR Mês Anterior" data-en="Previous Month MRR">MRR Mês Anterior</label>
+                        <input type="number" id="mrrPrevious" placeholder="Ex: 140000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="ARR Ano Anterior" data-en="Previous Year ARR">ARR Ano Anterior</label>
+                        <input type="number" id="arrPreviousYear" placeholder="Ex: 1000000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="% Receita Recorrente" data-en="% Recurring Revenue">% Receita Recorrente</label>
+                        <input type="number" id="recurringRevenuePct" placeholder="Ex: 90" min="0" max="100" oninput="calculateMetrics()">
+                        <div class="benchmark" id="recurringBenchmark"></div>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Concentração Top 10 Clientes (%)" data-en="Top 10 Customer Concentration (%)">Concentração Top 10 Clientes (%)</label>
+                        <input type="number" id="customerConcentration" placeholder="Ex: 25" min="0" max="100" oninput="calculateMetrics()">
+                        <div class="benchmark" id="concentrationBenchmark"></div>
+                    </div>
+                </div>
+                <div class="score-grid">
+                    <div class="calc-field">
+                        <div class="value" id="mrrGrowth">-</div>
+                        <div class="label">MRR Growth (MoM)</div>
+                    </div>
+                    <div class="calc-field">
+                        <div class="value" id="arrGrowth">-</div>
+                        <div class="label">ARR Growth (YoY)</div>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--accent-gold); margin: 25px 0 15px;">💎 Unit Economics</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>CAC (Customer Acquisition Cost)<small>Fully loaded: salários + mídia + ferramentas</small></label>
+                        <input type="number" id="cac" placeholder="Ex: 500" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>LTV (Lifetime Value)</label>
+                        <input type="number" id="ltv" placeholder="Ex: 2500" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>ARPA (Average Revenue Per Account)</label>
+                        <input type="number" id="arpa" placeholder="Ex: 200" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>Gross Margin (%)<small>Benchmark: 70%+</small></label>
+                        <input type="number" id="grossMargin" placeholder="Ex: 75" min="0" max="100" oninput="calculateMetrics()">
+                        <div class="benchmark" id="marginBenchmark"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>CAC Payback (meses)</label>
+                        <input type="number" id="cacPayback" placeholder="Calculado" readonly style="background: rgba(212,175,55,0.1);">
+                        <div class="benchmark" id="paybackBenchmark"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>LTV/CAC Ratio</label>
+                        <input type="text" id="ltvCacRatio" placeholder="Calculado" readonly style="background: rgba(212,175,55,0.1);">
+                        <div class="benchmark" id="ltvCacBenchmark"></div>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--accent-gold); margin: 25px 0 15px;">🔄 Churn e Retenção</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Churn Rate Mensal (Logo) %</label>
+                        <input type="number" id="logoChurn" placeholder="Ex: 3" step="0.1" oninput="calculateMetrics()">
+                        <div class="benchmark" id="logoChurnBenchmark"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Revenue Churn Mensal %</label>
+                        <input type="number" id="revenueChurn" placeholder="Ex: 2" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>NRR (Net Revenue Retention) %
+                            <span class="tooltip"><span class="tooltip-icon">?</span><span class="tooltip-text">Métrica mais importante! 120%+ = excelente</span></span>
+                        </label>
+                        <input type="number" id="nrr" placeholder="Ex: 115" oninput="calculateMetrics()">
+                        <div class="benchmark" id="nrrBenchmark"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Gross Revenue Retention %</label>
+                        <input type="number" id="grr" placeholder="Ex: 90" oninput="calculateMetrics()">
+                        <div class="benchmark" id="grrBenchmark"></div>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--accent-gold); margin: 25px 0 15px;">⚡ Eficiência</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Gastos S&M (trimestre anterior)</label>
+                        <input type="number" id="smSpend" placeholder="Ex: 200000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>EBITDA Margin %</label>
+                        <input type="number" id="ebitdaMargin" placeholder="Ex: -10" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>Burn Rate Mensal</label>
+                        <input type="number" id="burnRate" placeholder="Ex: 100000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>Cash no Banco</label>
+                        <input type="number" id="cashInBank" placeholder="Ex: 2000000" oninput="calculateMetrics()">
+                    </div>
+                </div>
+                <div class="score-grid">
+                    <div class="calc-field">
+                        <div class="value" id="ruleOf40">-</div>
+                        <div class="label">Rule of 40</div>
+                    </div>
+                    <div class="calc-field">
+                        <div class="value" id="magicNumber">-</div>
+                        <div class="label">Magic Number</div>
+                    </div>
+                    <div class="calc-field">
+                        <div class="value" id="quickRatio">-</div>
+                        <div class="label">SaaS Quick Ratio</div>
+                    </div>
+                    <div class="calc-field">
+                        <div class="value" id="runway">-</div>
+                        <div class="label">Runway (meses)</div>
+                    </div>
+                </div>
+
+                <h4 style="color: var(--accent-gold); margin: 25px 0 15px;">📊 Componentes MRR</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>New MRR</label>
+                        <input type="number" id="newMrr" placeholder="Ex: 20000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>Expansion MRR</label>
+                        <input type="number" id="expansionMrr" placeholder="Ex: 10000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>Churned MRR</label>
+                        <input type="number" id="churnedMrr" placeholder="Ex: 5000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>Contraction MRR</label>
+                        <input type="number" id="contractionMrr" placeholder="Ex: 3000" oninput="calculateMetrics()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 7: TRACTION -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">🚀</div>
+                    <div>
+                        <div class="section-title" data-pt="7. Tração e Crescimento (10%)" data-en="7. Traction & Growth (10%)">7. Tração e Crescimento (10%)</div>
+                        <div class="section-subtitle" data-pt="Indicadores de momentum" data-en="Momentum indicators">Indicadores de momentum</div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label data-pt="Número de Clientes Pagantes" data-en="Paying Customers">Número de Clientes Pagantes</label>
+                        <input type="number" id="payingCustomers" placeholder="Ex: 500">
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Crescimento de Clientes (YoY %)" data-en="Customer Growth YoY %">Crescimento de Clientes (YoY %)</label>
+                        <input type="number" id="customerGrowth" placeholder="Ex: 150">
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Qualidade do Pipeline" data-en="Pipeline Quality">Qualidade do Pipeline</label>
+                        <select id="pipelineQuality" class="scored-field" data-weight="3" data-category="traction">
+                            <option value="">Selecione...</option>
+                            <option value="5">Pipeline 3x+ do target, alta conversão</option>
+                            <option value="4">Pipeline 2-3x do target</option>
+                            <option value="3">Pipeline 1.5-2x do target</option>
+                            <option value="2">Pipeline abaixo do target</option>
+                            <option value="1">Sem pipeline estruturado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Fonte Principal de Crescimento" data-en="Main Growth Source">Fonte Principal de Crescimento</label>
+                        <select id="growthSource" class="scored-field" data-weight="2" data-category="traction">
+                            <option value="">Selecione...</option>
+                            <option value="5">Product-led + viral (baixo CAC)</option>
+                            <option value="4">Mix saudável PLG + sales</option>
+                            <option value="3">Sales-led eficiente</option>
+                            <option value="2">Dependente de paid acquisition</option>
+                            <option value="1">Crescimento founder-led only</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Conversão Trial to Paid" data-en="Trial to Paid Conversion">Conversão Trial to Paid</label>
+                        <select id="conversionVelocity" class="scored-field" data-weight="2" data-category="traction">
+                            <option value="">Selecione...</option>
+                            <option value="5">Excelente (>25%, <14 dias)</option>
+                            <option value="4">Boa (15-25%)</option>
+                            <option value="3">Média (10-15%)</option>
+                            <option value="2">Abaixo da média (5-10%)</option>
+                            <option value="1">Fraca (<5%)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Revenue por Employee</label>
+                        <input type="number" id="revenuePerEmployee" placeholder="Calculado" readonly style="background: rgba(212,175,55,0.1);">
+                        <div class="benchmark" id="revPerEmpBenchmark"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 8: VALUATION -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">📑</div>
+                    <div>
+                        <div class="section-title" data-pt="8. Valuation e Termos (5%)" data-en="8. Valuation & Terms (5%)">8. Valuation e Termos (5%)</div>
+                        <div class="section-subtitle" data-pt="Múltiplos e potencial de exit" data-en="Multiples and exit potential">Múltiplos e potencial de exit</div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label data-pt="Valuation Pedido (Pre-Money)" data-en="Requested Valuation">Valuation Pedido (Pre-Money)</label>
+                        <input type="number" id="requestedValuation" placeholder="Ex: 10000000" oninput="calculateMetrics()">
+                    </div>
+                    <div class="form-group">
+                        <label>Múltiplo ARR Implícito</label>
+                        <input type="text" id="arrMultiple" placeholder="Calculado" readonly style="background: rgba(212,175,55,0.1);">
+                        <div class="benchmark" id="multipleBenchmark"></div>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Valuation vs. Comparables" data-en="Valuation vs. Comparables">Valuation vs. Comparables</label>
+                        <select id="valuationVsComps" class="scored-field" data-weight="2" data-category="valuation">
+                            <option value="">Selecione...</option>
+                            <option value="5">Significativamente abaixo</option>
+                            <option value="4">Ligeiramente abaixo</option>
+                            <option value="3">Inline com comparables</option>
+                            <option value="2">Ligeiramente acima</option>
+                            <option value="1">Significativamente acima (overpriced)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Investidores Existentes" data-en="Existing Investors">Investidores Existentes</label>
+                        <select id="existingInvestors" class="scored-field" data-weight="2" data-category="valuation">
+                            <option value="">Selecione...</option>
+                            <option value="5">Top-tier VCs participando</option>
+                            <option value="4">Bons investidores participando</option>
+                            <option value="3">Investidores adequados</option>
+                            <option value="2">Existentes não participando</option>
+                            <option value="1">Cap table problemático</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Potencial de Exit" data-en="Exit Potential">Potencial de Exit</label>
+                        <select id="exitPotential" class="scored-field" data-weight="3" data-category="valuation">
+                            <option value="">Selecione...</option>
+                            <option value="5">Múltiplos acquirers + IPO viável</option>
+                            <option value="4">Bom M&A fit, alguns acquirers</option>
+                            <option value="3">Exit possível mas não óbvio</option>
+                            <option value="2">Opções de exit limitadas</option>
+                            <option value="1">Exit path não claro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Termos do Deal" data-en="Deal Terms">Termos do Deal</label>
+                        <select id="dealTerms" class="scored-field" data-weight="2" data-category="valuation">
+                            <option value="">Selecione...</option>
+                            <option value="5">Termos muito favoráveis</option>
+                            <option value="4">Termos favoráveis</option>
+                            <option value="3">Termos padrão de mercado</option>
+                            <option value="2">Termos menos favoráveis</option>
+                            <option value="1">Termos desfavoráveis</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 9: RISKS -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">⚠️</div>
+                    <div>
+                        <div class="section-title" data-pt="9. Avaliação de Riscos" data-en="9. Risk Assessment">9. Avaliação de Riscos</div>
+                        <div class="section-subtitle" data-pt="Red flags e mitigantes" data-en="Red flags and mitigants">Red flags e mitigantes</div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label data-pt="Risco de Mercado" data-en="Market Risk">Risco de Mercado</label>
+                        <select id="marketRisk" class="scored-field" data-weight="2" data-category="risk">
+                            <option value="">Selecione...</option>
+                            <option value="5">Muito baixo</option>
+                            <option value="4">Baixo</option>
+                            <option value="3">Moderado</option>
+                            <option value="2">Alto</option>
+                            <option value="1">Muito alto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Risco Tecnológico" data-en="Technology Risk">Risco Tecnológico</label>
+                        <select id="techRisk" class="scored-field" data-weight="2" data-category="risk">
+                            <option value="">Selecione...</option>
+                            <option value="5">Muito baixo</option>
+                            <option value="4">Baixo</option>
+                            <option value="3">Moderado</option>
+                            <option value="2">Alto</option>
+                            <option value="1">Muito alto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Risco de Execução" data-en="Execution Risk">Risco de Execução</label>
+                        <select id="executionRisk" class="scored-field" data-weight="2" data-category="risk">
+                            <option value="">Selecione...</option>
+                            <option value="5">Muito baixo</option>
+                            <option value="4">Baixo</option>
+                            <option value="3">Moderado</option>
+                            <option value="2">Alto</option>
+                            <option value="1">Muito alto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Risco Regulatório" data-en="Regulatory Risk">Risco Regulatório</label>
+                        <select id="regulatoryRisk" class="scored-field" data-weight="2" data-category="risk">
+                            <option value="">Selecione...</option>
+                            <option value="5">Muito baixo</option>
+                            <option value="4">Baixo</option>
+                            <option value="3">Moderado</option>
+                            <option value="2">Alto</option>
+                            <option value="1">Muito alto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Risco Financeiro" data-en="Financial Risk">Risco Financeiro</label>
+                        <select id="financialRisk" class="scored-field" data-weight="2" data-category="risk">
+                            <option value="">Selecione...</option>
+                            <option value="5">Muito baixo</option>
+                            <option value="4">Baixo</option>
+                            <option value="3">Moderado</option>
+                            <option value="2">Alto</option>
+                            <option value="1">Muito alto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-pt="Risco Competitivo" data-en="Competitive Risk">Risco Competitivo</label>
+                        <select id="competitiveRisk" class="scored-field" data-weight="2" data-category="risk">
+                            <option value="">Selecione...</option>
+                            <option value="5">Muito baixo</option>
+                            <option value="4">Baixo</option>
+                            <option value="3">Moderado</option>
+                            <option value="2">Alto</option>
+                            <option value="1">Muito alto</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <h4 style="color: var(--accent-red); margin: 25px 0 15px;">🚩 Red Flags Checklist</h4>
+                <div class="toggle-group" id="redFlagsChecklist">
+                    <label class="toggle-option"><input type="checkbox" name="redFlag" value="founder-conflict"><span>Conflitos entre founders</span></label>
+                    <label class="toggle-option"><input type="checkbox" name="redFlag" value="key-person-risk"><span>Key person risk alto</span></label>
+                    <label class="toggle-option"><input type="checkbox" name="redFlag" value="high-turnover"><span>Alto turnover</span></label>
+                    <label class="toggle-option"><input type="checkbox" name="redFlag" value="existing-not-participating"><span>Investidores não participando</span></label>
+                    <label class="toggle-option"><input type="checkbox" name="redFlag" value="revenue-quality"><span>Problemas de revenue</span></label>
+                    <label class="toggle-option"><input type="checkbox" name="redFlag" value="cap-table-issues"><span>Cap table problemático</span></label>
+                    <label class="toggle-option"><input type="checkbox" name="redFlag" value="ip-issues"><span>Problemas de IP</span></label>
+                    <label class="toggle-option"><input type="checkbox" name="redFlag" value="legal-pending"><span>Litígios pendentes</span></label>
+                    <label class="toggle-option"><input type="checkbox" name="redFlag" value="customer-concentration-high"><span>Concentração >50%</span></label>
+                    <label class="toggle-option"><input type="checkbox" name="redFlag" value="declining-growth"><span>Crescimento em declínio</span></label>
+                </div>
+            </div>
+
+            <!-- SECTION 10: NOTES -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">📝</div>
+                    <div>
+                        <div class="section-title" data-pt="10. Notas Qualitativas" data-en="10. Qualitative Notes">10. Notas Qualitativas</div>
+                        <div class="section-subtitle" data-pt="Investment thesis e observações" data-en="Investment thesis and observations">Investment thesis e observações</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label data-pt="Investment Thesis (Por que investir?)" data-en="Investment Thesis">Investment Thesis (Por que investir?)</label>
+                    <textarea id="investmentThesis" rows="4" placeholder="Descreva os principais motivos para investir..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label data-pt="Principais Preocupações" data-en="Main Concerns">Principais Preocupações</label>
+                    <textarea id="mainConcerns" rows="4" placeholder="Liste as principais preocupações e riscos..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label data-pt="Próximos Passos" data-en="Next Steps">Próximos Passos</label>
+                    <textarea id="nextSteps" rows="3" placeholder="O que mais precisa ser verificado..."></textarea>
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">Limpar Formulário</button>
+                <button type="button" class="btn btn-primary" onclick="calculateFinalScore()">🎯 Calcular Análise Final</button>
+            </div>
+        </form>
+
+        <!-- RESULTS -->
+        <div class="section" id="results">
+            <div class="section-header">
+                <div class="section-icon">🎯</div>
+                <div>
+                    <div class="section-title">Resultado da Análise</div>
+                    <div class="section-subtitle" id="companyNameResult"></div>
+                </div>
+            </div>
+            
+            <div class="final-score-container">
+                <div class="final-score" id="finalScoreValue">--</div>
+                <div style="color: var(--text-muted); margin-top: 5px;">/ 100</div>
+                <div class="verdict" id="verdictText">--</div>
+                <p id="verdictDescription" style="color: var(--text-secondary); max-width: 600px; margin: 0 auto;"></p>
+            </div>
+
+            <div class="breakdown">
+                <h4 style="margin-bottom: 20px;">Pontuação por Categoria</h4>
+                <div class="breakdown-item"><span class="name">Equipe</span><div class="bar"><div class="bar-fill" id="teamBar" style="background: var(--accent-blue);"></div></div><span class="score-val" id="teamScore">--</span></div>
+                <div class="breakdown-item"><span class="name">Mercado</span><div class="bar"><div class="bar-fill" id="marketBar" style="background: var(--accent-purple);"></div></div><span class="score-val" id="marketScore">--</span></div>
+                <div class="breakdown-item"><span class="name">Produto</span><div class="bar"><div class="bar-fill" id="productBar" style="background: var(--accent-emerald);"></div></div><span class="score-val" id="productScore">--</span></div>
+                <div class="breakdown-item"><span class="name">Moat</span><div class="bar"><div class="bar-fill" id="moatBar" style="background: var(--accent-gold);"></div></div><span class="score-val" id="moatScore">--</span></div>
+                <div class="breakdown-item"><span class="name">Financeiro</span><div class="bar"><div class="bar-fill" id="financialBar" style="background: var(--accent-orange);"></div></div><span class="score-val" id="financialScore">--</span></div>
+                <div class="breakdown-item"><span class="name">Tração</span><div class="bar"><div class="bar-fill" id="tractionBar" style="background: var(--accent-blue);"></div></div><span class="score-val" id="tractionScore">--</span></div>
+                <div class="breakdown-item"><span class="name">Valuation</span><div class="bar"><div class="bar-fill" id="valuationBar" style="background: var(--accent-purple);"></div></div><span class="score-val" id="valuationScore">--</span></div>
+                <div class="breakdown-item"><span class="name">Risco</span><div class="bar"><div class="bar-fill" id="riskBar" style="background: var(--accent-red);"></div></div><span class="score-val" id="riskScore">--</span></div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h4 style="margin-bottom: 20px;">Métricas-Chave</h4>
+                <div class="score-grid" id="keyMetricsSummary"></div>
+            </div>
+
+            <div class="green-flags" id="greenFlagsContainer" style="display: none;">
+                <h4>✅ Pontos Fortes</h4>
+                <div id="greenFlagsList"></div>
+            </div>
+
+            <div class="red-flags" id="redFlagsContainer" style="display: none;">
+                <h4>🚩 Red Flags Identificados</h4>
+                <div id="redFlagsList"></div>
+            </div>
+
+            <div style="margin-top: 30px; padding: 25px; background: var(--bg-input); border-radius: 12px;">
+                <h4 style="margin-bottom: 15px;">📋 Recomendações</h4>
+                <div id="recommendations"></div>
+            </div>
+
+            <div class="btn-container">
+                <button type="button" class="btn btn-secondary" onclick="window.print()">🖨️ Imprimir</button>
+                <button type="button" class="btn btn-secondary" onclick="exportToJSON()">💾 Exportar JSON</button>
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('results').style.display='none'; window.scrollTo(0,0);">✏️ Editar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'pt';
+        
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.textContent.includes(lang.toUpperCase())));
+            document.querySelectorAll('[data-pt]').forEach(el => el.textContent = el.getAttribute(`data-${lang}`));
+        }
+
+        document.querySelectorAll('.toggle-option').forEach(option => {
+            option.addEventListener('click', function() {
+                this.classList.toggle('selected');
+                this.querySelector('input').checked = this.classList.contains('selected');
+            });
+        });
+
+        function updateProgress() {
+            const allFields = document.querySelectorAll('input:not([readonly]), select, textarea');
+            let filled = 0;
+            allFields.forEach(field => { if (field.value && field.value.trim() !== '') filled++; });
+            const percent = Math.round((filled / allFields.length) * 100);
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressPercent').textContent = percent + '%';
+        }
+
+        document.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('change', updateProgress);
+            field.addEventListener('input', updateProgress);
+        });
+
+        function setBenchmark(elementId, value, thresholds, labels) {
+            const el = document.getElementById(elementId);
+            if (!el || value === null || value === undefined || isNaN(value)) { if (el) el.innerHTML = ''; return; }
+            let status, label;
+            if (value >= thresholds.good) { status = 'good'; label = labels.good; }
+            else if (value >= thresholds.warning) { status = 'warning'; label = labels.warning; }
+            else { status = 'bad'; label = labels.bad; }
+            el.innerHTML = `<span class="benchmark-dot ${status}"></span><span>${label}</span>`;
+        }
+
+        function calculateMetrics() {
+            const mrr = parseFloat(document.getElementById('mrr').value) || 0;
+            const mrrPrev = parseFloat(document.getElementById('mrrPrevious').value) || 0;
+            const arr = mrr * 12;
+            const arrPrevYear = parseFloat(document.getElementById('arrPreviousYear').value) || 0;
+            const cac = parseFloat(document.getElementById('cac').value) || 0;
+            const ltv = parseFloat(document.getElementById('ltv').value) || 0;
+            const arpa = parseFloat(document.getElementById('arpa').value) || 0;
+            const grossMargin = parseFloat(document.getElementById('grossMargin').value) || 0;
+            const logoChurn = parseFloat(document.getElementById('logoChurn').value) || 0;
+            const nrr = parseFloat(document.getElementById('nrr').value) || 0;
+            const grr = parseFloat(document.getElementById('grr').value) || 0;
+            const ebitdaMargin = parseFloat(document.getElementById('ebitdaMargin').value) || 0;
+            const smSpend = parseFloat(document.getElementById('smSpend').value) || 0;
+            const burnRate = parseFloat(document.getElementById('burnRate').value) || 0;
+            const cashInBank = parseFloat(document.getElementById('cashInBank').value) || 0;
+            const newMrr = parseFloat(document.getElementById('newMrr').value) || 0;
+            const expansionMrr = parseFloat(document.getElementById('expansionMrr').value) || 0;
+            const churnedMrr = parseFloat(document.getElementById('churnedMrr').value) || 0;
+            const contractionMrr = parseFloat(document.getElementById('contractionMrr').value) || 0;
+            const tam = parseFloat(document.getElementById('tam').value) || 0;
+            const sam = parseFloat(document.getElementById('sam').value) || 0;
+            const som = parseFloat(document.getElementById('som').value) || 0;
+            const requestedValuation = parseFloat(document.getElementById('requestedValuation').value) || 0;
+            const totalEmployees = parseFloat(document.getElementById('totalEmployees').value) || 0;
+            const recurringPct = parseFloat(document.getElementById('recurringRevenuePct').value) || 0;
+            const concentration = parseFloat(document.getElementById('customerConcentration').value) || 0;
+            const seanEllis = parseFloat(document.getElementById('seanEllisScore').value) || 0;
+            const nps = parseFloat(document.getElementById('nps').value) || 0;
+            const dauMau = parseFloat(document.getElementById('dauMau').value) || 0;
+            const founderOwnership = parseFloat(document.getElementById('founderOwnership').value) || 0;
+
+            document.getElementById('arr').value = arr > 0 ? arr.toLocaleString() : '';
+
+            if (mrr && mrrPrev) {
+                const mrrGrowth = ((mrr - mrrPrev) / mrrPrev * 100).toFixed(1);
+                document.getElementById('mrrGrowth').textContent = mrrGrowth + '%';
+                document.getElementById('mrrGrowth').style.color = mrrGrowth >= 10 ? 'var(--accent-emerald)' : mrrGrowth >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)';
+            }
+
+            if (arr && arrPrevYear) {
+                const arrGrowth = ((arr - arrPrevYear) / arrPrevYear * 100).toFixed(0);
+                document.getElementById('arrGrowth').textContent = arrGrowth + '%';
+                document.getElementById('arrGrowth').style.color = arrGrowth >= 100 ? 'var(--accent-emerald)' : arrGrowth >= 50 ? 'var(--accent-orange)' : 'var(--accent-red)';
+            }
+
+            let calculatedLtv = ltv;
+            if (!ltv && arpa && logoChurn > 0 && grossMargin > 0) {
+                calculatedLtv = (arpa * (grossMargin / 100)) / (logoChurn / 100);
+                document.getElementById('ltv').value = Math.round(calculatedLtv);
+            }
+
+            if (calculatedLtv && cac) {
+                const ltvCac = (calculatedLtv / cac).toFixed(1);
+                document.getElementById('ltvCacRatio').value = ltvCac + 'x';
+                setBenchmark('ltvCacBenchmark', parseFloat(ltvCac), { good: 3, warning: 2 }, { good: '✓ Excelente (≥3x)', warning: '⚠ OK (2-3x)', bad: '✗ Ruim (<2x)' });
+            }
+
+            if (cac && arpa && grossMargin > 0) {
+                const payback = cac / (arpa * (grossMargin / 100));
+                document.getElementById('cacPayback').value = payback.toFixed(1);
+                setBenchmark('paybackBenchmark', -payback, { good: -12, warning: -18 }, { good: '✓ Excelente (<12m)', warning: '⚠ OK (12-18m)', bad: '✗ Alto (>18m)' });
+            }
+
+            if (arr && arrPrevYear) {
+                const growth = ((arr - arrPrevYear) / arrPrevYear * 100);
+                const rule40 = growth + ebitdaMargin;
+                document.getElementById('ruleOf40').textContent = rule40.toFixed(0) + '%';
+                document.getElementById('ruleOf40').style.color = rule40 >= 40 ? 'var(--accent-emerald)' : rule40 >= 20 ? 'var(--accent-orange)' : 'var(--accent-red)';
+            }
+
+            if (mrr && mrrPrev && smSpend) {
+                const deltaArr = (mrr - mrrPrev) * 12;
+                const magic = deltaArr / smSpend;
+                document.getElementById('magicNumber').textContent = magic.toFixed(2);
+                document.getElementById('magicNumber').style.color = magic >= 0.75 ? 'var(--accent-emerald)' : magic >= 0.5 ? 'var(--accent-orange)' : 'var(--accent-red)';
+            }
+
+            if (newMrr || expansionMrr || churnedMrr || contractionMrr) {
+                const quickRatio = (newMrr + expansionMrr) / (churnedMrr + contractionMrr || 1);
+                document.getElementById('quickRatio').textContent = quickRatio.toFixed(2);
+                document.getElementById('quickRatio').style.color = quickRatio >= 4 ? 'var(--accent-emerald)' : quickRatio >= 2 ? 'var(--accent-orange)' : 'var(--accent-red)';
+            }
+
+            if (burnRate > 0 && cashInBank > 0) {
+                const runway = cashInBank / burnRate;
+                document.getElementById('runway').textContent = runway.toFixed(0);
+                document.getElementById('runway').style.color = runway >= 18 ? 'var(--accent-emerald)' : runway >= 12 ? 'var(--accent-orange)' : 'var(--accent-red)';
+            }
+
+            if (tam && sam) document.getElementById('tamSamRatio').textContent = ((sam / tam) * 100).toFixed(1) + '%';
+            if (sam && som) document.getElementById('samSomRatio').textContent = ((som / sam) * 100).toFixed(1) + '%';
+
+            if (requestedValuation && arr) {
+                const multiple = requestedValuation / arr;
+                document.getElementById('arrMultiple').value = multiple.toFixed(1) + 'x';
+                setBenchmark('multipleBenchmark', -multiple, { good: -10, warning: -15 }, { good: '✓ Razoável (<10x)', warning: '⚠ Alto (10-15x)', bad: '✗ Muito alto (>15x)' });
+            }
+
+            if (arr && totalEmployees) {
+                const revPerEmp = arr / totalEmployees;
+                document.getElementById('revenuePerEmployee').value = '$' + Math.round(revPerEmp / 1000) + 'K';
+                setBenchmark('revPerEmpBenchmark', revPerEmp, { good: 150000, warning: 80000 }, { good: '✓ Excelente (>$150K)', warning: '⚠ OK ($80-150K)', bad: '✗ Baixo (<$80K)' });
+            }
+
+            setBenchmark('marginBenchmark', grossMargin, { good: 70, warning: 60 }, { good: '✓ Excelente (≥70%)', warning: '⚠ OK (60-70%)', bad: '✗ Baixo (<60%)' });
+            setBenchmark('nrrBenchmark', nrr, { good: 120, warning: 100 }, { good: '✓ Excelente (≥120%)', warning: '⚠ OK (100-120%)', bad: '✗ Preocupante (<100%)' });
+            setBenchmark('grrBenchmark', grr, { good: 90, warning: 85 }, { good: '✓ Excelente (≥90%)', warning: '⚠ OK (85-90%)', bad: '✗ Alto churn (<85%)' });
+            setBenchmark('logoChurnBenchmark', -logoChurn, { good: -3, warning: -5 }, { good: '✓ Baixo (<3%)', warning: '⚠ Moderado (3-5%)', bad: '✗ Alto (>5%)' });
+            setBenchmark('recurringBenchmark', recurringPct, { good: 85, warning: 70 }, { good: '✓ Excelente (≥85%)', warning: '⚠ OK (70-85%)', bad: '✗ Baixo (<70%)' });
+            setBenchmark('concentrationBenchmark', -concentration, { good: -25, warning: -40 }, { good: '✓ Saudável (<25%)', warning: '⚠ Moderado (25-40%)', bad: '✗ Alto risco (>40%)' });
+            setBenchmark('pmfBenchmark', seanEllis, { good: 40, warning: 30 }, { good: '✓ PMF Atingido (≥40%)', warning: '⚠ Emergente (30-40%)', bad: '✗ Sem PMF (<30%)' });
+            setBenchmark('npsBenchmark', nps, { good: 50, warning: 30 }, { good: '✓ Excelente (≥50)', warning: '⚠ Bom (30-50)', bad: '✗ Melhorar (<30)' });
+            setBenchmark('dauMauBenchmark', dauMau, { good: 25, warning: 15 }, { good: '✓ Alto (≥25%)', warning: '⚠ Moderado (15-25%)', bad: '✗ Baixo (<15%)' });
+            setBenchmark('ownershipBenchmark', founderOwnership, { good: 55, warning: 40 }, { good: '✓ Saudável', warning: '⚠ Moderado', bad: '✗ Baixo' });
+        }
+
+        function calculateFinalScore() {
+            const weights = { team: 0.25, market: 0.20, product: 0.15, moat: 0.10, financial: 0.15, traction: 0.10, valuation: 0.05 };
+            const categoryScores = { team: { total: 0, max: 0 }, market: { total: 0, max: 0 }, product: { total: 0, max: 0 }, moat: { total: 0, max: 0 }, traction: { total: 0, max: 0 }, valuation: { total: 0, max: 0 }, risk: { total: 0, max: 0 } };
+
+            document.querySelectorAll('.scored-field').forEach(field => {
+                if (field.value) {
+                    const category = field.dataset.category;
+                    if (category && categoryScores[category]) {
+                        const weight = parseInt(field.dataset.weight) || 1;
+                        categoryScores[category].total += parseInt(field.value) * weight;
+                        categoryScores[category].max += 5 * weight;
+                    }
+                }
+            });
+
+            const normalizedScores = {};
+            for (const cat in categoryScores) {
+                normalizedScores[cat] = categoryScores[cat].max > 0 ? (categoryScores[cat].total / categoryScores[cat].max) * 100 : 50;
+            }
+
+            const nrr = parseFloat(document.getElementById('nrr').value) || 100;
+            const ltvCac = parseFloat(document.getElementById('ltvCacRatio').value) || 3;
+            const grossMargin = parseFloat(document.getElementById('grossMargin').value) || 70;
+            
+            let financialBonus = 0;
+            if (nrr >= 120) financialBonus += 10; else if (nrr < 100) financialBonus -= 10;
+            if (ltvCac >= 3) financialBonus += 5; else if (ltvCac < 2) financialBonus -= 10;
+            if (grossMargin >= 70) financialBonus += 5; else if (grossMargin < 60) financialBonus -= 5;
+            normalizedScores.financial = Math.min(100, Math.max(0, (normalizedScores.financial || 50) + financialBonus));
+
+            let finalScore = 0;
+            for (const cat in weights) finalScore += (normalizedScores[cat] || 50) * weights[cat];
+
+            const redFlags = document.querySelectorAll('input[name="redFlag"]:checked');
+            finalScore = Math.max(0, finalScore - redFlags.length * 3);
+
+            const riskScore = normalizedScores.risk || 50;
+            if (riskScore < 40) finalScore *= 0.9; else if (riskScore > 70) finalScore *= 1.05;
+            finalScore = Math.min(100, Math.max(0, finalScore));
+
+            displayResults(finalScore, normalizedScores, redFlags);
+        }
+
+        function displayResults(finalScore, categoryScores, redFlags) {
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('companyNameResult').textContent = document.getElementById('companyName').value || 'Análise';
+
+            const scoreEl = document.getElementById('finalScoreValue');
+            scoreEl.textContent = Math.round(finalScore);
+
+            const verdictEl = document.getElementById('verdictText');
+            const descEl = document.getElementById('verdictDescription');
+            
+            if (finalScore >= 75) {
+                scoreEl.className = 'final-score invest';
+                verdictEl.className = 'verdict invest';
+                verdictEl.textContent = '✅ INVESTIR';
+                descEl.textContent = 'Oportunidade com fundamentos sólidos. Recomenda-se prosseguir com due diligence aprofundada.';
+            } else if (finalScore >= 50) {
+                scoreEl.className = 'final-score caution';
+                verdictEl.className = 'verdict caution';
+                verdictEl.textContent = '⚠️ ANALISAR COM CAUTELA';
+                descEl.textContent = 'Potencial mas com riscos. Due diligence adicional e negociação de termos recomendados.';
+            } else {
+                scoreEl.className = 'final-score reject';
+                verdictEl.className = 'verdict reject';
+                verdictEl.textContent = '❌ NÃO INVESTIR';
+                descEl.textContent = 'Riscos significativos ou métricas abaixo do aceitável. Não recomendado prosseguir.';
+            }
+
+            const categories = ['team', 'market', 'product', 'moat', 'financial', 'traction', 'valuation', 'risk'];
+            categories.forEach(cat => {
+                const score = categoryScores[cat] || 50;
+                const bar = document.getElementById(cat + 'Bar');
+                const scoreVal = document.getElementById(cat + 'Score');
+                if (bar && scoreVal) {
+                    bar.style.width = score + '%';
+                    scoreVal.textContent = Math.round(score) + '/100';
+                    scoreVal.style.color = score >= 70 ? 'var(--accent-emerald)' : score >= 50 ? 'var(--accent-orange)' : 'var(--accent-red)';
+                }
+            });
+
+            const keyMetrics = document.getElementById('keyMetricsSummary');
+            const mrr = document.getElementById('mrr').value;
+            const nrr = document.getElementById('nrr').value;
+            const ltvCac = document.getElementById('ltvCacRatio').value;
+            const rule40 = document.getElementById('ruleOf40').textContent;
+            
+            keyMetrics.innerHTML = `
+                <div class="score-card"><div class="score">${mrr ? '$' + (parseInt(mrr)/1000).toFixed(0) + 'K' : '-'}</div><div class="title">MRR</div></div>
+                <div class="score-card"><div class="score ${nrr >= 120 ? 'good' : nrr >= 100 ? 'warning' : 'bad'}">${nrr || '-'}%</div><div class="title">NRR</div></div>
+                <div class="score-card"><div class="score ${parseFloat(ltvCac) >= 3 ? 'good' : parseFloat(ltvCac) >= 2 ? 'warning' : 'bad'}">${ltvCac || '-'}</div><div class="title">LTV/CAC</div></div>
+                <div class="score-card"><div class="score ${parseInt(rule40) >= 40 ? 'good' : parseInt(rule40) >= 20 ? 'warning' : 'bad'}">${rule40 || '-'}</div><div class="title">Rule of 40</div></div>
+            `;
+
+            const greenFlags = [];
+            if (categoryScores.team >= 70) greenFlags.push('Equipe forte e experiente');
+            if (categoryScores.market >= 70) greenFlags.push('Mercado atrativo');
+            if (categoryScores.product >= 70) greenFlags.push('Produto diferenciado com PMF');
+            if (categoryScores.moat >= 70) greenFlags.push('Moat competitivo forte');
+            if (parseFloat(document.getElementById('nrr').value) >= 120) greenFlags.push('NRR excelente (≥120%)');
+            if (parseFloat(document.getElementById('ltvCacRatio').value) >= 3) greenFlags.push('LTV/CAC saudável (≥3x)');
+
+            const greenContainer = document.getElementById('greenFlagsContainer');
+            const greenList = document.getElementById('greenFlagsList');
+            if (greenFlags.length > 0) {
+                greenContainer.style.display = 'block';
+                greenList.innerHTML = greenFlags.map(f => `<div class="green-flag-item">✅ ${f}</div>`).join('');
+            } else { greenContainer.style.display = 'none'; }
+
+            const redContainer = document.getElementById('redFlagsContainer');
+            const redList = document.getElementById('redFlagsList');
+            const checkedRedFlags = Array.from(redFlags).map(rf => rf.parentElement.textContent.trim());
+            if (parseFloat(document.getElementById('nrr').value) < 100) checkedRedFlags.push('NRR abaixo de 100%');
+            if (parseFloat(document.getElementById('ltvCacRatio').value) < 2) checkedRedFlags.push('LTV/CAC abaixo de 2x');
+            if (parseFloat(document.getElementById('customerConcentration').value) > 40) checkedRedFlags.push('Alta concentração de clientes');
+            
+            if (checkedRedFlags.length > 0) {
+                redContainer.style.display = 'block';
+                redList.innerHTML = checkedRedFlags.map(f => `<div class="red-flag-item">🚩 ${f}</div>`).join('');
+            } else { redContainer.style.display = 'none'; }
+
+            const recs = document.getElementById('recommendations');
+            const recommendations = [];
+            if (finalScore >= 75) {
+                recommendations.push('• Prosseguir com due diligence legal e financeira completa');
+                recommendations.push('• Validar referências de clientes e investidores');
+            } else if (finalScore >= 50) {
+                recommendations.push('• Negociar termos mais favoráveis dado os riscos');
+                recommendations.push('• Solicitar mais dados sobre métricas preocupantes');
+            } else {
+                recommendations.push('• Passar nesta oportunidade ou aguardar melhorias');
+            }
+            if (checkedRedFlags.length > 0) recommendations.push('• Endereçar red flags antes de prosseguir');
+            recs.innerHTML = recommendations.map(r => `<p style="margin-bottom: 8px;">${r}</p>`).join('');
+        }
+
+        function resetForm() {
+            if (confirm('Limpar todo o formulário?')) {
+                document.getElementById('investmentForm').reset();
+                document.getElementById('results').style.display = 'none';
+                document.querySelectorAll('.toggle-option').forEach(opt => opt.classList.remove('selected'));
+                document.querySelectorAll('.calc-field .value').forEach(el => el.textContent = '-');
+                document.querySelectorAll('.benchmark').forEach(el => el.innerHTML = '');
+                document.querySelectorAll('input[readonly]').forEach(el => el.value = '');
+                updateProgress();
+            }
+        }
+
+        function exportToJSON() {
+            const formData = {};
+            document.querySelectorAll('input, select, textarea').forEach(field => { if (field.id) formData[field.id] = field.value; });
+            formData.redFlags = Array.from(document.querySelectorAll('input[name="redFlag"]:checked')).map(rf => rf.value);
+            formData.exportDate = new Date().toISOString();
+            formData.finalScore = document.getElementById('finalScoreValue').textContent;
+            const blob = new Blob([JSON.stringify(formData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `investment-analysis-${formData.companyName || 'export'}-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        updateProgress();
+    </script>
+</body>
+</html>
