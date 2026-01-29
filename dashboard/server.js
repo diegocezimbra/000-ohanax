@@ -15,6 +15,7 @@ import ga4Routes from './routes/ga4.js';
 import logsRoutes from './routes/logs.js';
 import syncRoutes from './routes/sync.js';
 import influencersRoutes from './routes/influencers.js';
+import promptsRoutes from './routes/prompts.js';
 import { syncService } from './services/sync.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -157,14 +158,17 @@ app.get(`${SECRET_ROUTE}/logout`, (req, res) => {
 // DASHBOARD STATIC FILES (protegido por autenticacao)
 // =============================================================================
 
-// Analytics em /analytics
-app.use('/analytics', authMiddleware, express.static(join(__dirname, '8a9sud89aus8d')));
+// Shared assets (CSS, JS globais) - protegido por auth
+app.use('/shared', authMiddleware, express.static(join(__dirname, '8a9sud89aus8d/shared')));
 
-// Admin na raiz (/) - será o index padrão
+// Analytics em /analytics
+app.use('/analytics', authMiddleware, express.static(join(__dirname, '8a9sud89aus8d/analytics')));
+
+// Admin em /admin
 app.use('/admin', authMiddleware, express.static(join(__dirname, '8a9sud89aus8d/admin')));
 
-// Manter rota antiga para compatibilidade
-app.use(SECRET_ROUTE, authMiddleware, express.static(join(__dirname, '8a9sud89aus8d')));
+// Manter rota antiga para compatibilidade (redireciona para analytics)
+app.use(SECRET_ROUTE, authMiddleware, express.static(join(__dirname, '8a9sud89aus8d/analytics')));
 
 // =============================================================================
 // API ROUTES (modulares)
@@ -179,6 +183,7 @@ app.use('/api/ga4', ga4Routes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/influencers', influencersRoutes);
+app.use('/api/prompts', promptsRoutes);
 app.use('/api', overviewRoutes);
 
 // =============================================================================

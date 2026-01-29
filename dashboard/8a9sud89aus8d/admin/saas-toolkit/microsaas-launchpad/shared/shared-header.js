@@ -56,10 +56,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     </svg>
                     Analytics
                 </a>
-                <a href="/admin/tools/se-app-investment-analyzer/" class="top-bar-link ${headerType === 'investment' ? 'active' : ''}" title="Investment Analyzer">
+                <a href="/admin/saas-toolkit/investment-analyzer/" class="top-bar-link ${headerType === 'investment' ? 'active' : ''}" title="Investment Analyzer">
                     📊 Analyzer
                 </a>
-                <a href="/admin/tools/zzz-se-app-microsaas-launchpad/" class="top-bar-link ${isLaunchpad ? 'active' : ''}" title="MicroSaaS Launchpad">
+                <a href="/admin/saas-toolkit/microsaas-launchpad/" class="top-bar-link ${isLaunchpad ? 'active' : ''}" title="MicroSaaS Launchpad">
                     🚀 Launchpad
                 </a>
             </div>
