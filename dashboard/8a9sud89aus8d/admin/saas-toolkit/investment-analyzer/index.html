@@ -1254,12 +1254,13 @@
                             <div class="form-group">
                                 <label class="form-label">ARPA &#8212; Receita M&#233;dia por Conta (USD/m&#234;s)</label>
                                 <input type="text" class="form-input" id="arpa" placeholder="500">
+                                <div class="form-hint">MRR / Total de contas ativas. Necessario para calculo automatico do LTV.</div>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Margem Bruta (%)</label>
                                 <input type="number" class="form-input" id="grossMargin" placeholder="75">
-                                <div class="form-hint">Ideal &#8805;70% para SaaS</div>
+                                <div class="form-hint">((Receita - COGS) / Receita) x 100. Ideal &#8805;70% para SaaS.</div>
                             </div>
 
                             <!-- Churn Rate Calculator -->
@@ -1317,6 +1318,7 @@
                                     <span class="calc-result-value" id="ltvDisplay">US$ 0</span>
                                 </div>
                                 <input type="hidden" id="ltv" value="0">
+                                <div class="form-hint">Formula: (ARPA x Margem%) / Churn%. Preencha os 3 campos acima.</div>
                             </div>
 
                             <!-- CAC Calculator -->
@@ -1363,11 +1365,13 @@
                             <div class="form-group">
                                 <label class="form-label">Burn Rate Mensal (USD)</label>
                                 <input type="text" class="form-input" id="burnRate" placeholder="50,000">
+                                <div class="form-hint">Total de gastos mensais (folha, infra, marketing, admin). Usado para calcular Runway.</div>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Caixa Dispon&#237;vel (USD)</label>
                                 <input type="text" class="form-input" id="cashInBank" placeholder="600,000">
+                                <div class="form-hint">Dinheiro disponivel em conta neste momento. Inclui investimentos liquidos.</div>
                             </div>
                             <div class="calc-display">
                                 <span class="calc-label">Runway</span>
@@ -1413,18 +1417,21 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">TAM &#8212; Total Addressable Market (USD)</label>
+                                <label class="form-label">TAM &#8212; Total Addressable Market (USD Anual)</label>
                                 <input type="text" class="form-input" id="tam" placeholder="5,000,000,000">
+                                <div class="form-hint">Tamanho total do mercado ANUAL em receita. Fonte: Gartner, IDC, Statista.</div>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">SAM &#8212; Serviceable Available Market (USD)</label>
+                                <label class="form-label">SAM &#8212; Serviceable Available Market (USD Anual)</label>
                                 <input type="text" class="form-input" id="sam" placeholder="1,000,000,000">
+                                <div class="form-hint">Subconjunto do TAM que a empresa pode capturar. Tambem anualizado.</div>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Taxa de Crescimento do Mercado (% anual)</label>
                                 <input type="number" class="form-input" id="marketGrowth" placeholder="25">
+                                <div class="form-hint">CAGR do mercado. >20% alto crescimento | 10-20% moderado | &lt;10% maduro</div>
                             </div>
                         </div>
                     </div>
@@ -1472,6 +1479,7 @@
                             <div class="form-group">
                                 <label class="form-label">Ownership dos Fundadores (%)</label>
                                 <input type="number" class="form-input" id="founderOwnership" placeholder="65">
+                                <div class="form-hint">% das acoes antes desta rodada. Pre-seed &#8805;80% | Seed &#8805;65% | Series A &#8805;50%</div>
                             </div>
 
                             <div class="form-group">
@@ -1509,11 +1517,13 @@
                             <div class="form-group">
                                 <label class="form-label">Gastos em S&M &#8212; &#218;ltimo Trimestre (USD)</label>
                                 <input type="text" class="form-input" id="smSpend" placeholder="150,000">
+                                <div class="form-hint">Soma de Sales + Marketing nos ultimos 3 meses. Usado no Magic Number.</div>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">MRR &#8212; 3 Meses Atr&#225;s (USD)</label>
                                 <input type="text" class="form-input" id="mrrPrevious" placeholder="40,000">
+                                <div class="form-hint">MRR de 3 meses atras. Usado com MRR atual para calcular Magic Number.</div>
                             </div>
                             <div class="calc-display">
                                 <span class="calc-label">Magic Number</span>
@@ -1523,6 +1533,7 @@
                             <div class="form-group">
                                 <label class="form-label">ARR &#8212; Ano Anterior (USD)</label>
                                 <input type="text" class="form-input" id="arrPrevYear" placeholder="300,000">
+                                <div class="form-hint">ARR do ano anterior. Usado para calcular crescimento YoY.</div>
                             </div>
                             <div class="calc-display">
                                 <span class="calc-label">Crescimento ARR YoY</span>
@@ -1631,6 +1642,8 @@
         let currentAnalysisId = null;
         let currentColor = 'gradient-3';
         const redFlagsState = {};
+        let saveTimeout = null;
+        const API_BASE = '/api/investment-analyses';
 
         const COLORS = {
             'gradient-1': 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
@@ -1644,11 +1657,10 @@
         // ===========================================
         // INITIALIZATION
         // ===========================================
-        document.addEventListener('DOMContentLoaded', function() {
-            loadAnalyses();
+        document.addEventListener('DOMContentLoaded', async function() {
+            await migrateLocalStorageToAPI();
+            await loadAnalyses();
             setupEventListeners();
-            renderAnalysisList();
-            updateUI();
         });
 
         function setupEventListeners() {
@@ -1688,15 +1700,69 @@
         // ===========================================
         // ANALYSIS MANAGEMENT
         // ===========================================
-        function loadAnalyses() {
-            const saved = localStorage.getItem('investmentAnalyses');
-            if (saved) {
-                analyses = JSON.parse(saved);
+        async function loadAnalyses() {
+            try {
+                const res = await fetch(API_BASE);
+                const json = await res.json();
+                if (json.success) {
+                    analyses = json.data.map(row => ({
+                        id: row.id.toString(),
+                        name: row.company_name,
+                        color: row.color || 'gradient-3',
+                        createdAt: row.created_at,
+                        score: row.score || 0,
+                        is_favorite: row.is_favorite || false,
+                        data: null,
+                        redFlags: null
+                    }));
+                }
+            } catch (err) {
+                console.error('Error loading analyses:', err);
+                const saved = localStorage.getItem('investmentAnalyses');
+                if (saved) analyses = JSON.parse(saved);
             }
+            renderAnalysisList();
+            updateUI();
         }
 
         function saveAnalyses() {
             localStorage.setItem('investmentAnalyses', JSON.stringify(analyses));
+        }
+
+        async function migrateLocalStorageToAPI() {
+            const saved = localStorage.getItem('investmentAnalyses');
+            const migrated = localStorage.getItem('investmentAnalysesMigrated');
+
+            if (saved && !migrated) {
+                const localAnalyses = JSON.parse(saved);
+                for (const analysis of localAnalyses) {
+                    try {
+                        const formDataWithFlags = {
+                            ...(analysis.data || {}),
+                            _redFlags: analysis.redFlags || {}
+                        };
+
+                        let recommendation = 'nao_investir';
+                        if (analysis.score >= 75) recommendation = 'investir';
+                        else if (analysis.score >= 50) recommendation = 'cautela';
+
+                        await fetch(API_BASE, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                company_name: analysis.name,
+                                form_data: formDataWithFlags,
+                                score: analysis.score || 0,
+                                recommendation: recommendation,
+                                color: analysis.color || 'gradient-3'
+                            })
+                        });
+                    } catch (err) {
+                        console.error('Migration error for:', analysis.name, err);
+                    }
+                }
+                localStorage.setItem('investmentAnalysesMigrated', 'true');
+            }
         }
 
         function createNewAnalysis() {
@@ -1714,35 +1780,70 @@
             currentColor = btn.dataset.color;
         }
 
-        function confirmNewAnalysis() {
+        async function confirmNewAnalysis() {
             const name = document.getElementById('newAnalysisName').value.trim() || 'Nova An\u00e1lise';
 
-            const newAnalysis = {
-                id: Date.now().toString(),
-                name: name,
-                color: currentColor,
-                createdAt: new Date().toISOString(),
-                score: 0,
-                data: { companyName: name },
-                redFlags: {}
-            };
+            try {
+                const res = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        company_name: name,
+                        form_data: { companyName: name },
+                        score: 0,
+                        recommendation: 'nao_investir',
+                        color: currentColor
+                    })
+                });
 
-            analyses.push(newAnalysis);
-            saveAnalyses();
-            closeModal();
+                const json = await res.json();
+                if (json.success) {
+                    const row = json.data;
+                    const newAnalysis = {
+                        id: row.id.toString(),
+                        name: row.company_name,
+                        color: row.color,
+                        createdAt: row.created_at,
+                        score: 0,
+                        data: row.form_data,
+                        redFlags: {}
+                    };
 
-            selectAnalysis(newAnalysis.id);
-            renderAnalysisList();
+                    analyses.push(newAnalysis);
+                    closeModal();
+                    selectAnalysis(newAnalysis.id);
+                    renderAnalysisList();
+                }
+            } catch (err) {
+                console.error('Error creating analysis:', err);
+                alert('Erro ao criar analise. Tente novamente.');
+            }
         }
 
-        function selectAnalysis(id) {
-            currentAnalysisId = id;
+        async function selectAnalysis(id) {
+            currentAnalysisId = id.toString();
 
             // Clear form
             clearFormFields();
 
-            // Load analysis data
-            const analysis = analyses.find(a => a.id === id);
+            // Find in local list
+            let analysis = analyses.find(a => a.id === currentAnalysisId);
+
+            // Fetch full data from API if form_data not loaded yet
+            if (analysis && !analysis.data) {
+                try {
+                    const res = await fetch(`${API_BASE}/${id}`);
+                    const json = await res.json();
+                    if (json.success) {
+                        analysis.data = json.data.form_data || {};
+                        analysis.redFlags = analysis.data._redFlags || {};
+                        delete analysis.data._redFlags;
+                    }
+                } catch (err) {
+                    console.error('Error loading analysis details:', err);
+                }
+            }
+
             if (analysis && analysis.data) {
                 const moneyFieldsForFormat = ['requestedValuation', 'mrr', 'arpa', 'burnRate', 'cashInBank', 'smSpend', 'mrrPrevious', 'arrPrevYear', 'tam', 'sam', 'nrr_expansao', 'nrr_churn', 'cac_gastosSmMes'];
                 Object.keys(analysis.data).forEach(fieldId => {
@@ -1814,6 +1915,33 @@
                 analysis.name = analysis.data.companyName;
             }
 
+            // Derive recommendation from score
+            let recommendation = 'nao_investir';
+            if (analysis.score >= 75) recommendation = 'investir';
+            else if (analysis.score >= 50) recommendation = 'cautela';
+
+            // Debounced API save (500ms)
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                try {
+                    const formDataWithFlags = { ...analysis.data, _redFlags: analysis.redFlags };
+                    await fetch(`${API_BASE}/${currentAnalysisId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            company_name: analysis.name,
+                            form_data: formDataWithFlags,
+                            score: analysis.score,
+                            recommendation: recommendation,
+                            color: analysis.color
+                        })
+                    });
+                } catch (err) {
+                    console.error('Error saving analysis:', err);
+                }
+            }, 500);
+
+            // Backup to localStorage
             saveAnalyses();
             renderAnalysisList();
         }
@@ -1825,23 +1953,34 @@
                 const name = document.getElementById('companyName').value.trim();
                 if (name) {
                     analysis.name = name;
-                    document.getElementById('analysisTitle').textContent = name;
+                    const titleEl = document.getElementById('analysisTitle');
+                    if (titleEl) titleEl.textContent = name;
                     saveAnalyses();
                     renderAnalysisList();
                 }
             }
         }
 
-        function deleteCurrentAnalysis() {
+        async function deleteCurrentAnalysis() {
             if (!currentAnalysisId) return;
 
-            if (confirm('Deseja excluir esta an\u00e1lise? Esta a\u00e7\u00e3o n\u00e3o pode ser desfeita.')) {
-                analyses = analyses.filter(a => a.id !== currentAnalysisId);
-                saveAnalyses();
-                currentAnalysisId = null;
-                clearFormFields();
-                renderAnalysisList();
-                updateUI();
+            if (confirm('Deseja excluir esta analise? Esta acao nao pode ser desfeita.')) {
+                try {
+                    const res = await fetch(`${API_BASE}/${currentAnalysisId}`, { method: 'DELETE' });
+                    const json = await res.json();
+
+                    if (json.success) {
+                        analyses = analyses.filter(a => a.id !== currentAnalysisId);
+                        saveAnalyses();
+                        currentAnalysisId = null;
+                        clearFormFields();
+                        renderAnalysisList();
+                        updateUI();
+                    }
+                } catch (err) {
+                    console.error('Error deleting analysis:', err);
+                    alert('Erro ao excluir analise. Tente novamente.');
+                }
             }
         }
 

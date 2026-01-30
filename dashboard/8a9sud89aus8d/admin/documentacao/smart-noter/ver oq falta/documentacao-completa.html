@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Noter - Documentação Técnica Completa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --primary: #3577B9;
+            --primary-dark: #0A1F44;
+            --secondary: #EF4444;
+            --success: #10B981;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F9FAFB;
+            --bg-tertiary: #F3F4F6;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --border-light: #E5E7EB;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: var(--primary-dark);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header .version {
+            margin-left: 16px;
+            padding: 4px 12px;
+            background: var(--primary);
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - 64px);
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-light);
+            overflow-y: auto;
+            padding: 24px 0;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 4px;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 12px 24px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav a:hover {
+            background: var(--bg-tertiary);
+            border-left-color: var(--primary);
+        }
+
+        .sidebar-nav a.active {
+            background: var(--bg-tertiary);
+            border-left-color: var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .sidebar-nav .sub-item {
+            padding-left: 48px;
+            font-size: 14px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: 64px;
+            padding: 48px;
+            max-width: 1200px;
+        }
+
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 32px;
+            margin-bottom: 16px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: var(--primary-dark);
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 36px;
+            color: var(--primary-dark);
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 12px;
+        }
+
+        h3 {
+            font-size: 28px;
+            color: var(--primary);
+        }
+
+        h4 {
+            font-size: 22px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 24px;
+            overflow-x: auto;
+            margin: 24px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        code {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        :not(pre) > code {
+            background: var(--bg-tertiary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--secondary);
+            font-size: 14px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        th {
+            background: var(--primary-dark);
+            color: white;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-light);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-header i {
+            font-size: 24px;
+            margin-right: 12px;
+            color: var(--primary);
+        }
+
+        .card-header h3 {
+            margin: 0;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 0 4px;
+        }
+
+        .badge-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .badge-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin: 16px 0;
+            padding-left: 32px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 24px 0;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: #EFF6FF;
+            border-color: var(--primary);
+            color: #1E40AF;
+        }
+
+        .alert-success {
+            background: #ECFDF5;
+            border-color: var(--success);
+            color: #065F46;
+        }
+
+        .alert-warning {
+            background: #FFFBEB;
+            border-color: #F59E0B;
+            color: #92400E;
+        }
+
+        .alert-danger {
+            background: #FEF2F2;
+            border-color: var(--secondary);
+            color: #991B1B;
+        }
+
+        /* Architecture Diagram */
+        .architecture {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-light);
+            border-radius: 12px;
+            padding: 32px;
+            margin: 32px 0;
+            font-family: monospace;
+            line-height: 1.8;
+            overflow-x: auto;
+        }
+
+        /* Color Palette Display */
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .color-swatch {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .color-preview {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .color-info {
+            padding: 12px;
+            background: var(--bg-primary);
+        }
+
+        .color-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .color-code {
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+            margin: 32px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--primary);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 24px;
+            margin-bottom: 24px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -38px;
+            top: 28px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid var(--bg-secondary);
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 12px;
+            margin: 8px 0;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border-left: 4px solid var(--success);
+        }
+
+        .checklist li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .header, .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                margin-top: 0;
+            }
+        }
+
+        /* Scroll to top button */
+        .scroll-top {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 48px;
+            height: 48px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+        }
+
+        .scroll-top:hover {
+            background: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1><i class="fas fa-microphone"></i> Smart Noter</h1>
+        <span class="version">v1.0</span>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <ul class="sidebar-nav">
+            <li><a href="#overview" class="active">Visão Geral</a></li>
+            <li><a href="#design-system" class="sub-item">Design System</a></li>
+            <li><a href="#architecture" class="sub-item">Arquitetura</a></li>
+            <li><a href="#stack">Stack Tecnológico</a></li>
+            <li><a href="#database">Banco de Dados</a></li>
+            <li><a href="#apis">APIs e Endpoints</a></li>
+            <li><a href="#ai-pipeline">Pipeline de IA</a></li>
+            <li><a href="#features">Implementação</a></li>
+            <li><a href="#security">Segurança</a></li>
+            <li><a href="#devops">DevOps</a></li>
+            <li><a href="#testing">Testes</a></li>
+            <li><a href="#guide">Guia de Desenvolvimento</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Overview Section -->
+        <section id="overview">
+            <h1>Smart Noter - Documentação Técnica Completa</h1>
+            <p class="lead">Guia de Desenvolvimento de 0 a 100%</p>
+
+            <div class="alert alert-info">
+                <strong><i class="fas fa-info-circle"></i> Sobre este documento</strong><br>
+                Esta documentação técnica completa fornece todos os recursos necessários para construir o Smart Noter do zero até um produto pronto para produção.
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-rocket"></i>
+                    <h3>O que você vai construir</h3>
+                </div>
+                <ul class="checklist">
+                    <li>Gravação de áudio diretamente no dispositivo</li>
+                    <li>Upload e armazenamento seguro em cloud</li>
+                    <li>Transcrição com 95%+ de precisão usando Whisper</li>
+                    <li>Identificação e separação de múltiplos falantes</li>
+                    <li>Geração de resumos inteligentes com GPT-4</li>
+                    <li>Extração automática de action items</li>
+                    <li>Integração com Google Meet, Zoom, Teams</li>
+                    <li>Exportação em múltiplos formatos (TXT, PDF)</li>
+                    <li>Sincronização entre dispositivos</li>
+                </ul>
+            </div>
+
+            <h2>Métricas de Sucesso</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Target</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Tempo de Processamento</td>
+                        <td>&lt; 2 minutos</td>
+                        <td>Para 1 hora de áudio</td>
+                    </tr>
+                    <tr>
+                        <td>Precisão de Transcrição</td>
+                        <td>&gt; 95%</td>
+                        <td>Word Error Rate (WER)</td>
+                    </tr>
+                    <tr>
+                        <td>Precisão de Diarização</td>
+                        <td>&gt; 90%</td>
+                        <td>Speaker identification accuracy</td>
+                    </tr>
+                    <tr>
+                        <td>API Response Time</td>
+                        <td>&lt; 200ms</td>
+                        <td>95th percentile</td>
+                    </tr>
+                    <tr>
+                        <td>Uptime</td>
+                        <td>99.9%</td>
+                        <td>Service availability</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Architecture Section -->
+        <section id="architecture">
+            <h2><i class="fas fa-sitemap"></i> Arquitetura de Alto Nível</h2>
+
+            <div class="architecture">
+┌─────────────────────────────────────────────────────────────┐
+│                      CLIENTE (Mobile)                        │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │ React Native │  │ Redux/Zustand│  │ React Query      │   │
+│  │ + Expo       │  │ (State Mgmt) │  │ (Data Fetching)  │   │
+│  └─────────────┘  └──────────────┘  └──────────────────┘   │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   API Gateway   │
+                    │   (Kong/Nginx)  │
+                    └────────┬────────┘
+                             │
+        ┏────────────────────┼────────────────────┓
+        ▼                    ▼                    ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│   Auth API    │   │   Core API    │   │  Media API    │
+│   (Node.js)   │   │   (Node.js)   │   │  (Node.js)    │
+└───────┬───────┘   └───────┬───────┘   └───────┬───────┘
+        │                   │                    │
+        └───────────────────┼────────────────────┘
+                            │
+        ┏───────────────────┼───────────────────┓
+        ▼                   ▼                   ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│  PostgreSQL   │   │     Redis     │   │   MinIO/S3    │
+└───────────────┘   └───────────────┘   └───────────────┘
+                            │
+        ┏───────────────────┼───────────────────┓
+        ▼                   ▼                   ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│ AI Pipeline   │   │  Transcription│   │   Speaker     │
+│ (Python)      │   │   (Whisper)   │   │ Diarization   │
+└───────────────┘   └───────────────┘   └───────────────┘
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-layer-group"></i>
+                    <h3>Componentes Principais</h3>
+                </div>
+                <h4>1. Frontend (Mobile)</h4>
+                <ul>
+                    <li><strong>React Native + Expo:</strong> Framework mobile multiplataforma</li>
+                    <li><strong>Redux Toolkit/Zustand:</strong> Gerenciamento de estado</li>
+                    <li><strong>React Query:</strong> Data fetching e cache</li>
+                    <li><strong>expo-av:</strong> Gravação e reprodução de áudio</li>
+                </ul>
+
+                <h4>2. Backend (APIs)</h4>
+                <ul>
+                    <li><strong>Node.js + Express:</strong> APIs RESTful</li>
+                    <li><strong>TypeScript:</strong> Type safety</li>
+                    <li><strong>Prisma ORM:</strong> Database access</li>
+                    <li><strong>JWT:</strong> Autenticação</li>
+                    <li><strong>Bull Queue:</strong> Job processing</li>
+                </ul>
+
+                <h4>3. Banco de Dados</h4>
+                <ul>
+                    <li><strong>PostgreSQL:</strong> Banco principal</li>
+                    <li><strong>Redis:</strong> Cache e sessões</li>
+                    <li><strong>MinIO/S3:</strong> Armazenamento de arquivos</li>
+                </ul>
+
+                <h4>4. IA e Processamento</h4>
+                <ul>
+                    <li><strong>OpenAI Whisper:</strong> Transcrição de áudio</li>
+                    <li><strong>pyannote.audio:</strong> Diarização de falantes</li>
+                    <li><strong>GPT-4:</strong> Geração de resumos</li>
+                    <li><strong>Python FastAPI:</strong> Pipeline de IA</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Design System Section -->
+        <section id="design-system">
+            <h2><i class="fas fa-palette"></i> Design System</h2>
+
+            <h3>Paleta de Cores</h3>
+            <div class="color-palette">
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #3577B9;">Primary</div>
+                    <div class="color-info">
+                        <div class="color-name">Primary</div>
+                        <div class="color-code">#3577B9</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #0A1F44;">Primary Dark</div>
+                    <div class="color-info">
+                        <div class="color-name">Primary Dark</div>
+                        <div class="color-code">#0A1F44</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #EF4444;">Secondary</div>
+                    <div class="color-info">
+                        <div class="color-name">Secondary (Red)</div>
+                        <div class="color-code">#EF4444</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #10B981;">Success</div>
+                    <div class="color-info">
+                        <div class="color-name">Success (Green)</div>
+                        <div class="color-code">#10B981</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #F59E0B;">Warning</div>
+                    <div class="color-info">
+                        <div class="color-name">Warning (Yellow)</div>
+                        <div class="color-code">#F59E0B</div>
+                    </div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-preview" style="background: #6B7280;">Gray</div>
+                    <div class="color-info">
+                        <div class="color-name">Gray</div>
+                        <div class="color-code">#6B7280</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Tipografia</h3>
+            <div class="card">
+                <h4>Fonte Principal</h4>
+                <p><code>font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif</code></p>
+
+                <h4>Tamanhos de Fonte</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Tamanho</th>
+                            <th>Uso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>xs</td>
+                            <td>12px</td>
+                            <td>Captions, labels pequenos</td>
+                        </tr>
+                        <tr>
+                            <td>sm</td>
+                            <td>14px</td>
+                            <td>Body small, labels</td>
+                        </tr>
+                        <tr>
+                            <td>base</td>
+                            <td>16px</td>
+                            <td>Body text padrão</td>
+                        </tr>
+                        <tr>
+                            <td>lg</td>
+                            <td>18px</td>
+                            <td>Large body text</td>
+                        </tr>
+                        <tr>
+                            <td>xl</td>
+                            <td>20px</td>
+                            <td>H4 headers</td>
+                        </tr>
+                        <tr>
+                            <td>2xl</td>
+                            <td>24px</td>
+                            <td>H3 headers</td>
+                        </tr>
+                        <tr>
+                            <td>3xl</td>
+                            <td>30px</td>
+                            <td>H2 headers</td>
+                        </tr>
+                        <tr>
+                            <td>4xl</td>
+                            <td>36px</td>
+                            <td>H1 headers</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Espaçamento (8pt Grid)</h3>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Valor (px)</th>
+                            <th>Rem</th>
+                            <th>Uso Comum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>spacing[1]</td>
+                            <td>4px</td>
+                            <td>0.25rem</td>
+                            <td>Espaçamento mínimo</td>
+                        </tr>
+                        <tr>
+                            <td>spacing[2]</td>
+                            <td>8px</td>
+                            <td>0.5rem</td>
+                            <td>Pequenos gaps</td>
+                        </tr>
+                        <tr>
+                            <td>spacing[3]</td>
+                            <td>12px</td>
+                            <td>0.75rem</td>
+                            <td>Padding de inputs</td>
+                        </tr>
+                        <tr>
+                            <td>spacing[4]</td>
+                            <td>16px</td>
+                            <td>1rem</td>
+                            <td>Padding padrão</td>
+                        </tr>
+                        <tr>
+                            <td>spacing[6]</td>
+                            <td>24px</td>
+                            <td>1.5rem</td>
+                            <td>Padding de containers</td>
+                        </tr>
+                        <tr>
+                            <td>spacing[8]</td>
+                            <td>32px</td>
+                            <td>2rem</td>
+                            <td>Margens entre seções</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Stack Section -->
+        <section id="stack">
+            <h2><i class="fas fa-code"></i> Stack Tecnológico</h2>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fab fa-react"></i>
+                    <h3>Frontend Mobile</h3>
+                </div>
+                <pre><code class="language-json">{
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-native": "^0.73.0",
+    "expo": "^50.0.0",
+    "@react-navigation/native": "^6.1.9",
+    "@react-navigation/bottom-tabs": "^6.5.11",
+    "@reduxjs/toolkit": "^2.0.1",
+    "react-redux": "^9.0.4",
+    "@tanstack/react-query": "^5.17.0",
+    "axios": "^1.6.5",
+    "expo-av": "^13.10.4",
+    "react-native-paper": "^5.11.6",
+    "react-native-reanimated": "^3.6.1"
+  }
+}</code></pre>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fab fa-node-js"></i>
+                    <h3>Backend API</h3>
+                </div>
+                <pre><code class="language-json">{
+  "dependencies": {
+    "express": "^4.18.2",
+    "typescript": "^5.3.3",
+    "@prisma/client": "^5.8.0",
+    "pg": "^8.11.3",
+    "redis": "^4.6.12",
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "helmet": "^7.1.0",
+    "bull": "^4.12.0",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4"
+  }
+}</code></pre>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fab fa-python"></i>
+                    <h3>AI Pipeline</h3>
+                </div>
+                <pre><code class="language-python">fastapi==0.109.0
+uvicorn[standard]==0.26.0
+openai==1.7.2
+whisper==1.1.10
+pyannote.audio==3.1.1
+transformers==4.36.2
+torch==2.1.2
+pydub==0.25.1
+librosa==0.10.1
+celery==5.3.4
+redis==5.0.1</code></pre>
+            </div>
+        </section>
+
+        <!-- Database Section -->
+        <section id="database">
+            <h2><i class="fas fa-database"></i> Banco de Dados</h2>
+
+            <div class="alert alert-info">
+                <strong><i class="fas fa-info-circle"></i> Schema Prisma</strong><br>
+                O banco de dados utiliza PostgreSQL com Prisma ORM. O schema completo inclui 14 models para gerenciar usuários, notas, transcrições, speakers, folders e mais.
+            </div>
+
+            <h3>Models Principais</h3>
+            <div class="card">
+                <pre><code class="language-prisma">model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  profileImage  String?
+  isPro         Boolean   @default(false)
+  notes         Note[]
+  folders       Folder[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Note {
+  id          String   @id @default(uuid())
+  title       String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  audioUrl    String
+  duration    Int
+  status      NoteStatus @default(PROCESSING)
+  transcript  Transcript?
+  summary     Summary?
+  speakers    Speaker[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum NoteStatus {
+  PROCESSING
+  TRANSCRIBING
+  ANALYZING
+  READY
+  FAILED
+}</code></pre>
+            </div>
+
+            <h3>Redis Cache Strategy</h3>
+            <div class="card">
+                <h4>Estrutura de Chaves</h4>
+                <ul>
+                    <li><code>user:{userId}</code> - Dados do usuário (TTL: 1h)</li>
+                    <li><code>user:{userId}:notes</code> - Lista de notas do usuário (TTL: 30min)</li>
+                    <li><code>note:{noteId}</code> - Dados completos da nota (TTL: 30min)</li>
+                    <li><code>note:{noteId}:transcript</code> - Transcrição (TTL: 30min)</li>
+                    <li><code>session:{sessionId}</code> - Sessão do usuário (TTL: 24h)</li>
+                    <li><code>ratelimit:{ip}:{endpoint}</code> - Rate limiting (TTL: 1min)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- APIs Section -->
+        <section id="apis">
+            <h2><i class="fas fa-plug"></i> APIs e Endpoints</h2>
+
+            <h3>Authentication Endpoints</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Descrição</th>
+                        <th>Auth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-success">POST</span></td>
+                        <td>/api/v1/auth/register</td>
+                        <td>Registrar novo usuário</td>
+                        <td>❌</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-success">POST</span></td>
+                        <td>/api/v1/auth/login</td>
+                        <td>Login de usuário</td>
+                        <td>❌</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-success">POST</span></td>
+                        <td>/api/v1/auth/refresh</td>
+                        <td>Renovar access token</td>
+                        <td>❌</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-success">POST</span></td>
+                        <td>/api/v1/auth/logout</td>
+                        <td>Logout de usuário</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-success">POST</span></td>
+                        <td>/api/v1/auth/google</td>
+                        <td>Login com Google OAuth</td>
+                        <td>❌</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Notes Endpoints</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Endpoint</th>
+                        <th>Descrição</th>
+                        <th>Auth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-primary">GET</span></td>
+                        <td>/api/v1/notes</td>
+                        <td>Listar todas as notas</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-primary">GET</span></td>
+                        <td>/api/v1/notes/:id</td>
+                        <td>Buscar nota por ID</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-success">POST</span></td>
+                        <td>/api/v1/notes</td>
+                        <td>Criar nova nota (com audio)</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-secondary">PATCH</span></td>
+                        <td>/api/v1/notes/:id</td>
+                        <td>Atualizar nota</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-secondary">DELETE</span></td>
+                        <td>/api/v1/notes/:id</td>
+                        <td>Deletar nota</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-primary">GET</span></td>
+                        <td>/api/v1/notes/:id/export</td>
+                        <td>Exportar nota (TXT/PDF)</td>
+                        <td>✅</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Exemplo de Request/Response</h3>
+            <div class="card">
+                <h4>POST /api/v1/notes</h4>
+                <p><strong>Request:</strong></p>
+                <pre><code class="language-javascript">const formData = new FormData();
+formData.append('audio', audioFile);
+formData.append('title', 'My Recording');
+
+const response = await fetch('/api/v1/notes', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${accessToken}`
+  },
+  body: formData
+});</code></pre>
+
+                <p><strong>Response (201 Created):</strong></p>
+                <pre><code class="language-json">{
+  "status": "success",
+  "data": {
+    "note": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "My Recording",
+      "userId": "123e4567-e89b-12d3-a456-426614174000",
+      "audioUrl": "audio/original/user123/note456.mp3",
+      "duration": 125,
+      "status": "PROCESSING",
+      "createdAt": "2026-01-29T12:00:00.000Z"
+    }
+  }
+}</code></pre>
+            </div>
+        </section>
+
+        <!-- AI Pipeline Section -->
+        <section id="ai-pipeline">
+            <h2><i class="fas fa-brain"></i> Pipeline de IA</h2>
+
+            <div class="alert alert-success">
+                <strong><i class="fas fa-check-circle"></i> Pipeline em 6 Etapas</strong><br>
+                O processamento de IA ocorre em background através de uma fila (Bull Queue) com 6 etapas sequenciais.
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>1. Upload Audio</h4>
+                    <p>Upload do arquivo de áudio para MinIO/S3</p>
+                    <p><strong>Tecnologia:</strong> MinIO/S3 SDK</p>
+                    <p><strong>Tempo médio:</strong> ~2 segundos</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>2. Transcription (Speech-to-Text)</h4>
+                    <p>Conversão de áudio em texto usando OpenAI Whisper</p>
+                    <p><strong>Tecnologia:</strong> OpenAI Whisper (base model)</p>
+                    <p><strong>Tempo médio:</strong> ~1 minuto para 10 minutos de áudio</p>
+                    <p><strong>Precisão:</strong> 95%+</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>3. Speaker Diarization</h4>
+                    <p>Identificação de quem falou quando</p>
+                    <p><strong>Tecnologia:</strong> pyannote.audio 3.1</p>
+                    <p><strong>Tempo médio:</strong> ~30 segundos para 10 minutos</p>
+                    <p><strong>Precisão:</strong> 90%+</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>4. Content Analysis</h4>
+                    <p>Análise semântica do conteúdo</p>
+                    <p><strong>Tecnologia:</strong> GPT-4</p>
+                    <p><strong>Tempo médio:</strong> ~10 segundos</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>5. Summarization & Action Items</h4>
+                    <p>Geração de resumo e extração de action items</p>
+                    <p><strong>Tecnologia:</strong> GPT-4</p>
+                    <p><strong>Tempo médio:</strong> ~15 segundos</p>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>6. Finalization</h4>
+                    <p>Atualização do banco de dados e envio de notificação</p>
+                    <p><strong>Tecnologia:</strong> Expo Push Notifications</p>
+                    <p><strong>Tempo médio:</strong> ~1 segundo</p>
+                </div>
+            </div>
+
+            <h3>Transcription Service (Whisper)</h3>
+            <div class="card">
+                <pre><code class="language-python">class TranscriptionService:
+    def __init__(self):
+        model_size = os.getenv("WHISPER_MODEL_SIZE", "base")
+        self.model = whisper.load_model(model_size)
+    
+    async def transcribe(self, audio_url: str) -> Dict[str, Any]:
+        # Download audio file
+        temp_file = await self._download_audio(audio_url)
+        
+        try:
+            # Transcribe
+            result = self.model.transcribe(
+                temp_file,
+                language="en",
+                task="transcribe",
+                verbose=False,
+            )
+            
+            return {
+                "text": result["text"],
+                "language": result["language"],
+                "confidence": self._calculate_confidence(result),
+                "segments": [
+                    {
+                        "text": segment["text"],
+                        "start": segment["start"],
+                        "end": segment["end"],
+                    }
+                    for segment in result["segments"]
+                ],
+            }
+        finally:
+            os.unlink(temp_file)</code></pre>
+            </div>
+        </section>
+
+        <!-- Security Section -->
+        <section id="security">
+            <h2><i class="fas fa-shield-alt"></i> Segurança</h2>
+
+            <div class="alert alert-danger">
+                <strong><i class="fas fa-exclamation-triangle"></i> CRÍTICO</strong><br>
+                Todas as implementações de segurança são obrigatórias para ambiente de produção.
+            </div>
+
+            <h3>Camadas de Segurança</h3>
+            <div class="card">
+                <ul class="checklist">
+                    <li>JWT Authentication com Refresh Tokens</li>
+                    <li>bcrypt para hash de senhas (10 rounds)</li>
+                    <li>Rate Limiting por IP e endpoint</li>
+                    <li>Input Validation com Zod schemas</li>
+                    <li>SQL Injection prevention (Prisma ORM)</li>
+                    <li>XSS Protection (Helmet middleware)</li>
+                    <li>CORS configurado corretamente</li>
+                    <li>Data Encryption (AES-256-GCM)</li>
+                    <li>Secure Headers (CSP, HSTS, etc.)</li>
+                    <li>HTTPS obrigatório em produção</li>
+                </ul>
+            </div>
+
+            <h3>JWT Implementation</h3>
+            <div class="card">
+                <pre><code class="language-typescript">export const generateAccessToken = (payload: JWTPayload): string => {
+  return jwt.sign(payload, process.env.JWT_SECRET!, {
+    expiresIn: '15m',
+    issuer: 'smart-noter-api',
+    audience: 'smart-noter-client',
+  });
+};
+
+export const generateRefreshToken = (userId: string): string => {
+  return jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET!, {
+    expiresIn: '7d',
+    issuer: 'smart-noter-api',
+    audience: 'smart-noter-client',
+  });
+};</code></pre>
+            </div>
+
+            <h3>Rate Limiting Configuration</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Endpoint Type</th>
+                        <th>Window</th>
+                        <th>Max Requests</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>API Geral</td>
+                        <td>15 min</td>
+                        <td>100</td>
+                        <td>Todos os endpoints</td>
+                    </tr>
+                    <tr>
+                        <td>Auth</td>
+                        <td>15 min</td>
+                        <td>5</td>
+                        <td>Login/Register</td>
+                    </tr>
+                    <tr>
+                        <td>Upload</td>
+                        <td>1 hora</td>
+                        <td>10</td>
+                        <td>Upload de áudio</td>
+                    </tr>
+                    <tr>
+                        <td>PRO Users</td>
+                        <td>15 min</td>
+                        <td>500</td>
+                        <td>5x limite normal</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- DevOps Section -->
+        <section id="devops">
+            <h2><i class="fas fa-server"></i> DevOps e Infraestrutura</h2>
+
+            <h3>Docker Configuration</h3>
+            <div class="card">
+                <h4>Backend Dockerfile</h4>
+                <pre><code class="language-dockerfile">FROM node:20-alpine AS base
+
+FROM base AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY prisma ./prisma/
+RUN npm ci --only=production
+
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npx prisma generate
+RUN npm run build
+
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV production
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nodejs
+COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+USER nodejs
+EXPOSE 3000
+CMD ["node", "dist/server.js"]</code></pre>
+            </div>
+
+            <h3>CI/CD Pipeline (GitHub Actions)</h3>
+            <div class="card">
+                <p>Pipeline automatizado que executa:</p>
+                <ul>
+                    <li><strong>Linting:</strong> ESLint e Prettier</li>
+                    <li><strong>Tests:</strong> Jest (unit + integration)</li>
+                    <li><strong>Build:</strong> TypeScript compilation</li>
+                    <li><strong>Docker:</strong> Build e push para ECR</li>
+                    <li><strong>Deploy:</strong> Deploy automático para ECS</li>
+                </ul>
+            </div>
+
+            <h3>Monitoring Stack</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ferramenta</th>
+                        <th>Propósito</th>
+                        <th>Métricas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Prometheus</td>
+                        <td>Coleta de métricas</td>
+                        <td>CPU, Memory, Request rate</td>
+                    </tr>
+                    <tr>
+                        <td>Grafana</td>
+                        <td>Visualização</td>
+                        <td>Dashboards customizados</td>
+                    </tr>
+                    <tr>
+                        <td>Winston + ELK</td>
+                        <td>Logging</td>
+                        <td>Application logs</td>
+                    </tr>
+                    <tr>
+                        <td>Sentry</td>
+                        <td>Error tracking</td>
+                        <td>Errors e exceptions</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Testing Section -->
+        <section id="testing">
+            <h2><i class="fas fa-vial"></i> Testes</h2>
+
+            <h3>Cobertura de Testes</h3>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipo de Teste</th>
+                            <th>Framework</th>
+                            <th>Cobertura Mínima</th>
+                            <th>Descrição</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Unit Tests</td>
+                            <td>Jest</td>
+                            <td>80%</td>
+                            <td>Testes de funções isoladas</td>
+                        </tr>
+                        <tr>
+                            <td>Integration Tests</td>
+                            <td>Supertest</td>
+                            <td>70%</td>
+                            <td>Testes de APIs e endpoints</td>
+                        </tr>
+                        <tr>
+                            <td>Component Tests</td>
+                            <td>React Native Testing Library</td>
+                            <td>70%</td>
+                            <td>Testes de componentes React</td>
+                        </tr>
+                        <tr>
+                            <td>E2E Tests</td>
+                            <td>Detox</td>
+                            <td>Fluxos críticos</td>
+                            <td>Testes end-to-end mobile</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3>Exemplo de Unit Test</h3>
+            <div class="card">
+                <pre><code class="language-typescript">describe('NotesService', () => {
+  let notesService: NotesService;
+  let testUserId: string;
+
+  beforeEach(async () => {
+    notesService = new NotesService();
+    const user = await prisma.user.create({
+      data: {
+        email: '<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0b7f6e787f4b6e736a667b676e25686466">[email&#160;protected]</a>',
+        password: 'hashedpassword',
+      },
+    });
+    testUserId = user.id;
+  });
+
+  describe('createNote', () => {
+    it('should create a note successfully', async () => {
+      const mockFile = {
+        buffer: Buffer.from('mock audio data'),
+        mimetype: 'audio/mpeg',
+        originalname: 'test.mp3',
+      } as Express.Multer.File;
+
+      const note = await notesService.createNote(testUserId, mockFile);
+
+      expect(note).toHaveProperty('id');
+      expect(note.userId).toBe(testUserId);
+      expect(note.status).toBe('PROCESSING');
+    });
+  });
+});</code></pre>
+            </div>
+        </section>
+
+        <!-- Development Guide Section -->
+        <section id="guide">
+            <h2><i class="fas fa-road"></i> Guia de Desenvolvimento (10 Semanas)</h2>
+
+            <div class="alert alert-info">
+                <strong><i class="fas fa-calendar-alt"></i> Cronograma Completo</strong><br>
+                Este guia detalha o desenvolvimento completo do Smart Noter em 10 semanas, desde setup inicial até deploy em produção.
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>Semana 1: Setup Inicial</h4>
+                    <ul>
+                        <li>Configuração do ambiente de desenvolvimento</li>
+                        <li>Setup de repositórios Git</li>
+                        <li>Inicialização de projetos (Frontend, Backend, AI)</li>
+                        <li>Configuração do banco de dados</li>
+                        <li>Setup do Docker e docker-compose</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Semana 2-3: Backend API</h4>
+                    <p><strong>Sprint 1: Autenticação</strong></p>
+                    <ul>
+                        <li>Implementar registro de usuário</li>
+                        <li>Implementar login e JWT</li>
+                        <li>Implementar refresh tokens</li>
+                        <li>Testes unitários e integração</li>
+                    </ul>
+                    <p><strong>Sprint 2: CRUD de Notas</strong></p>
+                    <ul>
+                        <li>Criar nota com upload de áudio</li>
+                        <li>Listar, visualizar, atualizar e deletar notas</li>
+                        <li>Testes completos</li>
+                    </ul>
+                    <p><strong>Sprint 3: Storage e Queue</strong></p>
+                    <ul>
+                        <li>Configurar MinIO/S3</li>
+                        <li>Implementar Bull Queue</li>
+                        <li>Criar workers de processamento</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Semana 4-5: Frontend Mobile</h4>
+                    <p><strong>Sprint 1: Navegação e Auth</strong></p>
+                    <ul>
+                        <li>Setup de navegação</li>
+                        <li>Telas de login/registro</li>
+                        <li>Integração com API</li>
+                        <li>Persistência de token</li>
+                    </ul>
+                    <p><strong>Sprint 2: Gravação de Áudio</strong></p>
+                    <ul>
+                        <li>Implementar gravação</li>
+                        <li>Interface de gravação</li>
+                        <li>Upload para API</li>
+                        <li>Feedback visual</li>
+                    </ul>
+                    <p><strong>Sprint 3: Listagem e Visualização</strong></p>
+                    <ul>
+                        <li>Tela de lista de notas</li>
+                        <li>Tela de detalhes</li>
+                        <li>Player de áudio</li>
+                        <li>Visualização de transcrição</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Semana 6-7: AI Pipeline</h4>
+                    <p><strong>Sprint 1: Transcrição</strong></p>
+                    <ul>
+                        <li>Setup do Whisper</li>
+                        <li>API de transcrição</li>
+                        <li>Testes e otimização</li>
+                    </ul>
+                    <p><strong>Sprint 2: Diarização</strong></p>
+                    <ul>
+                        <li>Setup do pyannote</li>
+                        <li>API de diarização</li>
+                        <li>Integração com transcrição</li>
+                    </ul>
+                    <p><strong>Sprint 3: Summarização</strong></p>
+                    <ul>
+                        <li>Integração GPT-4</li>
+                        <li>Extração de action items</li>
+                        <li>API de summarização</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Semana 8: Integração e Testes</h4>
+                    <ul>
+                        <li>Integração completa do pipeline</li>
+                        <li>Testes end-to-end</li>
+                        <li>Performance testing</li>
+                        <li>Bug fixing</li>
+                        <li>Code review</li>
+                    </ul>
+                </div>
+
+                <div class="timeline-item">
+                    <h4>Semana 9-10: Deploy e Produção</h4>
+                    <ul>
+                        <li>Configuração de CI/CD</li>
+                        <li>Deploy em ambiente de staging</li>
+                        <li>Testes de carga</li>
+                        <li>Configuração de monitoring</li>
+                        <li>Deploy em produção</li>
+                        <li>Documentação final</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Checklist de Produção</h3>
+            <div class="card">
+                <h4>Backend</h4>
+                <ul class="checklist">
+                    <li>Autenticação JWT funcionando</li>
+                    <li>CRUD completo de notas</li>
+                    <li>Upload de áudio para S3</li>
+                    <li>Queue de processamento</li>
+                    <li>Rate limiting ativo</li>
+                    <li>Logs estruturados</li>
+                    <li>Testes > 80% coverage</li>
+                </ul>
+
+                <h4>Frontend</h4>
+                <ul class="checklist">
+                    <li>Navegação completa</li>
+                    <li>Gravação de áudio</li>
+                    <li>Upload funcionando</li>
+                    <li>Listagem de notas</li>
+                    <li>Visualização de transcrição</li>
+                    <li>Player de áudio</li>
+                    <li>Testes de componentes</li>
+                </ul>
+
+                <h4>DevOps</h4>
+                <ul class="checklist">
+                    <li>Docker configurado</li>
+                    <li>CI/CD funcionando</li>
+                    <li>Monitoramento ativo</li>
+                    <li>Backups configurados</li>
+                    <li>SSL/HTTPS configurado</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer style="margin-top: 80px; padding: 32px 0; border-top: 2px solid var(--border-light); text-align: center;">
+            <p style="color: var(--text-secondary);">
+                <strong>Smart Noter - Documentação Técnica Completa v1.0</strong><br>
+                Criado em 29 de Janeiro de 2026<br>
+                <a href="#overview" style="color: var(--primary);">Voltar ao topo ↑</a>
+            </p>
+        </footer>
+    </main>
+
+    <!-- Scroll to top button -->
+    <div class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <!-- Scripts -->
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        // Highlight.js initialization
+        hljs.highlightAll();
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('.sidebar-nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Update active state
+                    document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Scroll to top button
+        const scrollTopBtn = document.getElementById('scrollTop');
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                scrollTopBtn.classList.add('visible');
+            } else {
+                scrollTopBtn.classList.remove('visible');
+            }
+        });
+
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Update active nav on scroll
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.sidebar-nav a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.

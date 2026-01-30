@@ -17,6 +17,7 @@ import syncRoutes from './routes/sync.js';
 import influencersRoutes from './routes/influencers.js';
 import promptsRoutes from './routes/prompts.js';
 import orcamentosRoutes from './routes/orcamentos.js';
+import investmentAnalysesRoutes from './routes/investment-analyses.js';
 import { syncService } from './services/sync.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -186,6 +187,7 @@ app.use('/api/sync', syncRoutes);
 app.use('/api/influencers', influencersRoutes);
 app.use('/api/prompts', promptsRoutes);
 app.use('/api/orcamentos', orcamentosRoutes);
+app.use('/api/investment-analyses', investmentAnalysesRoutes);
 app.use('/api', overviewRoutes);
 
 // =============================================================================
