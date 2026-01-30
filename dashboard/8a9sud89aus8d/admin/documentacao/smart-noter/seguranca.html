@@ -65,34 +65,175 @@
         <div class="breadcrumb">
             <a href="index.html">Início</a> <i class="fas fa-chevron-right"></i> Segurança
         </div>
-        
-        
-<h1>Segurança</h1>
-<div class="alert alert-info">
-    <i class="fas fa-info-circle"></i>
-    <div>
-        <strong>Seção em Desenvolvimento</strong><br>
-        O conteúdo completo desta seção está disponível na documentação Markdown principal. 
-        Esta estrutura HTML modular foi criada para facilitar a navegação.
-    </div>
-</div>
 
-<div class="card">
-    <div class="card-header">
-        <i class="fas fa-book"></i>
-        <h3>Conteúdo Disponível</h3>
-    </div>
-    <p>Consulte a documentação completa em:</p>
-    <ul>
-        <li><code>SMART_NOTER_DOCUMENTACAO_TECNICA_COMPLETA.md</code></li>
-        <li>Ou abra o arquivo HTML consolidado: <code>smart-noter-documentacao-tecnica.html</code></li>
-    </ul>
-</div>
+        <h1>Segurança</h1>
 
-<h2>Navegação Rápida</h2>
-<p>Use a barra lateral para navegar entre as seções ou os botões de navegação abaixo.</p>
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+                <strong>CRÍTICO</strong> — Todas as implementações de segurança são obrigatórias para ambiente de produção.
+            </div>
+        </div>
 
-        
+        <!-- ===== Camadas de Segurança ===== -->
+        <h2><i class="fas fa-layer-group"></i> Camadas de Segurança</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Checklist de Segurança</h3>
+            </div>
+            <ul class="checklist">
+                <li>JWT Auth com Refresh Tokens</li>
+                <li>bcrypt 10 rounds</li>
+                <li>Rate Limiting por IP/endpoint</li>
+                <li>Input Validation com Zod</li>
+                <li>SQL Injection prevention via Prisma</li>
+                <li>XSS protection com Helmet</li>
+                <li>CORS configurado</li>
+                <li>Criptografia AES-256-GCM</li>
+                <li>Secure Headers (CSP / HSTS)</li>
+                <li>HTTPS obrigatório</li>
+            </ul>
+        </div>
+
+        <!-- ===== JWT Implementation ===== -->
+        <h2><i class="fas fa-key"></i> JWT Implementation</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-lock"></i>
+                <h3>Geração e Verificação de Tokens</h3>
+            </div>
+            <pre><code class="language-typescript">import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from 'express';
+
+const ACCESS_SECRET  = process.env.JWT_ACCESS_SECRET!;
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
+
+// ── Access Token (curta duração) ──────────────────────────
+export function generateAccessToken(userId: string): string {
+  return jwt.sign({ userId }, ACCESS_SECRET, { expiresIn: '15m' });
+}
+
+// ── Refresh Token (longa duração) ─────────────────────────
+export function generateRefreshToken(userId: string): string {
+  return jwt.sign({ userId }, REFRESH_SECRET, { expiresIn: '7d' });
+}
+
+// ── Verificação do Access Token ───────────────────────────
+export function verifyAccessToken(token: string) {
+  return jwt.verify(token, ACCESS_SECRET) as { userId: string };
+}
+
+// ── Auth Middleware ────────────────────────────────────────
+export function authMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const header = req.headers.authorization;
+
+  if (!header?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token não fornecido' });
+  }
+
+  try {
+    const token   = header.split(' ')[1];
+    const payload = verifyAccessToken(token);
+    req.userId    = payload.userId;
+    next();
+  } catch {
+    return res.status(401).json({ error: 'Token inválido ou expirado' });
+  }
+}</code></pre>
+        </div>
+
+        <!-- ===== Rate Limiting Configuration ===== -->
+        <h2><i class="fas fa-tachometer-alt"></i> Rate Limiting Configuration</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-traffic-light"></i>
+                <h3>Limites por Endpoint</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Endpoint Type</th>
+                        <th>Window</th>
+                        <th>Max Requests</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>API Geral</td>
+                        <td>15 min</td>
+                        <td>100</td>
+                        <td>Limite padrão para todas as rotas públicas da API</td>
+                    </tr>
+                    <tr>
+                        <td>Auth</td>
+                        <td>15 min</td>
+                        <td>5</td>
+                        <td>Login, registro e reset de senha — proteção contra brute-force</td>
+                    </tr>
+                    <tr>
+                        <td>Upload</td>
+                        <td>1 hora</td>
+                        <td>10</td>
+                        <td>Upload de áudio — limita consumo de storage e processamento</td>
+                    </tr>
+                    <tr>
+                        <td>PRO Users</td>
+                        <td>15 min</td>
+                        <td>500</td>
+                        <td>Limite expandido para usuários com plano PRO</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ===== Input Validation (Zod) ===== -->
+        <h2><i class="fas fa-check-double"></i> Input Validation (Zod)</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-filter"></i>
+                <h3>Schemas de Validação</h3>
+            </div>
+            <pre><code class="language-typescript">import { z } from 'zod';
+
+// ── Register ──────────────────────────────────────────────
+export const registerSchema = z.object({
+  email:     z.string().email('E-mail inválido'),
+  password:  z.string()
+               .min(8, 'Mínimo 8 caracteres')
+               .regex(/[A-Z]/, 'Deve conter ao menos uma letra maiúscula')
+               .regex(/[0-9]/, 'Deve conter ao menos um número')
+               .regex(/[^A-Za-z0-9]/, 'Deve conter ao menos um caractere especial'),
+  firstName: z.string().min(2, 'Mínimo 2 caracteres').max(50),
+  lastName:  z.string().min(2, 'Mínimo 2 caracteres').max(50),
+});
+
+// ── Login ─────────────────────────────────────────────────
+export const loginSchema = z.object({
+  email:    z.string().email('E-mail inválido'),
+  password: z.string().min(1, 'Senha obrigatória'),
+});
+
+// ── Create Note ───────────────────────────────────────────
+export const createNoteSchema = z.object({
+  title:    z.string()
+              .min(1, 'Título obrigatório')
+              .max(200, 'Máximo 200 caracteres')
+              .trim(),
+  folderId: z.string().uuid().optional(),
+  tags:     z.array(z.string().max(30)).max(10).optional(),
+});</code></pre>
+        </div>
+
         <div class="nav-buttons">
             <a href="implementacao.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> Implementação</a>
             <a href="devops.html" class="nav-button"><span>DevOps</span> <i class="fas fa-arrow-right"></i></a>

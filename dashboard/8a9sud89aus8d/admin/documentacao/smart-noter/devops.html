@@ -17,15 +17,15 @@
             <span class="version">v1.0</span>
         </div>
         <div class="header-right">
-            <a href="index.html" class="header-link"><i class="fas fa-home"></i> Início</a>
+            <a href="index.html" class="header-link"><i class="fas fa-home"></i> Inicio</a>
         </div>
     </header>
 
     <nav class="sidebar">
         <div class="sidebar-section">
-            <div class="sidebar-title">Início</div>
+            <div class="sidebar-title">Inicio</div>
             <ul class="sidebar-nav">
-                <li><a href="index.html"><i class="fas fa-home"></i> Visão Geral</a></li>
+                <li><a href="index.html"><i class="fas fa-home"></i> Visao Geral</a></li>
             </ul>
         </div>
         <div class="sidebar-section">
@@ -38,7 +38,7 @@
         <div class="sidebar-section">
             <div class="sidebar-title">Tecnologia</div>
             <ul class="sidebar-nav">
-                <li><a href="stack-tecnologico.html"><i class="fas fa-code"></i> Stack Tecnológico</a></li>
+                <li><a href="stack-tecnologico.html"><i class="fas fa-code"></i> Stack Tecnologico</a></li>
                 <li><a href="banco-de-dados.html"><i class="fas fa-database"></i> Banco de Dados</a></li>
                 <li><a href="apis-endpoints.html"><i class="fas fa-plug"></i> APIs</a></li>
             </ul>
@@ -47,8 +47,8 @@
             <div class="sidebar-title">Desenvolvimento</div>
             <ul class="sidebar-nav">
                 <li><a href="pipeline-ia.html"><i class="fas fa-brain"></i> Pipeline IA</a></li>
-                <li><a href="implementacao.html"><i class="fas fa-hammer"></i> Implementação</a></li>
-                <li><a href="seguranca.html"><i class="fas fa-shield-alt"></i> Segurança</a></li>
+                <li><a href="implementacao.html"><i class="fas fa-hammer"></i> Implementacao</a></li>
+                <li><a href="seguranca.html"><i class="fas fa-shield-alt"></i> Seguranca</a></li>
             </ul>
         </div>
         <div class="sidebar-section">
@@ -63,43 +63,477 @@
 
     <main class="main-content">
         <div class="breadcrumb">
-            <a href="index.html">Início</a> <i class="fas fa-chevron-right"></i> DevOps e Infraestrutura
+            <a href="index.html">Inicio</a> <i class="fas fa-chevron-right"></i> DevOps e Infraestrutura
         </div>
-        
-        
-<h1>DevOps e Infraestrutura</h1>
-<div class="alert alert-info">
-    <i class="fas fa-info-circle"></i>
-    <div>
-        <strong>Seção em Desenvolvimento</strong><br>
-        O conteúdo completo desta seção está disponível na documentação Markdown principal. 
-        Esta estrutura HTML modular foi criada para facilitar a navegação.
-    </div>
-</div>
 
-<div class="card">
-    <div class="card-header">
-        <i class="fas fa-book"></i>
-        <h3>Conteúdo Disponível</h3>
-    </div>
-    <p>Consulte a documentação completa em:</p>
-    <ul>
-        <li><code>SMART_NOTER_DOCUMENTACAO_TECNICA_COMPLETA.md</code></li>
-        <li>Ou abra o arquivo HTML consolidado: <code>smart-noter-documentacao-tecnica.html</code></li>
-    </ul>
-</div>
+        <h1>DevOps e Infraestrutura</h1>
 
-<h2>Navegação Rápida</h2>
-<p>Use a barra lateral para navegar entre as seções ou os botões de navegação abaixo.</p>
+        <!-- ===== Docker Configuration ===== -->
+        <h2><i class="fab fa-docker"></i> Docker Configuration</h2>
 
-        
+        <div class="card">
+            <div class="card-header">
+                <i class="fab fa-docker"></i>
+                <h3>Backend Dockerfile (Multi-stage)</h3>
+            </div>
+            <pre><code class="language-dockerfile"># ---- Stage 1: Dependencies ----
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --only=production
+
+# ---- Stage 2: Builder ----
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+COPY prisma ./prisma
+RUN npx prisma generate
+RUN npm run build
+
+# ---- Stage 3: Runner ----
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 appuser
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package.json ./
+
+USER appuser
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD wget -qO- http://localhost:3000/health || exit 1
+
+CMD ["node", "dist/server.js"]</code></pre>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fab fa-python"></i>
+                <h3>AI Pipeline Dockerfile</h3>
+            </div>
+            <pre><code class="language-dockerfile">FROM python:3.11-slim
+
+WORKDIR /app
+
+# Dependencias de sistema para audio processing
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    libsndfile1 \
+    libsndfile1-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+RUN useradd --create-home appuser
+USER appuser
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=15s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]</code></pre>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-layer-group"></i>
+                <h3>Docker Compose</h3>
+            </div>
+            <pre><code class="language-yaml">version: "3.8"
+
+services:
+  # ---- Backend API ----
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://smartnoter:secret@postgres:5432/smartnoter
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - AI_PIPELINE_URL=http://ai-pipeline:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - smart-noter
+
+  # ---- AI Pipeline ----
+  ai-pipeline:
+    build:
+      context: ./ai-pipeline
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+    restart: unless-stopped
+    networks:
+      - smart-noter
+
+  # ---- PostgreSQL ----
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: smartnoter
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: smartnoter
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartnoter"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - smart-noter
+
+  # ---- Redis ----
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - smart-noter
+
+  # ---- MinIO (Object Storage) ----
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    networks:
+      - smart-noter
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+
+networks:
+  smart-noter:
+    driver: bridge</code></pre>
+        </div>
+
+        <!-- ===== CI/CD Pipeline ===== -->
+        <h2><i class="fas fa-rocket"></i> CI/CD Pipeline (GitHub Actions)</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fab fa-github"></i>
+                <h3>Workflow: CI/CD Pipeline</h3>
+            </div>
+            <pre><code class="language-yaml">name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY_API: smart-noter-api
+  ECR_REPOSITORY_AI: smart-noter-ai-pipeline
+  ECS_CLUSTER: smart-noter-cluster
+  ECS_SERVICE_API: smart-noter-api-service
+  ECS_SERVICE_AI: smart-noter-ai-service
+
+jobs:
+  # ---- Job 1: Test ----
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: smartnoter_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install API dependencies
+        run: cd api && npm ci
+
+      - name: Generate Prisma client
+        run: cd api && npx prisma generate
+
+      - name: Run database migrations
+        run: cd api && npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/smartnoter_test
+
+      - name: Run linter
+        run: cd api && npm run lint
+
+      - name: Run unit tests
+        run: cd api && npm run test
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/smartnoter_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret-key
+
+      - name: Run integration tests
+        run: cd api && npm run test:integration
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/smartnoter_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: test-secret-key
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install AI Pipeline dependencies
+        run: cd ai-pipeline && pip install -r requirements.txt -r requirements-test.txt
+
+      - name: Run AI Pipeline tests
+        run: cd ai-pipeline && pytest tests/ -v --cov=src --cov-report=xml
+
+  # ---- Job 2: Deploy ----
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push API image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_API:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY_API:latest ./api
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_API --all-tags
+
+      - name: Build and push AI Pipeline image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_AI:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY_AI:latest ./ai-pipeline
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_AI --all-tags
+
+      - name: Deploy API to ECS
+        run: aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE_API --force-new-deployment
+
+      - name: Deploy AI Pipeline to ECS
+        run: aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE_AI --force-new-deployment
+
+      - name: Wait for API deployment
+        run: aws ecs wait services-stable --cluster $ECS_CLUSTER --services $ECS_SERVICE_API
+
+      - name: Wait for AI Pipeline deployment
+        run: aws ecs wait services-stable --cluster $ECS_CLUSTER --services $ECS_SERVICE_AI</code></pre>
+        </div>
+
+        <!-- ===== Monitoring Stack ===== -->
+        <h2><i class="fas fa-chart-line"></i> Monitoring Stack</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-heartbeat"></i>
+                <h3>Ferramentas de Monitoramento</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ferramenta</th>
+                        <th>Proposito</th>
+                        <th>Metricas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Prometheus</strong></td>
+                        <td>Coleta de metricas</td>
+                        <td><code>CPU</code>, <code>Memory</code>, <code>Request rate</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Grafana</strong></td>
+                        <td>Visualizacao</td>
+                        <td>Dashboards customizados, alertas visuais</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Winston + ELK</strong></td>
+                        <td>Logging centralizado</td>
+                        <td>Application logs, request logs, error logs</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sentry</strong></td>
+                        <td>Error tracking</td>
+                        <td>Errors, exceptions, stack traces</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ===== Environment Variables ===== -->
+        <h2><i class="fas fa-key"></i> Environment Variables</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-code"></i>
+                <h3>Exemplo de .env</h3>
+            </div>
+            <pre><code class="language-bash"># ===========================
+# Database
+# ===========================
+DATABASE_URL=postgresql://smartnoter:secret@localhost:5432/smartnoter
+
+# ===========================
+# Redis
+# ===========================
+REDIS_URL=redis://localhost:6379
+REDIS_PASSWORD=
+
+# ===========================
+# JWT Authentication
+# ===========================
+JWT_SECRET=sua-chave-secreta-aqui
+JWT_EXPIRES_IN=7d
+JWT_REFRESH_EXPIRES_IN=30d
+
+# ===========================
+# MinIO / S3 Object Storage
+# ===========================
+MINIO_ENDPOINT=localhost
+MINIO_PORT=9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_USE_SSL=false
+MINIO_BUCKET_AUDIO=audio-original
+MINIO_BUCKET_PROCESSED=audio-processed
+MINIO_BUCKET_EXPORTS=exports
+
+# ===========================
+# AI Pipeline
+# ===========================
+AI_PIPELINE_URL=http://localhost:8000
+AI_PIPELINE_TIMEOUT=300000
+AI_PIPELINE_MAX_RETRIES=3
+
+# ===========================
+# OpenAI
+# ===========================
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4-turbo-preview
+OPENAI_MAX_TOKENS=4096
+
+# ===========================
+# Application
+# ===========================
+NODE_ENV=development
+PORT=3000
+CORS_ORIGIN=http://localhost:19006
+LOG_LEVEL=debug
+
+# ===========================
+# Sentry (Error Tracking)
+# ===========================
+SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
+SENTRY_ENVIRONMENT=development</code></pre>
+        </div>
+
         <div class="nav-buttons">
-            <a href="seguranca.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> Segurança</a>
+            <a href="seguranca.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> Seguranca</a>
             <a href="testes.html" class="nav-button"><span>Testes</span> <i class="fas fa-arrow-right"></i></a>
         </div>
 
         <footer class="footer">
-            <p><strong>Smart Noter v1.0</strong> | <a href="index.html">Início</a> | <a href="#top">Topo ↑</a></p>
+            <p><strong>Smart Noter v1.0</strong> | <a href="index.html">Inicio</a> | <a href="#top">Topo &#8593;</a></p>
         </footer>
     </main>
 

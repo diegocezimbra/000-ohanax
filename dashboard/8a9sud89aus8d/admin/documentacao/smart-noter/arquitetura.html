@@ -65,34 +65,174 @@
         <div class="breadcrumb">
             <a href="index.html">Início</a> <i class="fas fa-chevron-right"></i> Arquitetura de Software
         </div>
-        
-        
-<h1>Arquitetura de Software</h1>
-<div class="alert alert-info">
-    <i class="fas fa-info-circle"></i>
-    <div>
-        <strong>Seção em Desenvolvimento</strong><br>
-        O conteúdo completo desta seção está disponível na documentação Markdown principal. 
-        Esta estrutura HTML modular foi criada para facilitar a navegação.
-    </div>
-</div>
 
-<div class="card">
-    <div class="card-header">
-        <i class="fas fa-book"></i>
-        <h3>Conteúdo Disponível</h3>
-    </div>
-    <p>Consulte a documentação completa em:</p>
-    <ul>
-        <li><code>SMART_NOTER_DOCUMENTACAO_TECNICA_COMPLETA.md</code></li>
-        <li>Ou abra o arquivo HTML consolidado: <code>smart-noter-documentacao-tecnica.html</code></li>
-    </ul>
-</div>
+        <h1>Arquitetura de Software</h1>
 
-<h2>Navegação Rápida</h2>
-<p>Use a barra lateral para navegar entre as seções ou os botões de navegação abaixo.</p>
+        <!-- Arquitetura de Alto Nível -->
+        <h2><i class="fas fa-project-diagram"></i> Arquitetura de Alto Nível</h2>
 
-        
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-sitemap"></i>
+                <h3>Diagrama Geral do Sistema</h3>
+            </div>
+            <div class="architecture">
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│                      CLIENTE (Mobile)                        │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │ React Native │  │ Redux/Zustand│  │ React Query      │   │
+│  │ + Expo       │  │ (State Mgmt) │  │ (Data Fetching)  │   │
+│  └─────────────┘  └──────────────┘  └──────────────────┘   │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   API Gateway   │
+                    │   (NGINX)       │
+                    └────────┬────────┘
+                             │
+        ┏────────────────────┼────────────────────┓
+        ▼                    ▼                    ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│   Auth API    │   │   Core API    │   │  Media API    │
+│   (Node.js)   │   │   (Node.js)   │   │  (Node.js)    │
+└───────┬───────┘   └───────┬───────┘   └───────┬───────┘
+        │                   │                    │
+        └───────────────────┼────────────────────┘
+                            │
+        ┏───────────────────┼───────────────────┓
+        ▼                   ▼                   ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│  PostgreSQL   │   │     Redis     │   │   MinIO/S3    │
+│  (Primary DB) │   │    (Cache)    │   │ (Object Store)│
+└───────────────┘   └───────────────┘   └───────────────┘
+                            │
+        ┏───────────────────┼───────────────────┓
+        ▼                   ▼                   ▼
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│ AI Pipeline   │   │  Transcription│   │   Speaker     │
+│ (Python)      │   │   (Whisper)   │   │ Diarization   │
+│  FastAPI      │   │   OpenAI API  │   │  (pyannote)   │
+└───────────────┘   └───────────────┘   └───────────────┘
+</pre>
+            </div>
+        </div>
+
+        <!-- Componentes Principais -->
+        <h2><i class="fas fa-cubes"></i> Componentes Principais</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-layer-group"></i>
+                <h3>Visão dos Componentes</h3>
+            </div>
+
+            <h4>1. Frontend (Mobile)</h4>
+            <ul>
+                <li><strong>React Native + Expo</strong> - Framework principal para desenvolvimento mobile multiplataforma</li>
+                <li><strong>Redux/Zustand</strong> - Gerenciamento de estado global da aplicação</li>
+                <li><strong>React Query</strong> - Gerenciamento de dados assíncronos, cache e sincronização com o servidor</li>
+                <li><strong>expo-av</strong> - Módulo para captura e reprodução de áudio</li>
+            </ul>
+
+            <h4>2. Backend (APIs)</h4>
+            <ul>
+                <li><strong>Node.js + Express</strong> - Runtime e framework HTTP para os serviços de API</li>
+                <li><strong>TypeScript</strong> - Tipagem estática para maior segurança e produtividade no código</li>
+                <li><strong>Prisma ORM</strong> - Mapeamento objeto-relacional para acesso ao banco de dados</li>
+                <li><strong>JWT (JSON Web Tokens)</strong> - Autenticação e autorização stateless</li>
+                <li><strong>Bull Queue</strong> - Gerenciamento de filas para processamento assíncrono de tarefas</li>
+            </ul>
+
+            <h4>3. Banco de Dados</h4>
+            <ul>
+                <li><strong>PostgreSQL</strong> - Banco de dados relacional primário para dados estruturados</li>
+                <li><strong>Redis</strong> - Cache em memória para sessões, filas e dados temporários</li>
+                <li><strong>MinIO/S3</strong> - Armazenamento de objetos para arquivos de áudio e mídia</li>
+            </ul>
+
+            <h4>4. IA e Processamento</h4>
+            <ul>
+                <li><strong>OpenAI Whisper</strong> - Transcrição de áudio para texto com alta precisão</li>
+                <li><strong>pyannote.audio</strong> - Diarização de locutores para identificação de quem fala</li>
+                <li><strong>GPT-4</strong> - Geração de resumos, extração de tópicos e análise semântica</li>
+                <li><strong>Python FastAPI</strong> - Microserviço dedicado ao pipeline de processamento de IA</li>
+            </ul>
+        </div>
+
+        <!-- Padrões Arquiteturais -->
+        <h2><i class="fas fa-drafting-compass"></i> Padrões Arquiteturais</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-shapes"></i>
+                <h3>Padrões Utilizados</h3>
+            </div>
+            <ul>
+                <li><strong>Layered Architecture</strong> - Separação em camadas (Presentation, Business, Data Access) para isolamento de responsabilidades</li>
+                <li><strong>Clean Architecture</strong> - Independência de frameworks e testabilidade com inversão de dependências</li>
+                <li><strong>Repository Pattern</strong> - Abstração do acesso a dados, desacoplando lógica de negócio do banco de dados</li>
+                <li><strong>Service Layer</strong> - Camada de serviços encapsulando regras de negócio e orquestração de operações</li>
+                <li><strong>Factory Pattern</strong> - Criação de objetos complexos de forma centralizada e configurável</li>
+                <li><strong>Observer Pattern</strong> - Comunicação baseada em eventos entre componentes desacoplados</li>
+                <li><strong>Dependency Injection</strong> - Injeção de dependências para facilitar testes e manutenção</li>
+            </ul>
+        </div>
+
+        <!-- Error Handling Strategy -->
+        <h2><i class="fas fa-exclamation-triangle"></i> Error Handling Strategy</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-bug"></i>
+                <h3>Estratégia de Tratamento de Erros</h3>
+            </div>
+            <p>O sistema utiliza uma classe centralizada de erros (<code>AppError</code>) combinada com um middleware global de tratamento. Isso garante respostas consistentes e rastreabilidade de falhas em toda a aplicação.</p>
+            <pre><code class="language-typescript">export class AppError extends Error {
+  constructor(
+    public message: string,
+    public statusCode: number = 500,
+    public code?: string
+  ) {
+    super(message);
+    this.name = 'AppError';
+  }
+}
+
+// Global error handler middleware
+export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) =&gt; {
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      status: 'error',
+      message: err.message,
+      code: err.code,
+    });
+  }
+
+  logger.error('Unhandled error:', err);
+  res.status(500).json({
+    status: 'error',
+    message: 'Internal server error',
+  });
+};</code></pre>
+        </div>
+
+        <!-- Logging Strategy -->
+        <h2><i class="fas fa-scroll"></i> Logging Strategy</h2>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-alt"></i>
+                <h3>Estratégia de Logging</h3>
+            </div>
+            <ul>
+                <li><strong>Winston</strong> - Logging estruturado com suporte a múltiplos transports (console, arquivo, serviço remoto)</li>
+                <li><strong>Morgan</strong> - Logging de requisições HTTP com formatação customizada para monitoramento de tráfego</li>
+                <li><strong>ELK Stack</strong> - Agregação centralizada de logs com Elasticsearch, Logstash e Kibana para análise e visualização</li>
+                <li><strong>Log Levels</strong> - Níveis hierárquicos de severidade: <code>error</code>, <code>warn</code>, <code>info</code>, <code>debug</code></li>
+            </ul>
+        </div>
+
         <div class="nav-buttons">
             <a href="design-system.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> Design</a>
             <a href="stack-tecnologico.html" class="nav-button"><span>Stack</span> <i class="fas fa-arrow-right"></i></a>

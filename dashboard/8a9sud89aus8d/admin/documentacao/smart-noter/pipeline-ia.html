@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pipeline - Smart Noter</title>
+    <title>Pipeline de IA - Smart Noter</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
@@ -17,15 +17,15 @@
             <span class="version">v1.0</span>
         </div>
         <div class="header-right">
-            <a href="index.html" class="header-link"><i class="fas fa-home"></i> Início</a>
+            <a href="index.html" class="header-link"><i class="fas fa-home"></i> Inicio</a>
         </div>
     </header>
 
     <nav class="sidebar">
         <div class="sidebar-section">
-            <div class="sidebar-title">Início</div>
+            <div class="sidebar-title">Inicio</div>
             <ul class="sidebar-nav">
-                <li><a href="index.html"><i class="fas fa-home"></i> Visão Geral</a></li>
+                <li><a href="index.html"><i class="fas fa-home"></i> Visao Geral</a></li>
             </ul>
         </div>
         <div class="sidebar-section">
@@ -38,7 +38,7 @@
         <div class="sidebar-section">
             <div class="sidebar-title">Tecnologia</div>
             <ul class="sidebar-nav">
-                <li><a href="stack-tecnologico.html"><i class="fas fa-code"></i> Stack Tecnológico</a></li>
+                <li><a href="stack-tecnologico.html"><i class="fas fa-code"></i> Stack Tecnologico</a></li>
                 <li><a href="banco-de-dados.html"><i class="fas fa-database"></i> Banco de Dados</a></li>
                 <li><a href="apis-endpoints.html"><i class="fas fa-plug"></i> APIs</a></li>
             </ul>
@@ -46,9 +46,9 @@
         <div class="sidebar-section">
             <div class="sidebar-title">Desenvolvimento</div>
             <ul class="sidebar-nav">
-                <li><a href="pipeline-ia.html"><i class="fas fa-brain"></i> Pipeline IA</a></li>
-                <li><a href="implementacao.html"><i class="fas fa-hammer"></i> Implementação</a></li>
-                <li><a href="seguranca.html"><i class="fas fa-shield-alt"></i> Segurança</a></li>
+                <li><a href="pipeline-ia.html" class="active"><i class="fas fa-brain"></i> Pipeline IA</a></li>
+                <li><a href="implementacao.html"><i class="fas fa-hammer"></i> Implementacao</a></li>
+                <li><a href="seguranca.html"><i class="fas fa-shield-alt"></i> Seguranca</a></li>
             </ul>
         </div>
         <div class="sidebar-section">
@@ -63,43 +63,418 @@
 
     <main class="main-content">
         <div class="breadcrumb">
-            <a href="index.html">Início</a> <i class="fas fa-chevron-right"></i> Pipeline de IA
+            <a href="index.html">Inicio</a> <i class="fas fa-chevron-right"></i> Pipeline de IA
         </div>
-        
-        
-<h1>Pipeline de IA</h1>
-<div class="alert alert-info">
-    <i class="fas fa-info-circle"></i>
-    <div>
-        <strong>Seção em Desenvolvimento</strong><br>
-        O conteúdo completo desta seção está disponível na documentação Markdown principal. 
-        Esta estrutura HTML modular foi criada para facilitar a navegação.
-    </div>
-</div>
 
-<div class="card">
-    <div class="card-header">
-        <i class="fas fa-book"></i>
-        <h3>Conteúdo Disponível</h3>
-    </div>
-    <p>Consulte a documentação completa em:</p>
-    <ul>
-        <li><code>SMART_NOTER_DOCUMENTACAO_TECNICA_COMPLETA.md</code></li>
-        <li>Ou abra o arquivo HTML consolidado: <code>smart-noter-documentacao-tecnica.html</code></li>
-    </ul>
-</div>
+        <h1>Pipeline de IA</h1>
 
-<h2>Navegação Rápida</h2>
-<p>Use a barra lateral para navegar entre as seções ou os botões de navegação abaixo.</p>
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <div>
+                <strong>Pipeline em 6 Etapas</strong><br>
+                O processamento de IA ocorre em background atraves de uma fila (Bull Queue) com 6 etapas sequenciais.
+            </div>
+        </div>
 
-        
+        <!-- ============================================ -->
+        <!-- SECTION: Pipeline de Processamento           -->
+        <!-- ============================================ -->
+        <h2>Pipeline de Processamento</h2>
+        <p>Cada gravacao enviada pelo usuario percorre as seguintes etapas de forma automatica e sequencial. O status e atualizado em tempo real via WebSocket.</p>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <h4>1. Upload Audio</h4>
+                <p>O arquivo de audio e recebido e armazenado de forma segura no object storage.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Propriedade</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tecnologia</td>
+                            <td><code>MinIO / S3 SDK</code></td>
+                        </tr>
+                        <tr>
+                            <td>Tempo estimado</td>
+                            <td><span class="badge badge-success">~2 segundos</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="timeline-item">
+                <h4>2. Transcription (Speech-to-Text)</h4>
+                <p>O audio e convertido em texto utilizando o modelo Whisper da OpenAI, executado localmente no servidor de processamento.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Propriedade</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Modelo</td>
+                            <td><code>OpenAI Whisper base</code></td>
+                        </tr>
+                        <tr>
+                            <td>Tempo estimado</td>
+                            <td><span class="badge badge-warning">~1 min por 10 min de audio</span></td>
+                        </tr>
+                        <tr>
+                            <td>Acuracia</td>
+                            <td><span class="badge badge-success">95%+</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="timeline-item">
+                <h4>3. Speaker Diarization</h4>
+                <p>Identifica e separa os diferentes falantes presentes no audio, atribuindo segmentos de fala a cada participante.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Propriedade</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Modelo</td>
+                            <td><code>pyannote.audio 3.1</code></td>
+                        </tr>
+                        <tr>
+                            <td>Tempo estimado</td>
+                            <td><span class="badge badge-warning">~30 seg por 10 min de audio</span></td>
+                        </tr>
+                        <tr>
+                            <td>Acuracia</td>
+                            <td><span class="badge badge-success">90%+</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="timeline-item">
+                <h4>4. Content Analysis</h4>
+                <p>A transcricao e enviada ao modelo GPT-4 para analise semantica do conteudo, identificando topicos, sentimento e contexto.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Propriedade</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Modelo</td>
+                            <td><code>GPT-4</code></td>
+                        </tr>
+                        <tr>
+                            <td>Tempo estimado</td>
+                            <td><span class="badge badge-success">~10 segundos</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="timeline-item">
+                <h4>5. Summarization & Action Items</h4>
+                <p>Gera um resumo estruturado da reuniao e extrai itens de acao com responsaveis e prazos sugeridos.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Propriedade</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Modelo</td>
+                            <td><code>GPT-4</code></td>
+                        </tr>
+                        <tr>
+                            <td>Tempo estimado</td>
+                            <td><span class="badge badge-success">~15 segundos</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="timeline-item">
+                <h4>6. Finalization</h4>
+                <p>Salva os resultados no banco de dados, atualiza o status da gravacao e envia notificacao push ao usuario.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Propriedade</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tecnologia</td>
+                            <td><code>Expo Push Notifications</code></td>
+                        </tr>
+                        <tr>
+                            <td>Tempo estimado</td>
+                            <td><span class="badge badge-success">~1 segundo</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION: Transcription Service (Whisper)     -->
+        <!-- ============================================ -->
+        <h2>Transcription Service (Whisper)</h2>
+        <p>O servico de transcricao utiliza o modelo Whisper da OpenAI executado localmente. O tamanho do modelo e configuravel via variavel de ambiente <code>WHISPER_MODEL_SIZE</code>.</p>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-code"></i>
+                <h3>transcription_service.py</h3>
+            </div>
+<pre><code class="language-python">class TranscriptionService:
+    def __init__(self):
+        model_size = os.getenv("WHISPER_MODEL_SIZE", "base")
+        self.model = whisper.load_model(model_size)
+
+    async def transcribe(self, audio_url: str) -&gt; Dict[str, Any]:
+        temp_file = await self._download_audio(audio_url)
+        try:
+            result = self.model.transcribe(
+                temp_file,
+                language="en",
+                task="transcribe",
+                verbose=False,
+            )
+            return {
+                "text": result["text"],
+                "language": result["language"],
+                "confidence": self._calculate_confidence(result),
+                "segments": [
+                    {"text": segment["text"], "start": segment["start"], "end": segment["end"]}
+                    for segment in result["segments"]
+                ],
+            }
+        finally:
+            os.unlink(temp_file)</code></pre>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION: Speaker Diarization Service         -->
+        <!-- ============================================ -->
+        <h2>Speaker Diarization Service</h2>
+        <p>O servico de diarization utiliza o <code>pyannote.audio 3.1</code> para identificar e segmentar falantes. Requer um token de acesso do HuggingFace configurado via <code>HF_AUTH_TOKEN</code>.</p>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-code"></i>
+                <h3>diarization_service.py</h3>
+            </div>
+<pre><code class="language-python">from pyannote.audio import Pipeline as PyannotePipeline
+
+class DiarizationService:
+    def __init__(self):
+        hf_token = os.getenv("HF_AUTH_TOKEN")
+        self.pipeline = PyannotePipeline.from_pretrained(
+            "pyannote/speaker-diarization-3.1",
+            use_auth_token=hf_token,
+        )
+
+    async def diarize(self, audio_url: str) -&gt; Dict[str, Any]:
+        temp_file = await self._download_audio(audio_url)
+        try:
+            diarization = self.pipeline(temp_file)
+            speakers = {}
+            segments = []
+
+            for turn, _, speaker in diarization.itertracks(yield_label=True):
+                speaker_id = f"SPEAKER_{speaker}"
+                if speaker_id not in speakers:
+                    speakers[speaker_id] = {
+                        "id": speaker_id,
+                        "total_duration": 0.0,
+                    }
+                duration = turn.end - turn.start
+                speakers[speaker_id]["total_duration"] += duration
+                segments.append({
+                    "speaker": speaker_id,
+                    "start": round(turn.start, 2),
+                    "end": round(turn.end, 2),
+                    "duration": round(duration, 2),
+                })
+
+            return {
+                "num_speakers": len(speakers),
+                "speakers": list(speakers.values()),
+                "segments": segments,
+            }
+        finally:
+            os.unlink(temp_file)</code></pre>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION: Summarization Service (GPT-4)       -->
+        <!-- ============================================ -->
+        <h2>Summarization Service (GPT-4)</h2>
+        <p>O servico de sumarizacao utiliza a API da OpenAI com o modelo <code>GPT-4</code> para gerar resumos estruturados e extrair action items a partir da transcricao completa.</p>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-code"></i>
+                <h3>summarization_service.py</h3>
+            </div>
+<pre><code class="language-python">import openai
+
+class SummarizationService:
+    def __init__(self):
+        self.client = openai.AsyncOpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+        )
+        self.model = os.getenv("OPENAI_MODEL", "gpt-4")
+
+    async def summarize(self, transcript: str, speakers: list) -&gt; Dict[str, Any]:
+        system_prompt = (
+            "You are an expert meeting analyst. Given the transcript and "
+            "speaker information, produce a structured summary with:\n"
+            "1. A concise overview (max 3 sentences)\n"
+            "2. Key topics discussed\n"
+            "3. Decisions made\n"
+            "4. Action items with assignees and deadlines\n"
+            "Respond in valid JSON."
+        )
+
+        response = await self.client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Transcript:\n{transcript}\n\nSpeakers:\n{speakers}"},
+            ],
+            temperature=0.3,
+            max_tokens=2000,
+            response_format={"type": "json_object"},
+        )
+
+        result = json.loads(response.choices[0].message.content)
+        return {
+            "overview": result.get("overview", ""),
+            "topics": result.get("topics", []),
+            "decisions": result.get("decisions", []),
+            "action_items": result.get("action_items", []),
+            "model_used": self.model,
+            "tokens_used": response.usage.total_tokens,
+        }</code></pre>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECTION: Bull Queue Configuration            -->
+        <!-- ============================================ -->
+        <h2>Bull Queue Configuration</h2>
+        <p>O processamento assincrono e gerenciado pelo <code>Bull Queue</code> com Redis como backend. Cada job percorre as 6 etapas do pipeline de forma sequencial, com retry automatico em caso de falha.</p>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-code"></i>
+                <h3>recording-processor.queue.ts</h3>
+            </div>
+<pre><code class="language-typescript">import Bull from 'bull';
+
+interface ProcessingJob {
+  recordingId: string;
+  userId: string;
+  audioUrl: string;
+  step: number;
+}
+
+const recordingQueue = new Bull&lt;ProcessingJob&gt;('recording-processing', {
+  redis: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: Number(process.env.REDIS_PORT) || 6379,
+    password: process.env.REDIS_PASSWORD,
+  },
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: 'exponential', delay: 5000 },
+    removeOnComplete: true,
+    removeOnFail: false,
+  },
+});
+
+recordingQueue.process(async (job) =&gt; {
+  const { recordingId, userId, audioUrl } = job.data;
+
+  // Step 1 - Upload Audio
+  await job.progress(1);
+  const storedUrl = await uploadService.store(audioUrl);
+
+  // Step 2 - Transcription (Whisper)
+  await job.progress(2);
+  const transcript = await transcriptionService.transcribe(storedUrl);
+
+  // Step 3 - Speaker Diarization
+  await job.progress(3);
+  const diarization = await diarizationService.diarize(storedUrl);
+
+  // Step 4 - Content Analysis
+  await job.progress(4);
+  const analysis = await analysisService.analyze(transcript.text);
+
+  // Step 5 - Summarization &amp; Action Items
+  await job.progress(5);
+  const summary = await summarizationService.summarize(
+    transcript.text,
+    diarization.speakers,
+  );
+
+  // Step 6 - Finalization
+  await job.progress(6);
+  await recordingRepository.update(recordingId, {
+    transcript,
+    diarization,
+    analysis,
+    summary,
+    status: 'completed',
+    processedAt: new Date(),
+  });
+
+  await notificationService.sendPush(userId, {
+    title: 'Recording Processed',
+    body: 'Your recording has been analyzed and is ready to view.',
+  });
+
+  return { recordingId, status: 'completed' };
+});
+
+recordingQueue.on('failed', async (job, err) =&gt; {
+  console.error(`Job ${job.id} failed at step ${job.data.step}:`, err.message);
+  await recordingRepository.update(job.data.recordingId, {
+    status: 'failed',
+    errorMessage: err.message,
+    failedStep: job.data.step,
+  });
+});
+
+export { recordingQueue };</code></pre>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- NAV BUTTONS                                  -->
+        <!-- ============================================ -->
         <div class="nav-buttons">
             <a href="apis-endpoints.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> APIs</a>
-            <a href="implementacao.html" class="nav-button"><span>Implementação</span> <i class="fas fa-arrow-right"></i></a>
+            <a href="implementacao.html" class="nav-button"><span>Implementacao</span> <i class="fas fa-arrow-right"></i></a>
         </div>
 
         <footer class="footer">
-            <p><strong>Smart Noter v1.0</strong> | <a href="index.html">Início</a> | <a href="#top">Topo ↑</a></p>
+            <p><strong>Smart Noter v1.0</strong> | <a href="index.html">Inicio</a> | <a href="#top">Topo</a></p>
         </footer>
     </main>
 

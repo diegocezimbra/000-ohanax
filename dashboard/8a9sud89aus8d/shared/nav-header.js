@@ -139,24 +139,25 @@
                 align-items: center;
                 gap: 8px;
                 font-size: 13px;
+                color: #ffffff !important;
             }
 
             .ohanax-nav-header .nav-breadcrumb a {
-                color: rgba(255, 255, 255, 0.6);
-                text-decoration: none;
+                color: rgba(255, 255, 255, 0.6) !important;
+                text-decoration: none !important;
                 transition: color 0.2s;
             }
 
             .ohanax-nav-header .nav-breadcrumb a:hover {
-                color: #ffffff;
+                color: #ffffff !important;
             }
 
             .ohanax-nav-header .breadcrumb-sep {
-                color: rgba(255, 255, 255, 0.3);
+                color: rgba(255, 255, 255, 0.3) !important;
             }
 
             .ohanax-nav-header .breadcrumb-current {
-                color: #ffffff;
+                color: #ffffff !important;
                 font-weight: 500;
             }
 
@@ -174,17 +175,27 @@
                 background: transparent;
                 border: 1px solid transparent;
                 border-radius: 8px;
-                color: rgba(255, 255, 255, 0.7);
+                color: #ffffff !important;
                 font-size: 13px;
                 font-weight: 500;
-                text-decoration: none;
+                text-decoration: none !important;
                 transition: all 0.2s ease;
             }
 
             .ohanax-nav-header .nav-link:hover {
                 background: rgba(255, 255, 255, 0.05);
                 border-color: rgba(255, 255, 255, 0.1);
-                color: #ffffff;
+                color: #ffffff !important;
+            }
+
+            .ohanax-nav-header .nav-link svg {
+                color: #ffffff !important;
+                stroke: #ffffff !important;
+            }
+
+            .ohanax-nav-header .nav-back svg {
+                color: #ff3366 !important;
+                stroke: #ff3366 !important;
             }
 
             /* Adicionar padding ao body para compensar o header fixo */

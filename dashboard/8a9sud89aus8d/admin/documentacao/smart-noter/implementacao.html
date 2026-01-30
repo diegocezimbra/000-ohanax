@@ -47,7 +47,7 @@
             <div class="sidebar-title">Desenvolvimento</div>
             <ul class="sidebar-nav">
                 <li><a href="pipeline-ia.html"><i class="fas fa-brain"></i> Pipeline IA</a></li>
-                <li><a href="implementacao.html"><i class="fas fa-hammer"></i> Implementação</a></li>
+                <li><a href="implementacao.html" class="active"><i class="fas fa-hammer"></i> Implementação</a></li>
                 <li><a href="seguranca.html"><i class="fas fa-shield-alt"></i> Segurança</a></li>
             </ul>
         </div>
@@ -63,38 +63,245 @@
 
     <main class="main-content">
         <div class="breadcrumb">
-            <a href="index.html">Início</a> <i class="fas fa-chevron-right"></i> Implementação de Funcionalidades
+            <a href="index.html">Início</a> <i class="fas fa-chevron-right"></i> Implementação
         </div>
-        
-        
-<h1>Implementação de Funcionalidades</h1>
-<div class="alert alert-info">
-    <i class="fas fa-info-circle"></i>
-    <div>
-        <strong>Seção em Desenvolvimento</strong><br>
-        O conteúdo completo desta seção está disponível na documentação Markdown principal. 
-        Esta estrutura HTML modular foi criada para facilitar a navegação.
-    </div>
-</div>
 
-<div class="card">
-    <div class="card-header">
-        <i class="fas fa-book"></i>
-        <h3>Conteúdo Disponível</h3>
-    </div>
-    <p>Consulte a documentação completa em:</p>
-    <ul>
-        <li><code>SMART_NOTER_DOCUMENTACAO_TECNICA_COMPLETA.md</code></li>
-        <li>Ou abra o arquivo HTML consolidado: <code>smart-noter-documentacao-tecnica.html</code></li>
-    </ul>
-</div>
+        <h1>Implementação</h1>
 
-<h2>Navegação Rápida</h2>
-<p>Use a barra lateral para navegar entre as seções ou os botões de navegação abaixo.</p>
+        <!-- ===== Audio Recording Hook ===== -->
+        <h2><i class="fas fa-microphone-alt"></i> Audio Recording Hook (React Native)</h2>
+        <p>Hook customizado responsável por gerenciar todo o ciclo de vida da gravação de áudio no aplicativo mobile, incluindo permissões, controle de gravação e coleta de metering em tempo real.</p>
 
-        
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-code"></i>
+                <h3>useAudioRecording.ts</h3>
+            </div>
+<pre><code class="language-typescript">import { useState, useRef, useCallback } from 'react';
+import { Audio } from 'expo-av';
+
+interface RecordingState {
+  isRecording: boolean;
+  duration: number;
+  metering: number;
+  uri: string | null;
+}
+
+export function useAudioRecording() {
+  const [state, setState] = useState&lt;RecordingState&gt;({
+    isRecording: false,
+    duration: 0,
+    metering: -160,
+    uri: null,
+  });
+
+  const recordingRef = useRef&lt;Audio.Recording | null&gt;(null);
+  const intervalRef = useRef&lt;NodeJS.Timeout | null&gt;(null);
+
+  const requestPermissions = useCallback(async (): Promise&lt;boolean&gt; =&gt; {
+    const { status } = await Audio.requestPermissionsAsync();
+    if (status !== 'granted') {
+      console.warn('Audio recording permission not granted');
+      return false;
+    }
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: true,
+      playsInSilentModeIOS: true,
+    });
+    return true;
+  }, []);
+
+  const startRecording = useCallback(async () =&gt; {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    const recording = new Audio.Recording();
+    await recording.prepareToRecordAsync(
+      Audio.RecordingOptionsPresets.HIGH_QUALITY
+    );
+    await recording.startAsync();
+    recordingRef.current = recording;
+
+    setState(prev =&gt; ({ ...prev, isRecording: true, duration: 0 }));
+
+    // Metering updates a cada 250ms
+    intervalRef.current = setInterval(async () =&gt; {
+      if (recordingRef.current) {
+        const status = await recordingRef.current.getStatusAsync();
+        if (status.isRecording) {
+          setState(prev =&gt; ({
+            ...prev,
+            duration: Math.floor(status.durationMillis / 1000),
+            metering: status.metering ?? -160,
+          }));
+        }
+      }
+    }, 250);
+  }, [requestPermissions]);
+
+  const stopRecording = useCallback(async (): Promise&lt;string | null&gt; =&gt; {
+    if (!recordingRef.current) return null;
+
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    await recordingRef.current.stopAndUnloadAsync();
+    const uri = recordingRef.current.getURI();
+    recordingRef.current = null;
+
+    setState(prev =&gt; ({
+      ...prev,
+      isRecording: false,
+      metering: -160,
+      uri,
+    }));
+
+    return uri;
+  }, []);
+
+  return { ...state, startRecording, stopRecording };
+}</code></pre>
+        </div>
+
+        <!-- ===== WebSocket Real-Time Updates ===== -->
+        <h2><i class="fas fa-bolt"></i> WebSocket Real-Time Updates</h2>
+        <p>Servidor Socket.IO com middleware de autenticação JWT, sistema de salas por usuário e função utilitária para emitir atualizações de notas em tempo real para todos os dispositivos conectados.</p>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-code"></i>
+                <h3>websocket.ts</h3>
+            </div>
+<pre><code class="language-typescript">import { Server as SocketIOServer } from 'socket.io';
+import { Server as HTTPServer } from 'http';
+import jwt from 'jsonwebtoken';
+
+interface NoteUpdate {
+  noteId: string;
+  userId: string;
+  type: 'transcription' | 'summary' | 'action_items' | 'status';
+  payload: Record&lt;string, unknown&gt;;
+}
+
+let io: SocketIOServer;
+
+export function initWebSocket(httpServer: HTTPServer) {
+  io = new SocketIOServer(httpServer, {
+    cors: { origin: process.env.CLIENT_URL, credentials: true },
+    pingInterval: 25000,
+    pingTimeout: 60000,
+  });
+
+  // Auth middleware - valida JWT antes de permitir conexão
+  io.use((socket, next) =&gt; {
+    const token = socket.handshake.auth?.token;
+    if (!token) {
+      return next(new Error('Authentication token required'));
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+        userId: string;
+        email: string;
+      };
+      socket.data.userId = decoded.userId;
+      socket.data.email = decoded.email;
+      next();
+    } catch (err) {
+      next(new Error('Invalid or expired token'));
+    }
+  });
+
+  io.on('connection', (socket) =&gt; {
+    const { userId } = socket.data;
+    console.log(`User connected: ${userId}`);
+
+    // Cada usuário entra na sua sala privada
+    socket.join(`user:${userId}`);
+
+    socket.on('join:note', (noteId: string) =&gt; {
+      socket.join(`note:${noteId}`);
+    });
+
+    socket.on('leave:note', (noteId: string) =&gt; {
+      socket.leave(`note:${noteId}`);
+    });
+
+    socket.on('disconnect', () =&gt; {
+      console.log(`User disconnected: ${userId}`);
+    });
+  });
+
+  return io;
+}
+
+// Emite atualização de nota para todos os dispositivos do usuário
+export function emitNoteUpdate(update: NoteUpdate) {
+  if (!io) return;
+
+  const { noteId, userId, type, payload } = update;
+
+  // Notifica a sala do usuário (todos os dispositivos)
+  io.to(`user:${userId}`).emit('note:updated', {
+    noteId,
+    type,
+    payload,
+    timestamp: new Date().toISOString(),
+  });
+
+  // Notifica quem está visualizando a nota
+  io.to(`note:${noteId}`).emit('note:live', {
+    type,
+    payload,
+    timestamp: new Date().toISOString(),
+  });
+}</code></pre>
+        </div>
+
+        <!-- ===== Features Implementadas ===== -->
+        <h2><i class="fas fa-tasks"></i> Features Implementadas</h2>
+        <p>Visão geral de todas as funcionalidades implementadas no Smart Noter, divididas entre recursos essenciais e funcionalidades avançadas.</p>
+
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-cube"></i>
+                    <h3>Core Features</h3>
+                </div>
+                <ul class="checklist">
+                    <li>Gravação de áudio</li>
+                    <li>Upload cloud</li>
+                    <li>Transcrição Whisper</li>
+                    <li>Identificação de falantes</li>
+                    <li>Resumo GPT-4</li>
+                    <li>Action items</li>
+                    <li>Pastas</li>
+                    <li>Busca e filtros</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-rocket"></i>
+                    <h3>Advanced Features</h3>
+                </div>
+                <ul class="checklist">
+                    <li>Real-time WebSocket</li>
+                    <li>Integração com calendários</li>
+                    <li>Bot para meetings</li>
+                    <li>Exportação (PDF, DOCX, Notion)</li>
+                    <li>Sincronização multi-device</li>
+                    <li>Planos PRO / Freemium</li>
+                    <li>Push notifications</li>
+                    <li>AI Chat sobre notas</li>
+                </ul>
+            </div>
+        </div>
+
         <div class="nav-buttons">
-            <a href="pipeline-ia.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> Pipeline</a>
+            <a href="pipeline-ia.html" class="nav-button prev"><i class="fas fa-arrow-left"></i> Pipeline IA</a>
             <a href="seguranca.html" class="nav-button"><span>Segurança</span> <i class="fas fa-arrow-right"></i></a>
         </div>
 
