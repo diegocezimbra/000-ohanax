@@ -28,8 +28,8 @@
         }
     } else if (isDocumentacao) {
         breadcrumb.push({ label: 'Documentação', href: '/admin/' });
-        if (path.includes('/omas/')) {
-            breadcrumb.push({ label: 'OMAS', href: null });
+        if (path.includes('/sellpipe/')) {
+            breadcrumb.push({ label: 'Sellpipe', href: null });
         } else if (path.includes('/smart-noter/')) {
             breadcrumb.push({ label: 'Smart Noter', href: null });
         }

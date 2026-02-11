@@ -82,7 +82,7 @@ const translations = {
         features: ['104 Testes Automatizados', 'OWASP Top 10', 'IA Adaptativa', '6 Frameworks Compliance']
       },
 
-      omas: {
+      sellpipe: {
         tagline: 'Automação de Marketing com IA',
         description: 'Crie campanhas completas com um clique. Copies de alta conversão, imagens profissionais e publicação automática no Instagram, LinkedIn e Meta Ads.',
         features: ['IA para Copywriting', 'Geração de Imagens', 'Multi-Plataforma', 'One-Click Campaigns']
@@ -192,7 +192,7 @@ const translations = {
         features: ['104 Automated Tests', 'OWASP Top 10', 'Adaptive AI', '6 Compliance Frameworks']
       },
 
-      omas: {
+      sellpipe: {
         tagline: 'AI Marketing Automation',
         description: 'Create complete campaigns with one click. High-converting copies, professional images and automatic publishing on Instagram, LinkedIn and Meta Ads.',
         features: ['AI Copywriting', 'Image Generation', 'Multi-Platform', 'One-Click Campaigns']
