@@ -19,6 +19,10 @@ import promptsRoutes from './routes/prompts.js';
 import orcamentosRoutes from './routes/orcamentos.js';
 import investmentAnalysesRoutes from './routes/investment-analyses.js';
 import { syncService } from './services/sync.js';
+import youtubeRoutes from './routes/youtube/index.js';
+import { start as startWorker } from './services/youtube/job-worker.js';
+import { registerAllHandlers } from './services/youtube/job-handlers.js';
+import { runPublishingCron } from './services/youtube/publisher.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -169,6 +173,9 @@ app.use('/analytics', authMiddleware, express.static(join(__dirname, '8a9sud89au
 // Admin em /admin
 app.use('/admin', authMiddleware, express.static(join(__dirname, '8a9sud89aus8d/admin')));
 
+// YouTube Automation em /video
+app.use('/video', authMiddleware, express.static(join(__dirname, '8a9sud89aus8d/video')));
+
 // Manter rota antiga para compatibilidade (redireciona para analytics)
 app.use(SECRET_ROUTE, authMiddleware, express.static(join(__dirname, '8a9sud89aus8d/analytics')));
 
@@ -188,6 +195,7 @@ app.use('/api/influencers', influencersRoutes);
 app.use('/api/prompts', promptsRoutes);
 app.use('/api/orcamentos', orcamentosRoutes);
 app.use('/api/investment-analyses', investmentAnalysesRoutes);
+app.use('/api/youtube', youtubeRoutes);
 app.use('/api', overviewRoutes);
 
 // =============================================================================
@@ -216,4 +224,14 @@ app.listen(PORT, () => {
   } else {
     console.log('Auto-sync GA4 desabilitado (credenciais nao configuradas)');
   }
+
+  // Start YouTube pipeline worker
+  registerAllHandlers();
+  startWorker({ pollIntervalMs: 5000, maxConcurrent: 3 });
+  console.log('YouTube pipeline worker started');
+
+  // Publishing cron: check every 5 minutes for due publications
+  setInterval(() => runPublishingCron().catch(err =>
+    console.error('Publishing cron error:', err.message)
+  ), 5 * 60 * 1000);
 });

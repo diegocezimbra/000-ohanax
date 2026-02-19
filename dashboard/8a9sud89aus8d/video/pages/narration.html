@@ -1,0 +1,65 @@
+<!-- narration.html - Player de audio e tabela de segmentos da narracao -->
+<div class="yt-page-header">
+    <h1 class="yt-page-title">Narracao</h1>
+    <div class="yt-page-actions">
+        <a class="yt-btn yt-btn-ghost" id="narr-download" style="display: none;" download>
+            Download Audio
+        </a>
+        <button class="yt-btn yt-btn-primary" id="narr-regen" disabled>
+            Regenerar Narracao
+        </button>
+    </div>
+</div>
+
+<div id="narr-loading" class="yt-empty-state">
+    <div class="yt-spinner"></div>
+</div>
+
+<div id="narr-empty" class="yt-empty-state" style="display: none;">
+    <div class="yt-empty-state-icon">&#127908;</div>
+    <div class="yt-empty-state-message">Nenhuma narracao gerada ainda.</div>
+</div>
+
+<div id="narr-content" style="display: none;">
+    <!-- Audio Player -->
+    <div class="yt-card" style="margin-bottom: 16px;">
+        <div class="yt-card-header">
+            <span style="font-weight: 600;">Player de Audio</span>
+            <span class="yt-badge yt-badge-info" id="narr-status"></span>
+        </div>
+        <div class="yt-card-body">
+            <audio id="narr-audio" controls style="width: 100%; margin-bottom: 12px;"></audio>
+            <div style="display: flex; gap: 24px; font-size: 0.875rem; color: var(--text-secondary);">
+                <span>Duracao total: <strong id="narr-duration">--</strong></span>
+                <span>Segmentos: <strong id="narr-seg-count">--</strong></span>
+                <span id="narr-voice-info"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Segments Table -->
+    <div class="yt-card">
+        <div class="yt-card-header">
+            <span style="font-weight: 600;">Segmentos da Narracao</span>
+        </div>
+        <div class="yt-card-body" style="padding: 0;">
+            <table class="yt-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">#</th>
+                        <th>Texto da Narracao</th>
+                        <th style="width: 100px;">Duracao</th>
+                    </tr>
+                </thead>
+                <tbody id="narr-segments-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.ytRegisterPage('narration', async (params) => {
+        const { loadNarration } = await import('./js/pages/narration.js');
+        loadNarration(params);
+    });
+</script>

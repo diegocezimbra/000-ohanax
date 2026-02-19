@@ -1,0 +1,78 @@
+// =============================================================================
+// BADGE - Status badges for the YouTube Automation SPA
+// =============================================================================
+
+import { escapeHtml } from '../utils/dom.js';
+
+const STAGE_CONFIG = {
+    idea:                { label: 'Ideia',              color: 'purple' },
+    story_created:       { label: 'Historia',           color: 'blue' },
+    script_generated:    { label: 'Roteiro',            color: 'cyan' },
+    visuals_generating:  { label: 'Gerando Visuais',    color: 'yellow' },
+    visuals_generated:   { label: 'Visuais Prontos',    color: 'yellow' },
+    thumbnail_generated: { label: 'Thumbnail',          color: 'pink' },
+    narration_generated: { label: 'Narracao',           color: 'pink' },
+    video_ready:         { label: 'Video Pronto',       color: 'green' },
+    queued:              { label: 'Na Fila',            color: 'gray' },
+    scheduled:           { label: 'Agendado',           color: 'orange' },
+    published:           { label: 'Publicado',          color: 'green' },
+    discarded:           { label: 'Descartado',         color: 'gray' },
+    rejected:            { label: 'Rejeitado',          color: 'red' },
+    error:               { label: 'Erro',               color: 'red' },
+};
+
+/**
+ * Returns HTML string for a pipeline stage badge.
+ * @param {string} stage
+ * @returns {string}
+ */
+export function renderStatusBadge(stage) {
+    const config = STAGE_CONFIG[stage];
+    if (!config) {
+        return `<span class="yt-badge yt-badge-gray">${escapeHtml(stage)}</span>`;
+    }
+    return `<span class="yt-badge yt-badge-${config.color}">${config.label}</span>`;
+}
+
+/**
+ * Returns HTML string for a richness score badge.
+ * Score 8-10 = green, 7 = yellow, 5-6 = orange, 1-4 = red
+ * @param {number} score
+ * @returns {string}
+ */
+export function renderRichnessBadge(score) {
+    if (score == null) return '<span class="yt-badge yt-badge-gray">--</span>';
+
+    let color;
+    if (score >= 8) {
+        color = 'green';
+    } else if (score >= 7) {
+        color = 'yellow';
+    } else if (score >= 5) {
+        color = 'orange';
+    } else {
+        color = 'red';
+    }
+
+    return `<span class="yt-badge yt-badge-${color}">${score}/10</span>`;
+}
+
+const SOURCE_TYPE_CONFIG = {
+    url:                  { label: 'URL',         color: 'blue' },
+    pdf:                  { label: 'PDF',         color: 'orange' },
+    manual:               { label: 'Texto',       color: 'purple' },
+    youtube_transcript:   { label: 'YouTube',     color: 'red' },
+};
+
+/**
+ * Returns HTML string for a source type badge.
+ * @param {string} type
+ * @returns {string}
+ */
+export function renderSourceTypeBadge(type) {
+    const config = SOURCE_TYPE_CONFIG[type];
+    if (!config) {
+        return `<span class="yt-badge yt-badge-gray">${escapeHtml(type)}</span>`;
+    }
+    return `<span class="yt-badge yt-badge-${config.color}">${config.label}</span>`;
+}
