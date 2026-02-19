@@ -97,7 +97,16 @@ async function _loadPageContent(page, container) {
         const res = await fetch(`pages/${page}.html`);
         if (!res.ok) throw new Error(`Page ${page} not found`);
         container.innerHTML = await res.text();
+        // Execute non-module inline scripts (they register page loaders synchronously)
         executeInlineScripts(container);
+        // If no loader was registered by inline scripts, try dynamic import
+        if (!PAGE_LOADERS[page]) {
+            try {
+                await import(`/video/js/pages/${page}.js`);
+            } catch {
+                // Page JS module may not exist — that's fine
+            }
+        }
     } catch {
         container.innerHTML = `
             <div class="yt-empty-state">

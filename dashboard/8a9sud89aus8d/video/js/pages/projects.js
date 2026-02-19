@@ -62,10 +62,11 @@ window.ytRegisterPage('projects', async () => {
 // -----------------------------------------------------------------------------
 function renderCard(p) {
     const name = escapeHtml(p.name || 'Sem nome');
-    const channel = escapeHtml(p.channelName || p.channel_name || '--');
-    const topics = p.topicCount ?? p.topic_count ?? 0;
-    const videos = p.videoCount ?? p.video_count ?? 0;
-    const stage = p.pipelineStatus || p.pipeline_status || 'idle';
+    const niche = escapeHtml(p.niche || '--');
+    const counts = p.counts || {};
+    const topics = counts.topics ?? p.topicCount ?? p.topic_count ?? 0;
+    const videos = counts.videos_ready ?? p.videoCount ?? p.video_count ?? 0;
+    const stage = p.status || p.pipeline_status || 'idle';
     const badge = stageBadge(stage);
 
     return `
@@ -75,7 +76,7 @@ function renderCard(p) {
                 ${badge}
             </div>
             <div class="yt-card-body">
-                <div class="yt-project-meta">&#127909; ${channel}</div>
+                <div class="yt-project-meta">&#127909; ${niche}</div>
                 <div class="yt-project-stats">
                     <span>${topics} topicos</span>
                     <span style="margin-left:12px;">${videos} videos</span>
@@ -104,14 +105,33 @@ function openNewProjectModal() {
                    placeholder="Ex: Canal de Tecnologia">
         </div>
         <div class="yt-form-group">
-            <label class="yt-label">Nome do Canal</label>
-            <input class="yt-input" id="proj-channel" maxlength="100"
-                   placeholder="Ex: TechExplica">
+            <label class="yt-label">Nicho *</label>
+            <select class="yt-input" id="proj-niche">
+                <option value="">Selecione o nicho...</option>
+                <option value="history">Historia</option>
+                <option value="science">Ciencia</option>
+                <option value="technology">Tecnologia</option>
+                <option value="finance">Financas</option>
+                <option value="education">Educacao</option>
+                <option value="health">Saude</option>
+                <option value="business">Negocios</option>
+                <option value="entertainment">Entretenimento</option>
+                <option value="lifestyle">Estilo de Vida</option>
+                <option value="other">Outro</option>
+            </select>
         </div>
         <div class="yt-form-group">
             <label class="yt-label">Descricao</label>
             <textarea class="yt-textarea" id="proj-desc" rows="3"
                       maxlength="500" placeholder="Breve descricao do projeto..."></textarea>
+        </div>
+        <div class="yt-form-group">
+            <label class="yt-label">Idioma</label>
+            <select class="yt-input" id="proj-language">
+                <option value="pt-BR">Portugues (Brasil)</option>
+                <option value="en">Ingles</option>
+                <option value="es">Espanhol</option>
+            </select>
         </div>`;
 
     const footer = `
@@ -123,13 +143,15 @@ function openNewProjectModal() {
     modal.el.querySelector('#proj-cancel')?.addEventListener('click', () => modal.close());
     modal.el.querySelector('#proj-save')?.addEventListener('click', async () => {
         const name = modal.el.querySelector('#proj-name')?.value?.trim();
-        const channelName = modal.el.querySelector('#proj-channel')?.value?.trim();
+        const niche = modal.el.querySelector('#proj-niche')?.value;
         const description = modal.el.querySelector('#proj-desc')?.value?.trim();
+        const language = modal.el.querySelector('#proj-language')?.value;
 
         if (!name) { toast('Nome do projeto e obrigatorio', 'error'); return; }
+        if (!niche) { toast('Selecione um nicho', 'error'); return; }
 
         try {
-            await api.projects.create({ name, channelName, description });
+            await api.projects.create({ name, niche, description, language });
             toast('Projeto criado com sucesso!', 'success');
             modal.close();
             router.navigate('projects');

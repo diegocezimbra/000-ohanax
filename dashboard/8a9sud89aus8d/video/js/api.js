@@ -22,7 +22,7 @@ async function request(path, options = {}) {
         err.data = data;
         throw err;
     }
-    return data;
+    return data.data !== undefined ? data.data : data;
 }
 
 /** Builds a query string, filtering out falsy values. */
