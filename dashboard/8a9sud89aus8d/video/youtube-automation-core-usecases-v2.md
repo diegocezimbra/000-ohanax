@@ -29,14 +29,18 @@ Content Engine (cron) verifica: buffer < target?
 **Frontend:** Next.js 14+ (App Router), TypeScript, Tailwind, Shadcn/UI, React Query
 **Backend:** Node.js + NestJS, Prisma, PostgreSQL (RLS para multi-tenancy), Redis + BullMQ (filas)
 **Storage:** S3 (imagens, audios, videos)
-**IA:** OpenAI/Claude (texto), DALL-E/Flux (imagens), Runway/Kling (video), ElevenLabs (TTS)
-**Pesquisa Web:** Tavily API / Serper API / Google Custom Search (enriquecimento automatico)
+**IA (fixo via env vars, projeto interno):**
+- LLM (texto/roteiro): **Gemini** (GEMINI_API_KEY)
+- TTS (narracao): **ElevenLabs** (ELEVENLABS_API_KEY)
+- Imagem (visuais): **Replicate — prunaai/z-image-turbo** (REPLICATE_API_TOKEN) — 1024x1024, 8 steps, guidance_scale 0.0
+- Video (cenas animadas): **Replicate — google/veo-3-fast** (REPLICATE_API_TOKEN) — recebe imagem + prompt, gera MP4 720p
+- Pesquisa Web: **Serper** (SERPER_API_KEY) — serper.dev
 **Video:** FFmpeg (montagem final)
 
-### Multi-Tenancy
-- `project_id` em todas as tabelas + Row-Level Security no PostgreSQL
-- Credenciais YouTube e API keys isoladas e criptografadas por projeto (AES-256-GCM)
-- Todas as queries filtram por `project_id` via global scope no ORM
+### Isolamento por Projeto (interno)
+- `project_id` em todas as tabelas para separacao logica entre projetos/canais
+- Credenciais YouTube isoladas por projeto
+- API keys de IA vem de variaveis de ambiente (compartilhadas entre projetos)
 
 ### Modelo de Dados
 
@@ -1005,9 +1009,7 @@ Gere 3 variacoes:
 - Template de titulo
 - Tom da narracao
 
-### Secao 4: IA (movida de UC-1.2)
-
-- LLM, TTS, Imagem, Video, Pesquisa Web — provedores e API keys
+**Nota:** Provedores de IA sao fixos (Gemini, ElevenLabs, Replicate, Tavily) via variaveis de ambiente. Nao ha configuracao de IA na UI — projeto interno.
 
 ---
 
@@ -1070,7 +1072,7 @@ PUT    /api/settings/content-engine       -> { duration_target, publications_per
 | # | Pagina | Rota | Funcao |
 |---|--------|------|--------|
 | 1 | Projetos | `/projects` | Listagem, criacao, selecao |
-| 2 | Settings do Projeto | `/projects/{id}/settings` | Config: Content Engine + YouTube + Storytelling + IA |
+| 2 | Settings do Projeto | `/projects/{id}/settings` | Config: Content Engine + YouTube + Storytelling (IA fixo via env vars) |
 | 3 | Pool de Fontes | `/projects/{id}/sources` | Pool de conhecimento, adicionar fontes, ver status e health |
 | 4 | Historias | `/projects/{id}/topics` | Historias descobertas pelo Content Engine, status do pipeline |
 | 5 | Detalhe da Historia | `/projects/{id}/topics/{topicId}` | Historia + fontes usadas + navegacao para cada etapa |

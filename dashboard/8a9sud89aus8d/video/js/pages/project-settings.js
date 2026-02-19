@@ -36,7 +36,7 @@ window.ytRegisterPage('project-settings', async (params) => {
         $('settings-content').style.display = '';
         renderContentEngine();
         renderStorytelling();
-        renderAI();
+        renderAIProviders();
         renderYouTube();
 
         // Check for OAuth callback params
@@ -153,12 +153,19 @@ function renderStorytelling() {
     const container = $('settings-storytelling');
     if (!container) return;
 
-    const hook = _s.storytelling_hook || _s.storytellingHook || '';
-    const context = _s.storytelling_context || _s.storytellingContext || '';
-    const development = _s.storytelling_development || _s.storytellingDevelopment || '';
-    const twist = _s.storytelling_twist || _s.storytellingTwist || '';
-    const resolution = _s.storytelling_resolution || _s.storytellingResolution || '';
-    const titleTemplate = _s.storytelling_title_template || _s.storytellingTitleTemplate || '';
+    const DEF_HOOK = 'O adversario ri, zomba ou duvida publicamente. Cena de humilhacao ou desprezo que estabelece a tensao inicial. A abertura DEVE conectar tematicamente com a resolucao final — o espectador precisa sentir que voltou ao ponto de partida, mas agora com a perspectiva invertida.';
+    const DEF_CONTEXT = 'Background historico detalhado. O que estava em jogo, quem eram os protagonistas, qual era o cenario geopolitico/social. Construir o mundo para que o espectador entenda a gravidade do conflito e se importe com o desfecho.';
+    const DEF_DEVELOPMENT = 'Jornada do protagonista com dificuldades reais, momentos de duvida e quase-desistencia. Incluir detalhes humanos (conversas, decisoes dificeis, sacrificios). O espectador precisa torcer ativamente pelo protagonista.';
+    const DEF_TWIST = 'O momento em que as mesas viram. O adversario percebe que subestimou. Detalhar a reacao, o choque, a mudanca de poder. Este e o climax emocional — usar linguagem cinematica e ritmo acelerado.';
+    const DEF_RESOLUTION = 'Vitoria completa e definitiva. Contraste explicito entre a zombaria inicial e o resultado final. Fechar o arco narrativo conectando diretamente com o hook de abertura. Deixar o espectador com sensacao de satisfacao e justica.';
+    const DEF_TITLE = '{adversary} ri de {protagonist} sobre {topic} -- {consequence}';
+
+    const hook = _s.storytelling_hook || _s.storytellingHook || DEF_HOOK;
+    const context = _s.storytelling_context || _s.storytellingContext || DEF_CONTEXT;
+    const development = _s.storytelling_development || _s.storytellingDevelopment || DEF_DEVELOPMENT;
+    const twist = _s.storytelling_twist || _s.storytellingTwist || DEF_TWIST;
+    const resolution = _s.storytelling_resolution || _s.storytellingResolution || DEF_RESOLUTION;
+    const titleTemplate = _s.storytelling_title_template || _s.storytellingTitleTemplate || DEF_TITLE;
     const narrationTone = _s.storytelling_narration_tone || _s.storytellingNarrationTone || 'dramatic';
 
     const triggers = _s.storytelling_triggers || _s.storytellingTriggers || [];
@@ -243,99 +250,39 @@ function renderStorytelling() {
 }
 
 // =============================================================================
-// IA Settings
+// AI Providers (read-only info)
 // =============================================================================
-function renderAI() {
-    const container = $('settings-ai');
+function renderAIProviders() {
+    const container = $('settings-ai-info');
     if (!container) return;
 
-    const llmProvider = _s.ai_llm_provider || _s.aiLlmProvider || 'claude';
-    const ttsProvider = _s.ai_tts_provider || _s.aiTtsProvider || 'elevenlabs';
-    const imageProvider = _s.ai_image_provider || _s.aiImageProvider || 'flux';
-    const videoProvider = _s.ai_video_provider || _s.aiVideoProvider || 'runway';
-    const searchProvider = _s.ai_search_provider || _s.aiSearchProvider || 'tavily';
+    const providers = [
+        { func: 'Texto / Roteiro (LLM)', provider: 'Gemini', detail: 'Google Gemini via GEMINI_API_KEY' },
+        { func: 'Narracao (TTS)', provider: 'ElevenLabs', detail: 'ElevenLabs via ELEVENLABS_API_KEY' },
+        { func: 'Imagem (Visuais)', provider: 'Replicate', detail: 'prunaai/z-image-turbo — 1024x1024, 8 steps' },
+        { func: 'Video (Cenas Animadas)', provider: 'Replicate', detail: 'google/veo-3-fast — 720p' },
+        { func: 'Pesquisa Web', provider: 'Serper', detail: 'serper.dev via SERPER_API_KEY' },
+        { func: 'Montagem Final', provider: 'FFmpeg', detail: 'Processamento local' },
+    ];
 
-    const llmKey = _s.ai_llm_api_key ? '****' : '';
-    const ttsKey = _s.ai_tts_api_key ? '****' : '';
-    const imageKey = _s.ai_image_api_key ? '****' : '';
-    const videoKey = _s.ai_video_api_key ? '****' : '';
-    const searchKey = _s.ai_search_api_key ? '****' : '';
+    const rows = providers.map(p => `
+        <tr>
+            <td style="font-weight:500;">${escapeHtml(p.func)}</td>
+            <td><span class="yt-badge yt-badge-blue">${escapeHtml(p.provider)}</span></td>
+            <td style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">${escapeHtml(p.detail)}</td>
+        </tr>`).join('');
 
     container.innerHTML = `
         <div class="yt-card" style="margin-bottom:24px;"><div class="yt-card-body">
         <h3 style="margin-bottom:16px;font-size:var(--font-size-base);font-weight:600;">
             Provedores de IA</h3>
         <p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);margin-bottom:16px;">
-            Configure os provedores e API keys para cada etapa do pipeline de geracao.</p>
-
-        <div class="yt-form-group"><label class="yt-label">LLM (Texto / Roteiro)</label>
-            <div style="display:flex;gap:8px;">
-                <select class="yt-select" id="ai-llm-provider" style="flex:0 0 180px;">
-                    <option value="claude" ${opt('claude',llmProvider)}>Claude (Anthropic)</option>
-                    <option value="openai" ${opt('openai',llmProvider)}>GPT (OpenAI)</option>
-                </select>
-                <input class="yt-input" id="ai-llm-key" type="password" placeholder="API Key"
-                    value="${escapeHtml(llmKey)}" style="flex:1;">
-            </div></div>
-
-        <div class="yt-form-group"><label class="yt-label">TTS (Narracao)</label>
-            <div style="display:flex;gap:8px;">
-                <select class="yt-select" id="ai-tts-provider" style="flex:0 0 180px;">
-                    <option value="elevenlabs" ${opt('elevenlabs',ttsProvider)}>ElevenLabs</option>
-                    <option value="google" ${opt('google',ttsProvider)}>Google TTS</option>
-                </select>
-                <input class="yt-input" id="ai-tts-key" type="password" placeholder="API Key"
-                    value="${escapeHtml(ttsKey)}" style="flex:1;">
-            </div></div>
-
-        <div class="yt-form-group"><label class="yt-label">Imagem (Visuais)</label>
-            <div style="display:flex;gap:8px;">
-                <select class="yt-select" id="ai-img-provider" style="flex:0 0 180px;">
-                    <option value="flux" ${opt('flux',imageProvider)}>Flux (Replicate)</option>
-                    <option value="dalle" ${opt('dalle',imageProvider)}>DALL-E (OpenAI)</option>
-                </select>
-                <input class="yt-input" id="ai-img-key" type="password" placeholder="API Key"
-                    value="${escapeHtml(imageKey)}" style="flex:1;">
-            </div></div>
-
-        <div class="yt-form-group"><label class="yt-label">Video (Cenas Animadas)</label>
-            <div style="display:flex;gap:8px;">
-                <select class="yt-select" id="ai-vid-provider" style="flex:0 0 180px;">
-                    <option value="runway" ${opt('runway',videoProvider)}>Runway</option>
-                    <option value="kling" ${opt('kling',videoProvider)}>Kling</option>
-                </select>
-                <input class="yt-input" id="ai-vid-key" type="password" placeholder="API Key"
-                    value="${escapeHtml(videoKey)}" style="flex:1;">
-            </div></div>
-
-        <div class="yt-form-group"><label class="yt-label">Pesquisa Web (Enriquecimento)</label>
-            <div style="display:flex;gap:8px;">
-                <select class="yt-select" id="ai-search-provider" style="flex:0 0 180px;">
-                    <option value="tavily" ${opt('tavily',searchProvider)}>Tavily</option>
-                    <option value="serper" ${opt('serper',searchProvider)}>Serper</option>
-                    <option value="google_cse" ${opt('google_cse',searchProvider)}>Google Custom Search</option>
-                </select>
-                <input class="yt-input" id="ai-search-key" type="password" placeholder="API Key"
-                    value="${escapeHtml(searchKey)}" style="flex:1;">
-            </div></div>
-
-        <button class="yt-btn yt-btn-primary" id="ai-save" style="margin-top:12px;">
-            Salvar Provedores de IA</button>
+            Servicos utilizados em cada etapa do pipeline de geracao. Configurados via variaveis de ambiente.</p>
+        <table class="yt-table">
+            <thead><tr><th>Funcao</th><th>Provedor</th><th>Detalhes</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
         </div></div>`;
-
-    $('ai-save')?.addEventListener('click', () => save(
-        () => api.settings.updateAI(_pid, {
-            llm_provider: val('ai-llm-provider'),
-            llm_api_key: cleanKey('ai-llm-key'),
-            tts_provider: val('ai-tts-provider'),
-            tts_api_key: cleanKey('ai-tts-key'),
-            image_provider: val('ai-img-provider'),
-            image_api_key: cleanKey('ai-img-key'),
-            video_provider: val('ai-vid-provider'),
-            video_api_key: cleanKey('ai-vid-key'),
-            search_provider: val('ai-search-provider'),
-            search_api_key: cleanKey('ai-search-key'),
-        }), 'Provedores de IA salvos!'));
 }
 
 // =============================================================================
