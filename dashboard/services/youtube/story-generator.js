@@ -33,9 +33,9 @@ export async function generateStory(topicId) {
   const storyText = await callLlmForStory(topic, sourceContent, research, settings);
   const wordCount = storyText.split(/\s+/).length;
 
-  // Check if story meets minimum length, expand if needed
+  // Check if story meets minimum length for 30+ min video, expand if needed
   let finalStory = storyText;
-  if (wordCount < 4500) {
+  if (wordCount < 7000) {
     finalStory = await expandStory(storyText, topic, settings);
   }
 
@@ -117,7 +117,7 @@ async function callLlmForStory(topic, sourceContent, research, settings) {
     systemPrompt: `Voce e um roteirista de elite para YouTube, especialista em retenção de audiencia e storytelling cinematografico. Toda a narrativa DEVE ser escrita em Portugues Brasileiro (pt-BR).
 
 Estilo narrativo: ${style}
-Meta: 5000-8000 palavras
+Meta: 8000-12000 palavras (necessario para video de 30+ minutos)
 Idioma obrigatorio: Portugues do Brasil (pt-BR)
 
 === FRAMEWORK DE ABERTURA (primeiras 200 palavras) ===
@@ -195,7 +195,7 @@ NUNCA faca nenhum destes:
 - Listar fatos sem contexto narrativo (isso NAO e uma redacao escolar)
 - Usar tom neutro/enciclopedico — tenha personalidade e posicao
 - Usar filler generico para encher palavra
-- Escrever menos que 5000 palavras`,
+- Escrever menos que 8000 palavras`,
     userPrompt: `Video topic: ${topic.title}
 Angle: ${topic.angle || 'general'}
 Target audience: ${topic.target_audience || 'general'}
@@ -214,7 +214,7 @@ async function expandStory(story, topic, settings) {
     provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
-    systemPrompt: `Voce e um roteirista de elite expandindo uma narrativa de YouTube que esta curta demais. Escreva TUDO em Portugues Brasileiro (pt-BR). Meta: pelo menos 5500 palavras no total.
+    systemPrompt: `Voce e um roteirista de elite expandindo uma narrativa de YouTube que esta curta demais. Escreva TUDO em Portugues Brasileiro (pt-BR). Meta: pelo menos 8000 palavras no total (necessario para video de 30+ minutos).
 
 Retorne a historia COMPLETA expandida (nao apenas as adicoes).
 

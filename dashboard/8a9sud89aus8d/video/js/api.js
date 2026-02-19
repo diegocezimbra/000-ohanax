@@ -44,6 +44,10 @@ const PUT_BODY = (path, body) => request(path, { method: 'PUT', body });
 const DEL = (path) => request(path, { method: 'DELETE' });
 
 export const api = {
+    config: {
+        defaults: () => request('/config/defaults'),
+    },
+
     projects: {
         list: () => request('/projects'),
         get: (id) => request(`/projects/${id}`),
@@ -54,6 +58,7 @@ export const api = {
 
     settings: {
         get: (pid) => request(`/projects/${pid}/settings`),
+        defaults: (pid) => request(`/projects/${pid}/settings/defaults`),
         envProviders: (pid) => request(`/projects/${pid}/settings/env-providers`),
         updateStorytelling: (pid, body) => PUT_BODY(`/projects/${pid}/settings/storytelling`, body),
         updateAI: (pid, body) => PUT_BODY(`/projects/${pid}/settings/ai`, body),

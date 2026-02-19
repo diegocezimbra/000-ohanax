@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { getConfigDefaults } from '../../services/youtube/config-defaults.js';
 import projectRoutes from './projects.js';
 import settingRoutes from './settings.js';
 import sourceRoutes from './sources.js';
@@ -12,6 +13,7 @@ import narrationRoutes from './narrations.js';
 import videoRoutes from './videos.js';
 import publishingRoutes from './publishing.js';
 import pipelineRoutes from './pipeline.js';
+import contentEngineRoutes from './content-engine.js';
 import jobRoutes from './jobs.js';
 
 // Initialize all YouTube tables on first import
@@ -36,9 +38,15 @@ router.use('/projects/:projectId/topics/:topicId/thumbnail', thumbnailRoutes);
 router.use('/projects/:projectId/topics/:topicId/narration', narrationRoutes);
 router.use('/projects/:projectId/topics/:topicId/video', videoRoutes);
 
-// Publishing and pipeline views
+// Publishing, pipeline, and content engine
 router.use('/projects/:projectId/publishing', publishingRoutes);
 router.use('/projects/:projectId/pipeline', pipelineRoutes);
+router.use('/projects/:projectId/content-engine', contentEngineRoutes);
+
+// Global config defaults (no projectId needed — used by wizard before project exists)
+router.get('/config/defaults', (req, res) => {
+  res.json({ success: true, data: getConfigDefaults() });
+});
 
 // Global job queue monitoring
 router.use('/jobs', jobRoutes);

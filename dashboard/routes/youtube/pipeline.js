@@ -261,7 +261,7 @@ router.post('/bulk/approve', async (req, res) => {
     const pubs = await db.analytics.query(`
       SELECT id, topic_id, status
       FROM yt_publications
-      WHERE topic_id = ANY($1::uuid[]) AND status = 'queued'
+      WHERE topic_id = ANY($1::uuid[]) AND status = 'pending_review'
     `, [topic_ids]);
 
     const approved = [];
@@ -273,7 +273,7 @@ router.post('/bulk/approve', async (req, res) => {
 
         await db.analytics.query(`
           UPDATE yt_publications
-          SET status = 'scheduled', scheduled_for = $2, updated_at = NOW()
+          SET status = 'approved', scheduled_for = $2, updated_at = NOW()
           WHERE id = $1
         `, [pub.id, scheduledAt]);
 

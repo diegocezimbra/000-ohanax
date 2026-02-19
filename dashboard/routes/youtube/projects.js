@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
         SELECT
           project_id,
           COUNT(*) AS total_topics,
-          COUNT(*) FILTER (WHERE pipeline_stage = 'video_ready') AS videos_ready,
+          COUNT(*) FILTER (WHERE pipeline_stage IN ('video_assembled', 'queued_for_publishing')) AS videos_ready,
           COUNT(*) FILTER (WHERE pipeline_stage = 'published') AS published
         FROM yt_topics
         WHERE is_deleted = false
@@ -77,7 +77,7 @@ router.get('/:projectId', async (req, res) => {
         SELECT
           project_id,
           COUNT(*) AS total_topics,
-          COUNT(*) FILTER (WHERE pipeline_stage = 'video_ready') AS videos_ready,
+          COUNT(*) FILTER (WHERE pipeline_stage IN ('video_assembled', 'queued_for_publishing')) AS videos_ready,
           COUNT(*) FILTER (WHERE pipeline_stage = 'published') AS published
         FROM yt_topics
         WHERE is_deleted = false

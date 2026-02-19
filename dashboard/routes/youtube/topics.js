@@ -4,10 +4,10 @@ import { triggerPipelineFromTopic, restartPipelineFromStage } from '../../servic
 
 const router = Router({ mergeParams: true });
 
-const VALID_STAGES = [
-  'idea', 'generate_story', 'generate_script', 'generate_narration',
-  'generate_images', 'generate_thumbnail', 'assemble_video',
-  'video_ready', 'publishing', 'published', 'discarded'
+// Valid stages for restart-from: these are JOB TYPE names that the pipeline orchestrator accepts
+const VALID_RESTART_STAGES = [
+  'generate_story', 'generate_script', 'generate_visual_prompts',
+  'generate_thumbnails', 'generate_narration', 'assemble_video',
 ];
 
 // GET /stats - Topic counts by pipeline_stage (static route BEFORE parametrized)
@@ -250,8 +250,8 @@ router.post('/:topicId/restart-from', async (req, res) => {
   try {
     const { projectId, topicId } = req.params;
     const { stage } = req.body;
-    if (!stage || !VALID_STAGES.includes(stage)) {
-      return res.status(400).json({ success: false, error: `Invalid stage. Valid: ${VALID_STAGES.join(', ')}` });
+    if (!stage || !VALID_RESTART_STAGES.includes(stage)) {
+      return res.status(400).json({ success: false, error: `Invalid stage. Valid: ${VALID_RESTART_STAGES.join(', ')}` });
     }
     const topicCheck = await db.analytics.query(
       'SELECT id FROM yt_topics WHERE id = $1 AND project_id = $2 AND is_deleted = false',

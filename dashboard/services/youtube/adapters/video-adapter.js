@@ -1,15 +1,15 @@
 /**
- * Video Generation Adapter - Runway ML + Kling AI abstraction.
+ * Video Generation Adapter - Runway ML + Kling AI + Veo 3 (Replicate) abstraction.
  */
 
 /**
  * Generate a short video clip from an image + prompt.
  * @param {Object} opts
- * @param {string} opts.provider - 'runway' | 'kling'
+ * @param {string} opts.provider - 'runway' | 'kling' | 'veo3'
  * @param {string} opts.apiKey
  * @param {string} opts.prompt - Motion description
  * @param {string} opts.imageUrl - Source image URL
- * @param {number} opts.duration - 4 | 5 | 10 seconds
+ * @param {number} opts.duration - 4 | 5 | 8 | 10 seconds
  * @param {string} opts.aspectRatio - '16:9' | '9:16' | '1:1'
  * @returns {Promise<{ buffer: Buffer, mimeType: string, metadata: Object }>}
  */
@@ -17,6 +17,7 @@
 const VIDEO_PROVIDERS = {
   runway: callRunway,
   kling: callKling,
+  veo3: callVeo3,
 };
 
 export async function generateVideo({
@@ -143,4 +144,73 @@ async function pollKlingTask(apiKey, taskId, timeoutMs) {
     await new Promise(r => setTimeout(r, 5000));
   }
   throw new Error('Kling: Task timed out');
+}
+
+// --- Veo 3 Fast (google/veo-3-fast on Replicate) ---
+
+async function callVeo3({ apiKey, prompt, imageUrl, duration, aspectRatio }) {
+  const input = {
+    prompt,
+    duration: duration || 8,
+    aspect_ratio: aspectRatio || '16:9',
+  };
+
+  // Veo 3 supports image-to-video via image input
+  if (imageUrl) {
+    input.image = imageUrl;
+  }
+
+  const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'google/veo-3-fast',
+      input,
+    }),
+  });
+
+  const prediction = await createResponse.json();
+  if (prediction.error) {
+    throw new Error(`Veo3: ${prediction.error}`);
+  }
+
+  // Poll for completion (max 10 minutes - video generation takes longer)
+  const result = await pollReplicatePrediction(apiKey, prediction.id, 600000);
+  const videoUrl = Array.isArray(result.output) ? result.output[0] : result.output;
+
+  if (!videoUrl) {
+    throw new Error('Veo3: No output video received');
+  }
+
+  const videoResponse = await fetch(videoUrl);
+  const buffer = Buffer.from(await videoResponse.arrayBuffer());
+
+  return {
+    buffer,
+    mimeType: 'video/mp4',
+    metadata: { model: 'google/veo-3-fast', predictionId: prediction.id },
+  };
+}
+
+// --- Shared Replicate polling helper ---
+
+async function pollReplicatePrediction(apiKey, predictionId, timeoutMs) {
+  const startTime = Date.now();
+  while (Date.now() - startTime < timeoutMs) {
+    const response = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+    });
+    const data = await response.json();
+
+    if (data.status === 'succeeded') return data;
+    if (data.status === 'failed' || data.status === 'canceled') {
+      throw new Error(`Veo3 prediction ${data.status}: ${data.error || 'unknown'}`);
+    }
+
+    await new Promise(r => setTimeout(r, 5000));
+  }
+  throw new Error('Veo3: Prediction timed out');
 }

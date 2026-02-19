@@ -6,6 +6,7 @@ import { db } from '../../db.js';
 import { downloadFile, getPresignedUrl } from './s3.js';
 import { uploadVideo, setThumbnail, refreshAccessToken } from './adapters/youtube-api.js';
 import { getProjectSettings, invalidateSettingsCache } from './settings-helper.js';
+import { calculateNextPublishSlot } from './pipeline-orchestrator.js';
 
 /**
  * Queue a topic for publishing review.
@@ -227,49 +228,4 @@ export async function runPublishingCron() {
   }
 }
 
-/**
- * Calculate next available publish slot based on project schedule.
- */
-async function calculateNextPublishSlot(projectId) {
-  const pool = db.analytics;
-  const settings = await getProjectSettings(projectId);
-
-  const maxPerDay = settings.max_publishes_per_day || 1;
-  const publishHour = settings.preferred_publish_hour || 14; // 2 PM
-
-  // Find latest scheduled publication
-  const { rows } = await pool.query(
-    `SELECT MAX(scheduled_for) AS latest
-     FROM yt_publications
-     WHERE project_id = $1 AND status IN ('approved', 'pending_review', 'published')`,
-    [projectId],
-  );
-
-  const now = new Date();
-  let nextSlot = new Date(now);
-  nextSlot.setHours(publishHour, 0, 0, 0);
-
-  if (nextSlot <= now) {
-    nextSlot.setDate(nextSlot.getDate() + 1);
-  }
-
-  // If there are already publications scheduled, space them out
-  if (rows[0]?.latest) {
-    const latestDate = new Date(rows[0].latest);
-    // Count publications on that date
-    const { rows: countRows } = await pool.query(
-      `SELECT COUNT(*) AS cnt FROM yt_publications
-       WHERE project_id = $1 AND DATE(scheduled_for) = DATE($2)
-       AND status IN ('approved', 'pending_review', 'published')`,
-      [projectId, latestDate.toISOString()],
-    );
-
-    if (parseInt(countRows[0].cnt, 10) >= maxPerDay) {
-      nextSlot = new Date(latestDate);
-      nextSlot.setDate(nextSlot.getDate() + 1);
-      nextSlot.setHours(publishHour, 0, 0, 0);
-    }
-  }
-
-  return nextSlot.toISOString();
-}
+// calculateNextPublishSlot is imported from pipeline-orchestrator.js (single source of truth)

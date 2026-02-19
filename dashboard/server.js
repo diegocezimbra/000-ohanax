@@ -24,6 +24,7 @@ import youtubeRoutes from './routes/youtube/index.js';
 import { start as startWorker } from './services/youtube/job-worker.js';
 import { registerAllHandlers } from './services/youtube/job-handlers.js';
 import { runPublishingCron } from './services/youtube/publisher.js';
+import { startContentEngine } from './services/youtube/content-engine.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -235,4 +236,8 @@ app.listen(PORT, () => {
   setInterval(() => runPublishingCron().catch(err =>
     console.error('Publishing cron error:', err.message)
   ), 5 * 60 * 1000);
+
+  // Content Engine cron: auto-generate content every 30 minutes
+  startContentEngine(30 * 60 * 1000);
+  console.log('Content Engine started (interval: 30 min)');
 });

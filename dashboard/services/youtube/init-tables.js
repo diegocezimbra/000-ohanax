@@ -23,31 +23,31 @@ export async function initYouTubeTables() {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         project_id UUID NOT NULL REFERENCES yt_projects(id) ON DELETE CASCADE,
         -- Storytelling
-        storytelling_style VARCHAR(50) NOT NULL DEFAULT 'educational',
-        target_video_length VARCHAR(50) NOT NULL DEFAULT '10-15 minutes',
+        storytelling_style VARCHAR(50) NOT NULL DEFAULT 'dramatico',
+        target_video_length VARCHAR(50) NOT NULL DEFAULT '30-45 minutes',
         language VARCHAR(10) NOT NULL DEFAULT 'pt-BR',
-        narrative_template TEXT,
-        emotional_triggers TEXT,
-        title_template TEXT,
-        narration_tone VARCHAR(50) DEFAULT 'conversational',
-        target_duration_minutes INTEGER DEFAULT 12,
+        narrative_template TEXT DEFAULT 'Hook (0:00-0:30): Abrir com o momento mais dramatico ou chocante. Contexto (0:30-5:00): Apresentar protagonista e o mundo dele. Desenvolvimento (5:00-20:00): Tensao crescente com obstaculos e decisoes. Virada (20:00-30:00): Climax dramatico, ponto sem retorno. Resolucao Triunfante (30:00+): Consequencias e conexao emocional.',
+        emotional_triggers TEXT DEFAULT 'Patriotismo, Underdog, Vinganca, Curiosidade, Raiva Justa',
+        title_template TEXT DEFAULT '[TOPICO]: A Historia [ADJETIVO_EMOCIONAL] que [ACAO_DRAMATICA]',
+        narration_tone VARCHAR(50) DEFAULT 'dramatico',
+        target_duration_minutes INTEGER DEFAULT 30,
         min_richness_score INTEGER DEFAULT 5,
         -- LLM
-        llm_provider VARCHAR(20) NOT NULL DEFAULT 'anthropic',
+        llm_provider VARCHAR(20) NOT NULL DEFAULT 'gemini',
         llm_api_key TEXT,
-        llm_model VARCHAR(100) NOT NULL DEFAULT 'claude-sonnet-4-5-20250929',
+        llm_model VARCHAR(100) NOT NULL DEFAULT 'gemini-2.0-flash',
         -- Search
-        search_provider VARCHAR(20) NOT NULL DEFAULT 'tavily',
+        search_provider VARCHAR(20) NOT NULL DEFAULT 'serper',
         search_api_key TEXT,
-        -- Image
-        image_provider VARCHAR(20) NOT NULL DEFAULT 'dalle',
+        -- Image (z_image_turbo via Replicate)
+        image_provider VARCHAR(20) NOT NULL DEFAULT 'z_image_turbo',
         image_api_key TEXT,
         image_style VARCHAR(200) DEFAULT 'cinematic, photorealistic',
         openai_api_key TEXT,
         replicate_api_key TEXT,
         dalle_style VARCHAR(20) NOT NULL DEFAULT 'vivid',
-        -- Video
-        video_provider VARCHAR(20),
+        -- Video (veo3 = google/veo-3-fast via Replicate)
+        video_provider VARCHAR(20) DEFAULT 'veo3',
         video_api_key TEXT,
         -- TTS
         tts_provider VARCHAR(20) NOT NULL DEFAULT 'elevenlabs',
@@ -138,7 +138,7 @@ export async function initYouTubeTables() {
             'visuals_creating','visuals_created',
             'thumbnails_created','narration_created',
             'video_assembled','queued_for_publishing',
-            'published','error','discarded'
+            'scheduled','published','error','discarded','rejected'
           )),
         status VARCHAR(20) NOT NULL DEFAULT 'draft',
         pipeline_error TEXT,
@@ -277,7 +277,7 @@ export async function initYouTubeTables() {
         youtube_video_id VARCHAR(50),
         youtube_url TEXT,
         status VARCHAR(30) NOT NULL DEFAULT 'pending_review'
-          CHECK (status IN ('pending_review','approved','published','rejected','failed')),
+          CHECK (status IN ('pending_review','approved','scheduled','published','rejected','failed')),
         scheduled_for TIMESTAMPTZ,
         published_at TIMESTAMPTZ,
         review_notes TEXT,

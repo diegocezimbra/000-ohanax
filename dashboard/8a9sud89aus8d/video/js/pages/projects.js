@@ -1,5 +1,6 @@
 // =============================================================================
 // PAGE: projects - Lista de projetos
+// All config lists (niches, styles, tones, etc.) loaded from GET /config/defaults
 // =============================================================================
 
 import { openModal, closeModal } from '../components/modal.js';
@@ -8,6 +9,9 @@ import { escapeHtml } from '../utils/dom.js';
 const api = window.ytApi;
 const toast = window.ytToast;
 const router = window.ytRouter;
+
+// Cached config defaults (loaded once, reused across wizard opens)
+let _configDefaults = null;
 
 // -----------------------------------------------------------------------------
 // Page loader
@@ -48,7 +52,6 @@ window.ytRegisterPage('projects', async () => {
         grid.innerHTML = projects.map(renderCard).join('');
         grid.querySelectorAll('[data-project-id]').forEach(card => {
             card.addEventListener('click', (e) => {
-                // Don't navigate if clicking delete button
                 if (e.target.closest('.btn-delete-project')) return;
                 router.navigate(`projects/${card.dataset.projectId}/sources`);
             });
@@ -65,7 +68,6 @@ window.ytRegisterPage('projects', async () => {
                     await api.projects.delete(id);
                     toast('Projeto deletado!', 'success');
                     card?.remove();
-                    // If no more cards, show empty state
                     if (!grid.querySelector('.yt-card')) {
                         grid.style.display = 'none';
                         empty.style.display = 'block';
@@ -136,37 +138,30 @@ function stageBadge(stage) {
 }
 
 // =============================================================================
-// DEFAULTS
+// New Project Wizard (multi-step modal, all config from backend)
 // =============================================================================
-const DEFAULT_NARRATIVE_TEMPLATE = `GANCHO (0-15s): Abra com uma pergunta provocativa, fato chocante ou cenario que gere identificacao imediata. O espectador precisa sentir "isso e sobre mim" nos primeiros 5 segundos.
+async function openNewProjectWizard() {
+    // Load config defaults from backend (cached after first load)
+    if (!_configDefaults) {
+        try {
+            _configDefaults = await api.config.defaults();
+        } catch (err) {
+            toast('Erro ao carregar configuracoes: ' + err.message, 'error');
+            return;
+        }
+    }
 
-CONTEXTO (15s-2min): Apresente o problema/tema com dados concretos, exemplos reais e linguagem visual. Use analogias do cotidiano para tornar conceitos complexos acessiveis.
-
-DESENVOLVIMENTO (2min-8min): Construa a narrativa em 3-4 blocos, cada um com:
-- Uma mini-revelacao ou virada que mantem a curiosidade
-- Evidencias (dados, estudos, exemplos reais)
-- Conexao emocional (como isso afeta a vida da pessoa)
-Use transicoes que criem expectativa: "Mas o que ninguem te conta e..."
-
-CLIMAX (8min-10min): Entregue o insight principal — a grande revelacao que muda a perspectiva do espectador. Este e o momento "aha!" que faz o video valer a pena.
-
-CONCLUSAO (10min-12min): Recapitule os 2-3 pontos principais, de um passo acionavel concreto e termine com uma reflexao que faca o espectador querer comentar e compartilhar.`;
-
-const DEFAULT_TRIGGERS = 'curiosidade, surpresa, identificacao, urgencia, esperanca, indignacao, nostalgia, empoderamento';
-
-// =============================================================================
-// New Project Wizard (multi-step modal)
-// =============================================================================
-function openNewProjectWizard() {
+    const cfg = _configDefaults;
+    const sd = cfg.storytelling_defaults || {};
     let step = 1;
     const state = {
         // Step 1: Basico
         name: '', niche: '', description: '', language: 'pt-BR',
-        // Step 2: Storytelling
-        storytelling_style: 'educational', narration_tone: 'conversational',
+        // Step 2: Storytelling (defaults from backend)
+        storytelling_style: 'dramatic', narration_tone: 'dramatic',
         target_duration_minutes: 30, min_richness_score: 7,
-        narrative_template: DEFAULT_NARRATIVE_TEMPLATE,
-        emotional_triggers: DEFAULT_TRIGGERS,
+        narrative_template: sd.narrative_template || '',
+        emotional_triggers: sd.emotional_triggers || '',
         // Step 3: Visual + Publicacao
         visual_style: '', brand_colors: '',
         thumbnail_font: 'Inter Bold', thumbnail_font_size: 72,
@@ -212,17 +207,11 @@ function openNewProjectWizard() {
     }
 
     // =========================================================================
-    // Step 1: Info basica
+    // Step 1: Info basica (niches + languages from backend)
     // =========================================================================
     function renderStep1() {
-        const niches = [
-            { v: '', l: 'Selecione o nicho...' },
-            { v: 'history', l: 'Historia' }, { v: 'science', l: 'Ciencia' },
-            { v: 'technology', l: 'Tecnologia' }, { v: 'finance', l: 'Financas' },
-            { v: 'education', l: 'Educacao' }, { v: 'health', l: 'Saude' },
-            { v: 'business', l: 'Negocios' }, { v: 'entertainment', l: 'Entretenimento' },
-            { v: 'lifestyle', l: 'Estilo de Vida' }, { v: 'other', l: 'Outro' },
-        ];
+        const niches = cfg.niches || [];
+        const languages = cfg.languages || [];
         const sel = (v) => v === state.niche ? 'selected' : '';
         const selL = (v) => v === state.language ? 'selected' : '';
 
@@ -239,13 +228,12 @@ function openNewProjectWizard() {
                 <div class="yt-form-row">
                     <div class="yt-form-group"><label class="yt-label">Nicho *</label>
                         <select class="yt-input" id="wiz-niche">
-                            ${niches.map(n => `<option value="${n.v}" ${sel(n.v)}>${n.l}</option>`).join('')}
+                            <option value="">Selecione o nicho...</option>
+                            ${niches.map(n => `<option value="${n.value}" ${sel(n.value)}>${escapeHtml(n.label)}</option>`).join('')}
                         </select></div>
                     <div class="yt-form-group"><label class="yt-label">Idioma</label>
                         <select class="yt-input" id="wiz-language">
-                            <option value="pt-BR" ${selL('pt-BR')}>Portugues (Brasil)</option>
-                            <option value="en" ${selL('en')}>Ingles</option>
-                            <option value="es" ${selL('es')}>Espanhol</option>
+                            ${languages.map(l => `<option value="${l.value}" ${selL(l.value)}>${escapeHtml(l.label)}</option>`).join('')}
                         </select></div>
                 </div>
                 <div class="yt-form-group">
@@ -257,11 +245,12 @@ function openNewProjectWizard() {
     }
 
     // =========================================================================
-    // Step 2: Storytelling
+    // Step 2: Storytelling (styles + tones + durations from backend)
     // =========================================================================
     function renderStep2() {
-        const styles = ['educational', 'documentary', 'dramatic', 'tutorial', 'entertainment'];
-        const tones = ['conversational', 'formal', 'dramatic', 'humorous', 'inspirational'];
+        const styles = cfg.storytelling_styles || [];
+        const tones = cfg.narration_tones || [];
+        const durations = cfg.duration_targets || [];
         const optS = (v) => v === state.storytelling_style ? 'selected' : '';
         const optT = (v) => v === state.narration_tone ? 'selected' : '';
 
@@ -272,19 +261,17 @@ function openNewProjectWizard() {
                 <div class="yt-form-row">
                     <div class="yt-form-group"><label class="yt-label">Estilo de Narrativa</label>
                         <select class="yt-select" id="wiz-style">
-                            ${styles.map(v => `<option value="${v}" ${optS(v)}>${v}</option>`).join('')}
+                            ${styles.map(s => `<option value="${s.value}" ${optS(s.value)}>${escapeHtml(s.label)}</option>`).join('')}
                         </select></div>
                     <div class="yt-form-group"><label class="yt-label">Tom da Narracao</label>
                         <select class="yt-select" id="wiz-tone">
-                            ${tones.map(v => `<option value="${v}" ${optT(v)}>${v}</option>`).join('')}
+                            ${tones.map(t => `<option value="${t.value}" ${optT(t.value)}>${escapeHtml(t.label)}</option>`).join('')}
                         </select></div>
                 </div>
                 <div class="yt-form-row">
                     <div class="yt-form-group"><label class="yt-label">Duracao Alvo do Video</label>
                         <select class="yt-select" id="wiz-duration">
-                            <option value="30" ${state.target_duration_minutes <= 40 ? 'selected' : ''}>30-40 minutos</option>
-                            <option value="40" ${state.target_duration_minutes > 40 && state.target_duration_minutes <= 50 ? 'selected' : ''}>40-50 minutos</option>
-                            <option value="50" ${state.target_duration_minutes > 50 ? 'selected' : ''}>50-60 minutos</option>
+                            ${durations.map(d => `<option value="${d.value}" ${state.target_duration_minutes <= 40 && d.value === '30-40' ? 'selected' : ''}>${escapeHtml(d.label)}</option>`).join('')}
                         </select></div>
                     <div class="yt-form-group"><label class="yt-label">Richness Score Minimo (0-10)</label>
                         <input class="yt-input" id="wiz-richness" type="number" min="0" max="10"
@@ -302,7 +289,7 @@ function openNewProjectWizard() {
     }
 
     // =========================================================================
-    // Step 3: Visual + Publicacao
+    // Step 3: Visual + Publicacao (transitions, visibilities, timezones from backend)
     // =========================================================================
     function renderStep3() {
         const dayLabels = [
@@ -311,6 +298,9 @@ function openNewProjectWizard() {
             { key: 'fri', label: 'Sex' }, { key: 'sat', label: 'Sab' },
             { key: 'sun', label: 'Dom' },
         ];
+        const transitions = cfg.transitions || [];
+        const visibilities = cfg.visibilities || [];
+        const timezones = cfg.timezones || [];
         const optTr = (v) => v === state.transition_type ? 'selected' : '';
         const optVis = (v) => v === state.default_visibility ? 'selected' : '';
         const optTz = (v) => v === state.publication_timezone ? 'selected' : '';
@@ -335,8 +325,7 @@ function openNewProjectWizard() {
                 <div class="yt-form-row">
                     <div class="yt-form-group"><label class="yt-label">Transicao</label>
                         <select class="yt-select" id="wiz-transition">
-                            ${['crossfade', 'fade', 'dissolve', 'wipe', 'none'].map(v =>
-                                `<option value="${v}" ${optTr(v)}>${v}</option>`).join('')}
+                            ${transitions.map(t => `<option value="${t.value}" ${optTr(t.value)}>${escapeHtml(t.label)}</option>`).join('')}
                         </select></div>
                     <div class="yt-form-group"><label class="yt-label">Duracao Transicao (ms)</label>
                         <input class="yt-input" id="wiz-trans-dur" type="number" min="0" max="3000"
@@ -358,10 +347,7 @@ function openNewProjectWizard() {
                         </select></div>
                     <div class="yt-form-group"><label class="yt-label">Fuso Horario</label>
                         <select class="yt-select" id="wiz-tz">
-                            <option value="America/Sao_Paulo" ${optTz('America/Sao_Paulo')}>Brasilia (GMT-3)</option>
-                            <option value="America/New_York" ${optTz('America/New_York')}>Nova York (GMT-5)</option>
-                            <option value="Europe/Lisbon" ${optTz('Europe/Lisbon')}>Lisboa (GMT+0)</option>
-                            <option value="UTC" ${optTz('UTC')}>UTC</option>
+                            ${timezones.map(tz => `<option value="${tz.value}" ${optTz(tz.value)}>${escapeHtml(tz.label)}</option>`).join('')}
                         </select></div>
                 </div>
 
@@ -387,9 +373,7 @@ function openNewProjectWizard() {
                 <div class="yt-form-row">
                     <div class="yt-form-group"><label class="yt-label">Visibilidade Padrao</label>
                         <select class="yt-select" id="wiz-vis">
-                            <option value="public" ${optVis('public')}>Publico</option>
-                            <option value="unlisted" ${optVis('unlisted')}>Nao Listado</option>
-                            <option value="private" ${optVis('private')}>Privado</option>
+                            ${visibilities.map(v => `<option value="${v.value}" ${optVis(v.value)}>${escapeHtml(v.label)}</option>`).join('')}
                         </select></div>
                     <div class="yt-form-group">
                         <label class="yt-label" style="display:flex;align-items:center;gap:8px;margin-top:24px;">
@@ -416,7 +400,7 @@ function openNewProjectWizard() {
         } else if (step === 2) {
             state.storytelling_style = v('wiz-style');
             state.narration_tone = v('wiz-tone');
-            state.target_duration_minutes = Number(v('wiz-duration')) || 30;
+            state.target_duration_minutes = Number(v('wiz-duration')?.split('-')[0]) || 30;
             state.min_richness_score = Number(v('wiz-richness')) || 7;
             state.narrative_template = v('wiz-template');
             state.emotional_triggers = v('wiz-triggers');
@@ -506,7 +490,6 @@ function openNewProjectWizard() {
             const btn = modal.el.querySelector('#wiz-create');
             if (btn) { btn.disabled = true; btn.textContent = 'Criando...'; }
 
-            // 1. Create the project
             const project = await api.projects.create({
                 name: state.name,
                 niche: state.niche,
@@ -516,7 +499,6 @@ function openNewProjectWizard() {
 
             const pid = project.id;
 
-            // 2. Update storytelling settings
             await api.settings.updateStorytelling(pid, {
                 storytelling_style: state.storytelling_style,
                 narration_tone: state.narration_tone,
@@ -527,7 +509,6 @@ function openNewProjectWizard() {
                 emotional_triggers: state.emotional_triggers || null,
             });
 
-            // 3. Update visual identity settings
             await api.settings.updateVisualIdentity(pid, {
                 visual_style: state.visual_style || null,
                 brand_colors: state.brand_colors || null,
@@ -542,17 +523,15 @@ function openNewProjectWizard() {
                 background_music_volume: state.background_music_volume,
             });
 
-            // 4. Update Content Engine settings
-            const durMap = { '30': '30-40', '40': '40-50', '50': '50-60' };
+            const durVal = `${state.target_duration_minutes}-${state.target_duration_minutes + 10}`;
             await api.settings.updateContentEngine(pid, {
-                duration_target: durMap[String(state.target_duration_minutes)] || '30-40',
+                duration_target: durVal,
                 publications_per_day: state.max_publications_per_day,
                 buffer_size: 7,
                 max_gen_per_day: 5,
                 min_richness: state.min_richness_score,
             });
 
-            // 5. Update publishing settings
             await api.settings.updatePublishing(pid, {
                 max_publications_per_day: state.max_publications_per_day,
                 publication_times: state.publication_times,
@@ -572,6 +551,5 @@ function openNewProjectWizard() {
         }
     }
 
-    // Start the wizard
     render();
 }

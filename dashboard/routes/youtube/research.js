@@ -9,17 +9,14 @@ const router = Router({ mergeParams: true });
 router.get('/', async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { phase, min_relevance, limit = '50', offset = '0' } = req.query;
+    const { min_relevance, limit = '50', offset = '0' } = req.query;
 
     const conditions = ['r.project_id = $1'];
     const params = [projectId];
     let paramIdx = 2;
 
-    if (phase) {
-      conditions.push(`r.research_phase = $${paramIdx}`);
-      params.push(phase);
-      paramIdx++;
-    }
+    // Note: 'phase' filter removed - yt_research_results has no research_phase column
+    // Kept for future use if column is added
 
     if (min_relevance) {
       conditions.push(`r.relevance_score >= $${paramIdx}`);
@@ -32,17 +29,18 @@ router.get('/', async (req, res) => {
 
     const whereClause = conditions.join(' AND ');
 
+    // Column names match DB schema: query, title, url, snippet, relevance_score
     const result = await db.analytics.query(`
       SELECT
         r.id,
         r.project_id,
         r.source_id,
         r.topic_id,
-        r.research_phase,
-        r.query_used,
+        r.query,
+        r.title,
+        r.url,
+        r.snippet,
         r.relevance_score,
-        r.summary,
-        r.source_url,
         r.created_at
       FROM yt_research_results r
       WHERE ${whereClause}
@@ -75,8 +73,8 @@ router.get('/by-source/:sourceId', async (req, res) => {
 
     const result = await db.analytics.query(`
       SELECT
-        id, project_id, source_id, topic_id, research_phase,
-        query_used, relevance_score, summary, source_url, created_at
+        id, project_id, source_id, topic_id,
+        query, title, url, snippet, relevance_score, created_at
       FROM yt_research_results
       WHERE project_id = $1 AND source_id = $2
       ORDER BY relevance_score DESC
@@ -98,8 +96,8 @@ router.get('/by-topic/:topicId', async (req, res) => {
 
     const result = await db.analytics.query(`
       SELECT
-        id, project_id, source_id, topic_id, research_phase,
-        query_used, relevance_score, summary, source_url, created_at
+        id, project_id, source_id, topic_id,
+        query, title, url, snippet, relevance_score, created_at
       FROM yt_research_results
       WHERE project_id = $1 AND topic_id = $2
       ORDER BY relevance_score DESC

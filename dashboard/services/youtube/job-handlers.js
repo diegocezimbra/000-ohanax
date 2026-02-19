@@ -83,9 +83,9 @@ async function handleGenerateScript(job) {
   const { topicId } = job.payload;
   const script = await generateScript(topicId);
 
-  // Check if script needs expansion (fewer than 10 segments or < 5 min)
+  // Check if script needs expansion (fewer than 20 segments or < 30 min)
   const needsExpansion = script.segments && (
-    script.segments.length < 10 || script.total_duration_estimate < 300
+    script.segments.length < 20 || script.total_duration_estimate < 1800
   );
 
   return {

@@ -65,8 +65,8 @@ export async function generateScript(topicId) {
     );
   }
 
-  // Step 5: Auto-enrichment check
-  if (scriptData.segments.length < 8 || scriptData.totalDuration < 300) {
+  // Step 5: Auto-enrichment check (target: 30+ minutes = 1800 seconds)
+  if (scriptData.segments.length < 20 || scriptData.totalDuration < 1800) {
     await enrichScript(script.id, topic, settings);
   }
 
@@ -139,7 +139,7 @@ Return ONLY valid JSON in this exact structure:
    - Visual direction: Transition from hook energy to a slightly calmer but still engaging visual pace. Show the narrator/host or relevant B-roll that establishes credibility.
 
 3. MAIN CONTENT SEGMENTS (bulk of the video, type: "main", "example", "data", or "transition")
-   - Create 10-20 main segments, each 30-60 seconds of narration (100-180 words each).
+   - Create 25-40 main segments, each 30-60 seconds of narration (100-180 words each).
    - CRITICAL RULE: Every segment MUST begin with a MINI-HOOK. Never start a segment with "E entao...", "Alem disso...", "O proximo ponto...". Instead, open each segment with a provocative question, a surprising statement, a bold claim, or a micro-cliffhanger from the previous segment.
    - Every 3rd main segment MUST include a PATTERN INTERRUPT: a surprising fact, a perspective shift, a rhetorical question directed at the viewer ("Voce consegue adivinhar o que aconteceu?"), a brief story-within-a-story, or a dramatic tonal shift.
    - Include EMOTIONAL PEAKS every 2-3 minutes: moments of surprise, outrage, humor, awe, or fear. Flat emotional energy kills retention.
@@ -184,11 +184,12 @@ Return ONLY valid JSON in this exact structure:
 
 === PACING AND RHYTHM ===
 
-- Target total video duration: 8-15 minutes (the YouTube sweet spot for ad revenue and retention).
+- Target total video duration: 30-45 minutes (long-form content optimized for maximum watch time and ad revenue).
 - First 60 seconds are make-or-break. If 40%+ of viewers leave in the first 30 seconds, the video is dead. Write the hook and intro as if your life depends on it.
 - Plan a PATTERN INTERRUPT at the 25-35 second mark (the critical drop-off point): music change, visual shift, sound effect, or tonal change.
 - Build toward the climax with escalating intensity. The second half of the video should feel more urgent and dramatic than the first half.
 - Never let more than 90 seconds pass without some form of engagement trigger (question, surprising fact, tonal shift, visual spectacle).
+- For 30+ minute videos, structure with 2-3 major act breaks with mini-cliffhangers to prevent mid-video drop-offs.
 
 === LANGUAGE ===
 

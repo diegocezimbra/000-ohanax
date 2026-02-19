@@ -1,11 +1,11 @@
 /**
- * Image Generation Adapter - DALL-E 3 + Flux abstraction.
+ * Image Generation Adapter - DALL-E 3 + Flux + Z-Image-Turbo (Replicate) abstraction.
  */
 
 /**
  * Generate an image from a text prompt.
  * @param {Object} opts
- * @param {string} opts.provider - 'dalle' | 'flux'
+ * @param {string} opts.provider - 'dalle' | 'flux' | 'z_image_turbo'
  * @param {string} opts.apiKey
  * @param {string} opts.prompt
  * @param {string} opts.negativePrompt - ignored by DALL-E
@@ -18,6 +18,7 @@
 const IMAGE_PROVIDERS = {
   dalle: callDallE,
   flux: callFlux,
+  z_image_turbo: callZImageTurbo,
 };
 
 export async function generateImage({
@@ -112,7 +113,55 @@ async function callFlux({ apiKey, prompt, negativePrompt, width, height }) {
   };
 }
 
-async function pollReplicatePrediction(apiKey, predictionId, timeoutMs) {
+// --- Z-Image-Turbo (prunaai/z-image-turbo on Replicate) ---
+
+async function callZImageTurbo({ apiKey, prompt, negativePrompt, width, height }) {
+  const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'prunaai/z-image-turbo',
+      input: {
+        prompt,
+        negative_prompt: negativePrompt || '',
+        width: width || 1920,
+        height: height || 1080,
+        num_inference_steps: 4,
+        guidance_scale: 3.5,
+        num_outputs: 1,
+      },
+    }),
+  });
+
+  const prediction = await createResponse.json();
+  if (prediction.error) {
+    throw new Error(`Z-Image-Turbo: ${prediction.error}`);
+  }
+
+  // Poll for completion (max 3 minutes - turbo models are fast)
+  const result = await pollReplicatePrediction(apiKey, prediction.id, 180000, 'Z-Image-Turbo');
+  const imageUrl = Array.isArray(result.output) ? result.output[0] : result.output;
+
+  if (!imageUrl) {
+    throw new Error('Z-Image-Turbo: No output image received');
+  }
+
+  const imageResponse = await fetch(imageUrl);
+  const buffer = Buffer.from(await imageResponse.arrayBuffer());
+
+  return {
+    buffer,
+    mimeType: 'image/png',
+    metadata: { model: 'prunaai/z-image-turbo' },
+  };
+}
+
+// --- Shared Replicate polling helper ---
+
+async function pollReplicatePrediction(apiKey, predictionId, timeoutMs, providerName = 'Replicate') {
   const startTime = Date.now();
   while (Date.now() - startTime < timeoutMs) {
     const response = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
@@ -122,10 +171,10 @@ async function pollReplicatePrediction(apiKey, predictionId, timeoutMs) {
 
     if (data.status === 'succeeded') return data;
     if (data.status === 'failed' || data.status === 'canceled') {
-      throw new Error(`Flux prediction ${data.status}: ${data.error || 'unknown'}`);
+      throw new Error(`${providerName} prediction ${data.status}: ${data.error || 'unknown'}`);
     }
 
     await new Promise(r => setTimeout(r, 3000));
   }
-  throw new Error('Flux: Prediction timed out');
+  throw new Error(`${providerName}: Prediction timed out`);
 }

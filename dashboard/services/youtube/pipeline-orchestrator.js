@@ -1,6 +1,10 @@
 import { db } from '../../db.js';
 import { enqueueJob, cancelJobsForTopic } from './job-queue.js';
 
+// STAGE_FLOW topicStage values MUST match the DB CHECK constraint on yt_topics.pipeline_stage:
+// 'idea','topics_generated','story_created','script_created',
+// 'visuals_creating','visuals_created','thumbnails_created','narration_created',
+// 'video_assembled','queued_for_publishing','published','error','discarded'
 const STAGE_FLOW = {
   extract_source: { nextJobType: 'web_research_source', topicStage: null },
   web_research_source: { nextJobType: 'generate_topics', topicStage: null },
@@ -8,23 +12,23 @@ const STAGE_FLOW = {
   generate_story: { nextJobType: 'generate_script', topicStage: 'story_created' },
   generate_script: {
     nextJobType: 'generate_visual_prompts',
-    topicStage: 'script_generated',
+    topicStage: 'script_created',
     conditionalJobType: 'expand_script',
   },
-  expand_script: { nextJobType: 'generate_visual_prompts', topicStage: 'script_generated' },
+  expand_script: { nextJobType: 'generate_visual_prompts', topicStage: 'script_created' },
   generate_visual_prompts: {
     nextJobType: 'generate_visual_asset',
-    topicStage: 'visuals_generating',
+    topicStage: 'visuals_creating',
     fanOut: true,
   },
   generate_visual_asset: {
     nextJobType: 'generate_thumbnails',
-    topicStage: 'visuals_generated',
+    topicStage: 'visuals_created',
     awaitAll: true,
   },
-  generate_thumbnails: { nextJobType: 'generate_narration', topicStage: 'thumbnail_generated' },
-  generate_narration: { nextJobType: 'assemble_video', topicStage: 'narration_generated' },
-  assemble_video: { nextJobType: null, topicStage: 'queued', terminal: true },
+  generate_thumbnails: { nextJobType: 'generate_narration', topicStage: 'thumbnails_created' },
+  generate_narration: { nextJobType: 'assemble_video', topicStage: 'narration_created' },
+  assemble_video: { nextJobType: null, topicStage: 'queued_for_publishing', terminal: true },
   publish_video: { nextJobType: null, topicStage: 'published', terminal: true },
 };
 
@@ -86,7 +90,7 @@ export async function onJobCompleted(job) {
   if (job.job_type === 'generate_visual_asset' && config.awaitAll) {
     const allDone = await checkAllVisualsComplete(job.topic_id);
     if (!allDone) return; // Wait for siblings
-    await updateTopicStage(job.topic_id, 'visuals_generated');
+    await updateTopicStage(job.topic_id, 'visuals_created');
     await enqueueJob({
       projectId: job.project_id,
       topicId: job.topic_id,

@@ -134,12 +134,12 @@ router.post('/:pubId/approve', async (req, res) => {
     if (!pub.rows[0]) {
       return res.status(404).json({ success: false, error: 'Publication not found' });
     }
-    if (pub.rows[0].status !== 'queued') {
+    if (pub.rows[0].status !== 'pending_review') {
       return res.status(400).json({ success: false, error: `Cannot approve status '${pub.rows[0].status}'` });
     }
     const scheduledAt = await calculateNextPublishSlot(projectId);
     await db.analytics.query(
-      `UPDATE yt_publications SET status = 'scheduled', scheduled_for = $2, updated_at = NOW() WHERE id = $1`,
+      `UPDATE yt_publications SET status = 'approved', scheduled_for = $2, updated_at = NOW() WHERE id = $1`,
       [pubId, scheduledAt]
     );
     await db.analytics.query(
@@ -159,10 +159,13 @@ router.post('/:pubId/reject', async (req, res) => {
     const { pubId } = req.params;
     const { reason } = req.body;
     const pub = await db.analytics.query(
-      'SELECT id, topic_id FROM yt_publications WHERE id = $1', [pubId]
+      'SELECT id, topic_id, status FROM yt_publications WHERE id = $1', [pubId]
     );
     if (!pub.rows[0]) {
       return res.status(404).json({ success: false, error: 'Publication not found' });
+    }
+    if (!['pending_review', 'approved'].includes(pub.rows[0].status)) {
+      return res.status(400).json({ success: false, error: `Cannot reject status '${pub.rows[0].status}'` });
     }
     await db.analytics.query(
       `UPDATE yt_publications SET status = 'rejected', review_notes = $2, updated_at = NOW() WHERE id = $1`,
@@ -235,36 +238,36 @@ router.post('/:pubId/retry', async (req, res) => {
   try {
     const { pubId } = req.params;
     const result = await db.analytics.query(`
-      UPDATE yt_publications SET status = 'scheduled',
-        error_message = NULL, updated_at = NOW()
+      UPDATE yt_publications SET status = 'approved',
+        review_notes = NULL, updated_at = NOW()
       WHERE id = $1 AND status = 'failed' RETURNING id
     `, [pubId]);
     if (!result.rows[0]) {
       return res.status(400).json({ success: false, error: 'Publication not found or not failed' });
     }
-    res.json({ success: true, data: { pubId, status: 'scheduled' } });
+    res.json({ success: true, data: { pubId, status: 'approved' } });
   } catch (err) {
     console.error('[Publishing] Error retrying publication:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// POST /:pubId/unschedule - Move back from scheduled to queued
+// POST /:pubId/unschedule - Move back from scheduled/approved to pending_review
 router.post('/:pubId/unschedule', async (req, res) => {
   try {
     const { pubId } = req.params;
     const result = await db.analytics.query(`
-      UPDATE yt_publications SET status = 'queued', scheduled_for = NULL, updated_at = NOW()
-      WHERE id = $1 AND status = 'scheduled' RETURNING id, topic_id
+      UPDATE yt_publications SET status = 'pending_review', scheduled_for = NULL, updated_at = NOW()
+      WHERE id = $1 AND status IN ('approved', 'scheduled') RETURNING id, topic_id
     `, [pubId]);
     if (!result.rows[0]) {
-      return res.status(400).json({ success: false, error: 'Publication not found or not scheduled' });
+      return res.status(400).json({ success: false, error: 'Publication not found or not in scheduled/approved state' });
     }
     await db.analytics.query(
-      `UPDATE yt_topics SET pipeline_stage = 'queued', updated_at = NOW() WHERE id = $1`,
+      `UPDATE yt_topics SET pipeline_stage = 'queued_for_publishing', updated_at = NOW() WHERE id = $1`,
       [result.rows[0].topic_id]
     );
-    res.json({ success: true, data: { pubId, status: 'queued' } });
+    res.json({ success: true, data: { pubId, status: 'pending_review' } });
   } catch (err) {
     console.error('[Publishing] Error unscheduling publication:', err.message);
     res.status(500).json({ success: false, error: err.message });

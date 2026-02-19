@@ -1,5 +1,6 @@
 // =============================================================================
 // PAGE: project-settings - Configuracao do YouTube + Content Engine
+// All configuration lists come from GET /settings/defaults (zero hardcoded data)
 // =============================================================================
 import { escapeHtml } from '../utils/dom.js';
 
@@ -7,6 +8,8 @@ const api = window.ytApi;
 const toast = window.ytToast;
 let _pid = null;
 let _s = {};
+let _defaults = {};
+let _project = {};
 
 function $(id) { return document.getElementById(id); }
 function val(id) { return $(id)?.value?.trim() ?? ''; }
@@ -31,9 +34,25 @@ function cleanKey(id) {
 window.ytRegisterPage('project-settings', async (params) => {
     _pid = params.projectId;
     try {
-        _s = await api.settings.get(_pid);
+        const [settings, defaults, project] = await Promise.all([
+            api.settings.get(_pid),
+            api.settings.defaults(_pid),
+            api.projects.get(_pid),
+        ]);
+        _s = settings;
+        _defaults = defaults;
+        _project = project;
+
         $('settings-loading').style.display = 'none';
         $('settings-content').style.display = '';
+
+        // Update page title with project name
+        const pageTitle = document.querySelector('.yt-page-title');
+        if (pageTitle && _project.name) {
+            pageTitle.textContent = `Configuracoes — ${_project.name}`;
+        }
+
+        renderProject();
         renderContentEngine();
         renderStorytelling();
         renderAIProviders();
@@ -46,7 +65,6 @@ window.ytRegisterPage('project-settings', async (params) => {
             if (hp.get('oauth_success')) {
                 toast('YouTube conectado com sucesso!', 'success');
                 history.replaceState(null, '', hashParts[0]);
-                // Reload settings to show connected state
                 _s = await api.settings.get(_pid);
                 renderYouTube();
             }
@@ -62,6 +80,66 @@ window.ytRegisterPage('project-settings', async (params) => {
 });
 
 // =============================================================================
+// Project Info (name, niche, language, description)
+// =============================================================================
+function renderProject() {
+    const container = $('settings-project');
+    if (!container) return;
+
+    const name = _project.name || '';
+    const description = _project.description || '';
+    const niche = _project.niche || '';
+    const language = _project.language || 'pt-BR';
+    const niches = _defaults.niches || [];
+    const languages = _defaults.languages || [];
+
+    container.innerHTML = `
+        <div class="yt-card" style="margin-bottom:24px;"><div class="yt-card-body">
+        <h3 style="margin-bottom:16px;font-size:var(--font-size-base);font-weight:600;">
+            Projeto</h3>
+        <p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);margin-bottom:16px;">
+            Informacoes gerais do projeto.</p>
+
+        <div class="yt-form-group"><label class="yt-label">Nome do Projeto</label>
+            <input class="yt-input" id="proj-name" maxlength="100"
+                value="${escapeHtml(name)}"
+                placeholder="Ex: Canal de Historia"></div>
+
+        <div class="yt-form-group"><label class="yt-label">Nicho</label>
+            <select class="yt-select" id="proj-niche">
+                <option value="">Selecione...</option>
+                ${niches.map(n => `<option value="${n.value}" ${opt(n.value, niche)}>${escapeHtml(n.label)}</option>`).join('')}
+            </select></div>
+
+        <div class="yt-form-group"><label class="yt-label">Idioma</label>
+            <select class="yt-select" id="proj-language">
+                ${languages.map(l => `<option value="${l.value}" ${opt(l.value, language)}>${escapeHtml(l.label)}</option>`).join('')}
+            </select></div>
+
+        <div class="yt-form-group"><label class="yt-label">Descricao</label>
+            <textarea class="yt-textarea" id="proj-description" rows="3" maxlength="500"
+                placeholder="Breve descricao do projeto...">${escapeHtml(description)}</textarea></div>
+
+        <button class="yt-btn yt-btn-primary" id="proj-save" style="margin-top:12px;">
+            Salvar Projeto</button>
+        </div></div>`;
+
+    $('proj-save')?.addEventListener('click', () => save(
+        async () => {
+            const updated = await api.projects.update(_pid, {
+                name: val('proj-name'),
+                niche: val('proj-niche') || null,
+                language: val('proj-language'),
+                description: val('proj-description') || null,
+            });
+            _project = updated;
+            // Update page title and sidebar if name changed
+            const pageTitle = document.querySelector('.yt-page-title');
+            if (pageTitle) pageTitle.textContent = `Configuracoes — ${escapeHtml(updated.name || 'Projeto')}`;
+        }, 'Projeto atualizado!'));
+}
+
+// =============================================================================
 // Content Engine Settings
 // =============================================================================
 function renderContentEngine() {
@@ -74,6 +152,7 @@ function renderContentEngine() {
     const bufferSize = _s.content_engine_buffer_size ?? _s.contentEngineBufferSize ?? 7;
     const maxGenPerDay = _s.content_engine_max_gen_per_day ?? _s.contentEngineMaxGenPerDay ?? 5;
     const minRichness = _s.content_engine_min_richness ?? _s.contentEngineMinRichness ?? 7;
+    const durations = _defaults.duration_targets || [];
 
     container.innerHTML = `
         <div class="yt-card" style="margin-bottom:24px;"><div class="yt-card-body">
@@ -91,9 +170,7 @@ function renderContentEngine() {
 
         <div class="yt-form-group"><label class="yt-label">Duracao Alvo do Video</label>
             <select class="yt-select" id="ce-duration">
-                <option value="30-40" ${opt('30-40',durTarget)}>30-40 minutos</option>
-                <option value="40-50" ${opt('40-50',durTarget)}>40-50 minutos</option>
-                <option value="50-60" ${opt('50-60',durTarget)}>50-60 minutos</option>
+                ${durations.map(d => `<option value="${d.value}" ${opt(d.value, durTarget)}>${escapeHtml(d.label)}</option>`).join('')}
             </select></div>
 
         <div class="yt-form-group"><label class="yt-label">Publicacoes por Dia</label>
@@ -147,35 +224,24 @@ function renderContentEngine() {
 }
 
 // =============================================================================
-// Storytelling Settings
+// Storytelling Settings (defaults from backend)
 // =============================================================================
 function renderStorytelling() {
     const container = $('settings-storytelling');
     if (!container) return;
 
-    const DEF_HOOK = 'O adversario ri, zomba ou duvida publicamente. Cena de humilhacao ou desprezo que estabelece a tensao inicial. A abertura DEVE conectar tematicamente com a resolucao final — o espectador precisa sentir que voltou ao ponto de partida, mas agora com a perspectiva invertida.';
-    const DEF_CONTEXT = 'Background historico detalhado. O que estava em jogo, quem eram os protagonistas, qual era o cenario geopolitico/social. Construir o mundo para que o espectador entenda a gravidade do conflito e se importe com o desfecho.';
-    const DEF_DEVELOPMENT = 'Jornada do protagonista com dificuldades reais, momentos de duvida e quase-desistencia. Incluir detalhes humanos (conversas, decisoes dificeis, sacrificios). O espectador precisa torcer ativamente pelo protagonista.';
-    const DEF_TWIST = 'O momento em que as mesas viram. O adversario percebe que subestimou. Detalhar a reacao, o choque, a mudanca de poder. Este e o climax emocional — usar linguagem cinematica e ritmo acelerado.';
-    const DEF_RESOLUTION = 'Vitoria completa e definitiva. Contraste explicito entre a zombaria inicial e o resultado final. Fechar o arco narrativo conectando diretamente com o hook de abertura. Deixar o espectador com sensacao de satisfacao e justica.';
-    const DEF_TITLE = '{adversary} ri de {protagonist} sobre {topic} -- {consequence}';
-
-    const hook = _s.storytelling_hook || _s.storytellingHook || DEF_HOOK;
-    const context = _s.storytelling_context || _s.storytellingContext || DEF_CONTEXT;
-    const development = _s.storytelling_development || _s.storytellingDevelopment || DEF_DEVELOPMENT;
-    const twist = _s.storytelling_twist || _s.storytellingTwist || DEF_TWIST;
-    const resolution = _s.storytelling_resolution || _s.storytellingResolution || DEF_RESOLUTION;
-    const titleTemplate = _s.storytelling_title_template || _s.storytellingTitleTemplate || DEF_TITLE;
+    const sd = _defaults.storytelling_defaults || {};
+    const hook = _s.storytelling_hook || _s.storytellingHook || sd.hook || '';
+    const context = _s.storytelling_context || _s.storytellingContext || sd.context || '';
+    const development = _s.storytelling_development || _s.storytellingDevelopment || sd.development || '';
+    const twist = _s.storytelling_twist || _s.storytellingTwist || sd.twist || '';
+    const resolution = _s.storytelling_resolution || _s.storytellingResolution || sd.resolution || '';
+    const titleTemplate = _s.storytelling_title_template || _s.storytellingTitleTemplate || sd.title_template || '';
     const narrationTone = _s.storytelling_narration_tone || _s.storytellingNarrationTone || 'dramatic';
 
     const triggers = _s.storytelling_triggers || _s.storytellingTriggers || [];
-    const allTriggers = [
-        { key: 'patriotismo', label: 'Patriotismo / Orgulho Nacional' },
-        { key: 'underdog', label: 'Underdog / Subestimado' },
-        { key: 'vinganca', label: 'Vinganca / Justica Poetica' },
-        { key: 'curiosidade', label: 'Curiosidade / Misterio' },
-        { key: 'raiva_justa', label: 'Raiva Justa' },
-    ];
+    const allTriggers = _defaults.psychological_triggers || [];
+    const tones = _defaults.narration_tones || [];
 
     container.innerHTML = `
         <div class="yt-card" style="margin-bottom:24px;"><div class="yt-card-body">
@@ -215,11 +281,7 @@ function renderStorytelling() {
 
         <div class="yt-form-group"><label class="yt-label">Tom da Narracao</label>
             <select class="yt-select" id="st-tone">
-                <option value="dramatic" ${opt('dramatic',narrationTone)}>Dramatico</option>
-                <option value="documentary" ${opt('documentary',narrationTone)}>Documentario</option>
-                <option value="suspense" ${opt('suspense',narrationTone)}>Suspense</option>
-                <option value="epic" ${opt('epic',narrationTone)}>Epico</option>
-                <option value="conversational" ${opt('conversational',narrationTone)}>Conversacional</option>
+                ${tones.map(t => `<option value="${t.value}" ${opt(t.value, narrationTone)}>${escapeHtml(t.label)}</option>`).join('')}
             </select></div>
 
         <h4 style="font-size:var(--font-size-sm);font-weight:600;margin:16px 0 12px;">Gatilhos Psicologicos</h4>
@@ -250,26 +312,22 @@ function renderStorytelling() {
 }
 
 // =============================================================================
-// AI Providers (read-only info)
+// AI Providers (read-only info from backend)
 // =============================================================================
 function renderAIProviders() {
     const container = $('settings-ai-info');
     if (!container) return;
 
-    const providers = [
-        { func: 'Texto / Roteiro (LLM)', provider: 'Gemini', detail: 'Google Gemini via GEMINI_API_KEY' },
-        { func: 'Narracao (TTS)', provider: 'ElevenLabs', detail: 'ElevenLabs via ELEVENLABS_API_KEY' },
-        { func: 'Imagem (Visuais)', provider: 'Replicate', detail: 'prunaai/z-image-turbo — 1024x1024, 8 steps' },
-        { func: 'Video (Cenas Animadas)', provider: 'Replicate', detail: 'google/veo-3-fast — 720p' },
-        { func: 'Pesquisa Web', provider: 'Serper', detail: 'serper.dev via SERPER_API_KEY' },
-        { func: 'Montagem Final', provider: 'FFmpeg', detail: 'Processamento local' },
-    ];
+    const providers = _defaults.ai_providers || [];
 
     const rows = providers.map(p => `
         <tr>
-            <td style="font-weight:500;">${escapeHtml(p.func)}</td>
+            <td style="font-weight:500;">${escapeHtml(p.function)}</td>
             <td><span class="yt-badge yt-badge-blue">${escapeHtml(p.provider)}</span></td>
             <td style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">${escapeHtml(p.detail)}</td>
+            <td style="text-align:center;">${p.configured
+                ? '<span class="yt-badge yt-badge-green">OK</span>'
+                : '<span class="yt-badge yt-badge-yellow">Falta Key</span>'}</td>
         </tr>`).join('');
 
     container.innerHTML = `
@@ -279,32 +337,18 @@ function renderAIProviders() {
         <p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);margin-bottom:16px;">
             Servicos utilizados em cada etapa do pipeline de geracao. Configurados via variaveis de ambiente.</p>
         <table class="yt-table">
-            <thead><tr><th>Funcao</th><th>Provedor</th><th>Detalhes</th></tr></thead>
+            <thead><tr><th>Funcao</th><th>Provedor</th><th>Detalhes</th><th>Status</th></tr></thead>
             <tbody>${rows}</tbody>
         </table>
         </div></div>`;
 }
 
 // =============================================================================
-// YouTube Settings
+// YouTube Settings (categories from backend)
 // =============================================================================
 function renderYouTube() {
     const connected = _s.youtube_connected;
-    const categories = [
-        { id: '1', name: 'Film & Animation' },
-        { id: '2', name: 'Autos & Vehicles' },
-        { id: '10', name: 'Music' },
-        { id: '15', name: 'Pets & Animals' },
-        { id: '17', name: 'Sports' },
-        { id: '20', name: 'Gaming' },
-        { id: '22', name: 'People & Blogs' },
-        { id: '23', name: 'Comedy' },
-        { id: '24', name: 'Entertainment' },
-        { id: '25', name: 'News & Politics' },
-        { id: '26', name: 'Howto & Style' },
-        { id: '27', name: 'Education' },
-        { id: '28', name: 'Science & Technology' },
-    ];
+    const categories = _defaults.youtube_categories || [];
     const catId = String(_s.youtube_category_id || '22');
 
     if (connected) {
@@ -328,7 +372,7 @@ function renderYouTube() {
             <div class="yt-form-group"><label class="yt-label">Categoria do Canal</label>
                 <select class="yt-select" id="yt-category">
                     ${categories.map(c =>
-                        `<option value="${c.id}" ${opt(c.id, catId)}>${c.id} - ${c.name}</option>`
+                        `<option value="${c.id}" ${opt(c.id, catId)}>${c.id} - ${escapeHtml(c.name)}</option>`
                     ).join('')}
                 </select></div>
 
@@ -409,7 +453,7 @@ function renderYouTube() {
                 <label class="yt-label">Categoria do Canal</label>
                 <select class="yt-select" id="yt-category">
                     ${categories.map(c =>
-                        `<option value="${c.id}" ${opt(c.id, catId)}>${c.id} - ${c.name}</option>`
+                        `<option value="${c.id}" ${opt(c.id, catId)}>${c.id} - ${escapeHtml(c.name)}</option>`
                     ).join('')}
                 </select></div>
 

@@ -11,9 +11,8 @@ const toast = window.ytToast;
 const router = window.ytRouter;
 let _pid = null, _tid = null, _topic = null;
 
-const STAGES = ['selected','researching','story_created','script_created',
-    'visuals_created','thumbnails_created','narration_created','video_assembled',
-    'queued_for_publishing','published'];
+// Stages loaded from backend config defaults (populated in page loader)
+let STAGES = [];
 const SEG_COLORS = { hook:'warning', intro:'info', main:'success', example:'info',
     data:'info', transition:'warning', climax:'danger', conclusion:'success', cta:'danger' };
 
@@ -21,7 +20,14 @@ window.ytRegisterPage('topic-detail', async (params) => {
     _pid = params.projectId; _tid = params.topicId;
     document.getElementById('td-back')?.addEventListener('click', () => router.navigate(`projects/${_pid}/topics`));
     try {
-        _topic = await api.topics.get(_pid, _tid);
+        const [topic, defaults] = await Promise.all([
+            api.topics.get(_pid, _tid),
+            STAGES.length ? Promise.resolve(null) : api.config.defaults(),
+        ]);
+        _topic = topic;
+        if (defaults) {
+            STAGES = (defaults.pipeline_stages || []).map(s => s.key);
+        }
         document.getElementById('td-loading').style.display = 'none';
         document.getElementById('td-overview').style.display = '';
         document.getElementById('td-title').textContent = _topic.title || 'Historia';

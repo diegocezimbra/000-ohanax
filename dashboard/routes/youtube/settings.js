@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../../db.js';
 import { invalidateSettingsCache, getAvailableEnvProviders } from '../../services/youtube/settings-helper.js';
+import { getConfigDefaults } from '../../services/youtube/config-defaults.js';
 
 const router = Router({ mergeParams: true });
 
@@ -70,6 +71,14 @@ router.get('/', async (req, res) => {
 // =============================================================================
 router.get('/env-providers', (req, res) => {
   res.json({ success: true, data: getAvailableEnvProviders() });
+});
+
+// =============================================================================
+// GET /defaults - All configuration defaults (niches, stages, triggers, etc.)
+// Single endpoint so the frontend never needs hardcoded lists.
+// =============================================================================
+router.get('/defaults', (req, res) => {
+  res.json({ success: true, data: getConfigDefaults() });
 });
 
 // =============================================================================

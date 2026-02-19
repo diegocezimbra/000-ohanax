@@ -1,22 +1,13 @@
 // =============================================================================
 // PIPELINE PAGE - Kanban board com SortableJS
+// Pipeline stages loaded from GET /config/defaults (zero hardcoded data)
 // =============================================================================
 
-const STAGES = [
-    { key: 'selected', label: 'Selecionada' },
-    { key: 'researching', label: 'Pesquisando' },
-    { key: 'story_created', label: 'Historia Criada' },
-    { key: 'script_created', label: 'Roteiro Criado' },
-    { key: 'visuals_created', label: 'Visuais Criados' },
-    { key: 'thumbnails_created', label: 'Thumbnails Criadas' },
-    { key: 'narration_created', label: 'Narracao Criada' },
-    { key: 'video_assembled', label: 'Video Montado' },
-    { key: 'queued_for_publishing', label: 'Na Fila' },
-    { key: 'published', label: 'Publicado' },
-];
-
+let STAGES = [];
+let EXTRA_STAGES = [];
 let _projectId = null;
 let _selectedIds = new Set();
+let _configLoaded = false;
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -49,11 +40,23 @@ export async function loadPipeline(params) {
     const kanban = document.getElementById('pipe-kanban');
 
     try {
-        const [pipelineData, stats, engineStatus] = await Promise.all([
+        // Load config defaults (stages) from backend on first load
+        const fetchDefaults = _configLoaded
+            ? Promise.resolve(null)
+            : window.ytApi.config.defaults();
+
+        const [pipelineData, stats, engineStatus, defaults] = await Promise.all([
             window.ytApi.pipeline.get(_projectId),
             window.ytApi.pipeline.stats(_projectId),
             window.ytApi.contentEngine?.status(_projectId).catch(() => null),
+            fetchDefaults,
         ]);
+
+        if (defaults) {
+            STAGES = defaults.pipeline_stages || [];
+            EXTRA_STAGES = defaults.pipeline_extra_stages || [];
+            _configLoaded = true;
+        }
 
         renderStats(stats);
         renderEngineStatus(engineStatus);
@@ -154,9 +157,7 @@ function renderKanban(data) {
     // Group by stage (including extra statuses)
     const grouped = {};
     STAGES.forEach((s) => { grouped[s.key] = []; });
-    grouped['discarded'] = [];
-    grouped['rejected'] = [];
-    grouped['error'] = [];
+    EXTRA_STAGES.forEach((s) => { grouped[s.key] = []; });
     items.forEach((item) => {
         const stage = item.pipelineStage || item.stage || 'selected';
         if (grouped[stage]) {
@@ -164,12 +165,7 @@ function renderKanban(data) {
         }
     });
 
-    const EXTRA_COLS = [
-        { key: 'discarded', label: 'Descartado' },
-        { key: 'rejected', label: 'Rejeitado' },
-        { key: 'error', label: 'Erro' },
-    ];
-    const allCols = [...STAGES, ...EXTRA_COLS.filter(c => (grouped[c.key] || []).length > 0)];
+    const allCols = [...STAGES, ...EXTRA_STAGES.filter(c => (grouped[c.key] || []).length > 0)];
 
     kanban.innerHTML = allCols.map((stage) => {
         const cards = grouped[stage.key] || [];
@@ -245,7 +241,6 @@ function initSortable() {
     // Bind card click -> navigate to topic detail
     document.querySelectorAll('.yt-kanban-card').forEach((card) => {
         card.addEventListener('click', (e) => {
-            // Don't navigate if clicking checkbox
             if (e.target.closest('.pipe-card-check') || e.target.tagName === 'INPUT') return;
             const topicId = card.dataset.topicId;
             if (topicId && _projectId) {
@@ -282,7 +277,7 @@ function bindControls() {
         }
     });
 
-    // Pause/Resume Content Engine (with backward compatibility to pipeline)
+    // Pause/Resume Content Engine
     document.getElementById('pipe-pause-toggle').addEventListener('click', async () => {
         const btn = document.getElementById('pipe-pause-toggle');
         const isPaused = btn.textContent.includes('Retomar');

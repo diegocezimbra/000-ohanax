@@ -28,6 +28,7 @@ const ENV_KEY_MAP = {
   image_api_key: {
     dalle: 'OPENAI_API_KEY',
     flux: 'REPLICATE_API_TOKEN',
+    z_image_turbo: 'REPLICATE_API_TOKEN',
   },
   tts_api_key: {
     elevenlabs: 'ELEVENLABS_API_KEY',
@@ -36,6 +37,7 @@ const ENV_KEY_MAP = {
   video_api_key: {
     runway: 'RUNWAY_API_KEY',
     kling: 'KLING_API_KEY',
+    veo3: 'REPLICATE_API_TOKEN',
   },
   openai_api_key: 'OPENAI_API_KEY',
   replicate_api_key: 'REPLICATE_API_TOKEN',
