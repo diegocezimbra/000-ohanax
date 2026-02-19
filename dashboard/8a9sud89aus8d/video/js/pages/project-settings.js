@@ -54,6 +54,7 @@ window.ytRegisterPage('project-settings', async (params) => {
 
         renderProject();
         renderContentEngine();
+        renderPublishing();
         renderStorytelling();
         renderAIProviders();
         renderYouTube();
@@ -221,6 +222,132 @@ function renderContentEngine() {
             renderContentEngine();
         } catch (e) { toast('Erro: ' + e.message, 'error'); }
     });
+}
+
+// =============================================================================
+// Publishing Schedule
+// =============================================================================
+function renderPublishing() {
+    const container = $('settings-publishing');
+    if (!container) return;
+
+    const maxPubDay = _s.max_publications_per_day ?? _s.max_publishes_per_day ?? 1;
+    const pubTimes = (typeof _s.publication_times === 'string'
+        ? JSON.parse(_s.publication_times || '[]')
+        : _s.publication_times) || ['14:00'];
+    const pubDays = (typeof _s.publication_days === 'string'
+        ? JSON.parse(_s.publication_days || '[]')
+        : _s.publication_days) || ['mon', 'tue', 'wed', 'thu', 'fri'];
+    const timezone = _s.publication_timezone || 'America/Sao_Paulo';
+    const visibility = _s.default_visibility || 'public';
+    const autoPublish = _s.auto_publish ?? false;
+    const timezones = _defaults.timezones || [];
+    const visibilities = _defaults.visibilities || [];
+
+    const allDays = [
+        { key: 'mon', label: 'Seg' }, { key: 'tue', label: 'Ter' },
+        { key: 'wed', label: 'Qua' }, { key: 'thu', label: 'Qui' },
+        { key: 'fri', label: 'Sex' }, { key: 'sat', label: 'Sab' },
+        { key: 'sun', label: 'Dom' },
+    ];
+
+    container.innerHTML = `
+        <div class="yt-card" style="margin-bottom:24px;"><div class="yt-card-body">
+        <h3 style="margin-bottom:16px;font-size:var(--font-size-base);font-weight:600;">
+            Agenda de Publicacao</h3>
+        <p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);margin-bottom:16px;">
+            Horarios e dias em que os videos serao publicados automaticamente.</p>
+
+        <div class="yt-form-group">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:var(--font-size-sm);">
+                <input type="checkbox" id="pub-auto" ${autoPublish ? 'checked' : ''}>
+                Publicar automaticamente quando o video estiver pronto
+            </label></div>
+
+        <div class="yt-form-group"><label class="yt-label">Max Publicacoes por Dia</label>
+            <input class="yt-input" type="number" id="pub-max-day" min="1" max="10"
+                value="${maxPubDay}"></div>
+
+        <div class="yt-form-group"><label class="yt-label">Horarios de Publicacao</label>
+            <div id="pub-times-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;">
+                ${pubTimes.map((t, i) => `
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <input class="yt-input pub-time-input" type="time" value="${t}" style="width:140px;">
+                        ${pubTimes.length > 1 ? `<button class="yt-btn yt-btn-sm yt-btn-ghost pub-time-remove" data-idx="${i}" title="Remover">X</button>` : ''}
+                    </div>`).join('')}
+            </div>
+            <button class="yt-btn yt-btn-sm yt-btn-ghost" id="pub-add-time">+ Adicionar Horario</button></div>
+
+        <div class="yt-form-group"><label class="yt-label">Dias da Semana</label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                ${allDays.map(d => `
+                    <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:var(--font-size-sm);
+                        padding:4px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);
+                        background:${pubDays.includes(d.key) ? 'var(--color-accent)' : 'transparent'};
+                        color:${pubDays.includes(d.key) ? '#fff' : 'var(--color-text)'};">
+                        <input type="checkbox" class="pub-day-check" value="${d.key}"
+                            ${pubDays.includes(d.key) ? 'checked' : ''} style="display:none;">
+                        ${d.label}
+                    </label>`).join('')}
+            </div></div>
+
+        <div class="yt-form-group"><label class="yt-label">Fuso Horario</label>
+            <select class="yt-select" id="pub-timezone">
+                ${timezones.map(t => `<option value="${t.value}" ${opt(t.value, timezone)}>${escapeHtml(t.label)}</option>`).join('')}
+            </select></div>
+
+        <div class="yt-form-group"><label class="yt-label">Visibilidade Padrao</label>
+            <select class="yt-select" id="pub-visibility">
+                ${visibilities.map(v => `<option value="${v.value}" ${opt(v.value, visibility)}>${escapeHtml(v.label)}</option>`).join('')}
+            </select></div>
+
+        <button class="yt-btn yt-btn-primary" id="pub-save" style="margin-top:12px;">
+            Salvar Agenda</button>
+        </div></div>`;
+
+    // Toggle day styling on click
+    container.querySelectorAll('.pub-day-check').forEach(cb => {
+        cb.closest('label').addEventListener('click', () => {
+            setTimeout(() => {
+                const label = cb.closest('label');
+                label.style.background = cb.checked ? 'var(--color-accent)' : 'transparent';
+                label.style.color = cb.checked ? '#fff' : 'var(--color-text)';
+            }, 0);
+        });
+    });
+
+    // Add time slot
+    $('pub-add-time')?.addEventListener('click', () => {
+        const list = $('pub-times-list');
+        const div = document.createElement('div');
+        div.style.cssText = 'display:flex;align-items:center;gap:8px;';
+        div.innerHTML = `
+            <input class="yt-input pub-time-input" type="time" value="12:00" style="width:140px;">
+            <button class="yt-btn yt-btn-sm yt-btn-ghost pub-time-remove" title="Remover">X</button>`;
+        list.appendChild(div);
+        div.querySelector('.pub-time-remove').addEventListener('click', () => div.remove());
+    });
+
+    // Remove time slot
+    container.querySelectorAll('.pub-time-remove').forEach(btn => {
+        btn.addEventListener('click', () => btn.closest('div').remove());
+    });
+
+    // Save
+    $('pub-save')?.addEventListener('click', () => save(
+        async () => {
+            const times = [...container.querySelectorAll('.pub-time-input')].map(i => i.value).filter(Boolean);
+            const days = [...container.querySelectorAll('.pub-day-check:checked')].map(cb => cb.value);
+            const updated = await api.settings.updatePublishing(_pid, {
+                max_publications_per_day: parseInt(val('pub-max-day')) || 1,
+                publication_times: times,
+                publication_days: days,
+                publication_timezone: val('pub-timezone'),
+                default_visibility: val('pub-visibility'),
+                auto_publish: $('pub-auto').checked,
+            });
+            _s = { ..._s, ...updated };
+        }, 'Agenda de publicacao salva!'));
 }
 
 // =============================================================================
