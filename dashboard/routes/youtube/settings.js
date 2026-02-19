@@ -363,7 +363,9 @@ router.get('/youtube/auth-url', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Google Client ID not configured. Save it first.' });
     }
 
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/youtube/projects/${projectId}/settings/youtube/callback`;
+    // AppRunner is behind a load balancer, so req.protocol may be 'http' even when accessed via https
+    const protocol = req.get('x-forwarded-proto') || req.protocol;
+    const redirectUri = `${protocol}://${req.get('host')}/api/youtube/projects/${projectId}/settings/youtube/callback`;
     const scopes = [
       'https://www.googleapis.com/auth/youtube.upload',
       'https://www.googleapis.com/auth/youtube.readonly',
@@ -413,7 +415,8 @@ router.get('/youtube/callback', async (req, res) => {
     }
 
     const { google_client_id, google_client_secret } = settings.rows[0];
-    const redirectUri = `${req.protocol}://${req.get('host')}/api/youtube/projects/${projectId}/settings/youtube/callback`;
+    const protocol = req.get('x-forwarded-proto') || req.protocol;
+    const redirectUri = `${protocol}://${req.get('host')}/api/youtube/projects/${projectId}/settings/youtube/callback`;
 
     // Exchange code for tokens
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {

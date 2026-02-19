@@ -206,7 +206,7 @@ function _renderProjectSidebar(state) {
             <div class="yt-sidebar-section-title">Configuracao</div>
             <a class="yt-sidebar-link" data-page="project-settings"
                href="#/projects/${pid}/settings">
-                <span class="yt-nav-icon">&#9881;</span> Settings
+                <span class="yt-nav-icon">&#9881;</span> YouTube
             </a>
         </div>
         <div class="yt-sidebar-spacer"></div>
