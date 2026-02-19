@@ -12,11 +12,18 @@
  * @param {number} opts.maxResults - default 5
  * @returns {Promise<Array<{ title: string, url: string, content: string, score: number }>>}
  */
+// --- Provider Registry ---
+const SEARCH_PROVIDERS = {
+  tavily: callTavily,
+  serper: callSerper,
+};
+
 export async function webSearch({ provider, apiKey, query, maxResults = 5 }) {
-  if (provider === 'serper') {
-    return callSerper({ apiKey, query, maxResults });
+  const handler = SEARCH_PROVIDERS[provider];
+  if (!handler) {
+    throw new Error(`Unknown search provider: '${provider}'. Available: ${Object.keys(SEARCH_PROVIDERS).join(', ')}`);
   }
-  return callTavily({ apiKey, query, maxResults });
+  return handler({ apiKey, query, maxResults });
 }
 
 // --- Internal providers ---

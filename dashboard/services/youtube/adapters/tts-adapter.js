@@ -16,15 +16,22 @@
  * @param {number} [opts.similarityBoost=0.75] - Similarity boost 0-1 (ElevenLabs only)
  * @returns {Promise<{ buffer: Buffer, mimeType: string, metadata: Object }>}
  */
+// --- Provider Registry ---
+const TTS_PROVIDERS = {
+  elevenlabs: callElevenLabs,
+  openai: callOpenAiTts,
+};
+
 export async function generateSpeech({
   provider, apiKey, text, voice,
   model, speed = 1.0, stability = 0.5,
   similarityBoost = 0.75,
 }) {
-  if (provider === 'openai') {
-    return callOpenAiTts({ apiKey, text, voice, model, speed });
+  const handler = TTS_PROVIDERS[provider];
+  if (!handler) {
+    throw new Error(`Unknown TTS provider: '${provider}'. Available: ${Object.keys(TTS_PROVIDERS).join(', ')}`);
   }
-  return callElevenLabs({ apiKey, text, voice, model, speed, stability, similarityBoost });
+  return handler({ apiKey, text, voice, model, speed, stability, similarityBoost });
 }
 
 /**

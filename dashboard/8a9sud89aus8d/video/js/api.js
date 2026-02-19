@@ -54,11 +54,14 @@ export const api = {
 
     settings: {
         get: (pid) => request(`/projects/${pid}/settings`),
+        envProviders: (pid) => request(`/projects/${pid}/settings/env-providers`),
         updateStorytelling: (pid, body) => PUT_BODY(`/projects/${pid}/settings/storytelling`, body),
         updateAI: (pid, body) => PUT_BODY(`/projects/${pid}/settings/ai`, body),
         updatePublishing: (pid, body) => PUT_BODY(`/projects/${pid}/settings/publishing`, body),
         updateVisualIdentity: (pid, body) => PUT_BODY(`/projects/${pid}/settings/visual-identity`, body),
         updateYouTube: (pid, body) => PUT_BODY(`/projects/${pid}/settings/youtube`, body),
+        youtubeAuthUrl: (pid) => request(`/projects/${pid}/settings/youtube/auth-url`),
+        youtubeDisconnect: (pid) => POST(`/projects/${pid}/settings/youtube/disconnect`),
     },
 
     sources: {

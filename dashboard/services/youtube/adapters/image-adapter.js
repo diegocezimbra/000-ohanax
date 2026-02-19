@@ -14,14 +14,21 @@
  * @param {string} opts.style - 'natural' | 'vivid' (DALL-E) or model-specific
  * @returns {Promise<{ buffer: Buffer, mimeType: string, metadata: Object }>}
  */
+// --- Provider Registry ---
+const IMAGE_PROVIDERS = {
+  dalle: callDallE,
+  flux: callFlux,
+};
+
 export async function generateImage({
   provider, apiKey, prompt, negativePrompt = '',
   width = 1920, height = 1080, style = 'vivid',
 }) {
-  if (provider === 'flux') {
-    return callFlux({ apiKey, prompt, negativePrompt, width, height });
+  const handler = IMAGE_PROVIDERS[provider];
+  if (!handler) {
+    throw new Error(`Unknown image provider: '${provider}'. Available: ${Object.keys(IMAGE_PROVIDERS).join(', ')}`);
   }
-  return callDallE({ apiKey, prompt, style });
+  return handler({ apiKey, prompt, negativePrompt, width, height, style });
 }
 
 // --- Internal providers ---

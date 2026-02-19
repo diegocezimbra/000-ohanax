@@ -13,14 +13,21 @@
  * @param {string} opts.aspectRatio - '16:9' | '9:16' | '1:1'
  * @returns {Promise<{ buffer: Buffer, mimeType: string, metadata: Object }>}
  */
+// --- Provider Registry ---
+const VIDEO_PROVIDERS = {
+  runway: callRunway,
+  kling: callKling,
+};
+
 export async function generateVideo({
   provider, apiKey, prompt, imageUrl,
   duration = 5, aspectRatio = '16:9',
 }) {
-  if (provider === 'kling') {
-    return callKling({ apiKey, prompt, imageUrl, duration, aspectRatio });
+  const handler = VIDEO_PROVIDERS[provider];
+  if (!handler) {
+    throw new Error(`Unknown video provider: '${provider}'. Available: ${Object.keys(VIDEO_PROVIDERS).join(', ')}`);
   }
-  return callRunway({ apiKey, prompt, imageUrl, duration, aspectRatio });
+  return handler({ apiKey, prompt, imageUrl, duration, aspectRatio });
 }
 
 // --- Runway ML (Gen-3 Alpha) ---

@@ -1,14 +1,22 @@
 /**
- * LLM Adapter - OpenAI + Anthropic Claude abstraction.
- * Provides a unified interface for text generation across providers.
+ * LLM Adapter - Registry-based provider abstraction.
+ * Supports: OpenAI, Anthropic Claude, Google Gemini.
+ * New providers: add a handler function + register in LLM_PROVIDERS.
  */
+
+// --- Provider Registry ---
+const LLM_PROVIDERS = {
+  openai: callOpenAI,
+  anthropic: callAnthropic,
+  gemini: callGemini,
+};
 
 /**
  * Generate text using the configured LLM provider.
  * @param {Object} opts
- * @param {string} opts.provider - 'openai' | 'anthropic'
+ * @param {string} opts.provider - 'openai' | 'anthropic' | 'gemini'
  * @param {string} opts.apiKey
- * @param {string} opts.model - e.g. 'gpt-4o', 'claude-sonnet-4-20250514'
+ * @param {string} opts.model - e.g. 'gpt-4o', 'claude-sonnet-4-5-20250929', 'gemini-2.0-flash'
  * @param {string} opts.systemPrompt
  * @param {string} opts.userPrompt
  * @param {number} opts.maxTokens - default 4096
@@ -22,10 +30,16 @@ export async function generateText({
   maxTokens = 4096, temperature = 0.7,
   responseFormat = 'text',
 }) {
-  if (provider === 'anthropic') {
-    return callAnthropic({ apiKey, model, systemPrompt, userPrompt, maxTokens, temperature });
+  const handler = LLM_PROVIDERS[provider];
+  if (!handler) {
+    throw new Error(`Unknown LLM provider: '${provider}'. Available: ${Object.keys(LLM_PROVIDERS).join(', ')}`);
   }
-  return callOpenAI({ apiKey, model, systemPrompt, userPrompt, maxTokens, temperature, responseFormat });
+  return handler({ apiKey, model, systemPrompt, userPrompt, maxTokens, temperature, responseFormat });
+}
+
+/** List available providers. */
+export function getAvailableProviders() {
+  return Object.keys(LLM_PROVIDERS);
 }
 
 /**
@@ -40,7 +54,7 @@ export function parseJsonResponse(text) {
   return JSON.parse(cleaned);
 }
 
-// --- Internal providers ---
+// --- OpenAI ---
 
 async function callOpenAI({ apiKey, model, systemPrompt, userPrompt, maxTokens, temperature, responseFormat }) {
   const body = {
@@ -80,6 +94,8 @@ async function callOpenAI({ apiKey, model, systemPrompt, userPrompt, maxTokens, 
   };
 }
 
+// --- Anthropic ---
+
 async function callAnthropic({ apiKey, model, systemPrompt, userPrompt, maxTokens, temperature }) {
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -108,6 +124,57 @@ async function callAnthropic({ apiKey, model, systemPrompt, userPrompt, maxToken
     usage: {
       inputTokens: data.usage?.input_tokens || 0,
       outputTokens: data.usage?.output_tokens || 0,
+    },
+  };
+}
+
+// --- Google Gemini ---
+
+async function callGemini({ apiKey, model, systemPrompt, userPrompt, maxTokens, temperature, responseFormat }) {
+  const geminiModel = model || 'gemini-2.0-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`;
+
+  const body = {
+    systemInstruction: {
+      parts: [{ text: systemPrompt }],
+    },
+    contents: [
+      { role: 'user', parts: [{ text: userPrompt }] },
+    ],
+    generationConfig: {
+      maxOutputTokens: maxTokens,
+      temperature,
+    },
+  };
+
+  if (responseFormat === 'json') {
+    body.generationConfig.responseMimeType = 'application/json';
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(`Gemini: ${data.error.message || JSON.stringify(data.error)}`);
+  }
+
+  const candidate = data.candidates?.[0];
+  if (!candidate) {
+    throw new Error('Gemini: No candidates returned');
+  }
+
+  const text = candidate.content?.parts?.map(p => p.text).join('') || '';
+  const usage = data.usageMetadata || {};
+
+  return {
+    text,
+    usage: {
+      inputTokens: usage.promptTokenCount || 0,
+      outputTokens: usage.candidatesTokenCount || 0,
     },
   };
 }

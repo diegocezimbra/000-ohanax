@@ -19,13 +19,13 @@ router.get('/', async (req, res) => {
     const { status, sort } = req.query;
     const { limit, offset } = parsePagination(req.query);
     const conditions = ['p.project_id = $1'];
-    const params = [projectId];
+    const filterParams = [projectId];
     let idx = 2;
-    if (status) { conditions.push(`p.status = $${idx++}`); params.push(status); }
+    if (status) { conditions.push(`p.status = $${idx++}`); filterParams.push(status); }
     const where = conditions.join(' AND ');
     const orderDir = sort === 'created_at_asc' ? 'ASC' : 'DESC';
-    params.push(limit, offset);
 
+    const listParams = [...filterParams, limit, offset];
     const result = await db.analytics.query(`
       SELECT p.id, p.topic_id, p.video_id,
         p.youtube_title, p.youtube_description, p.youtube_tags,
@@ -39,12 +39,12 @@ router.get('/', async (req, res) => {
       LEFT JOIN yt_final_videos fv ON p.video_id = fv.id
       WHERE ${where}
       ORDER BY p.created_at ${orderDir}
-      LIMIT $${idx++} OFFSET $${idx}
-    `, params);
+      LIMIT $${idx} OFFSET $${idx + 1}
+    `, listParams);
 
     const countResult = await db.analytics.query(
       `SELECT COUNT(*) FROM yt_publications p WHERE ${where}`,
-      params.slice(0, idx - 3)
+      filterParams
     );
     res.json({
       success: true, data: result.rows,
