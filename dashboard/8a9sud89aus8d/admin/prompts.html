@@ -200,9 +200,8 @@
             color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0;
         }
         .sidebar-section.collapsed .section-chevron { transform: rotate(-90deg); }
-        .sidebar-section.collapsed .sidebar-section-items { display: none; }
-
-        .sidebar-section-items { }
+        .sidebar-section.collapsed .sidebar-section-items { max-height: 0; overflow: hidden; opacity: 0; }
+        .sidebar-section-items { max-height: 500px; overflow: hidden; opacity: 1; transition: max-height 0.3s ease, opacity 0.2s ease; }
 
         /* Sidebar Item */
         .sidebar-item {
@@ -1025,8 +1024,23 @@
         }
 
         function toggleSection(header) {
-            header.parentElement.classList.toggle('collapsed');
+            const section = header.parentElement;
+            const isCollapsed = section.classList.contains('collapsed');
+
+            document.querySelectorAll('.sidebar-section').forEach(s => {
+                s.classList.add('collapsed');
+            });
+
+            if (isCollapsed) {
+                section.classList.remove('collapsed');
+            }
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.sidebar-section').forEach(s => {
+                s.classList.add('collapsed');
+            });
+        });
 
         // =================== SELECTION ===================
         function toggleSelectMode() {
