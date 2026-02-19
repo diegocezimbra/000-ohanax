@@ -15,7 +15,7 @@ const _state = {
     /** @type {object | null} */
     currentTopic: null,
     /** @type {boolean} */
-    pipelinePaused: false,
+    contentEngineActive: true,
     /** @type {'list' | 'project'} */
     sidebarMode: 'list',
 };
@@ -82,14 +82,6 @@ export function setTopic(topic) {
         currentTopicId: topic ? topic.id : null,
         currentTopic: topic,
     });
-}
-
-/**
- * Updates the pipeline paused flag.
- * @param {boolean} paused
- */
-export function setPipelinePaused(paused) {
-    setState({ pipelinePaused: paused });
 }
 
 /**

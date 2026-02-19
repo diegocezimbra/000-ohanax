@@ -1,5 +1,5 @@
 // =============================================================================
-// PAGE: topics - Lista de topicos do projeto
+// PAGE: topics - Lista de historias do projeto (v3 - Content Engine)
 // =============================================================================
 
 import { openModal } from '../components/modal.js';
@@ -51,10 +51,10 @@ async function loadTopics() {
                 <div class="yt-empty-state">
                     <div class="yt-empty-state-icon">&#128196;</div>
                     <div class="yt-empty-state-message">
-                        Nenhum topico encontrado. Crie seu primeiro topico!
+                        Nenhuma historia encontrada. Adicione fontes ao pool e o Content Engine ira descobrir historias automaticamente.
                     </div>
                     <button class="yt-btn yt-btn-primary yt-empty-state-action"
-                            id="btn-empty-topic">+ Novo Topico</button>
+                            id="btn-empty-topic">+ Nova Historia</button>
                 </div>`;
             document.getElementById('btn-empty-topic')
                 ?.addEventListener('click', openNewTopicModal);
@@ -66,7 +66,7 @@ async function loadTopics() {
         bindCardEvents();
     } catch (err) {
         loading.style.display = 'none';
-        toast('Erro ao carregar topicos: ' + err.message, 'error');
+        toast('Erro ao carregar historias: ' + err.message, 'error');
     }
 }
 
@@ -77,7 +77,7 @@ function renderTopicCard(t) {
     const title = escapeHtml(t.title || 'Sem titulo');
     const angle = escapeHtml(t.angle || '--');
     const score = t.richness_score ?? t.richnessScore ?? null;
-    const stage = t.pipeline_stage || t.pipelineStage || 'idea';
+    const stage = t.pipeline_stage || t.pipelineStage || 'selected';
     const duration = t.estimated_duration || t.estimatedDuration || 0;
     const scorePercent = score != null ? (score / 10) * 100 : 0;
 
@@ -102,6 +102,9 @@ function renderTopicCard(t) {
                     <div class="yt-progress">
                         <div class="yt-progress-bar" style="width:${scorePercent}%;"></div>
                     </div>
+                </div>
+                <div style="color:var(--color-text-secondary);font-size:13px;margin-bottom:4px;">
+                    &#128218; ${t.source_count || t.sourceCount || '?'} fonte(s)
                 </div>
                 <div style="color:var(--color-text-secondary);font-size:13px;">
                     &#9202; ${formatDuration(duration)}
@@ -139,7 +142,7 @@ async function bulkReprocess() {
     try {
         const promises = [..._selected].map(id => api.topics.reprocess(_pid, id));
         await Promise.all(promises);
-        toast(`${_selected.size} topico(s) enviados para reprocessamento!`, 'success');
+        toast(`${_selected.size} historia(s) enviadas para reprocessamento!`, 'success');
         _selected.clear();
         updateBulkBtn();
         await loadTopics();
@@ -151,7 +154,21 @@ async function bulkReprocess() {
 // -----------------------------------------------------------------------------
 // New topic modal
 // -----------------------------------------------------------------------------
-function openNewTopicModal() {
+async function openNewTopicModal() {
+    // Load available sources for selection
+    let sources = [];
+    try { sources = await api.sources.list(_pid); } catch { /* silent */ }
+
+    const sourceCheckboxes = sources.length > 0
+        ? sources.map(s => `
+            <label style="display:flex;align-items:center;gap:8px;padding:8px;
+                background:var(--color-bg-elevated);border:1px solid var(--color-border);
+                border-radius:var(--radius-md);cursor:pointer;font-size:var(--font-size-sm);">
+                <input type="checkbox" class="topic-source-cb" value="${s.id}">
+                ${escapeHtml(s.title || s.url || 'Fonte sem titulo')}
+            </label>`).join('')
+        : '<p style="color:var(--color-text-secondary);font-size:var(--font-size-sm);">Nenhuma fonte no pool. Adicione fontes primeiro.</p>';
+
     const body = `
         <div class="yt-form-group">
             <label class="yt-label">Titulo *</label>
@@ -169,6 +186,12 @@ function openNewTopicModal() {
                    placeholder="Ex: Profissionais de marketing digital">
         </div>
         <div class="yt-form-group">
+            <label class="yt-label">Fontes do Pool (selecione as relacionadas)</label>
+            <div style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;padding:4px;">
+                ${sourceCheckboxes}
+            </div>
+        </div>
+        <div class="yt-form-group">
             <label class="yt-label">Pontos-Chave (um por linha)</label>
             <textarea class="yt-textarea" id="topic-points" rows="4"
                       placeholder="Ponto 1\nPonto 2\nPonto 3"></textarea>
@@ -176,9 +199,9 @@ function openNewTopicModal() {
 
     const footer = `
         <button class="yt-btn yt-btn-ghost" id="topic-cancel">Cancelar</button>
-        <button class="yt-btn yt-btn-primary" id="topic-save">Criar Topico</button>`;
+        <button class="yt-btn yt-btn-primary" id="topic-save">Criar Historia</button>`;
 
-    const modal = openModal({ title: 'Novo Topico', size: 'md', body, footer });
+    const modal = openModal({ title: 'Nova Historia', size: 'md', body, footer });
 
     modal.el.querySelector('#topic-cancel')?.addEventListener('click', () => modal.close());
     modal.el.querySelector('#topic-save')?.addEventListener('click', async () => {
@@ -189,14 +212,15 @@ function openNewTopicModal() {
         const target_audience = modal.el.querySelector('#topic-audience')?.value?.trim();
         const raw = modal.el.querySelector('#topic-points')?.value?.trim();
         const key_points = raw ? raw.split('\n').map(s => s.trim()).filter(Boolean) : [];
+        const source_ids = [...modal.el.querySelectorAll('.topic-source-cb:checked')].map(cb => cb.value);
 
         try {
-            await api.topics.create(_pid, { title, angle, target_audience, key_points });
-            toast('Topico criado com sucesso!', 'success');
+            await api.topics.create(_pid, { title, angle, target_audience, key_points, source_ids });
+            toast('Historia criada com sucesso!', 'success');
             modal.close();
             await loadTopics();
         } catch (err) {
-            toast('Erro ao criar topico: ' + err.message, 'error');
+            toast('Erro ao criar historia: ' + err.message, 'error');
         }
     });
 }

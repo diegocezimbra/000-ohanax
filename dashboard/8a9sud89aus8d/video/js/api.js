@@ -1,5 +1,5 @@
 // =============================================================================
-// API - Fetch wrapper + endpoint definitions for YouTube Automation
+// API - Fetch wrapper + endpoint definitions for YouTube Automation + Content Engine
 // =============================================================================
 
 const BASE = '/api/youtube';
@@ -60,6 +60,7 @@ export const api = {
         updatePublishing: (pid, body) => PUT_BODY(`/projects/${pid}/settings/publishing`, body),
         updateVisualIdentity: (pid, body) => PUT_BODY(`/projects/${pid}/settings/visual-identity`, body),
         updateYouTube: (pid, body) => PUT_BODY(`/projects/${pid}/settings/youtube`, body),
+        updateContentEngine: (pid, body) => PUT_BODY(`/projects/${pid}/settings/content-engine`, body),
         youtubeAuthUrl: (pid) => request(`/projects/${pid}/settings/youtube/auth-url`),
         youtubeDisconnect: (pid) => POST(`/projects/${pid}/settings/youtube/disconnect`),
     },
@@ -73,6 +74,10 @@ export const api = {
         addYoutube: (pid, body) => POST_BODY(`/projects/${pid}/sources/youtube`, body),
         update: (pid, id, body) => PUT_BODY(`/projects/${pid}/sources/${id}`, body),
         delete: (pid, id) => DEL(`/projects/${pid}/sources/${id}`),
+        pool: {
+            stats: (pid) => request(`/projects/${pid}/sources/pool/stats`),
+            health: (pid) => request(`/projects/${pid}/sources/pool/health`),
+        },
     },
 
     topics: {
@@ -83,6 +88,7 @@ export const api = {
         update: (pid, id, body) => PUT_BODY(`/projects/${pid}/topics/${id}`, body),
         reprocess: (pid, id) => POST(`/projects/${pid}/topics/${id}/reprocess`),
         restartFrom: (pid, id, body) => POST_BODY(`/projects/${pid}/topics/${id}/restart-from`, body),
+        sources: (pid, id) => request(`/projects/${pid}/topics/${id}/sources`),
         delete: (pid, id) => DEL(`/projects/${pid}/topics/${id}`),
     },
 
@@ -157,6 +163,14 @@ export const api = {
         bulkReprocess: (pid, body) => POST_BODY(`/projects/${pid}/pipeline/bulk/reprocess`, body),
         bulkReject: (pid, body) => POST_BODY(`/projects/${pid}/pipeline/bulk/reject`, body),
         bulkApprove: (pid, body) => POST_BODY(`/projects/${pid}/pipeline/bulk/approve`, body),
+    },
+
+    contentEngine: {
+        status: (pid) => request(`/projects/${pid}/content-engine/status`),
+        trigger: (pid) => POST(`/projects/${pid}/content-engine/trigger`),
+        pause: (pid) => POST(`/projects/${pid}/content-engine/pause`),
+        resume: (pid) => POST(`/projects/${pid}/content-engine/resume`),
+        history: (pid, params) => request(`/projects/${pid}/content-engine/history?${qs(params)}`),
     },
 
     jobs: {

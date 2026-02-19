@@ -1,5 +1,5 @@
 // =============================================================================
-// PAGE: sources - Fontes de conteudo do projeto
+// PAGE: sources - Pool de fontes (Knowledge Base) do projeto
 // =============================================================================
 import { openModal } from '../components/modal.js';
 import { renderSourceTypeBadge } from '../components/badge.js';
@@ -13,7 +13,8 @@ let _pid = null;
 
 function statusBadge(status) {
     const m = { pending:['Pendente','info'], processing:['Processando','warning'],
-                processed:['Processado','success'], error:['Erro','danger'] };
+                processed:['Processado','success'], available:['Disponivel','success'],
+                exhausted:['Esgotada','warning'], error:['Erro','danger'] };
     const [l,v] = m[status] || [status,'info'];
     return `<span class="yt-badge yt-badge-${v}">${l}</span>`;
 }
@@ -24,8 +25,21 @@ window.ytRegisterPage('sources', async (params) => {
     document.getElementById('btn-add-yt')?.addEventListener('click', openAddYoutube);
     document.getElementById('btn-add-text')?.addEventListener('click', openAddText);
     document.getElementById('btn-add-pdf')?.addEventListener('click', openAddPdf);
+    loadPoolStats();
     await loadSources();
 });
+
+async function loadPoolStats() {
+    try {
+        const stats = await api.sources.pool.stats(_pid);
+        const totalEl = document.getElementById('pool-stat-total');
+        const wordsEl = document.getElementById('pool-stat-words');
+        const storiesEl = document.getElementById('pool-stat-stories');
+        if (totalEl) totalEl.textContent = stats.totalSources ?? stats.total_sources ?? '--';
+        if (wordsEl) wordsEl.textContent = stats.totalWords ?? stats.total_words ?? '--';
+        if (storiesEl) storiesEl.textContent = stats.storiesGenerated ?? stats.stories_generated ?? '--';
+    } catch { /* Pool stats endpoint may not exist yet */ }
+}
 
 async function loadSources() {
     const loading = document.getElementById('sources-loading');
@@ -39,7 +53,7 @@ async function loadSources() {
         if (!sources || sources.length === 0) {
             empty.style.display = 'block';
             empty.innerHTML = `<div class="yt-empty-state"><div class="yt-empty-state-icon">&#128218;</div>
-                <div class="yt-empty-state-message">Nenhuma fonte adicionada. Adicione URLs, videos, textos ou PDFs.</div></div>`;
+                <div class="yt-empty-state-message">Nenhuma fonte no pool. Adicione URLs, videos, textos ou PDFs para alimentar o banco de conhecimento.</div></div>`;
             return;
         }
         wrap.style.display = '';

@@ -5,20 +5,20 @@
 import { escapeHtml } from '../utils/dom.js';
 
 const STAGE_CONFIG = {
-    idea:                { label: 'Ideia',              color: 'purple' },
-    story_created:       { label: 'Historia',           color: 'blue' },
-    script_generated:    { label: 'Roteiro',            color: 'cyan' },
-    visuals_generating:  { label: 'Gerando Visuais',    color: 'yellow' },
-    visuals_generated:   { label: 'Visuais Prontos',    color: 'yellow' },
-    thumbnail_generated: { label: 'Thumbnail',          color: 'pink' },
-    narration_generated: { label: 'Narracao',           color: 'pink' },
-    video_ready:         { label: 'Video Pronto',       color: 'green' },
-    queued:              { label: 'Na Fila',            color: 'gray' },
-    scheduled:           { label: 'Agendado',           color: 'orange' },
-    published:           { label: 'Publicado',          color: 'green' },
-    discarded:           { label: 'Descartado',         color: 'gray' },
-    rejected:            { label: 'Rejeitado',          color: 'red' },
-    error:               { label: 'Erro',               color: 'red' },
+    selected:              { label: 'Selecionada',       color: 'purple' },
+    researching:           { label: 'Pesquisando',       color: 'blue' },
+    story_created:         { label: 'Historia Criada',   color: 'blue' },
+    script_created:        { label: 'Roteiro Criado',    color: 'cyan' },
+    visuals_created:       { label: 'Visuais Criados',   color: 'yellow' },
+    thumbnails_created:    { label: 'Thumbnails',        color: 'pink' },
+    narration_created:     { label: 'Narracao Criada',   color: 'pink' },
+    video_assembled:       { label: 'Video Montado',     color: 'green' },
+    queued_for_publishing: { label: 'Na Fila',           color: 'gray' },
+    scheduled:             { label: 'Agendado',          color: 'orange' },
+    published:             { label: 'Publicado',         color: 'green' },
+    discarded:             { label: 'Descartado',        color: 'gray' },
+    rejected:              { label: 'Rejeitado',         color: 'red' },
+    error:                 { label: 'Erro',              color: 'red' },
 };
 
 /**

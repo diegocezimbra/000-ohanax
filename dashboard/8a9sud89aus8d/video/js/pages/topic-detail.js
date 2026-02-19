@@ -1,5 +1,5 @@
 // =============================================================================
-// PAGE: topic-detail - Detalhes do topico com 5 abas
+// PAGE: topic-detail - Detalhes da historia com 5 abas (v3 - Content Engine)
 // =============================================================================
 import { initTabs } from '../components/tabs.js';
 import { renderStatusBadge } from '../components/badge.js';
@@ -11,8 +11,9 @@ const toast = window.ytToast;
 const router = window.ytRouter;
 let _pid = null, _tid = null, _topic = null;
 
-const STAGES = ['idea','story_created','script_generated','visuals_generated',
-    'thumbnail_generated','narration_generated','video_ready','published'];
+const STAGES = ['selected','researching','story_created','script_created',
+    'visuals_created','thumbnails_created','narration_created','video_assembled',
+    'queued_for_publishing','published'];
 const SEG_COLORS = { hook:'warning', intro:'info', main:'success', example:'info',
     data:'info', transition:'warning', climax:'danger', conclusion:'success', cta:'danger' };
 
@@ -23,13 +24,13 @@ window.ytRegisterPage('topic-detail', async (params) => {
         _topic = await api.topics.get(_pid, _tid);
         document.getElementById('td-loading').style.display = 'none';
         document.getElementById('td-overview').style.display = '';
-        document.getElementById('td-title').textContent = _topic.title || 'Topico';
+        document.getElementById('td-title').textContent = _topic.title || 'Historia';
         renderMeta(); renderPipeline();
         initTabs('td-tabs-container', onTab);
         loadStory();
     } catch (err) {
         document.getElementById('td-loading').style.display = 'none';
-        toast('Erro ao carregar topico: ' + err.message, 'error');
+        toast('Erro ao carregar historia: ' + err.message, 'error');
     }
 });
 
@@ -39,12 +40,13 @@ function renderMeta() {
     document.getElementById('td-meta').innerHTML = `
         <div><p><strong>Angulo:</strong> ${escapeHtml(t.angle||'--')}</p>
             <p style="margin-top:8px;"><strong>Publico:</strong> ${escapeHtml(t.target_audience||t.targetAudience||'--')}</p>
-            <p style="margin-top:8px;"><strong>Estagio:</strong> ${renderStatusBadge(t.pipeline_stage||t.pipelineStage||'idea')}</p></div>
+            <p style="margin-top:8px;"><strong>Estagio:</strong> ${renderStatusBadge(t.pipeline_stage||t.pipelineStage||'selected')}</p>
+            <p style="margin-top:8px;"><strong>Fontes Usadas:</strong> ${t.source_count||t.sourceCount||'?'} fonte(s)</p></div>
         <div><strong>Pontos-Chave:</strong>${pts?`<ul style="margin-top:4px;padding-left:20px;">${pts}</ul>`:'<p>--</p>'}</div>`;
 }
 
 function renderPipeline() {
-    const stage = _topic.pipeline_stage||_topic.pipelineStage||'idea';
+    const stage = _topic.pipeline_stage||_topic.pipelineStage||'selected';
     const idx = STAGES.indexOf(stage);
     const pct = idx >= 0 ? ((idx+1)/STAGES.length)*100 : 0;
     const labels = STAGES.map((s,i) => {
@@ -57,7 +59,7 @@ function renderPipeline() {
 }
 
 function onTab(tab) {
-    const m = { story:loadStory, script:loadScript, visuals:loadVisuals, narration:loadNarration, video:loadVideo };
+    const m = { story:loadStory, script:loadScript, visuals:loadVisuals, narration:loadNarration, video:loadVideo, sources:loadSources };
     if (m[tab]) m[tab]();
 }
 
@@ -175,4 +177,32 @@ async function loadVideo() {
             try { await api.video.reassemble(_pid,_tid); toast('Remontagem iniciada!','success'); }
             catch(e){toast('Erro: '+e.message,'error');} });
     } catch { p.innerHTML = '<p style="color:var(--color-text-secondary);">Video nao gerado.</p>'; }
+}
+
+// -- Sources Tab --
+let _sourcesDone = false;
+async function loadSources() {
+    if (_sourcesDone) return;
+    const p = document.getElementById('panel-sources');
+    p.innerHTML = '<div class="yt-spinner"></div>';
+    try {
+        const sources = await api.topics.sources(_pid, _tid);
+        _sourcesDone = true;
+        const items = Array.isArray(sources) ? sources : sources.sources || [];
+        if (!items.length) {
+            p.innerHTML = '<p style="color:var(--color-text-secondary);">Nenhuma fonte vinculada a esta historia.</p>';
+            return;
+        }
+        const rows = items.map(s => `
+            <tr>
+                <td>${escapeHtml(s.title||s.source_title||'Sem titulo')}</td>
+                <td>${escapeHtml(s.type||s.source_type||'--')}</td>
+                <td style="text-align:center;">${s.relevance_score != null ? `<span class="yt-badge yt-badge-${s.relevance_score >= 7 ? 'green' : s.relevance_score >= 5 ? 'yellow' : 'red'}">${s.relevance_score}/10</span>` : '--'}</td>
+            </tr>`).join('');
+        p.innerHTML = `<div class="yt-card"><div class="yt-card-body">
+            <h4 style="margin-bottom:12px;font-weight:600;">Fontes Usadas nesta Historia</h4>
+            <table class="yt-table"><thead><tr><th>Titulo</th><th>Tipo</th><th>Relevancia</th></tr></thead>
+            <tbody>${rows}</tbody></table>
+        </div></div>`;
+    } catch { p.innerHTML = '<p style="color:var(--color-text-secondary);">Fontes nao disponiveis.</p>'; }
 }

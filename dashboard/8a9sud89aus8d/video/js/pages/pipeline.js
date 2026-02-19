@@ -3,9 +3,8 @@
 // =============================================================================
 
 const STAGES = [
-    { key: 'source_added', label: 'Fonte Adicionada' },
-    { key: 'research_done', label: 'Pesquisa Feita' },
-    { key: 'topics_generated', label: 'Topicos Gerados' },
+    { key: 'selected', label: 'Selecionada' },
+    { key: 'researching', label: 'Pesquisando' },
     { key: 'story_created', label: 'Historia Criada' },
     { key: 'script_created', label: 'Roteiro Criado' },
     { key: 'visuals_created', label: 'Visuais Criados' },
@@ -50,12 +49,14 @@ export async function loadPipeline(params) {
     const kanban = document.getElementById('pipe-kanban');
 
     try {
-        const [pipelineData, stats] = await Promise.all([
+        const [pipelineData, stats, engineStatus] = await Promise.all([
             window.ytApi.pipeline.get(_projectId),
             window.ytApi.pipeline.stats(_projectId),
+            window.ytApi.contentEngine?.status(_projectId).catch(() => null),
         ]);
 
         renderStats(stats);
+        renderEngineStatus(engineStatus);
         renderKanban(pipelineData);
         loading.style.display = 'none';
         kanban.style.display = '';
@@ -71,11 +72,13 @@ export async function loadPipeline(params) {
     // Auto-refresh
     window.ytStartPolling(async () => {
         try {
-            const [data, stats] = await Promise.all([
+            const [data, stats, engineStatus] = await Promise.all([
                 window.ytApi.pipeline.get(_projectId),
                 window.ytApi.pipeline.stats(_projectId),
+                window.ytApi.contentEngine?.status(_projectId).catch(() => null),
             ]);
             renderStats(stats);
+            renderEngineStatus(engineStatus);
             renderKanban(data);
             initSortable();
         } catch { /* silent */ }
@@ -88,28 +91,87 @@ function renderStats(stats) {
     document.getElementById('pipe-stat-completed').textContent = stats.completed ?? '--';
     document.getElementById('pipe-stat-failed').textContent = stats.failed ?? '--';
 
+    // Content Engine status
+    const engineEl = document.getElementById('pipe-engine-status');
+    if (engineEl) {
+        const engineActive = stats.contentEngineActive ?? stats.content_engine_active ?? true;
+        engineEl.innerHTML = engineActive
+            ? '<span class="yt-badge yt-badge-success">Engine Ativo</span>'
+            : '<span class="yt-badge yt-badge-warning">Engine Pausado</span>';
+    }
+    const poolEl = document.getElementById('pipe-pool-health');
+    if (poolEl) {
+        poolEl.textContent = stats.poolSources ?? stats.pool_sources ?? '--';
+    }
+
     // Update pause button
     const btn = document.getElementById('pipe-pause-toggle');
     const paused = stats.paused || false;
-    btn.textContent = paused ? 'Retomar Pipeline' : 'Pausar Pipeline';
+    btn.textContent = paused ? 'Retomar Engine' : 'Pausar Engine';
     btn.className = paused ? 'yt-btn yt-btn-primary' : 'yt-btn yt-btn-primary';
+}
+
+function renderEngineStatus(status) {
+    if (!status) return;
+    const bufferEl = document.getElementById('pipe-buffer-text');
+    const bufferBar = document.getElementById('pipe-buffer-bar');
+    const genEl = document.getElementById('pipe-gen-today');
+    const nextEl = document.getElementById('pipe-next-run');
+
+    const bufCur = status.buffer_current ?? status.bufferCurrent ?? 0;
+    const bufTarget = status.buffer_target ?? status.bufferTarget ?? 7;
+    const genToday = status.gen_today ?? status.genToday ?? 0;
+    const maxGen = status.max_gen ?? status.maxGen ?? 5;
+    const nextRun = status.next_run ?? status.nextRun ?? null;
+
+    if (bufferEl) bufferEl.textContent = `${bufCur}/${bufTarget}`;
+    if (bufferBar) bufferBar.style.width = `${Math.min((bufCur / bufTarget) * 100, 100)}%`;
+    if (genEl) genEl.textContent = `${genToday}/${maxGen}`;
+    if (nextEl) {
+        if (nextRun) {
+            const diff = new Date(nextRun).getTime() - Date.now();
+            const mins = Math.max(0, Math.floor(diff / 60000));
+            nextEl.textContent = mins > 0 ? `em ${mins}min` : 'agora';
+        } else {
+            nextEl.textContent = '--';
+        }
+    }
+
+    // Update engine status badge from engine API too
+    const engineEl = document.getElementById('pipe-engine-status');
+    if (engineEl) {
+        const active = status.active ?? status.contentEngineActive ?? true;
+        engineEl.innerHTML = active
+            ? '<span class="yt-badge yt-badge-success">Engine Ativo</span>'
+            : '<span class="yt-badge yt-badge-warning">Engine Pausado</span>';
+    }
 }
 
 function renderKanban(data) {
     const kanban = document.getElementById('pipe-kanban');
     const items = Array.isArray(data) ? data : data.topics || data.items || data.data || [];
 
-    // Group by stage
+    // Group by stage (including extra statuses)
     const grouped = {};
     STAGES.forEach((s) => { grouped[s.key] = []; });
+    grouped['discarded'] = [];
+    grouped['rejected'] = [];
+    grouped['error'] = [];
     items.forEach((item) => {
-        const stage = item.pipelineStage || item.stage || 'source_added';
+        const stage = item.pipelineStage || item.stage || 'selected';
         if (grouped[stage]) {
             grouped[stage].push(item);
         }
     });
 
-    kanban.innerHTML = STAGES.map((stage) => {
+    const EXTRA_COLS = [
+        { key: 'discarded', label: 'Descartado' },
+        { key: 'rejected', label: 'Rejeitado' },
+        { key: 'error', label: 'Erro' },
+    ];
+    const allCols = [...STAGES, ...EXTRA_COLS.filter(c => (grouped[c.key] || []).length > 0)];
+
+    kanban.innerHTML = allCols.map((stage) => {
         const cards = grouped[stage.key] || [];
         return `
         <div class="yt-kanban-column" data-stage="${stage.key}">
@@ -129,7 +191,7 @@ function renderKanban(data) {
 function renderCard(item) {
     const title = escapeHtml(item.title || item.name || 'Sem titulo');
     const timeInStage = relativeTime(item.stageEnteredAt || item.updatedAt);
-    const progress = stageProgress(item.pipelineStage || item.stage || 'source_added');
+    const progress = stageProgress(item.pipelineStage || item.stage || 'selected');
     const isSelected = _selectedIds.has(item.id);
 
     return `
@@ -179,6 +241,19 @@ function initSortable() {
             updateBulkButtons();
         });
     });
+
+    // Bind card click -> navigate to topic detail
+    document.querySelectorAll('.yt-kanban-card').forEach((card) => {
+        card.addEventListener('click', (e) => {
+            // Don't navigate if clicking checkbox
+            if (e.target.closest('.pipe-card-check') || e.target.tagName === 'INPUT') return;
+            const topicId = card.dataset.topicId;
+            if (topicId && _projectId) {
+                window.ytRouter.navigate(`projects/${_projectId}/topics/${topicId}`);
+            }
+        });
+        card.style.cursor = 'pointer';
+    });
 }
 
 async function handleStageChange(topicId, newStage) {
@@ -186,7 +261,7 @@ async function handleStageChange(topicId, newStage) {
         await window.ytApi.topics.restartFrom(_projectId, topicId, { stage: newStage });
         window.ytToast('Estagio atualizado!', 'success');
     } catch (err) {
-        window.ytToast('Erro ao mover topico: ' + err.message, 'error');
+        window.ytToast('Erro ao mover historia: ' + err.message, 'error');
     }
 }
 
@@ -197,19 +272,30 @@ function updateBulkButtons() {
 }
 
 function bindControls() {
-    // Pause/Resume
+    // Trigger Content Engine manually
+    document.getElementById('pipe-trigger')?.addEventListener('click', async () => {
+        try {
+            await window.ytApi.contentEngine.trigger(_projectId);
+            window.ytToast('Geracao forcada! O engine esta processando...', 'success');
+        } catch (err) {
+            window.ytToast('Erro: ' + err.message, 'error');
+        }
+    });
+
+    // Pause/Resume Content Engine (with backward compatibility to pipeline)
     document.getElementById('pipe-pause-toggle').addEventListener('click', async () => {
         const btn = document.getElementById('pipe-pause-toggle');
         const isPaused = btn.textContent.includes('Retomar');
+        const engineApi = window.ytApi.contentEngine || window.ytApi.pipeline;
         try {
             if (isPaused) {
-                await window.ytApi.pipeline.resume(_projectId);
-                btn.textContent = 'Pausar Pipeline';
-                window.ytToast('Pipeline retomado!', 'success');
+                await engineApi.resume(_projectId);
+                btn.textContent = 'Pausar Engine';
+                window.ytToast('Content Engine retomado!', 'success');
             } else {
-                await window.ytApi.pipeline.pause(_projectId);
-                btn.textContent = 'Retomar Pipeline';
-                window.ytToast('Pipeline pausado.', 'info');
+                await engineApi.pause(_projectId);
+                btn.textContent = 'Retomar Engine';
+                window.ytToast('Content Engine pausado.', 'info');
             }
         } catch (err) {
             window.ytToast('Erro: ' + err.message, 'error');
@@ -221,7 +307,7 @@ function bindControls() {
         if (!_selectedIds.size) return;
         try {
             await window.ytApi.pipeline.bulkReprocess(_projectId, { topicIds: [..._selectedIds] });
-            window.ytToast(`${_selectedIds.size} topico(s) enviados para reprocessamento!`, 'success');
+            window.ytToast(`${_selectedIds.size} historia(s) enviadas para reprocessamento!`, 'success');
             _selectedIds.clear();
             loadPipeline({ projectId: _projectId });
         } catch (err) {
@@ -234,7 +320,7 @@ function bindControls() {
         if (!_selectedIds.size) return;
         try {
             await window.ytApi.pipeline.bulkApprove(_projectId, { topicIds: [..._selectedIds] });
-            window.ytToast(`${_selectedIds.size} topico(s) aprovados!`, 'success');
+            window.ytToast(`${_selectedIds.size} historia(s) aprovadas!`, 'success');
             _selectedIds.clear();
             loadPipeline({ projectId: _projectId });
         } catch (err) {

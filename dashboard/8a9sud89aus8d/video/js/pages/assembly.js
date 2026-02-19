@@ -140,7 +140,7 @@ function bindActions(params, isAssembled) {
             const state = window.ytState.getState();
             const pid = params.projectId;
             window.ytRouter.navigate(`projects/${pid}/publishing`);
-            window.ytToast('Topico enviado para fila de publicacao!', 'success');
+            window.ytToast('Historia enviada para fila de publicacao!', 'success');
         };
     }
 }

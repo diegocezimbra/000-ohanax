@@ -181,32 +181,32 @@ function _renderProjectSidebar(state) {
             ${name}
         </div>
         <div class="yt-sidebar-section">
-            <div class="yt-sidebar-section-title">Conteudo</div>
+            <div class="yt-sidebar-section-title">Conhecimento</div>
             <a class="yt-sidebar-link" data-page="sources"
                href="#/projects/${pid}/sources">
-                <span class="yt-nav-icon">&#128218;</span> Fontes
+                <span class="yt-nav-icon">&#128218;</span> Pool de Fontes
             </a>
             <a class="yt-sidebar-link" data-page="topics"
                href="#/projects/${pid}/topics">
-                <span class="yt-nav-icon">&#128196;</span> Topicos
+                <span class="yt-nav-icon">&#128196;</span> Historias
             </a>
+        </div>
+        <div class="yt-sidebar-section">
+            <div class="yt-sidebar-section-title">Producao</div>
             <a class="yt-sidebar-link" data-page="pipeline"
                href="#/projects/${pid}/pipeline">
                 <span class="yt-nav-icon">&#9881;</span> Pipeline
             </a>
-        </div>
-        <div class="yt-sidebar-section">
-            <div class="yt-sidebar-section-title">Publicacao</div>
             <a class="yt-sidebar-link" data-page="publishing"
                href="#/projects/${pid}/publishing">
-                <span class="yt-nav-icon">&#128228;</span> Fila
+                <span class="yt-nav-icon">&#128228;</span> Fila de Publicacao
             </a>
         </div>
         <div class="yt-sidebar-section">
             <div class="yt-sidebar-section-title">Configuracao</div>
             <a class="yt-sidebar-link" data-page="project-settings"
                href="#/projects/${pid}/settings">
-                <span class="yt-nav-icon">&#9881;</span> YouTube
+                <span class="yt-nav-icon">&#9881;</span> Settings
             </a>
         </div>
         <div class="yt-sidebar-spacer"></div>

@@ -47,8 +47,43 @@ window.ytRegisterPage('projects', async () => {
         grid.style.display = '';
         grid.innerHTML = projects.map(renderCard).join('');
         grid.querySelectorAll('[data-project-id]').forEach(card => {
-            card.addEventListener('click', () => {
+            card.addEventListener('click', (e) => {
+                // Don't navigate if clicking delete button
+                if (e.target.closest('.btn-delete-project')) return;
                 router.navigate(`projects/${card.dataset.projectId}/sources`);
+            });
+        });
+
+        grid.querySelectorAll('.btn-delete-project').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const id = btn.dataset.deleteId;
+                const card = btn.closest('.yt-card');
+                const name = card?.querySelector('.yt-card-title')?.textContent || 'este projeto';
+                if (!confirm(`Tem certeza que deseja deletar "${name}"? Esta acao nao pode ser desfeita.`)) return;
+                try {
+                    await api.projects.delete(id);
+                    toast('Projeto deletado!', 'success');
+                    card?.remove();
+                    // If no more cards, show empty state
+                    if (!grid.querySelector('.yt-card')) {
+                        grid.style.display = 'none';
+                        empty.style.display = 'block';
+                        empty.innerHTML = `
+                            <div class="yt-empty-state">
+                                <div class="yt-empty-state-icon">&#128193;</div>
+                                <div class="yt-empty-state-message">
+                                    Nenhum projeto encontrado. Crie seu primeiro projeto!
+                                </div>
+                                <button class="yt-btn yt-btn-primary yt-empty-state-action"
+                                        id="btn-empty-new">+ Novo Projeto</button>
+                            </div>`;
+                        document.getElementById('btn-empty-new')
+                            ?.addEventListener('click', openNewProjectWizard);
+                    }
+                } catch (err) {
+                    toast('Erro ao deletar: ' + err.message, 'error');
+                }
             });
         });
     } catch (err) {
@@ -73,12 +108,18 @@ function renderCard(p) {
         <div class="yt-card yt-card-clickable" data-project-id="${p.id}">
             <div class="yt-card-header">
                 <h3 class="yt-card-title">${name}</h3>
-                ${badge}
+                <div style="display:flex;align-items:center;gap:8px;">
+                    ${badge}
+                    <button class="yt-btn-icon btn-delete-project" data-delete-id="${p.id}"
+                        title="Deletar projeto" style="color:var(--color-danger);font-size:16px;background:none;border:none;cursor:pointer;padding:4px;">
+                        &#128465;
+                    </button>
+                </div>
             </div>
             <div class="yt-card-body">
                 <div class="yt-project-meta">&#127909; ${niche}</div>
                 <div class="yt-project-stats">
-                    <span>${topics} topicos</span>
+                    <span>${topics} historias</span>
                     <span style="margin-left:12px;">${videos} videos</span>
                 </div>
             </div>
@@ -123,7 +164,7 @@ function openNewProjectWizard() {
         name: '', niche: '', description: '', language: 'pt-BR',
         // Step 2: Storytelling
         storytelling_style: 'educational', narration_tone: 'conversational',
-        target_duration_minutes: 12, min_richness_score: 5,
+        target_duration_minutes: 30, min_richness_score: 7,
         narrative_template: DEFAULT_NARRATIVE_TEMPLATE,
         emotional_triggers: DEFAULT_TRIGGERS,
         // Step 3: Visual + Publicacao
@@ -239,9 +280,12 @@ function openNewProjectWizard() {
                         </select></div>
                 </div>
                 <div class="yt-form-row">
-                    <div class="yt-form-group"><label class="yt-label">Duracao Alvo (minutos)</label>
-                        <input class="yt-input" id="wiz-duration" type="number" min="1" max="120"
-                            value="${state.target_duration_minutes}"></div>
+                    <div class="yt-form-group"><label class="yt-label">Duracao Alvo do Video</label>
+                        <select class="yt-select" id="wiz-duration">
+                            <option value="30" ${state.target_duration_minutes <= 40 ? 'selected' : ''}>30-40 minutos</option>
+                            <option value="40" ${state.target_duration_minutes > 40 && state.target_duration_minutes <= 50 ? 'selected' : ''}>40-50 minutos</option>
+                            <option value="50" ${state.target_duration_minutes > 50 ? 'selected' : ''}>50-60 minutos</option>
+                        </select></div>
                     <div class="yt-form-group"><label class="yt-label">Richness Score Minimo (0-10)</label>
                         <input class="yt-input" id="wiz-richness" type="number" min="0" max="10"
                             value="${state.min_richness_score}"></div>
@@ -372,8 +416,8 @@ function openNewProjectWizard() {
         } else if (step === 2) {
             state.storytelling_style = v('wiz-style');
             state.narration_tone = v('wiz-tone');
-            state.target_duration_minutes = Number(v('wiz-duration')) || 12;
-            state.min_richness_score = Number(v('wiz-richness')) || 5;
+            state.target_duration_minutes = Number(v('wiz-duration')) || 30;
+            state.min_richness_score = Number(v('wiz-richness')) || 7;
             state.narrative_template = v('wiz-template');
             state.emotional_triggers = v('wiz-triggers');
         } else if (step === 3) {
@@ -498,7 +542,17 @@ function openNewProjectWizard() {
                 background_music_volume: state.background_music_volume,
             });
 
-            // 4. Update publishing settings
+            // 4. Update Content Engine settings
+            const durMap = { '30': '30-40', '40': '40-50', '50': '50-60' };
+            await api.settings.updateContentEngine(pid, {
+                duration_target: durMap[String(state.target_duration_minutes)] || '30-40',
+                publications_per_day: state.max_publications_per_day,
+                buffer_size: 7,
+                max_gen_per_day: 5,
+                min_richness: state.min_richness_score,
+            });
+
+            // 5. Update publishing settings
             await api.settings.updatePublishing(pid, {
                 max_publications_per_day: state.max_publications_per_day,
                 publication_times: state.publication_times,
