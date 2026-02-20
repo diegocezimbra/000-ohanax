@@ -19,8 +19,11 @@ const IMAGE_RETRY_DELAY_MS = 5000;
  */
 export async function generateImage({
   apiKey, prompt, negativePrompt = '',
-  width = 1920, height = 1080,
+  width = 1920, height = 1088,
 }) {
+  // Z-Image-Turbo requires dimensions divisible by 16
+  width = Math.round(width / 16) * 16;
+  height = Math.round(height / 16) * 16;
   for (let attempt = 1; attempt <= IMAGE_RETRY_LIMIT; attempt++) {
     try {
       return await _generateImageOnce({ apiKey, prompt, negativePrompt, width, height });
@@ -47,9 +50,11 @@ async function _generateImageOnce({ apiKey, prompt, negativePrompt, width, heigh
         prompt,
         negative_prompt: negativePrompt || '',
         width: width || 1920,
-        height: height || 1080,
-        num_inference_steps: 4,
-        guidance_scale: 3.5,
+        height: height || 1088,
+        num_inference_steps: 8,
+        guidance_scale: 0,
+        output_format: 'webp',
+        output_quality: 90,
         num_outputs: 1,
       },
     }),
@@ -75,7 +80,7 @@ async function _generateImageOnce({ apiKey, prompt, negativePrompt, width, heigh
 
   return {
     buffer,
-    mimeType: 'image/png',
+    mimeType: 'image/webp',
     metadata: { model: 'prunaai/z-image-turbo' },
   };
 }

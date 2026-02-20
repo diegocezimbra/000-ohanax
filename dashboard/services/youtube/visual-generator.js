@@ -392,7 +392,7 @@ async function generateMultipleImagesForSegment(artPrompt, topic, settings) {
       buffer: result.buffer,
       mimeType: result.mimeType,
       type: 'image',
-      extension: 'png',
+      extension: 'webp',
       metadata: result.metadata,
       prompt: variantPrompt,
       compositionLabel: composition.label,
