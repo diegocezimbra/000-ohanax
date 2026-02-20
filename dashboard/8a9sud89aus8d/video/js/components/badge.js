@@ -5,10 +5,11 @@
 import { escapeHtml } from '../utils/dom.js';
 
 const STAGE_CONFIG = {
-    selected:              { label: 'Selecionada',       color: 'purple' },
-    researching:           { label: 'Pesquisando',       color: 'blue' },
+    idea:                  { label: 'Ideia',             color: 'gray' },
+    topics_generated:      { label: 'Selecionada',       color: 'purple' },
     story_created:         { label: 'Historia Criada',   color: 'blue' },
     script_created:        { label: 'Roteiro Criado',    color: 'cyan' },
+    visuals_creating:      { label: 'Gerando Visuais',   color: 'orange' },
     visuals_created:       { label: 'Visuais Criados',   color: 'yellow' },
     thumbnails_created:    { label: 'Thumbnails',        color: 'pink' },
     narration_created:     { label: 'Narracao Criada',   color: 'pink' },

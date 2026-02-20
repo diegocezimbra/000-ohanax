@@ -58,10 +58,11 @@ export function getConfigDefaults() {
       { key: 'empoderamento', label: 'Empoderamento' },
     ],
     pipeline_stages: [
-      { key: 'selected', label: 'Selecionada' },
-      { key: 'researching', label: 'Pesquisando' },
+      { key: 'idea', label: 'Ideia' },
+      { key: 'topics_generated', label: 'Selecionada' },
       { key: 'story_created', label: 'Historia Criada' },
       { key: 'script_created', label: 'Roteiro Criado' },
+      { key: 'visuals_creating', label: 'Gerando Visuais' },
       { key: 'visuals_created', label: 'Visuais Criados' },
       { key: 'thumbnails_created', label: 'Thumbnails Criadas' },
       { key: 'narration_created', label: 'Narracao Criada' },

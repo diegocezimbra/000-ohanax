@@ -152,18 +152,31 @@ function renderEngineStatus(status) {
 
 function renderKanban(data) {
     const kanban = document.getElementById('pipe-kanban');
-    const items = Array.isArray(data) ? data : data.topics || data.items || data.data || [];
 
     // Group by stage (including extra statuses)
     const grouped = {};
     STAGES.forEach((s) => { grouped[s.key] = []; });
     EXTRA_STAGES.forEach((s) => { grouped[s.key] = []; });
-    items.forEach((item) => {
-        const stage = item.pipelineStage || item.stage || 'selected';
-        if (grouped[stage]) {
-            grouped[stage].push(item);
+
+    // Backend returns { stages: { "stage_name": [topics...] } }
+    if (data && data.stages && typeof data.stages === 'object') {
+        for (const [stage, topics] of Object.entries(data.stages)) {
+            if (grouped[stage]) {
+                grouped[stage].push(...topics);
+            } else {
+                grouped[stage] = [...topics];
+            }
         }
-    });
+    } else {
+        // Fallback: flat array of items
+        const items = Array.isArray(data) ? data : data.topics || data.items || data.data || [];
+        items.forEach((item) => {
+            const stage = item.pipeline_stage || item.pipelineStage || item.stage || 'topics_generated';
+            if (grouped[stage]) {
+                grouped[stage].push(item);
+            }
+        });
+    }
 
     const allCols = [...STAGES, ...EXTRA_STAGES.filter(c => (grouped[c.key] || []).length > 0)];
 
@@ -186,8 +199,8 @@ function renderKanban(data) {
 
 function renderCard(item) {
     const title = escapeHtml(item.title || item.name || 'Sem titulo');
-    const timeInStage = relativeTime(item.stageEnteredAt || item.updatedAt);
-    const progress = stageProgress(item.pipelineStage || item.stage || 'selected');
+    const timeInStage = relativeTime(item.stageEnteredAt || item.stage_entered_at || item.updatedAt || item.updated_at);
+    const progress = stageProgress(item.pipelineStage || item.pipeline_stage || item.stage || 'topics_generated');
     const isSelected = _selectedIds.has(item.id);
 
     return `
