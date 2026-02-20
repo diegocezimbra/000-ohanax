@@ -203,17 +203,17 @@ router.get('/:sourceId', async (req, res) => {
 router.post('/url', async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { url } = req.body;
+    const { url, title } = req.body;
 
     if (!url || !url.trim()) {
       return res.status(400).json({ success: false, error: 'URL is required' });
     }
 
     const result = await db.analytics.query(`
-      INSERT INTO yt_content_sources (id, project_id, source_type, url, status)
-      VALUES (gen_random_uuid(), $1, 'url', $2, 'pending')
+      INSERT INTO yt_content_sources (id, project_id, source_type, url, title, status)
+      VALUES (gen_random_uuid(), $1, 'url', $2, $3, 'pending')
       RETURNING *
-    `, [projectId, url.trim()]);
+    `, [projectId, url.trim(), title?.trim() || null]);
 
     const source = result.rows[0];
 

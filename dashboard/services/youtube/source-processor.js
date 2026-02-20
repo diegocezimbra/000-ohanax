@@ -22,14 +22,21 @@ export async function processSource(sourceId) {
   if (!source) throw new Error(`Source ${sourceId} not found`);
 
   let extractedContent;
+  let extractedTitle = null;
 
   switch (source.source_type) {
-    case 'url':
-      extractedContent = await extractFromUrl(source.url);
+    case 'url': {
+      const result = await extractFromUrl(source.url);
+      extractedContent = result.content;
+      extractedTitle = result.title;
       break;
-    case 'youtube':
-      extractedContent = await extractFromYouTube(source.url);
+    }
+    case 'youtube': {
+      const result = await extractFromYouTube(source.url);
+      extractedContent = result.content;
+      extractedTitle = result.title;
       break;
+    }
     case 'text':
       extractedContent = source.raw_content;
       break;
@@ -51,9 +58,9 @@ export async function processSource(sourceId) {
 
   await pool.query(
     `UPDATE yt_content_sources
-     SET processed_content = $1, word_count = $2, status = 'processed', updated_at = NOW()
-     WHERE id = $3`,
-    [processedContent, wordCount, sourceId],
+     SET processed_content = $1, word_count = $2, title = COALESCE(title, $3), status = 'processed', updated_at = NOW()
+     WHERE id = $4`,
+    [processedContent, wordCount, extractedTitle, sourceId],
   );
 
   return { content: processedContent, wordCount };
@@ -73,7 +80,8 @@ async function extractFromUrl(url) {
   }
 
   const html = await response.text();
-  return stripHtml(html);
+  const title = extractHtmlTitle(html);
+  return { content: stripHtml(html), title };
 }
 
 async function extractFromYouTube(url) {
@@ -87,6 +95,7 @@ async function extractFromYouTube(url) {
     { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ContentBot/1.0)' } },
   );
   const html = await response.text();
+  const title = extractHtmlTitle(html);
 
   // Extract captions track URL from page data
   const captionMatch = html.match(/"captionTracks":\[(.+?)\]/);
@@ -112,7 +121,7 @@ async function extractFromYouTube(url) {
     .trim();
 
   if (!transcript) throw new Error('Empty transcript extracted');
-  return transcript;
+  return { content: transcript, title };
 }
 
 async function extractFromPdf(base64Content) {
@@ -133,6 +142,12 @@ function extractYouTubeId(url) {
     if (match) return match[1];
   }
   return null;
+}
+
+function extractHtmlTitle(html) {
+  const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  if (!match) return null;
+  return match[1].replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&quot;/g, '"').trim();
 }
 
 function stripHtml(html) {
