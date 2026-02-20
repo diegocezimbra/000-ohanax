@@ -99,6 +99,19 @@ router.get('/stats', async (req, res) => {
 
     const isPaused = projectResult.rows[0]?.pipeline_paused || false;
 
+    // Pool sources count for pipeline overview
+    const poolResult = await db.analytics.query(`
+      SELECT COUNT(*) AS count
+      FROM yt_content_sources
+      WHERE project_id = $1 AND is_deleted = false AND status = 'processed'
+    `, [projectId]);
+
+    // Total topics count
+    const totalTopics = Object.values(stageMap).reduce((sum, c) => sum + c, 0);
+    const inProgress = Object.entries(stageMap)
+      .filter(([k]) => !['published', 'error', 'discarded', 'rejected', 'idea'].includes(k))
+      .reduce((sum, [, c]) => sum + c, 0);
+
     res.json({
       success: true,
       data: {
@@ -108,7 +121,13 @@ router.get('/stats', async (req, res) => {
           processing: parseInt(jobResult.rows[0].processing),
           failed: parseInt(jobResult.rows[0].failed),
         },
+        total: totalTopics,
+        in_progress: inProgress,
+        completed: stageMap['published'] || 0,
+        failed: stageMap['error'] || 0,
+        pool_sources: parseInt(poolResult.rows[0].count, 10),
         isPaused,
+        paused: isPaused,
       },
     });
   } catch (err) {

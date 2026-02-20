@@ -66,6 +66,100 @@ router.get('/', async (req, res) => {
 });
 
 // =============================================================================
+// GET /pool/stats - Pool aggregate statistics
+// =============================================================================
+router.get('/pool/stats', async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const result = await db.analytics.query(`
+      SELECT
+        COUNT(*) AS total_sources,
+        COALESCE(SUM(word_count), 0) AS total_words,
+        COUNT(*) FILTER (WHERE status = 'processed') AS processed,
+        COUNT(*) FILTER (WHERE status = 'pending') AS pending,
+        COUNT(*) FILTER (WHERE status = 'processing') AS processing,
+        COUNT(*) FILTER (WHERE status = 'error') AS errored
+      FROM yt_content_sources
+      WHERE project_id = $1 AND is_deleted = false
+    `, [projectId]);
+
+    const storiesResult = await db.analytics.query(`
+      SELECT COUNT(*) AS count
+      FROM yt_topics
+      WHERE project_id = $1 AND is_deleted = false
+    `, [projectId]);
+
+    const row = result.rows[0];
+    res.json({
+      success: true,
+      data: {
+        total_sources: parseInt(row.total_sources, 10),
+        total_words: parseInt(row.total_words, 10),
+        stories_generated: parseInt(storiesResult.rows[0].count, 10),
+        by_status: {
+          processed: parseInt(row.processed, 10),
+          pending: parseInt(row.pending, 10),
+          processing: parseInt(row.processing, 10),
+          error: parseInt(row.errored, 10),
+        },
+      },
+    });
+  } catch (err) {
+    console.error('[YouTube/Sources] Error fetching pool stats:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// =============================================================================
+// GET /pool/health - Per-source health scores
+// =============================================================================
+router.get('/pool/health', async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const result = await db.analytics.query(`
+      SELECT
+        s.id, s.title, s.source_type, s.status, s.word_count,
+        s.created_at,
+        COALESCE(tc.topics_count, 0) AS times_used
+      FROM yt_content_sources s
+      LEFT JOIN (
+        SELECT source_id, COUNT(*) AS topics_count
+        FROM yt_topics
+        WHERE is_deleted = false
+        GROUP BY source_id
+      ) tc ON tc.source_id = s.id
+      WHERE s.project_id = $1 AND s.is_deleted = false
+      ORDER BY s.created_at DESC
+    `, [projectId]);
+
+    const sources = result.rows.map(s => ({
+      id: s.id,
+      title: s.title,
+      source_type: s.source_type,
+      status: s.status,
+      word_count: s.word_count,
+      times_used: parseInt(s.times_used, 10),
+      health_score: calculateHealthScore(s),
+    }));
+
+    res.json({ success: true, data: { sources } });
+  } catch (err) {
+    console.error('[YouTube/Sources] Error fetching pool health:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+function calculateHealthScore(source) {
+  if (source.status === 'error') return 0;
+  if (source.status !== 'processed') return 50;
+  const wordScore = Math.min((source.word_count || 0) / 100, 50);
+  const usageScore = Math.max(50 - parseInt(source.times_used, 10) * 10, 0);
+  return Math.round(wordScore + usageScore);
+}
+
+// =============================================================================
 // GET /:sourceId - Get source detail with research results
 // =============================================================================
 router.get('/:sourceId', async (req, res) => {
