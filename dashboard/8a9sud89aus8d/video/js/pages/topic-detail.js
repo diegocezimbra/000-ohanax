@@ -48,6 +48,7 @@ window.ytRegisterPage('topic-detail', async (params) => {
         }
 
         renderMeta();
+        renderError();
         renderPipeline();
         initTabs('td-tabs-container', onTab);
         loadStory();
@@ -87,6 +88,26 @@ function renderMeta() {
             <div class="yt-detail-meta-label">Pontos-Chave</div>
             <div class="yt-detail-meta-value">${ptsHtml}</div>
         </div>`;
+}
+
+function renderError() {
+    const banner = document.getElementById('td-error-banner');
+    const stage = _topic.pipeline_stage || _topic.pipelineStage || '';
+    const error = _topic.pipeline_error || _topic.pipelineError || '';
+
+    if (stage === 'error' && error) {
+        banner.style.display = '';
+        banner.innerHTML = `
+            <div class="yt-alert yt-alert-error">
+                <span class="yt-alert-icon">⚠</span>
+                <div class="yt-alert-content">
+                    <div class="yt-alert-title">Erro no Pipeline</div>
+                    <div class="yt-alert-message">${escapeHtml(error)}</div>
+                </div>
+            </div>`;
+    } else {
+        banner.style.display = 'none';
+    }
 }
 
 function renderPipeline() {
