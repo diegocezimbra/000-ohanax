@@ -15,6 +15,16 @@ const TYPE_COLORS = { hook:'warning', intro:'info', main:'success', example:'inf
 
 window.ytRegisterPage('script-editor', async (params) => {
     _pid = params.projectId; _tid = params.topicId;
+
+    // Breadcrumb navigation
+    const topicTitle = window.ytState?.getState()?.currentTopic?.title || 'Historia';
+    document.getElementById('se-bc-pipeline')?.addEventListener('click', () => router.navigate(`projects/${_pid}/pipeline`));
+    const bcTopic = document.getElementById('se-bc-topic');
+    if (bcTopic) {
+        bcTopic.textContent = topicTitle;
+        bcTopic.addEventListener('click', () => router.navigate(`projects/${_pid}/topics/${_tid}`));
+    }
+
     document.getElementById('se-back')?.addEventListener('click', () => router.navigate(`projects/${_pid}/topics/${_tid}`));
     document.getElementById('se-save-all')?.addEventListener('click', saveAll);
     document.getElementById('se-regen')?.addEventListener('click', regenerateScript);
@@ -32,6 +42,7 @@ async function loadScript() {
         document.getElementById('se-meta-title').value = meta.title || '';
         document.getElementById('se-meta-desc').value = meta.description || '';
         document.getElementById('se-meta-tags').value = (meta.tags || []).join(', ');
+        document.getElementById('se-seg-count').textContent = `${(_script.segments || []).length} segmentos`;
         renderSegments();
         initSortable();
     } catch (err) {
@@ -49,7 +60,7 @@ function renderSegments() {
             `<option value="${t}" ${t===type?'selected':''}>${t}</option>`).join('');
         return `
         <div class="yt-card" data-seg-id="${s.id}" data-seg-idx="${i}" style="margin-bottom:12px;cursor:grab;">
-            <div class="yt-card-header" style="justify-content:space-between;">
+            <div class="yt-card-header" style="display:flex;justify-content:space-between;align-items:center;">
                 <div style="display:flex;align-items:center;gap:8px;">
                     <span class="yt-badge yt-badge-${TYPE_COLORS[type]||'info'}" style="cursor:grab;">&#9776; #${i+1}</span>
                     <select class="yt-select seg-type" style="width:140px;">${typeOpts}</select>
@@ -60,12 +71,18 @@ function renderSegments() {
                 </div>
             </div>
             <div class="yt-card-body">
-                <div class="yt-form-group"><label class="yt-label">Narracao</label>
-                    <textarea class="yt-textarea seg-narration" rows="3">${escapeHtml(s.narration||'')}</textarea></div>
-                <div class="yt-form-group"><label class="yt-label">Direcao Visual</label>
-                    <textarea class="yt-textarea seg-visual" rows="2">${escapeHtml(s.visual_direction||s.visualDirection||'')}</textarea></div>
-                <div class="yt-form-group"><label class="yt-label">Duracao: <span class="seg-dur-label">${s.duration||30}s</span></label>
-                    <input type="range" class="seg-duration" min="10" max="90" value="${s.duration||30}" style="width:100%;"></div>
+                <div class="yt-form-group">
+                    <label class="yt-label">Narracao</label>
+                    <textarea class="yt-textarea seg-narration" rows="3">${escapeHtml(s.narration||'')}</textarea>
+                </div>
+                <div class="yt-form-group">
+                    <label class="yt-label">Direcao Visual</label>
+                    <textarea class="yt-textarea seg-visual" rows="2">${escapeHtml(s.visual_direction||s.visualDirection||'')}</textarea>
+                </div>
+                <div class="yt-form-group">
+                    <label class="yt-label">Duracao: <span class="seg-dur-label">${s.duration||30}s</span></label>
+                    <input type="range" class="seg-duration" min="10" max="90" value="${s.duration||30}" style="width:100%;">
+                </div>
             </div>
         </div>`;
     }).join('');

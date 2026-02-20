@@ -1,31 +1,28 @@
 // =============================================================================
 // THUMBNAIL PAGE - Selecao e preview de variantes de thumbnail
 // =============================================================================
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>"']/g, (ch) =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
-    );
-}
+import { escapeHtml } from '../utils/dom.js';
 
 export async function loadThumbnails(params) {
     const { projectId, topicId } = params;
     const api = window.ytApi;
     const toast = window.ytToast;
+    const router = window.ytRouter;
 
     const grid = document.getElementById('thumb-grid');
     const loading = document.getElementById('thumb-loading');
     const empty = document.getElementById('thumb-empty');
     const regenBtn = document.getElementById('thumb-regen');
-    const topicInfo = document.getElementById('thumb-topic-info');
 
-    // Topic context
-    const state = window.ytState.getState();
-    if (state.currentTopic) {
-        document.getElementById('thumb-topic-title').textContent = state.currentTopic.title || '';
-        topicInfo.style.display = '';
+    // Breadcrumb navigation
+    const topicTitle = window.ytState?.getState()?.currentTopic?.title || 'Historia';
+    document.getElementById('thumb-bc-pipeline')?.addEventListener('click', () => router.navigate(`projects/${projectId}/pipeline`));
+    const bcTopic = document.getElementById('thumb-bc-topic');
+    if (bcTopic) {
+        bcTopic.textContent = topicTitle;
+        bcTopic.addEventListener('click', () => router.navigate(`projects/${projectId}/topics/${topicId}`));
     }
+    document.getElementById('thumb-back')?.addEventListener('click', () => router.navigate(`projects/${projectId}/topics/${topicId}`));
 
     // Fetch thumbnails
     let thumbnails = [];
@@ -71,27 +68,22 @@ function renderThumbnails(thumbnails, projectId, topicId) {
     grid.innerHTML = thumbnails.map((thumb, idx) => {
         const url = thumb.url || thumb.presignedUrl || '';
         const isSelected = thumb.selected || thumb.isPrimary || false;
-        const borderStyle = isSelected
-            ? 'border: 3px solid var(--color-success); box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);'
-            : 'border: 3px solid transparent;';
 
         return `
-        <div class="yt-card" style="${borderStyle} transition: border-color 0.2s;">
-            <div class="yt-card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 600;">Variante ${idx + 1}</span>
+        <div class="yt-card ${isSelected ? 'yt-card-selected' : ''}">
+            <div class="yt-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:600;">Variante ${idx + 1}</span>
                 ${isSelected ? '<span class="yt-badge yt-badge-success">Selecionada</span>' : ''}
             </div>
             <div class="yt-card-body">
-                <div style="cursor: pointer; border-radius: 8px; overflow: hidden; margin-bottom: 12px;"
+                <div class="yt-img-placeholder" style="aspect-ratio:16/9;cursor:pointer;margin-bottom:12px;"
                      onclick="window._ytThumbPreview('${escapeHtml(url)}')">
                     ${url
-                        ? `<img src="${escapeHtml(url)}" alt="Thumbnail ${idx + 1}" style="width: 320px; height: 180px; object-fit: cover; display: block;">`
-                        : `<div style="width: 320px; height: 180px; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center;">
-                               <span style="color: var(--text-tertiary); font-size: 2rem;">&#128247;</span>
-                           </div>`
+                        ? `<img src="${escapeHtml(url)}" alt="Thumbnail ${idx + 1}" style="width:100%;height:100%;object-fit:cover;">`
+                        : `<span style="color:var(--text-tertiary);font-size:2rem;">&#128247;</span>`
                     }
                 </div>
-                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
                     <input type="radio" name="thumb-select" value="${escapeHtml(thumb.id || idx)}"
                            ${isSelected ? 'checked' : ''}
                            data-thumb-id="${escapeHtml(thumb.id || idx)}">
@@ -108,7 +100,7 @@ function renderThumbnails(thumbnails, projectId, topicId) {
             try {
                 await window.ytApi.thumbnail.select(projectId, topicId, thumbId);
                 window.ytToast('Thumbnail selecionada com sucesso!', 'success');
-                // Re-render to update border
+                // Re-render to update selection
                 const res = await window.ytApi.thumbnail.list(projectId, topicId);
                 const updated = Array.isArray(res) ? res : res.thumbnails || res.data || [];
                 renderThumbnails(updated, projectId, topicId);

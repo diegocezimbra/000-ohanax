@@ -1,6 +1,8 @@
 // =============================================================================
 // VISUALS PAGE - Grid de assets visuais por segmento
 // =============================================================================
+import { escapeHtml } from '../utils/dom.js';
+import { truncate } from '../utils/helpers.js';
 
 const STATUS_MAP = {
     completed: { label: 'Concluido', badge: 'success' },
@@ -9,36 +11,27 @@ const STATUS_MAP = {
     failed: { label: 'Falhou', badge: 'danger' },
 };
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>"']/g, (ch) =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
-    );
-}
-
-function truncate(str, max) {
-    if (!str) return '';
-    return str.length <= max ? str : str.slice(0, max - 1).trimEnd() + '\u2026';
-}
-
 export async function loadVisuals(params) {
     const { projectId, topicId } = params;
     const api = window.ytApi;
     const toast = window.ytToast;
+    const router = window.ytRouter;
 
     const grid = document.getElementById('vis-grid');
     const loading = document.getElementById('vis-loading');
     const empty = document.getElementById('vis-empty');
     const regenAllBtn = document.getElementById('vis-regen-all');
-    const topicInfo = document.getElementById('vis-topic-info');
+    const stats = document.getElementById('vis-stats');
 
-    // Show topic context
-    const state = window.ytState.getState();
-    if (state.currentTopic) {
-        document.getElementById('vis-topic-title').textContent = state.currentTopic.title || '';
-        document.getElementById('vis-topic-status').textContent = state.currentTopic.status || '';
-        topicInfo.style.display = '';
+    // Breadcrumb navigation
+    const topicTitle = window.ytState?.getState()?.currentTopic?.title || 'Historia';
+    document.getElementById('vis-bc-pipeline')?.addEventListener('click', () => router.navigate(`projects/${projectId}/pipeline`));
+    const bcTopic = document.getElementById('vis-bc-topic');
+    if (bcTopic) {
+        bcTopic.textContent = topicTitle;
+        bcTopic.addEventListener('click', () => router.navigate(`projects/${projectId}/topics/${topicId}`));
     }
+    document.getElementById('vis-back')?.addEventListener('click', () => router.navigate(`projects/${projectId}/topics/${topicId}`));
 
     // Fetch visuals
     let visuals = [];
@@ -57,6 +50,14 @@ export async function loadVisuals(params) {
         empty.style.display = '';
         return;
     }
+
+    // Stats
+    const done = visuals.filter(v => v.status === 'completed').length;
+    const pending = visuals.length - done;
+    document.getElementById('vis-stat-total').textContent = visuals.length;
+    document.getElementById('vis-stat-done').textContent = done;
+    document.getElementById('vis-stat-pending').textContent = pending;
+    stats.style.display = '';
 
     regenAllBtn.disabled = false;
     grid.style.display = '';
@@ -88,22 +89,22 @@ function renderGrid(visuals, projectId, topicId) {
 
         return `
         <div class="yt-card" data-segment-id="${escapeHtml(seg.id || seg.segmentId || idx)}">
-            <div class="yt-card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-weight: 600;">Segmento ${seg.index ?? idx + 1}</span>
-                <div style="display: flex; gap: 8px; align-items: center;">
+            <div class="yt-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:600;">Segmento ${seg.index ?? idx + 1}</span>
+                <div style="display:flex;gap:8px;align-items:center;">
                     <span class="yt-badge yt-badge-info">${segType}</span>
                     <span class="yt-badge yt-badge-${status.badge}">${status.label}</span>
                 </div>
             </div>
             <div class="yt-card-body">
-                <div style="background: var(--bg-tertiary); border-radius: 8px; overflow: hidden; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 12px;"
+                <div class="yt-img-placeholder" style="aspect-ratio:16/9;cursor:pointer;margin-bottom:12px;"
                      onclick="window._ytVisualsPreview('${escapeHtml(imgUrl)}', '${prompt}', ${seg.index ?? idx + 1})">
                     ${imgUrl
-                        ? `<img src="${escapeHtml(imgUrl)}" alt="Segmento ${seg.index ?? idx + 1}" style="width: 100%; height: 100%; object-fit: cover;">`
-                        : `<span style="color: var(--text-tertiary); font-size: 2rem;">&#128444;</span>`
+                        ? `<img src="${escapeHtml(imgUrl)}" alt="Segmento ${seg.index ?? idx + 1}" style="width:100%;height:100%;object-fit:cover;">`
+                        : `<span style="color:var(--text-tertiary);font-size:2rem;">&#128444;</span>`
                     }
                 </div>
-                <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-bottom: 12px; min-height: 36px;">
+                <p style="font-size:var(--font-size-sm);color:var(--color-text-secondary);margin-bottom:12px;min-height:36px;">
                     ${prompt || '<em>Sem prompt</em>'}
                 </p>
                 <button class="yt-btn yt-btn-sm" data-regen="${escapeHtml(seg.id || seg.segmentId || idx)}">

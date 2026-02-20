@@ -4,8 +4,8 @@
  * Model: prunaai/z-image-turbo on Replicate.
  */
 
-const IMAGE_RETRY_LIMIT = 3;
-const IMAGE_RETRY_DELAY_MS = 5000;
+const IMAGE_RETRY_LIMIT = 4;
+const IMAGE_RETRY_DELAY_MS = 8000;
 
 /**
  * Generate an image from a text prompt (with retry on transient failures).
@@ -29,9 +29,12 @@ export async function generateImage({
       return await _generateImageOnce({ apiKey, prompt, negativePrompt, width, height });
     } catch (err) {
       const isRetryable = err.message.includes('timed out') || err.message.includes('504')
-        || err.message.includes('502') || err.message.includes('503');
+        || err.message.includes('502') || err.message.includes('503')
+        || err.message.includes('throttled') || err.message.includes('rate limit');
       if (attempt === IMAGE_RETRY_LIMIT || !isRetryable) throw err;
-      const delay = IMAGE_RETRY_DELAY_MS * attempt;
+      // Longer delay for rate-limit errors (wait for window to reset)
+      const isRateLimit = err.message.includes('throttled') || err.message.includes('rate limit');
+      const delay = isRateLimit ? 15000 * attempt : IMAGE_RETRY_DELAY_MS * attempt;
       console.warn(`[ImageAdapter] Attempt ${attempt} failed: ${err.message}. Retrying in ${delay}ms...`);
       await new Promise(r => setTimeout(r, delay));
     }

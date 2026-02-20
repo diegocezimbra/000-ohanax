@@ -20,10 +20,10 @@ export function confirmDialog(title, message) {
         </p>`;
 
         const footer = `
-            <button class="btn btn-secondary btn-small" id="yt-confirm-cancel">
+            <button class="yt-btn yt-btn-sm yt-btn-ghost" id="yt-confirm-cancel">
                 Cancelar
             </button>
-            <button class="btn btn-primary btn-small" id="yt-confirm-yes">
+            <button class="yt-btn yt-btn-sm yt-btn-primary" id="yt-confirm-yes">
                 Sim
             </button>`;
 

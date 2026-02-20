@@ -1,40 +1,28 @@
 // =============================================================================
 // ASSEMBLY PAGE - Video player, metadados e montagem
 // =============================================================================
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>"']/g, (ch) =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
-    );
-}
-
-function formatDuration(totalSeconds) {
-    if (totalSeconds == null || isNaN(totalSeconds)) return '0:00';
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = Math.floor(totalSeconds % 60);
-    const mm = String(m).padStart(2, '0');
-    const ss = String(s).padStart(2, '0');
-    return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
-}
-
-function formatFileSize(bytes) {
-    if (!bytes || isNaN(bytes)) return '--';
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
+import { escapeHtml } from '../utils/dom.js';
+import { formatDuration, formatFileSize } from '../utils/helpers.js';
 
 export async function loadAssembly(params) {
     const { projectId, topicId } = params;
     const api = window.ytApi;
     const toast = window.ytToast;
+    const router = window.ytRouter;
 
     const loading = document.getElementById('asm-loading');
     const empty = document.getElementById('asm-empty');
     const content = document.getElementById('asm-content');
     const actions = document.getElementById('asm-actions');
+
+    // Breadcrumb navigation
+    const topicTitle = window.ytState?.getState()?.currentTopic?.title || 'Historia';
+    document.getElementById('asm-bc-pipeline')?.addEventListener('click', () => router.navigate(`projects/${projectId}/pipeline`));
+    const bcTopic = document.getElementById('asm-bc-topic');
+    if (bcTopic) {
+        bcTopic.textContent = topicTitle;
+        bcTopic.addEventListener('click', () => router.navigate(`projects/${projectId}/topics/${topicId}`));
+    }
 
     let video = null;
     try {
@@ -63,8 +51,7 @@ export async function loadAssembly(params) {
     content.style.display = '';
 
     // Video player
-    const videoEl = document.getElementById('asm-video');
-    videoEl.src = videoUrl;
+    document.getElementById('asm-video').src = videoUrl;
 
     // Metadata
     document.getElementById('asm-duration').textContent =
@@ -83,6 +70,7 @@ export async function loadAssembly(params) {
     // Actions
     const isAssembled = !!videoUrl;
     actions.innerHTML = `
+        <button class="yt-btn yt-btn-sm yt-btn-ghost" id="asm-back-btn">&#8592; Voltar</button>
         <button class="yt-btn yt-btn-primary" id="asm-reassemble">
             ${isAssembled ? 'Remontar Video' : 'Montar Video'}
         </button>
@@ -90,6 +78,7 @@ export async function loadAssembly(params) {
             Enviar para Fila
         </button>`;
 
+    document.getElementById('asm-back-btn')?.addEventListener('click', () => router.navigate(`projects/${projectId}/topics/${topicId}`));
     bindActions(params, isAssembled);
 }
 
@@ -101,14 +90,14 @@ function renderTimeline(segments) {
     timeline.innerHTML = segments.map((seg, idx) => {
         const thumbUrl = seg.thumbnailUrl || seg.url || '';
         return `
-            <div style="flex-shrink: 0; text-align: center;">
-                <div style="width: 120px; height: 68px; border-radius: 4px; overflow: hidden; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center;">
+            <div style="flex-shrink:0;text-align:center;">
+                <div class="yt-img-placeholder" style="width:120px;height:68px;">
                     ${thumbUrl
-                        ? `<img src="${escapeHtml(thumbUrl)}" alt="Seg ${idx + 1}" style="width: 100%; height: 100%; object-fit: cover;">`
-                        : `<span style="color: var(--text-tertiary); font-size: 0.75rem;">${idx + 1}</span>`
+                        ? `<img src="${escapeHtml(thumbUrl)}" alt="Seg ${idx + 1}" style="width:100%;height:100%;object-fit:cover;">`
+                        : `<span style="color:var(--text-tertiary);font-size:var(--font-size-sm);">${idx + 1}</span>`
                     }
                 </div>
-                <div style="font-size: 0.6875rem; color: var(--text-secondary); margin-top: 4px;">
+                <div style="font-size:var(--font-size-xs);color:var(--color-text-secondary);margin-top:4px;">
                     ${formatDuration(seg.duration || 0)}
                 </div>
             </div>`;
@@ -137,9 +126,7 @@ function bindActions(params, isAssembled) {
 
     if (queueBtn) {
         queueBtn.onclick = () => {
-            const state = window.ytState.getState();
-            const pid = params.projectId;
-            window.ytRouter.navigate(`projects/${pid}/publishing`);
+            window.ytRouter.navigate(`projects/${params.projectId}/publishing`);
             window.ytToast('Historia enviada para fila de publicacao!', 'success');
         };
     }

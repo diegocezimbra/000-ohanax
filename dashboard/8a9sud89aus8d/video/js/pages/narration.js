@@ -1,39 +1,30 @@
 // =============================================================================
 // NARRATION PAGE - Audio player e tabela de segmentos
 // =============================================================================
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>"']/g, (ch) =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
-    );
-}
-
-function truncate(str, max) {
-    if (!str) return '';
-    return str.length <= max ? str : str.slice(0, max - 1).trimEnd() + '\u2026';
-}
-
-function formatDuration(totalSeconds) {
-    if (totalSeconds == null || isNaN(totalSeconds)) return '0:00';
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = Math.floor(totalSeconds % 60);
-    const mm = String(m).padStart(2, '0');
-    const ss = String(s).padStart(2, '0');
-    return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
-}
+import { escapeHtml } from '../utils/dom.js';
+import { truncate, formatDuration } from '../utils/helpers.js';
 
 export async function loadNarration(params) {
     const { projectId, topicId } = params;
     const api = window.ytApi;
     const toast = window.ytToast;
+    const router = window.ytRouter;
 
     const loading = document.getElementById('narr-loading');
     const empty = document.getElementById('narr-empty');
     const content = document.getElementById('narr-content');
     const regenBtn = document.getElementById('narr-regen');
     const downloadLink = document.getElementById('narr-download');
+
+    // Breadcrumb navigation
+    const topicTitle = window.ytState?.getState()?.currentTopic?.title || 'Historia';
+    document.getElementById('narr-bc-pipeline')?.addEventListener('click', () => router.navigate(`projects/${projectId}/pipeline`));
+    const bcTopic = document.getElementById('narr-bc-topic');
+    if (bcTopic) {
+        bcTopic.textContent = topicTitle;
+        bcTopic.addEventListener('click', () => router.navigate(`projects/${projectId}/topics/${topicId}`));
+    }
+    document.getElementById('narr-back')?.addEventListener('click', () => router.navigate(`projects/${projectId}/topics/${topicId}`));
 
     let narration = null;
     try {
@@ -75,22 +66,17 @@ export async function loadNarration(params) {
     }
 
     // Status
-    const statusEl = document.getElementById('narr-status');
-    statusEl.textContent = narration.status || 'concluido';
+    document.getElementById('narr-status').textContent = narration.status || 'concluido';
 
-    // Duration
+    // Stats
     const totalDuration = narration.totalDuration || narration.duration || 0;
     document.getElementById('narr-duration').textContent = formatDuration(totalDuration);
 
-    // Segments
     const segments = narration.segments || [];
     document.getElementById('narr-seg-count').textContent = segments.length;
 
-    // Voice info
     const voiceInfo = document.getElementById('narr-voice-info');
-    if (narration.voice || narration.voiceName) {
-        voiceInfo.textContent = `Voz: ${narration.voice || narration.voiceName}`;
-    }
+    voiceInfo.textContent = narration.voice || narration.voiceName || '--';
 
     renderSegments(segments);
     bindRegenerate(regenBtn, params);
@@ -102,7 +88,7 @@ function renderSegments(segments) {
     if (!segments.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="3" style="text-align: center; color: var(--text-tertiary); padding: 24px;">
+                <td colspan="3" style="text-align:center;color:var(--color-text-muted);padding:24px;">
                     Nenhum segmento disponivel
                 </td>
             </tr>`;
@@ -115,11 +101,11 @@ function renderSegments(segments) {
 
         return `
             <tr>
-                <td style="font-weight: 600; text-align: center;">${seg.index ?? idx + 1}</td>
-                <td style="font-size: 0.875rem;" title="${escapeHtml(seg.text || seg.narrationText || '')}">
-                    ${text || '<em style="color: var(--text-tertiary);">Sem texto</em>'}
+                <td style="font-weight:600;text-align:center;">${seg.index ?? idx + 1}</td>
+                <td style="font-size:var(--font-size-sm);" title="${escapeHtml(seg.text || seg.narrationText || '')}">
+                    ${text || '<em style="color:var(--color-text-muted);">Sem texto</em>'}
                 </td>
-                <td style="text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.875rem;">
+                <td style="text-align:center;font-family:var(--font-mono);font-size:var(--font-size-sm);">
                     ${duration}
                 </td>
             </tr>`;

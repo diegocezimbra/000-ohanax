@@ -385,7 +385,7 @@ async function generateMultipleImagesForSegment(artPrompt, topic, settings) {
       prompt: variantPrompt,
       negativePrompt: variantNegative,
       width: 1920,
-      height: 1080,
+      height: 1088,
     });
 
     variants.push({
@@ -397,6 +397,11 @@ async function generateMultipleImagesForSegment(artPrompt, topic, settings) {
       prompt: variantPrompt,
       compositionLabel: composition.label,
     });
+
+    // Rate-limit delay between variants to avoid Replicate throttling
+    if (i < IMAGE_VARIANTS_PER_SEGMENT - 1) {
+      await new Promise(r => setTimeout(r, 10000));
+    }
   }
 
   return variants;

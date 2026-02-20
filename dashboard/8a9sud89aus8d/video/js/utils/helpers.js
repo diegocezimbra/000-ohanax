@@ -118,3 +118,15 @@ export function countWords(text) {
     if (!text) return 0;
     return text.split(/\s+/).filter(Boolean).length;
 }
+
+/**
+ * Formats bytes into human-readable file size.
+ * @param {number} bytes
+ * @returns {string}
+ */
+export function formatFileSize(bytes) {
+    if (!bytes || isNaN(bytes)) return '--';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
