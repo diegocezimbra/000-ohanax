@@ -57,7 +57,9 @@ export async function generateText({
     throw new Error('Gemini: No candidates returned');
   }
 
-  const text = candidate.content?.parts?.map(p => p.text).join('') || '';
+  // Filter out thinking parts (Gemini 2.5+ returns parts with thought:true for reasoning)
+  const parts = candidate.content?.parts || [];
+  const text = parts.filter(p => !p.thought).map(p => p.text).filter(Boolean).join('') || '';
   const usage = data.usageMetadata || {};
 
   return {
