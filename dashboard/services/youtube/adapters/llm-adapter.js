@@ -37,10 +37,12 @@ export async function generateText({
     },
   };
 
+  // Gemini 2.5 thinking tokens count against maxOutputTokens, causing truncated output.
+  // Disable thinking entirely — our prompts are detailed enough and don't need reasoning.
+  body.generationConfig.thinkingConfig = { thinkingBudget: 0 };
+
   if (responseFormat === 'json') {
     body.generationConfig.responseMimeType = 'application/json';
-    // Disable thinking for JSON mode — Gemini 2.5 thinking can corrupt JSON output
-    body.generationConfig.thinkingConfig = { thinkingBudget: 0 };
   }
 
   const response = await fetch(url, {
