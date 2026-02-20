@@ -27,7 +27,7 @@ export async function conductResearch({ projectId, topicId, sourceId, context })
   const allResults = [];
   const searchPromises = queries.map(query =>
     webSearch({
-      provider: settings.search_provider || 'tavily',
+      provider: settings.search_provider || 'serper',
       apiKey: settings.search_api_key,
       query,
       maxResults: 5,

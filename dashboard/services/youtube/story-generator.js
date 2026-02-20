@@ -117,24 +117,33 @@ export async function updateStory(topicId, content) {
 async function generateOutline(topic, sourceContent, research, settings) {
   const { system, user } = buildOutlinePrompt(topic, sourceContent, research, settings);
 
-  const result = await generateText({
-    apiKey: settings.llm_api_key,
-    model: settings.llm_model,
-    systemPrompt: system,
-    userPrompt: user,
-    maxTokens: 8000,
-    temperature: 0.8,
-    responseFormat: 'json',
-  });
+  for (let attempt = 1; attempt <= CHAPTER_RETRY_LIMIT; attempt++) {
+    try {
+      const result = await generateText({
+        apiKey: settings.llm_api_key,
+        model: settings.llm_model,
+        systemPrompt: system,
+        userPrompt: user,
+        maxTokens: 8000,
+        temperature: 0.8,
+        responseFormat: 'json',
+      });
 
-  const outline = parseJsonResponse(result.text);
+      const outline = parseJsonResponse(result.text);
 
-  // Validate minimum chapters
-  if (!outline.chapters || outline.chapters.length < 10) {
-    throw new Error(`Outline too short: ${outline.chapters?.length || 0} chapters (minimum 10)`);
+      // Validate minimum chapters
+      if (!outline.chapters || outline.chapters.length < 10) {
+        throw new Error(`Outline too short: ${outline.chapters?.length || 0} chapters (minimum 10)`);
+      }
+
+      return outline;
+    } catch (err) {
+      if (attempt === CHAPTER_RETRY_LIMIT) throw err;
+      const delay = CHAPTER_RETRY_DELAY_MS * attempt;
+      console.warn(`[StoryGen] Outline attempt ${attempt} failed: ${err.message}. Retrying in ${delay}ms...`);
+      await sleep(delay);
+    }
   }
-
-  return outline;
 }
 
 // --- Internal: Chapter-by-Chapter Generation ---

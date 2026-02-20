@@ -39,6 +39,8 @@ export async function generateText({
 
   if (responseFormat === 'json') {
     body.generationConfig.responseMimeType = 'application/json';
+    // Disable thinking for JSON mode — Gemini 2.5 thinking can corrupt JSON output
+    body.generationConfig.thinkingConfig = { thinkingBudget: 0 };
   }
 
   const response = await fetch(url, {
@@ -72,7 +74,8 @@ export async function generateText({
 }
 
 /**
- * Parse a JSON response from LLM output, handling markdown code blocks.
+ * Parse a JSON response from LLM output, handling markdown code blocks,
+ * trailing commas, and other common LLM JSON issues.
  */
 export function parseJsonResponse(text) {
   let cleaned = text.trim();
@@ -102,5 +105,34 @@ export function parseJsonResponse(text) {
     cleaned = cleaned.substring(0, lastBracket + 1);
   }
 
-  return JSON.parse(cleaned);
+  // Try parsing after basic cleanup
+  try {
+    return JSON.parse(cleaned);
+  } catch (_) {
+    // Fall through to advanced cleanup
+  }
+
+  // Fix trailing commas before } or ] (common LLM error)
+  cleaned = cleaned.replace(/,\s*([\]}])/g, '$1');
+
+  // Fix unescaped newlines inside strings
+  cleaned = cleaned.replace(/(?<=":[ ]*"[^"]*)\n(?=[^"]*")/g, '\\n');
+
+  try {
+    return JSON.parse(cleaned);
+  } catch (finalErr) {
+    // Last resort: try to find the largest valid JSON substring
+    // by progressively removing trailing content
+    for (let i = cleaned.length - 1; i > cleaned.length * 0.7; i--) {
+      const ch = cleaned[i];
+      if (ch === '}' || ch === ']') {
+        try {
+          return JSON.parse(cleaned.substring(0, i + 1));
+        } catch (_) {
+          continue;
+        }
+      }
+    }
+    throw finalErr;
+  }
 }
