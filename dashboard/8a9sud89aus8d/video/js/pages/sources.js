@@ -60,7 +60,7 @@ async function loadSources() {
         tbody.innerHTML = sources.map(s => `
             <tr data-source-id="${s.id}" class="yt-table-row-clickable">
                 <td>${escapeHtml(s.title||s.url||'Sem titulo')}</td>
-                <td>${renderSourceTypeBadge(s.type)}</td><td>${statusBadge(s.status)}</td>
+                <td>${renderSourceTypeBadge(s.source_type)}</td><td>${statusBadge(s.status)}</td>
                 <td style="text-align:right;">${formatWords(s.word_count||s.wordCount)}</td>
                 <td>${formatDate(s.created_at||s.createdAt)}</td></tr>`).join('');
         tbody.querySelectorAll('[data-source-id]').forEach(row => {
@@ -73,14 +73,15 @@ async function openSourceDetail(id) {
     try {
         const s = await api.sources.get(_pid, id);
         const body = `
-            <div class="yt-form-group"><label class="yt-label">Titulo</label><p>${escapeHtml(s.title||'--')}</p></div>
+            <div class="yt-form-group"><label class="yt-label">Titulo</label><p>${escapeHtml(s.title||s.url||'--')}</p></div>
             <div class="yt-form-group"><label class="yt-label">Tipo / Status</label>
-                <p>${renderSourceTypeBadge(s.type)} ${statusBadge(s.status)}</p></div>
+                <p>${renderSourceTypeBadge(s.source_type)} ${statusBadge(s.status)}</p></div>
+            ${s.url ? `<div class="yt-form-group"><label class="yt-label">URL</label><p style="word-break:break-all;"><a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.url)}</a></p></div>` : ''}
             <div class="yt-form-group"><label class="yt-label">Conteudo</label>
                 <pre style="max-height:300px;overflow:auto;white-space:pre-wrap;font-size:13px;
-                padding:12px;background:var(--color-bg-tertiary);border-radius:8px;">${escapeHtml(s.content||s.raw_content||'Nao disponivel')}</pre></div>`;
+                padding:12px;background:var(--color-bg-tertiary);border-radius:8px;">${escapeHtml(s.processed_content||s.raw_content||'Nao disponivel')}</pre></div>`;
         const footer = `<button class="yt-btn yt-btn-danger yt-btn-sm" id="src-del">Excluir</button>`;
-        const modal = openModal({ title: s.title||'Detalhe da Fonte', size:'lg', body, footer });
+        const modal = openModal({ title: s.title||s.url||'Detalhe da Fonte', size:'lg', body, footer });
         modal.el.querySelector('#src-del')?.addEventListener('click', async () => {
             try { await api.sources.delete(_pid,id); toast('Fonte excluida!','success'); modal.close(); await loadSources(); }
             catch (e) { toast('Erro: '+e.message,'error'); }

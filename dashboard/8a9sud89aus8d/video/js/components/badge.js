@@ -60,7 +60,9 @@ export function renderRichnessBadge(score) {
 const SOURCE_TYPE_CONFIG = {
     url:                  { label: 'URL',         color: 'blue' },
     pdf:                  { label: 'PDF',         color: 'orange' },
+    text:                 { label: 'Texto',       color: 'purple' },
     manual:               { label: 'Texto',       color: 'purple' },
+    youtube:              { label: 'YouTube',     color: 'red' },
     youtube_transcript:   { label: 'YouTube',     color: 'red' },
 };
 
