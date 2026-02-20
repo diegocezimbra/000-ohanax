@@ -18,6 +18,7 @@
 const IMAGE_PROVIDERS = {
   dalle: callDallE,
   flux: callFlux,
+  flux_schnell: callFluxSchnell,
   z_image_turbo: callZImageTurbo,
 };
 
@@ -110,6 +111,49 @@ async function callFlux({ apiKey, prompt, negativePrompt, width, height }) {
     buffer,
     mimeType: 'image/png',
     metadata: { model: 'flux-1.1-pro' },
+  };
+}
+
+// --- Flux Schnell (black-forest-labs/flux-schnell on Replicate) ---
+// ~$0.003/image — 13x cheaper than flux-1.1-pro, ~2s generation time
+
+async function callFluxSchnell({ apiKey, prompt, width, height }) {
+  const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'black-forest-labs/flux-schnell',
+      input: {
+        prompt,
+        width: width || 1920,
+        height: height || 1080,
+        num_outputs: 1,
+      },
+    }),
+  });
+
+  const prediction = await createResponse.json();
+  if (prediction.error) {
+    throw new Error(`Flux Schnell: ${prediction.error}`);
+  }
+
+  const result = await pollReplicatePrediction(apiKey, prediction.id, 120000, 'Flux Schnell');
+  const imageUrl = Array.isArray(result.output) ? result.output[0] : result.output;
+
+  if (!imageUrl) {
+    throw new Error('Flux Schnell: No output image received');
+  }
+
+  const imageResponse = await fetch(imageUrl);
+  const buffer = Buffer.from(await imageResponse.arrayBuffer());
+
+  return {
+    buffer,
+    mimeType: 'image/webp',
+    metadata: { model: 'black-forest-labs/flux-schnell' },
   };
 }
 
