@@ -232,10 +232,10 @@ app.listen(PORT, () => {
   startWorker({ pollIntervalMs: 5000, maxConcurrent: 3 });
   console.log('YouTube pipeline worker started');
 
-  // Publishing cron: check every 5 minutes for due publications
+  // Publishing cron: check every 30 minutes for due publications
   setInterval(() => runPublishingCron().catch(err =>
     console.error('Publishing cron error:', err.message)
-  ), 5 * 60 * 1000);
+  ), 30 * 60 * 1000);
 
   // Content Engine cron: auto-generate content every 30 minutes
   startContentEngine(30 * 60 * 1000);

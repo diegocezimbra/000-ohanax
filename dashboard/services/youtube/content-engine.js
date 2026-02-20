@@ -22,9 +22,9 @@ import { generateTopicsFromSource } from './topic-generator.js';
 // Default engine configuration (fallback when DB values are null)
 const ENGINE_DEFAULTS = {
   buffer_target: 7,
-  max_gen_per_day: 5,
+  max_gen_per_day: 3,
   min_richness_score: 5,
-  check_interval_ms: 1800000, // 30 minutes
+  check_interval_ms: 3600000, // 1 hour
 };
 
 /**
