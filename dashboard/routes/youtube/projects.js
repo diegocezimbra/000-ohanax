@@ -120,9 +120,8 @@ router.post('/', async (req, res) => {
 
     const project = projectResult.rows[0];
 
-    // Default to Gemini if GOOGLE_API_KEY is available, else anthropic
-    const defaultLlm = process.env.GOOGLE_API_KEY ? 'gemini' : 'anthropic';
-    const defaultModel = defaultLlm === 'gemini' ? 'gemini-2.0-flash' : 'claude-sonnet-4-5-20250929';
+    const defaultLlm = 'gemini';
+    const defaultModel = 'gemini-2.0-flash';
 
     await client.query(`
       INSERT INTO yt_project_settings (id, project_id, llm_provider, llm_model)

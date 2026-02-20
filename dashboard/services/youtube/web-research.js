@@ -94,7 +94,6 @@ export async function getResearchForSource(sourceId) {
 
 async function generateSearchQueries(context, settings) {
   const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
     systemPrompt: `You generate diverse web search queries to research a topic for YouTube video creation.
@@ -123,7 +122,6 @@ async function scoreRelevance(results, context, settings) {
     .join('\n');
 
   const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
     systemPrompt: `Score the relevance of search results for creating a YouTube video.

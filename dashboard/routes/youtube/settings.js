@@ -33,7 +33,7 @@ function maskSettingsRow(row) {
     llm_api_key: maskApiKey(row.llm_api_key),
     openai_api_key: maskApiKey(row.openai_api_key),
     replicate_api_key: maskApiKey(row.replicate_api_key),
-    elevenlabs_api_key: maskApiKey(row.elevenlabs_api_key),
+    fish_audio_api_key: maskApiKey(row.fish_audio_api_key),
     video_api_key: maskApiKey(row.video_api_key),
     search_api_key: maskApiKey(row.search_api_key),
     youtube_access_token: maskApiKey(row.youtube_access_token),
@@ -217,7 +217,7 @@ router.put('/ai', async (req, res) => {
     const { projectId } = req.params;
     const {
       llm_provider, llm_api_key, llm_model,
-      tts_provider, tts_api_key, tts_voice_id, tts_speed, tts_stability,
+      tts_provider, tts_api_key, fish_audio_api_key, tts_voice_id, tts_speed,
       image_provider, image_api_key, image_style,
       video_provider, video_api_key,
       search_provider, search_api_key,
@@ -227,29 +227,29 @@ router.put('/ai', async (req, res) => {
     const result = await db.analytics.query(`
       UPDATE yt_project_settings
       SET
-        llm_provider      = COALESCE($1, llm_provider),
-        llm_api_key       = COALESCE($2, llm_api_key),
-        llm_model         = COALESCE($3, llm_model),
-        tts_provider      = COALESCE($4, tts_provider),
-        tts_api_key       = COALESCE($5, tts_api_key),
-        tts_voice_id      = COALESCE($6, tts_voice_id),
-        tts_speed         = COALESCE($7, tts_speed),
-        tts_stability     = COALESCE($8, tts_stability),
-        image_provider    = COALESCE($9, image_provider),
-        image_api_key     = COALESCE($10, image_api_key),
-        image_style       = COALESCE($11, image_style),
-        video_provider    = COALESCE($12, video_provider),
-        video_api_key     = COALESCE($13, video_api_key),
-        search_provider   = COALESCE($14, search_provider),
-        search_api_key    = COALESCE($15, search_api_key),
-        openai_api_key    = COALESCE($16, openai_api_key),
-        replicate_api_key = COALESCE($17, replicate_api_key),
-        updated_at        = NOW()
+        llm_provider         = COALESCE($1, llm_provider),
+        llm_api_key          = COALESCE($2, llm_api_key),
+        llm_model            = COALESCE($3, llm_model),
+        tts_provider         = COALESCE($4, tts_provider),
+        tts_api_key          = COALESCE($5, tts_api_key),
+        fish_audio_api_key   = COALESCE($6, fish_audio_api_key),
+        tts_voice_id         = COALESCE($7, tts_voice_id),
+        tts_speed            = COALESCE($8, tts_speed),
+        image_provider       = COALESCE($9, image_provider),
+        image_api_key        = COALESCE($10, image_api_key),
+        image_style          = COALESCE($11, image_style),
+        video_provider       = COALESCE($12, video_provider),
+        video_api_key        = COALESCE($13, video_api_key),
+        search_provider      = COALESCE($14, search_provider),
+        search_api_key       = COALESCE($15, search_api_key),
+        openai_api_key       = COALESCE($16, openai_api_key),
+        replicate_api_key    = COALESCE($17, replicate_api_key),
+        updated_at           = NOW()
       WHERE project_id = $18
       RETURNING *
     `, [
       llm_provider, cleanKeyValue(llm_api_key), llm_model,
-      tts_provider, cleanKeyValue(tts_api_key), tts_voice_id, tts_speed, tts_stability,
+      tts_provider, cleanKeyValue(tts_api_key), cleanKeyValue(fish_audio_api_key), tts_voice_id, tts_speed,
       image_provider, cleanKeyValue(image_api_key), image_style,
       video_provider, cleanKeyValue(video_api_key),
       search_provider, cleanKeyValue(search_api_key),

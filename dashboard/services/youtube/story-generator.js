@@ -118,7 +118,6 @@ async function generateOutline(topic, sourceContent, research, settings) {
   const { system, user } = buildOutlinePrompt(topic, sourceContent, research, settings);
 
   const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
     systemPrompt: system,
@@ -180,7 +179,6 @@ async function generateSingleChapter(chapter, outlineChapters, previousText, run
   for (let attempt = 1; attempt <= CHAPTER_RETRY_LIMIT; attempt++) {
     try {
       const result = await generateText({
-        provider: settings.llm_provider || 'anthropic',
         apiKey: settings.llm_api_key,
         model: settings.llm_model,
         systemPrompt: system,
@@ -204,7 +202,6 @@ async function generateRunningSummary(storySoFar, topic, settings) {
     const { system, user } = buildRunningSummaryPrompt(storySoFar, topic, settings);
 
     const result = await generateText({
-      provider: settings.llm_provider || 'anthropic',
       apiKey: settings.llm_api_key,
       model: settings.llm_model,
       systemPrompt: system,
@@ -248,7 +245,6 @@ async function expandStory(story, topic, settings) {
   const { system, user } = buildStoryExpansionPrompt(story, topic, settings);
 
   const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
     systemPrompt: system,

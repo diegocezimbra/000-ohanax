@@ -1,161 +1,52 @@
 /**
- * Text-to-Speech Adapter - ElevenLabs + OpenAI TTS abstraction.
- * Supports speed, stability, and similarity_boost configuration.
+ * Text-to-Speech Adapter - Fish Audio (OpenAudio S1).
+ * ~$15/1M chars — high quality multilingual TTS.
+ * Docs: https://docs.fish.audio/api-reference/endpoint/openapi-v1/text-to-speech
  */
 
 /**
  * Generate speech audio from text.
  * @param {Object} opts
- * @param {string} opts.provider - 'elevenlabs' | 'openai'
- * @param {string} opts.apiKey
+ * @param {string} opts.apiKey - Fish Audio API key
  * @param {string} opts.text - Text to narrate
- * @param {string} opts.voice - Voice ID (ElevenLabs) or voice name (OpenAI)
- * @param {string} opts.model - ElevenLabs model or OpenAI TTS model
- * @param {number} [opts.speed=1.0] - Playback speed (both providers)
- * @param {number} [opts.stability=0.5] - Voice stability 0-1 (ElevenLabs only)
- * @param {number} [opts.similarityBoost=0.75] - Similarity boost 0-1 (ElevenLabs only)
+ * @param {string} [opts.voice] - Fish Audio voice model ID (reference_id)
+ * @param {string} [opts.model='s1'] - Fish Audio model
+ * @param {number} [opts.speed=1.0] - Playback speed (0.5-2.0)
  * @returns {Promise<{ buffer: Buffer, mimeType: string, metadata: Object }>}
  */
-// --- Provider Registry ---
-const TTS_PROVIDERS = {
-  elevenlabs: callElevenLabs,
-  openai: callOpenAiTts,
-};
-
 export async function generateSpeech({
-  provider, apiKey, text, voice,
-  model, speed = 1.0, stability = 0.5,
-  similarityBoost = 0.75,
+  apiKey, text, voice, model, speed = 1.0,
 }) {
-  const handler = TTS_PROVIDERS[provider];
-  if (!handler) {
-    throw new Error(`Unknown TTS provider: '${provider}'. Available: ${Object.keys(TTS_PROVIDERS).join(', ')}`);
-  }
-  return handler({ apiKey, text, voice, model, speed, stability, similarityBoost });
-}
-
-/**
- * List available voices for a provider.
- * @param {Object} opts
- * @param {string} opts.provider
- * @param {string} opts.apiKey
- * @returns {Promise<Array<{ id: string, name: string, previewUrl?: string }>>}
- */
-export async function listVoices({ provider, apiKey }) {
-  if (provider === 'openai') {
-    return [
-      { id: 'alloy', name: 'Alloy' },
-      { id: 'ash', name: 'Ash' },
-      { id: 'coral', name: 'Coral' },
-      { id: 'echo', name: 'Echo' },
-      { id: 'fable', name: 'Fable' },
-      { id: 'onyx', name: 'Onyx' },
-      { id: 'nova', name: 'Nova' },
-      { id: 'sage', name: 'Sage' },
-      { id: 'shimmer', name: 'Shimmer' },
-    ];
-  }
-  return fetchElevenLabsVoices(apiKey);
-}
-
-// --- ElevenLabs ---
-
-async function callElevenLabs({ apiKey, text, voice, model, speed, stability, similarityBoost }) {
-  const voiceId = voice || 'pNInz6obpgDQGcFmaJgB'; // Default: Adam
-  const modelId = model || 'eleven_multilingual_v2';
+  const referenceId = voice || null;
+  const fishModel = model || 's1';
+  const clampedSpeed = clampValue(speed, 0.5, 2.0, 1.0);
 
   const requestBody = {
     text,
-    model_id: modelId,
-    voice_settings: {
-      stability: clampValue(stability, 0, 1, 0.5),
-      similarity_boost: clampValue(similarityBoost, 0, 1, 0.75),
-      style: 0.0,
-      use_speaker_boost: true,
-    },
+    format: 'mp3',
+    mp3_bitrate: 128,
+    temperature: 0.7,
+    top_p: 0.7,
+    prosody: { speed: clampedSpeed },
   };
 
-  // ElevenLabs v1 API supports speed via query param on some models
-  const speedParam = speed !== 1.0 ? `?output_format=mp3_44100_128` : '';
-
-  const response = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}${speedParam}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'xi-api-key': apiKey,
-      },
-      body: JSON.stringify(requestBody),
-    },
-  );
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(`ElevenLabs: ${error.detail?.message || response.statusText}`);
+  if (referenceId) {
+    requestBody.reference_id = referenceId;
   }
 
-  const buffer = Buffer.from(await response.arrayBuffer());
-
-  // Estimate duration from audio buffer size (MP3 at ~128kbps)
-  const estimatedDurationSeconds = Math.round(buffer.length / (128 * 128));
-
-  return {
-    buffer,
-    mimeType: 'audio/mpeg',
-    metadata: {
-      model: modelId,
-      voiceId,
-      stability,
-      similarityBoost,
-      speed,
-      estimatedDurationSeconds,
-    },
-  };
-}
-
-async function fetchElevenLabsVoices(apiKey) {
-  const response = await fetch('https://api.elevenlabs.io/v1/voices', {
-    headers: { 'xi-api-key': apiKey },
-  });
-
-  if (!response.ok) {
-    throw new Error(`ElevenLabs voices: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.voices.map(v => ({
-    id: v.voice_id,
-    name: v.name,
-    previewUrl: v.preview_url,
-  }));
-}
-
-// --- OpenAI TTS ---
-
-async function callOpenAiTts({ apiKey, text, voice, model, speed }) {
-  const ttsModel = model || 'tts-1-hd';
-  const ttsVoice = voice || 'onyx';
-  const clampedSpeed = clampValue(speed, 0.25, 4.0, 1.0);
-
-  const response = await fetch('https://api.openai.com/v1/audio/speech', {
+  const response = await fetch('https://api.fish.audio/v1/tts', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
+      'model': fishModel,
     },
-    body: JSON.stringify({
-      model: ttsModel,
-      input: text,
-      voice: ttsVoice,
-      response_format: 'mp3',
-      speed: clampedSpeed,
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(`OpenAI TTS: ${error.error?.message || response.statusText}`);
+    throw new Error(`Fish Audio: ${error.message || response.statusText}`);
   }
 
   const buffer = Buffer.from(await response.arrayBuffer());
@@ -167,12 +58,36 @@ async function callOpenAiTts({ apiKey, text, voice, model, speed }) {
     buffer,
     mimeType: 'audio/mpeg',
     metadata: {
-      model: ttsModel,
-      voice: ttsVoice,
+      model: fishModel,
+      referenceId,
       speed: clampedSpeed,
       estimatedDurationSeconds,
     },
   };
+}
+
+/**
+ * List available voices.
+ * @param {Object} opts
+ * @param {string} opts.apiKey
+ * @returns {Promise<Array<{ id: string, name: string, previewUrl?: string }>>}
+ */
+export async function listVoices({ apiKey }) {
+  const response = await fetch('https://api.fish.audio/v1/models', {
+    headers: { 'Authorization': `Bearer ${apiKey}` },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Fish Audio voices: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  const models = data.items || data.models || data;
+  return (Array.isArray(models) ? models : []).map(v => ({
+    id: v.id || v._id,
+    name: v.title || v.name,
+    previewUrl: v.preview_url || null,
+  }));
 }
 
 /**

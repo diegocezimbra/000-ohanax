@@ -110,7 +110,6 @@ async function callLlmForTopics(content, researchContext, settings) {
   const { system, user } = buildTopicPrompt(content, researchContext, settings, CONTENT_ANGLES);
 
   const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
     systemPrompt: system,

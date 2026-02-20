@@ -291,7 +291,6 @@ async function generateArtDirection(segment, topic, settings, context = {}) {
   const segmentPosition = buildSegmentPositionLabel(context);
 
   const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
     systemPrompt: `You are an elite AI cinematographer and art director for YouTube documentary videos.
@@ -368,8 +367,6 @@ function buildSegmentPositionLabel(context) {
  * @returns {Promise<Array<Object>>} Array of image assets with composition metadata
  */
 async function generateMultipleImagesForSegment(artPrompt, topic, settings) {
-  const provider = settings.image_provider || 'dalle';
-  const apiKey = provider === 'dalle' ? settings.openai_api_key : settings.replicate_api_key;
   const basePrompt = artPrompt.imagePrompt || '';
   const baseNegative = artPrompt.negativePrompt || '';
   const cameraHint = artPrompt.cameraMovement || '';
@@ -384,13 +381,11 @@ async function generateMultipleImagesForSegment(artPrompt, topic, settings) {
     const variantNegative = `${baseNegative}, static image, stock photo, text overlay, watermark`;
 
     const result = await generateImage({
-      provider,
-      apiKey,
+      apiKey: settings.replicate_api_key,
       prompt: variantPrompt,
       negativePrompt: variantNegative,
       width: 1920,
       height: 1080,
-      style: settings.dalle_style || 'vivid',
     });
 
     variants.push({
@@ -438,7 +433,7 @@ function buildVariantPrompt(basePrompt, composition, cameraHint, variantIndex) {
 
   const fullPrompt = framingParts.join('. ');
 
-  // DALL-E has a 4000 char limit, Flux is more permissive; keep under 900 for reliability
+  // Keep prompt under 900 chars for reliability
   return fullPrompt.substring(0, 900);
 }
 
@@ -454,15 +449,12 @@ function buildVariantPrompt(basePrompt, composition, cameraHint, variantIndex) {
  * @returns {Promise<Object>}
  */
 async function createImageAsset(artPrompt, topic, settings) {
-  const provider = settings.image_provider || 'dalle';
   const result = await generateImage({
-    provider,
-    apiKey: provider === 'dalle' ? settings.openai_api_key : settings.replicate_api_key,
+    apiKey: settings.replicate_api_key,
     prompt: artPrompt.imagePrompt,
     negativePrompt: artPrompt.negativePrompt || '',
     width: 1920,
     height: 1080,
-    style: settings.dalle_style || 'vivid',
   });
 
   return {

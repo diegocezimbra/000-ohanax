@@ -104,7 +104,6 @@ async function callLlmForScript(storyContent, topic, settings) {
   const { system, user } = buildScriptPrompt(storyContent, topic, settings);
 
   const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
     systemPrompt: system,
@@ -144,7 +143,6 @@ async function generateYouTubeMetadata(topic, scriptData, settings) {
   const { system, user } = buildMetadataPrompt(topic, scriptData, chapterTimestamps, narrationPreview, settings);
 
   const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
     systemPrompt: system,
@@ -213,7 +211,6 @@ async function enrichScript(scriptId, topic, settings) {
   const { system, user } = buildScriptEnrichmentPrompt(topic, weakSegmentData, settings);
 
   const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
     systemPrompt: system,

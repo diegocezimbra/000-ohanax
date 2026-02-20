@@ -49,14 +49,13 @@ export async function initYouTubeTables() {
         -- Video (veo3 = google/veo-3-fast via Replicate)
         video_provider VARCHAR(20) DEFAULT 'veo3',
         video_api_key TEXT,
-        -- TTS
-        tts_provider VARCHAR(20) NOT NULL DEFAULT 'elevenlabs',
+        -- TTS (Fish Audio)
+        tts_provider VARCHAR(20) NOT NULL DEFAULT 'fish',
         tts_api_key TEXT,
-        elevenlabs_api_key TEXT,
+        fish_audio_api_key TEXT,
         tts_voice_id VARCHAR(100),
-        tts_model VARCHAR(100),
+        tts_model VARCHAR(100) DEFAULT 's1',
         tts_speed NUMERIC(3,2) DEFAULT 1.0,
-        tts_stability NUMERIC(3,2) DEFAULT 0.75,
         -- Visual Identity
         visual_style VARCHAR(200) NOT NULL DEFAULT 'cinematic, photorealistic',
         brand_colors TEXT,
@@ -350,6 +349,9 @@ export async function initYouTubeTables() {
       ALTER TABLE yt_project_settings ADD COLUMN IF NOT EXISTS content_engine_buffer_size INTEGER NOT NULL DEFAULT 7;
       ALTER TABLE yt_project_settings ADD COLUMN IF NOT EXISTS content_engine_max_gen_per_day INTEGER NOT NULL DEFAULT 5;
       ALTER TABLE yt_stories ADD COLUMN IF NOT EXISTS outline JSONB DEFAULT NULL;
+      ALTER TABLE yt_project_settings ADD COLUMN IF NOT EXISTS fish_audio_api_key TEXT;
+      ALTER TABLE yt_project_settings ALTER COLUMN tts_provider SET DEFAULT 'fish';
+      ALTER TABLE yt_project_settings ALTER COLUMN tts_model SET DEFAULT 's1';
     `);
   } catch (err) {
     console.error('[YouTube] Error initializing tables:', err.message);

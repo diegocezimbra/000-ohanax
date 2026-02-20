@@ -91,7 +91,7 @@ export function getConfigDefaults() {
     ],
     ai_providers: [
       { function: 'Texto / Roteiro (LLM)', provider: 'Gemini', detail: 'Google Gemini via GEMINI_API_KEY', configured: !!process.env.GOOGLE_API_KEY },
-      { function: 'Narracao (TTS)', provider: 'ElevenLabs', detail: 'ElevenLabs via ELEVENLABS_API_KEY', configured: !!process.env.ELEVENLABS_API_KEY },
+      { function: 'Narracao (TTS)', provider: 'Fish Audio', detail: 'Fish Audio OpenAudio S1 via FISH_AUDIO_API_KEY', configured: !!process.env.FISH_AUDIO_API_KEY },
       { function: 'Imagem (Visuais)', provider: 'Replicate', detail: 'prunaai/z-image-turbo — 1024x1024, 8 steps', configured: !!process.env.REPLICATE_API_TOKEN },
       { function: 'Video (Cenas Animadas)', provider: 'Replicate', detail: 'google/veo-3-fast — 720p', configured: !!process.env.REPLICATE_API_TOKEN },
       { function: 'Pesquisa Web', provider: 'Serper', detail: 'serper.dev via SERPER_API_KEY', configured: !!process.env.SERPER_API_KEY },

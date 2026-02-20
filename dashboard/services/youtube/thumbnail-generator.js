@@ -54,15 +54,11 @@ export async function generateThumbnails(topicId) {
 
     // Generate base image with no text baked in
     const imageResult = await generateImage({
-      provider: settings.image_provider || 'dalle',
-      apiKey: settings.image_provider === 'flux'
-        ? settings.replicate_api_key
-        : settings.openai_api_key,
+      apiKey: settings.replicate_api_key,
       prompt: concept.imagePrompt,
       negativePrompt: concept.negativePrompt || DEFAULT_NEGATIVE_PROMPT,
       width: THUMBNAIL_WIDTH,
       height: THUMBNAIL_HEIGHT,
-      style: 'vivid',
     });
 
     // Composite text overlay using sharp + SVG
@@ -151,7 +147,6 @@ const DEFAULT_NEGATIVE_PROMPT = [
  */
 async function generateThumbnailConcepts(topic, settings) {
   const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
     systemPrompt: `You are a world-class YouTube thumbnail designer. You know that thumbnails are the #1 factor in CTR (click-through rate).

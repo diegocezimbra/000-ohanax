@@ -157,7 +157,6 @@ function stripHtml(html) {
 
 async function summarizeContent(content, settings) {
   const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
     systemPrompt: 'You are an expert content analyst. Summarize the following content while preserving all key facts, data points, quotes, and unique insights. The summary should be comprehensive enough to create video content from.',

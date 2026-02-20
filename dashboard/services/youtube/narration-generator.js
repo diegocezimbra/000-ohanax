@@ -53,14 +53,11 @@ export async function generateNarration(topicId) {
     const segmentSpeed = calculateSegmentSpeed(baseSpeed, segment.segment_type);
 
     const audio = await generateSpeech({
-      provider: settings.tts_provider || 'elevenlabs',
-      apiKey: selectApiKey(settings),
+      apiKey: settings.fish_audio_api_key || settings.tts_api_key,
       text: processedText,
       voice: settings.tts_voice_id,
       model: settings.tts_model,
       speed: segmentSpeed,
-      stability: baseStability,
-      similarityBoost: 0.75,
     });
 
     const estimatedSegmentDuration = estimateSegmentDuration(
@@ -158,14 +155,11 @@ export async function regenerateSegmentAudio(topicId, segmentId) {
   const segmentSpeed = calculateSegmentSpeed(baseSpeed, segment.segment_type);
 
   const audio = await generateSpeech({
-    provider: settings.tts_provider || 'elevenlabs',
-    apiKey: selectApiKey(settings),
+    apiKey: settings.fish_audio_api_key || settings.tts_api_key,
     text: processedText,
     voice: settings.tts_voice_id,
     model: settings.tts_model,
     speed: segmentSpeed,
-    stability: baseStability,
-    similarityBoost: 0.75,
   });
 
   const durationSeconds = estimateSegmentDuration(
@@ -393,11 +387,3 @@ async function runAlignment(settings, audioBuffer) {
   }
 }
 
-// --- Utilities ---
-
-function selectApiKey(settings) {
-  if (settings.tts_provider === 'openai') {
-    return settings.openai_api_key;
-  }
-  return settings.elevenlabs_api_key;
-}
