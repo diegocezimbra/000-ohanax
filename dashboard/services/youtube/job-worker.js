@@ -18,6 +18,10 @@ export function registerHandler(jobType, handler) {
 /**
  * Start the worker polling loop.
  */
+// Job types that use rate-limited external APIs (process one at a time with cooldown)
+const RATE_LIMITED_JOBS = new Set(['generate_visual_asset', 'generate_thumbnails']);
+const RATE_LIMIT_COOLDOWN_MS = 12000; // 12s cooldown between rate-limited jobs
+
 export function start({ pollIntervalMs = 2000, maxConcurrent = 3 } = {}) {
   if (running) return;
   running = true;
@@ -100,6 +104,11 @@ async function processJob(job) {
 
     await completeJob(job.id, result || {});
     await logJob(job.id, 'info', `Completed ${job.job_type} in ${durationMs}ms`);
+
+    // Cooldown after rate-limited jobs to avoid API throttling
+    if (RATE_LIMITED_JOBS.has(job.job_type)) {
+      await new Promise(r => setTimeout(r, RATE_LIMIT_COOLDOWN_MS));
+    }
 
     // Trigger next step in the pipeline
     const completedJob = { ...job, result: result || {} };
