@@ -153,7 +153,7 @@ export async function publishToYouTube(publicationId) {
       description,
       tags,
       categoryId: settings.youtube_category_id || '22',
-      privacyStatus: pub.scheduled_for ? 'private' : 'public',
+      privacyStatus: pub.scheduled_for ? 'private' : (settings.default_visibility || 'public'),
       publishAt: pub.scheduled_for || null,
       madeForKids: false,
       selfDeclaredMadeForKids: false,
@@ -201,24 +201,29 @@ export async function publishToYouTube(publicationId) {
 
 /**
  * Publishing cron - called periodically to publish approved & scheduled videos.
+ * Respects auto_publish setting: only auto-publishes if enabled in project settings.
  */
 export async function runPublishingCron() {
   const pool = db.analytics;
 
+  // Get approved publications that are due, joined with project settings to check auto_publish
   const { rows: due } = await pool.query(
-    `SELECT id FROM yt_publications
-     WHERE status = 'approved'
-     AND (scheduled_for IS NULL OR scheduled_for <= NOW())
-     ORDER BY scheduled_for ASC NULLS FIRST
+    `SELECT p.id, p.project_id
+     FROM yt_publications p
+     LEFT JOIN yt_project_settings s ON s.project_id = p.project_id
+     WHERE p.status = 'approved'
+       AND (p.scheduled_for IS NULL OR p.scheduled_for <= NOW())
+       AND COALESCE(s.auto_publish, false) = true
+     ORDER BY p.scheduled_for ASC NULLS FIRST
      LIMIT 3`,
   );
 
   for (const pub of due) {
     try {
       await publishToYouTube(pub.id);
-      console.log(`Published: ${pub.id}`);
+      console.log(`[Publisher] Published: ${pub.id}`);
     } catch (err) {
-      console.error(`Publish failed for ${pub.id}:`, err.message);
+      console.error(`[Publisher] Publish failed for ${pub.id}:`, err.message);
       await pool.query(
         `UPDATE yt_publications SET status = 'failed', review_notes = $1, updated_at = NOW()
          WHERE id = $2`,

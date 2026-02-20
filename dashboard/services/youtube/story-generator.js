@@ -1,14 +1,38 @@
 /**
- * Story Generator - Creates 5000-8000 word cinematic narratives from topics.
- * Optimized for YouTube retention (hook framework, pattern interrupts, visual cues).
- * Uses the project's storytelling style and enriches with research.
+ * Story Generator - Creates cinematic narratives from topics.
+ *
+ * Architecture: Chapter-based generation for uniform quality.
+ * 1. generateOutline() → JSON with ~30-50 chapters
+ * 2. generateChaptersSequentially() → each chapter individually with context
+ * 3. Concatenate → full story with [VISUAL] + [IMG_PROMPT] markers
+ *
+ * Each chapter receives 4 layers of context:
+ * - Full outline (compact titles list)
+ * - Current chapter details (emotion, function, target words)
+ * - Last N words of previous chapter (direct continuity)
+ * - Running summary (distant context, updated every SUMMARY_INTERVAL chapters)
+ *
+ * Prompts centralized in prompts.js
  */
 import { db } from '../../db.js';
-import { generateText } from './adapters/llm-adapter.js';
+import { generateText, parseJsonResponse } from './adapters/llm-adapter.js';
 import { getProjectSettings } from './settings-helper.js';
+import {
+  buildOutlinePrompt,
+  buildChapterPrompt,
+  buildRunningSummaryPrompt,
+  buildStoryExpansionPrompt,
+} from './prompts.js';
+
+// --- Constants ---
+const CHAPTER_RETRY_LIMIT = 3;
+const CHAPTER_RETRY_DELAY_MS = 2000;
+const SUMMARY_INTERVAL = 5;
+const PREVIOUS_CONTEXT_WORDS = 800;
 
 /**
- * Generate a story narrative for a topic.
+ * Generate a story narrative for a topic using chapter-based approach.
+ * Public interface unchanged — returns the same story row as before.
  * @param {string} topicId
  * @returns {Promise<Object>} Created story row
  */
@@ -29,26 +53,34 @@ export async function generateStory(topicId) {
   const sourceContent = await getSourceContent(topic.source_id);
   const research = await getResearchContent(topicId, topic.source_id);
 
-  // Generate story
-  const storyText = await callLlmForStory(topic, sourceContent, research, settings);
-  const wordCount = storyText.split(/\s+/).length;
+  // Step 1: Generate detailed outline
+  console.log(`[StoryGen] Generating outline for topic: ${topic.title}`);
+  const outline = await generateOutline(topic, sourceContent, research, settings);
+  console.log(`[StoryGen] Outline generated: ${outline.chapters.length} chapters, ~${outline.estimatedTotalWords} words target`);
 
-  // Check if story meets minimum length for 30+ min video, expand if needed
-  let finalStory = storyText;
-  if (wordCount < 7000) {
-    finalStory = await expandStory(storyText, topic, settings);
+  // Step 2: Generate each chapter sequentially
+  const { fullStory } = await generateChaptersSequentially(outline, topic, settings);
+  const wordCount = fullStory.split(/\s+/).length;
+
+  // Step 3: Check minimum length (fallback, should be rare with chapter approach)
+  const targetMinutes = settings.target_duration_minutes || 30;
+  const minWords = Math.round(targetMinutes * 280 * 0.80);
+  let finalStory = fullStory;
+  if (wordCount < minWords) {
+    console.log(`[StoryGen] Story too short (${wordCount}/${minWords}), expanding...`);
+    finalStory = await expandStory(fullStory, topic, settings);
   }
 
   const finalWordCount = finalStory.split(/\s+/).length;
 
-  // Upsert story (one story per topic)
+  // Step 4: Upsert story with outline
   const { rows } = await pool.query(
-    `INSERT INTO yt_stories (topic_id, content, word_count, version)
-     VALUES ($1, $2, $3, 1)
+    `INSERT INTO yt_stories (topic_id, content, word_count, outline, version)
+     VALUES ($1, $2, $3, $4, 1)
      ON CONFLICT (topic_id) DO UPDATE
-     SET content = $2, word_count = $3, version = yt_stories.version + 1, updated_at = NOW()
+     SET content = $2, word_count = $3, outline = $4, version = yt_stories.version + 1, updated_at = NOW()
      RETURNING *`,
-    [topicId, finalStory, finalWordCount],
+    [topicId, finalStory, finalWordCount, JSON.stringify(outline)],
   );
 
   // Update topic stage
@@ -57,6 +89,7 @@ export async function generateStory(topicId) {
     [topicId],
   );
 
+  console.log(`[StoryGen] Story complete: ${finalWordCount} words, ${outline.chapters.length} chapters`);
   return rows[0];
 }
 
@@ -79,7 +112,116 @@ export async function updateStory(topicId, content) {
   return rows[0];
 }
 
-// --- Internal ---
+// --- Internal: Outline Generation ---
+
+async function generateOutline(topic, sourceContent, research, settings) {
+  const { system, user } = buildOutlinePrompt(topic, sourceContent, research, settings);
+
+  const result = await generateText({
+    provider: settings.llm_provider || 'anthropic',
+    apiKey: settings.llm_api_key,
+    model: settings.llm_model,
+    systemPrompt: system,
+    userPrompt: user,
+    maxTokens: 8000,
+    temperature: 0.8,
+    responseFormat: 'json',
+  });
+
+  const outline = parseJsonResponse(result.text);
+
+  // Validate minimum chapters
+  if (!outline.chapters || outline.chapters.length < 10) {
+    throw new Error(`Outline too short: ${outline.chapters?.length || 0} chapters (minimum 10)`);
+  }
+
+  return outline;
+}
+
+// --- Internal: Chapter-by-Chapter Generation ---
+
+async function generateChaptersSequentially(outline, topic, settings) {
+  const chapters = outline.chapters;
+  const chapterTexts = [];
+  let runningSummary = '';
+  let fullStory = '';
+
+  for (let i = 0; i < chapters.length; i++) {
+    const chapter = chapters[i];
+    const previousText = i > 0 ? getLastNWords(chapterTexts[i - 1], PREVIOUS_CONTEXT_WORDS) : '';
+
+    // Generate single chapter with retry
+    const chapterText = await generateSingleChapter(
+      chapter, outline.chapters, previousText, runningSummary, topic, settings,
+    );
+
+    chapterTexts.push(chapterText);
+    fullStory += (i > 0 ? '\n\n' : '') + chapterText;
+
+    const chapterWordCount = chapterText.split(/\s+/).length;
+    console.log(`[StoryGen] Chapter ${i + 1}/${chapters.length} complete (${chapterWordCount} words): "${chapter.title}"`);
+
+    // Update running summary every SUMMARY_INTERVAL chapters
+    if ((i + 1) % SUMMARY_INTERVAL === 0 && i < chapters.length - 1) {
+      runningSummary = await generateRunningSummary(fullStory, topic, settings);
+    }
+  }
+
+  return { fullStory, chapterTexts };
+}
+
+async function generateSingleChapter(chapter, outlineChapters, previousText, runningSummary, topic, settings) {
+  const { system, user } = buildChapterPrompt(
+    chapter, outlineChapters, previousText, runningSummary, topic, settings,
+  );
+
+  const maxTokens = Math.max(Math.round(chapter.targetWordCount * 2.5), 800);
+
+  for (let attempt = 1; attempt <= CHAPTER_RETRY_LIMIT; attempt++) {
+    try {
+      const result = await generateText({
+        provider: settings.llm_provider || 'anthropic',
+        apiKey: settings.llm_api_key,
+        model: settings.llm_model,
+        systemPrompt: system,
+        userPrompt: user,
+        maxTokens,
+        temperature: 0.85,
+      });
+
+      return result.text;
+    } catch (err) {
+      if (attempt === CHAPTER_RETRY_LIMIT) throw err;
+      const delay = CHAPTER_RETRY_DELAY_MS * attempt;
+      console.warn(`[StoryGen] Chapter ${chapter.chapterNumber} attempt ${attempt} failed: ${err.message}. Retrying in ${delay}ms...`);
+      await sleep(delay);
+    }
+  }
+}
+
+async function generateRunningSummary(storySoFar, topic, settings) {
+  try {
+    const { system, user } = buildRunningSummaryPrompt(storySoFar, topic, settings);
+
+    const result = await generateText({
+      provider: settings.llm_provider || 'anthropic',
+      apiKey: settings.llm_api_key,
+      model: settings.llm_model,
+      systemPrompt: system,
+      userPrompt: user,
+      maxTokens: 300,
+      temperature: 0.3,
+    });
+
+    console.log(`[StoryGen] Running summary updated (${result.text.split(/\s+/).length} words)`);
+    return result.text;
+  } catch (err) {
+    console.warn(`[StoryGen] Running summary failed (non-critical): ${err.message}`);
+    return '';
+  }
+}
+
+// --- Internal: Data helpers (unchanged) ---
 
 async function getSourceContent(sourceId) {
   if (!sourceId) return '';
@@ -100,108 +242,17 @@ async function getResearchContent(topicId, sourceId) {
   return rows;
 }
 
-async function callLlmForStory(topic, sourceContent, research, settings) {
-  const style = settings.storytelling_style || 'educational';
-  const keyPoints = typeof topic.key_points === 'string'
-    ? JSON.parse(topic.key_points)
-    : (topic.key_points || []);
+// --- Internal: Fallback expansion (kept for edge cases) ---
 
-  const researchBlock = research.length > 0
-    ? `\n\nResearch findings:\n${research.map(r => `- ${r.title} (${r.url}): ${r.snippet}`).join('\n')}`
-    : '';
+async function expandStory(story, topic, settings) {
+  const { system, user } = buildStoryExpansionPrompt(story, topic, settings);
 
   const result = await generateText({
     provider: settings.llm_provider || 'anthropic',
     apiKey: settings.llm_api_key,
     model: settings.llm_model,
-    systemPrompt: `Voce e um roteirista de elite para YouTube, especialista em retenção de audiencia e storytelling cinematografico. Toda a narrativa DEVE ser escrita em Portugues Brasileiro (pt-BR).
-
-Estilo narrativo: ${style}
-Meta: 8000-12000 palavras (necessario para video de 30+ minutos)
-Idioma obrigatorio: Portugues do Brasil (pt-BR)
-
-=== FRAMEWORK DE ABERTURA (primeiras 200 palavras) ===
-55% dos espectadores abandonam no primeiro minuto. Sua abertura DEVE usar UMA destas tecnicas:
-
-TECNICA 1 - COLD OPEN: Comece no momento mais dramatico/surpreendente da historia, depois volte no tempo. Ex: "O homem olha para o abismo. Daqui a 30 segundos, ele vai tomar a decisao que mudaria o destino de um imperio inteiro."
-
-TECNICA 2 - ESTATISTICA CHOCANTE: Abra com um dado que quebra expectativas. Ex: "97% das pessoas que tentaram isso morreram. Os 3% que sobreviveram descobriram algo que a ciencia nao consegue explicar."
-
-TECNICA 3 - PERGUNTA PROVOCATIVA: Uma pergunta que desafia a sabedoria convencional. Ex: "E se tudo que voce aprendeu sobre [tema] estivesse completamente errado?"
-
-TECNICA 4 - CENARIO IMERSIVO: Coloque o espectador dentro da cena. Ex: "Imagine que voce acorda e percebe que esta trancado num submarino a 400 metros de profundidade. O oxigenio acaba em 6 horas."
-
-Nos primeiros 15 segundos, a PROPOSTA DE VALOR deve estar clara — o espectador precisa saber exatamente POR QUE deve continuar assistindo.
-
-=== ESTRUTURA NARRATIVA (NAO e um despejo de informacoes) ===
-Use arco narrativo classico centrado em PESSOAS:
-
-1. SETUP (10% da historia): Apresente o protagonista e o mundo normal dele. Use detalhes sensoriais concretos — o que a pessoa via, ouvia, sentia. Estabeleca as apostas (o que esta em jogo).
-
-2. TENSAO CRESCENTE (50% da historia): Introduza obstaculos, decisoes dificeis, consequencias inesperadas. Cada secao deve terminar com um micro-gancho que force o espectador a continuar. Alterne entre a perspectiva macro (o grande cenario) e a micro (a experiencia pessoal de individuos).
-
-3. CLIMAX (20% da historia): O momento de maior tensao. Decisoes irreversiveis. Consequencias dramaticas. Use tempo presente para momentos dramaticos: "Ele caminha ate a porta. Suas maos tremem. Ele sabe que nao ha volta."
-
-4. RESOLUCAO (20% da historia): Consequencias, licoes, e conexao com o presente. Amarre TUDO de volta ao gancho inicial, criando circularidade satisfatoria.
-
-IMPORTANTE: Historias centradas em pessoas comuns geram 30-40% mais engajamento do que despejos de informacao politica/militar. SEMPRE ancore a narrativa em individuos reais e suas experiencias.
-
-=== INTERRUPCOES DE PADRAO (a cada 800-1000 palavras) ===
-Inclua 2-3 "pattern interrupts" distribuidos ao longo do texto:
-- Fato contraintuitivo que contradiz o que acabou de ser dito: "Mas aqui esta o detalhe que ninguem conta..."
-- Mudanca subita de perspectiva: zoom do panorama geral para uma historia pessoal intima
-- Revelacao surpreendente: "O que ninguem percebeu na epoca era que..."
-- Conexao inesperada com algo moderno/cotidiano
-
-=== GATILHOS EMOCIONAIS ===
-Cada secao deve ativar pelo menos UM destes gatilhos:
-- MEDO: ameaca, perigo iminente, consequencias terriveis
-- CURIOSIDADE: misterio, informacao incompleta, "o que aconteceu depois?"
-- SURPRESA: revelacao que muda toda a perspectiva
-- ADMIRACAO: escala epica, feitos extraordinarios, beleza impossivel
-- INJUSTICA: algo errado que precisa ser exposto/corrigido
-
-=== MARCADORES VISUAIS [VISUAL] ===
-A cada 100-150 palavras, insira um marcador visual no formato:
-[VISUAL: descricao detalhada da cena]
-
-Estas descricoes DEVEM ser DINAMICAS (movimento, acao, transformacao), NAO estaticas:
-- BOM: [VISUAL: Camera mergulha do ceu noturno estrelado ate uma fogueira solitaria onde um homem desenha mapas na areia]
-- BOM: [VISUAL: Time-lapse da construcao de uma catedral gotica — pedras subindo, arcos se formando, vitrais sendo instalados ao longo de decadas]
-- RUIM: [VISUAL: Foto de um castelo] (estatico demais)
-- RUIM: [VISUAL: Mapa da Europa] (generico demais)
-
-A proporcao ideal e 3 cenas visuais para cada ponto narrativo — isso aumenta o tempo medio de visualizacao em 25-40%.
-
-=== TECNICAS DE ESCRITA ===
-- Use segunda pessoa ("voce") para engajar diretamente o espectador
-- Varie o comprimento das frases: curtas e impactantes misturadas com explicativas mais longas
-- Use analogias modernas para explicar conceitos complexos
-- Inclua dados especificos e numeros concretos (nao generalize)
-- Tenha OPINIAO e ANALISE propria — nao use tom neutro estilo Wikipedia
-- Mostre insight criativo genuino e analise original (politica do YouTube contra conteudo inautentico pune producao em massa sem esforco criativo)
-
-=== FECHAMENTO ===
-O encerramento DEVE:
-- Retomar o gancho da abertura, fechando o circulo narrativo
-- Oferecer uma reflexao ou pergunta que fica na mente do espectador
-- NAO usar frases cliche como "e essa e a historia de..."
-
-=== ANTI-PADROES PROIBIDOS ===
-NUNCA faca nenhum destes:
-- "Neste video vamos falar sobre..." ou "Hoje vamos discutir..."
-- "E importante notar que...", "Vale a pena mencionar...", "Como todos sabemos..."
-- Repetir o mesmo ponto com palavras diferentes
-- Listar fatos sem contexto narrativo (isso NAO e uma redacao escolar)
-- Usar tom neutro/enciclopedico — tenha personalidade e posicao
-- Usar filler generico para encher palavra
-- Escrever menos que 8000 palavras`,
-    userPrompt: `Video topic: ${topic.title}
-Angle: ${topic.angle || 'general'}
-Target audience: ${topic.target_audience || 'general'}
-Key points to cover:\n${keyPoints.map((p, i) => `${i + 1}. ${p}`).join('\n')}
-
-Source material:\n${sourceContent.substring(0, 12000)}${researchBlock}`,
+    systemPrompt: system,
+    userPrompt: user,
     maxTokens: 12000,
     temperature: 0.85,
   });
@@ -209,41 +260,14 @@ Source material:\n${sourceContent.substring(0, 12000)}${researchBlock}`,
   return result.text;
 }
 
-async function expandStory(story, topic, settings) {
-  const result = await generateText({
-    provider: settings.llm_provider || 'anthropic',
-    apiKey: settings.llm_api_key,
-    model: settings.llm_model,
-    systemPrompt: `Voce e um roteirista de elite expandindo uma narrativa de YouTube que esta curta demais. Escreva TUDO em Portugues Brasileiro (pt-BR). Meta: pelo menos 8000 palavras no total (necessario para video de 30+ minutos).
+// --- Helpers ---
 
-Retorne a historia COMPLETA expandida (nao apenas as adicoes).
+function getLastNWords(text, n) {
+  const words = text.split(/\s+/);
+  if (words.length <= n) return text;
+  return words.slice(-n).join(' ');
+}
 
-=== O QUE ADICIONAR ===
-
-1. HISTORIAS PESSOAIS E ANEDOTAS: Insira pelo menos 2-3 micro-narrativas de pessoas reais ou personagens concretos afetados pelos eventos. Descreva suas experiencias sensoriais — o que viram, ouviram, sentiram. Historias de pessoas comuns geram 30-40% mais engajamento.
-
-2. DADOS E ESTATISTICAS ESPECIFICAS: Substitua afirmacoes vagas por numeros concretos. Em vez de "muitas pessoas morreram", use "estima-se que 47.000 pessoas perderam a vida em apenas 72 horas". Dados especificos ancoram credibilidade.
-
-3. DETALHES SENSORIAIS: Adicione descricoes vividas em momentos-chave — a textura da pedra, o cheiro de fumaca, o som de passos no corredor vazio, o frio cortante do vento. Estes detalhes criam imersao cinematografica.
-
-4. MOMENTOS EMOCIONAIS: Expanda os pontos de maior tensao emocional. Desacelere nesses momentos. Use frases curtas. Crie suspense. Deixe o leitor sentir o peso de cada decisao.
-
-5. MARCADORES VISUAIS: Adicione marcadores [VISUAL: descricao dinamica da cena] a cada 100-150 palavras onde estiverem faltando. Descreva cenas com MOVIMENTO e TRANSFORMACAO, nao imagens estaticas.
-
-6. PATTERN INTERRUPTS: Se a historia nao tiver pelo menos 2 interrupcoes de padrao (fatos contraintuitivos, mudancas de perspectiva, revelacoes surpreendentes), adicione-os em pontos estrategicos.
-
-7. TRANSICOES NARRATIVAS: Melhore as transicoes entre secoes — cada paragrafo deve ter um micro-gancho que puxa para o proximo.
-
-=== O QUE NAO FAZER ===
-- NAO mude o tom, estilo ou voz narrativa
-- NAO adicione introducoes genericas ou filler
-- NAO repita pontos que ja existem
-- NAO quebre a estrutura do arco narrativo existente
-- NAO remova marcadores [VISUAL] que ja existem`,
-    userPrompt: `Topic: ${topic.title}\n\nCurrent story (too short):\n${story}`,
-    maxTokens: 12000,
-    temperature: 0.85,
-  });
-
-  return result.text;
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

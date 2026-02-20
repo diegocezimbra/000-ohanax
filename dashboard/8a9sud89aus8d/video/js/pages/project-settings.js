@@ -147,12 +147,11 @@ function renderContentEngine() {
     const container = $('settings-engine');
     if (!container) return;
 
-    const engineActive = _s.content_engine_active ?? _s.contentEngineActive ?? true;
-    const durTarget = _s.content_engine_duration_target || _s.contentEngineDurationTarget || '30-40';
-    const pubPerDay = _s.content_engine_publications_per_day ?? _s.contentEnginePublicationsPerDay ?? 3;
-    const bufferSize = _s.content_engine_buffer_size ?? _s.contentEngineBufferSize ?? 7;
-    const maxGenPerDay = _s.content_engine_max_gen_per_day ?? _s.contentEngineMaxGenPerDay ?? 5;
-    const minRichness = _s.content_engine_min_richness ?? _s.contentEngineMinRichness ?? 7;
+    const engineActive = _s.content_engine_active ?? true;
+    const durTarget = _s.target_duration_minutes ?? 30;
+    const bufferSize = _s.content_engine_buffer_size ?? 7;
+    const maxGenPerDay = _s.content_engine_max_gen_per_day ?? 5;
+    const minRichness = _s.min_richness_score ?? 5;
     const durations = _defaults.duration_targets || [];
 
     container.innerHTML = `
@@ -171,12 +170,11 @@ function renderContentEngine() {
 
         <div class="yt-form-group"><label class="yt-label">Duracao Alvo do Video</label>
             <select class="yt-select" id="ce-duration">
-                ${durations.map(d => `<option value="${d.value}" ${opt(d.value, durTarget)}>${escapeHtml(d.label)}</option>`).join('')}
+                ${durations.map(d => {
+                    const minVal = parseInt(d.value.split('-')[0]);
+                    return `<option value="${d.value}" ${minVal === durTarget ? 'selected' : ''}>${escapeHtml(d.label)}</option>`;
+                }).join('')}
             </select></div>
-
-        <div class="yt-form-group"><label class="yt-label">Publicacoes por Dia</label>
-            <input class="yt-input" type="number" id="ce-pub-day" min="1" max="10"
-                   value="${pubPerDay}"></div>
 
         <div class="yt-form-group"><label class="yt-label">Videos na Fila (Buffer)</label>
             <input class="yt-input" type="number" id="ce-buffer" min="1" max="30"
@@ -201,10 +199,9 @@ function renderContentEngine() {
     $('ce-save')?.addEventListener('click', () => save(
         () => api.settings.updateContentEngine(_pid, {
             duration_target: val('ce-duration'),
-            publications_per_day: parseInt(val('ce-pub-day')) || 3,
             buffer_size: parseInt(val('ce-buffer')) || 7,
             max_gen_per_day: parseInt(val('ce-max-gen')) || 5,
-            min_richness: parseInt(val('ce-richness')) || 7,
+            min_richness: parseInt(val('ce-richness')) || 5,
         }), 'Content Engine configurado!'));
 
     $('ce-toggle')?.addEventListener('click', async () => {

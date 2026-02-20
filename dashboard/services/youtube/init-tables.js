@@ -71,6 +71,10 @@ export async function initYouTubeTables() {
         transition_duration_ms INTEGER DEFAULT 500,
         ken_burns_intensity NUMERIC(3,2) DEFAULT 0.05,
         background_music_volume NUMERIC(3,2) DEFAULT 0.15,
+        -- Content Engine
+        content_engine_active BOOLEAN NOT NULL DEFAULT true,
+        content_engine_buffer_size INTEGER NOT NULL DEFAULT 7,
+        content_engine_max_gen_per_day INTEGER NOT NULL DEFAULT 5,
         -- Publishing
         max_publications_per_day INTEGER NOT NULL DEFAULT 1,
         max_publishes_per_day INTEGER NOT NULL DEFAULT 1,
@@ -339,6 +343,14 @@ export async function initYouTubeTables() {
       CREATE INDEX IF NOT EXISTS idx_yt_job_logs_job ON yt_job_logs(job_id);
     `);
     console.log('[YouTube] All 15 tables initialized');
+
+    // Add new columns to existing tables (idempotent)
+    await db.analytics.query(`
+      ALTER TABLE yt_project_settings ADD COLUMN IF NOT EXISTS content_engine_active BOOLEAN NOT NULL DEFAULT true;
+      ALTER TABLE yt_project_settings ADD COLUMN IF NOT EXISTS content_engine_buffer_size INTEGER NOT NULL DEFAULT 7;
+      ALTER TABLE yt_project_settings ADD COLUMN IF NOT EXISTS content_engine_max_gen_per_day INTEGER NOT NULL DEFAULT 5;
+      ALTER TABLE yt_stories ADD COLUMN IF NOT EXISTS outline JSONB DEFAULT NULL;
+    `);
   } catch (err) {
     console.error('[YouTube] Error initializing tables:', err.message);
   }

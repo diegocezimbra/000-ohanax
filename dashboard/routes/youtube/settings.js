@@ -82,6 +82,44 @@ router.get('/defaults', (req, res) => {
 });
 
 // =============================================================================
+// PUT /content-engine - Update content engine settings
+// =============================================================================
+router.put('/content-engine', async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const {
+      duration_target, buffer_size, max_gen_per_day, min_richness
+    } = req.body;
+
+    const result = await db.analytics.query(`
+      UPDATE yt_project_settings
+      SET
+        target_duration_minutes        = COALESCE($1, target_duration_minutes),
+        content_engine_buffer_size     = COALESCE($2, content_engine_buffer_size),
+        content_engine_max_gen_per_day = COALESCE($3, content_engine_max_gen_per_day),
+        min_richness_score             = COALESCE($4, min_richness_score),
+        updated_at                     = NOW()
+      WHERE project_id = $5
+      RETURNING *
+    `, [
+      duration_target ? parseInt(duration_target.split('-')[0]) : null,
+      buffer_size, max_gen_per_day, min_richness,
+      projectId
+    ]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Settings not found' });
+    }
+
+    invalidateSettingsCache(projectId);
+    res.json({ success: true, data: maskSettingsRow(result.rows[0]) });
+  } catch (err) {
+    console.error('[YouTube/Settings] Error updating content engine:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// =============================================================================
 // PUT /storytelling - Update storytelling section
 // =============================================================================
 router.put('/storytelling', async (req, res) => {

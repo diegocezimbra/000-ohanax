@@ -5,20 +5,40 @@
  * 1. Monitors the source pool for each project
  * 2. Automatically discovers stories from accumulated sources
  * 3. Maintains a buffer of ready-to-publish videos
- * 4. Respects daily generation limits
+ * 4. Respects daily generation limits (from DB settings)
  * 5. Runs on a configurable schedule (default: every 30 minutes)
+ *
+ * Settings used from yt_project_settings:
+ * - content_engine_active: boolean
+ * - content_engine_buffer_size: integer (default 7)
+ * - content_engine_max_gen_per_day: integer (default 5)
+ * - min_richness_score: integer (default 5)
  */
 import { db } from '../../db.js';
 import { getProjectSettings } from './settings-helper.js';
 import { triggerPipelineFromTopic } from './pipeline-orchestrator.js';
 import { generateTopicsFromSource } from './topic-generator.js';
 
-// Default engine configuration
+// Default engine configuration (fallback when DB values are null)
 const ENGINE_DEFAULTS = {
-  buffer_target: 7,         // Keep 7 videos ready in buffer
-  max_gen_per_day: 5,       // Max 5 new topics per day
+  buffer_target: 7,
+  max_gen_per_day: 5,
+  min_richness_score: 5,
   check_interval_ms: 1800000, // 30 minutes
 };
+
+/**
+ * Get engine config from project settings, falling back to ENGINE_DEFAULTS.
+ */
+async function getEngineConfig(projectId) {
+  const settings = await getProjectSettings(projectId);
+  return {
+    buffer_target: settings.content_engine_buffer_size || ENGINE_DEFAULTS.buffer_target,
+    max_gen_per_day: settings.content_engine_max_gen_per_day || ENGINE_DEFAULTS.max_gen_per_day,
+    min_richness_score: settings.min_richness_score || ENGINE_DEFAULTS.min_richness_score,
+    active: settings.content_engine_active !== false, // default true
+  };
+}
 
 let _engineInterval = null;
 
@@ -29,6 +49,7 @@ let _engineInterval = null;
  */
 export async function getEngineStatus(projectId) {
   const pool = db.analytics;
+  const config = await getEngineConfig(projectId);
 
   // Count videos in buffer (video_assembled + queued_for_publishing)
   const bufferResult = await pool.query(`
@@ -69,14 +90,16 @@ export async function getEngineStatus(projectId) {
   const activePipeline = parseInt(activeResult.rows[0].count, 10);
 
   // Calculate next run
-  const nextRun = isPaused ? null : new Date(Date.now() + ENGINE_DEFAULTS.check_interval_ms);
+  const engineActive = !isPaused && config.active;
+  const nextRun = engineActive ? new Date(Date.now() + ENGINE_DEFAULTS.check_interval_ms) : null;
 
   return {
-    active: !isPaused,
+    active: engineActive,
     buffer_current: bufferCurrent,
-    buffer_target: ENGINE_DEFAULTS.buffer_target,
+    buffer_target: config.buffer_target,
     gen_today: genToday,
-    max_gen: ENGINE_DEFAULTS.max_gen_per_day,
+    max_gen: config.max_gen_per_day,
+    min_richness_score: config.min_richness_score,
     active_pipeline: activePipeline,
     next_run: nextRun ? nextRun.toISOString() : null,
   };
@@ -100,8 +123,13 @@ export async function triggerEngine(projectId) {
     return { triggered: false, reason: 'Engine is paused' };
   }
 
-  // Get current status
+  // Get current status (uses DB settings for buffer_target, max_gen, min_richness)
   const status = await getEngineStatus(projectId);
+
+  // Check if engine is disabled in settings
+  if (!status.active) {
+    return { triggered: false, reason: 'Engine is disabled in settings' };
+  }
 
   // Check daily limit
   if (status.gen_today >= status.max_gen) {
@@ -135,18 +163,25 @@ export async function triggerEngine(projectId) {
     3, // Max 3 per trigger to avoid overload
   );
 
+  const minRichness = status.min_richness_score || ENGINE_DEFAULTS.min_richness_score;
   const generated = [];
 
-  // Pick random sources to generate topics from
+  // Pick sources and generate topics
   for (let i = 0; i < needed && i < sourcesResult.rows.length; i++) {
     const source = sourcesResult.rows[i];
     try {
       const topics = await generateTopicsFromSource(projectId, source.id);
-      // Pick best topic (highest richness score) and start pipeline
-      const bestTopic = topics.sort((a, b) => (b.richness_score || 0) - (a.richness_score || 0))[0];
+      // Pick best topic that meets minimum richness score
+      const qualifiedTopics = topics
+        .filter(t => (t.richness_score || 0) >= minRichness)
+        .sort((a, b) => (b.richness_score || 0) - (a.richness_score || 0));
+
+      const bestTopic = qualifiedTopics[0];
       if (bestTopic) {
         await triggerPipelineFromTopic(projectId, bestTopic.id, 'generate_story');
-        generated.push({ topicId: bestTopic.id, title: bestTopic.title });
+        generated.push({ topicId: bestTopic.id, title: bestTopic.title, richness: bestTopic.richness_score });
+      } else {
+        console.log(`[ContentEngine] Source ${source.id}: No topics met min richness score ${minRichness}`);
       }
     } catch (err) {
       console.error(`[ContentEngine] Error generating from source ${source.id}:`, err.message);
@@ -190,9 +225,13 @@ export async function resumeEngine(projectId) {
 export async function runContentEngineCron() {
   const pool = db.analytics;
 
+  // Only run for active, non-paused projects that have content_engine_active enabled
   const { rows: projects } = await pool.query(`
-    SELECT id FROM yt_projects
-    WHERE status = 'active' AND pipeline_paused = false
+    SELECT p.id FROM yt_projects p
+    LEFT JOIN yt_project_settings s ON s.project_id = p.id
+    WHERE p.status = 'active'
+      AND p.pipeline_paused = false
+      AND COALESCE(s.content_engine_active, true) = true
   `);
 
   for (const project of projects) {

@@ -170,7 +170,12 @@ export async function restartPipelineFromStage(projectId, topicId, stage) {
 }
 
 /**
- * Calculate next available publish slot respecting daily limits.
+ * Calculate next available publish slot respecting:
+ * - max_publications_per_day (daily limit)
+ * - publication_times (allowed time slots)
+ * - publication_days (allowed days of week: ["Mon","Tue","Wed",...])
+ * - publication_timezone (for correct day/time calculation)
+ * - auto_publish (if false, returns null — manual only)
  */
 export async function calculateNextPublishSlot(projectId) {
   const settings = await db.analytics.query(
@@ -178,14 +183,42 @@ export async function calculateNextPublishSlot(projectId) {
   );
   if (!settings.rows[0]) return null;
 
-  const { max_publications_per_day, publication_times, publication_timezone } = settings.rows[0];
+  const {
+    max_publications_per_day,
+    publication_times,
+    publication_days,
+    publication_timezone,
+    auto_publish,
+  } = settings.rows[0];
 
-  // Get count of already scheduled/published for today and future dates
+  // If auto_publish is explicitly disabled, don't schedule
+  if (auto_publish === false) return null;
+
+  // Parse publication_days (JSONB array of day abbreviations: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"])
+  let allowedDays = null;
+  if (publication_days) {
+    const days = typeof publication_days === 'string' ? JSON.parse(publication_days) : publication_days;
+    if (Array.isArray(days) && days.length > 0) {
+      // Map day abbreviations to JS getDay() numbers (0=Sun, 1=Mon, ..., 6=Sat)
+      const dayMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+      allowedDays = new Set(days.map(d => dayMap[d]).filter(d => d !== undefined));
+    }
+  }
+
+  // Parse publication_times (JSONB array of "HH:MM" strings)
+  const times = publication_times
+    ? (typeof publication_times === 'string' ? JSON.parse(publication_times) : publication_times)
+    : ['10:00', '14:00', '18:00']; // sensible defaults
+
+  // Timezone offset helper: get current date/time in the project's timezone
+  const tzOffset = getTimezoneOffsetMs(publication_timezone || 'America/Sao_Paulo');
+
+  // Get count of already scheduled/published for future dates
   const scheduled = await db.analytics.query(`
     SELECT scheduled_for::date as pub_date, COUNT(*) as cnt
     FROM yt_publications
     WHERE project_id = $1
-      AND status IN ('scheduled', 'publishing', 'published')
+      AND status IN ('scheduled', 'publishing', 'published', 'approved')
       AND scheduled_for >= CURRENT_DATE
     GROUP BY pub_date
     ORDER BY pub_date
@@ -196,27 +229,53 @@ export async function calculateNextPublishSlot(projectId) {
     dateCounts[row.pub_date] = parseInt(row.cnt);
   }
 
-  // Find next available slot
+  const maxPerDay = max_publications_per_day || 3;
   const now = new Date();
-  for (let dayOffset = 0; dayOffset < 30; dayOffset++) {
+
+  // Search up to 60 days ahead
+  for (let dayOffset = 0; dayOffset < 60; dayOffset++) {
     const date = new Date(now);
     date.setDate(date.getDate() + dayOffset);
+
+    // Check if this day of week is allowed
+    if (allowedDays && !allowedDays.has(date.getDay())) {
+      continue; // Skip disallowed days
+    }
+
     const dateStr = date.toISOString().split('T')[0];
     const count = dateCounts[dateStr] || 0;
 
-    if (count < max_publications_per_day) {
+    if (count < maxPerDay) {
       // Find next available time on this day
-      for (const time of publication_times) {
-        const [hours, minutes] = time.split(':').map(Number);
+      for (const time of times) {
+        const [hours, minutes] = String(time).split(':').map(Number);
         const slotDate = new Date(date);
         slotDate.setHours(hours, minutes, 0, 0);
-        if (slotDate > now) {
-          return slotDate;
+
+        // Apply timezone offset (convert project-local time to UTC for storage)
+        const slotUtc = new Date(slotDate.getTime() - tzOffset);
+
+        if (slotUtc > now) {
+          return slotUtc;
         }
       }
     }
   }
   return null;
+}
+
+/**
+ * Get timezone offset in milliseconds for common timezones.
+ * Positive means ahead of UTC.
+ */
+function getTimezoneOffsetMs(timezone) {
+  const offsets = {
+    'America/Sao_Paulo': -3 * 3600000,
+    'America/New_York': -5 * 3600000,
+    'Europe/Lisbon': 0,
+    'UTC': 0,
+  };
+  return offsets[timezone] || offsets['America/Sao_Paulo'];
 }
 
 // --- Internal helpers ---
