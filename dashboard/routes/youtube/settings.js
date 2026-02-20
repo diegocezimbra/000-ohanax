@@ -59,7 +59,31 @@ router.get('/', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Settings not found for this project' });
     }
 
-    res.json({ success: true, data: maskSettingsRow(result.rows[0]) });
+    const row = maskSettingsRow(result.rows[0]);
+
+    // Parse emotional_triggers (comma-separated string) into array for frontend
+    if (row.emotional_triggers && typeof row.emotional_triggers === 'string') {
+      row.storytelling_triggers = row.emotional_triggers.split(',').map(s => s.trim()).filter(Boolean);
+    } else {
+      row.storytelling_triggers = [];
+    }
+
+    // Parse narrative_template into individual fields for frontend
+    if (row.narrative_template) {
+      const tpl = row.narrative_template;
+      const hookMatch = tpl.match(/Hook\s*\([^)]*\):\s*(.*?)(?=\s*Contexto\s*\(|$)/s);
+      const ctxMatch = tpl.match(/Contexto\s*\([^)]*\):\s*(.*?)(?=\s*Desenvolvimento\s*\(|$)/s);
+      const devMatch = tpl.match(/Desenvolvimento\s*\([^)]*\):\s*(.*?)(?=\s*Virada\s*\(|$)/s);
+      const twistMatch = tpl.match(/Virada\s*\([^)]*\):\s*(.*?)(?=\s*Resolucao\s*|$)/s);
+      const resMatch = tpl.match(/Resolucao\s*(?:Triunfante\s*)?\([^)]*\):\s*(.*?)$/s);
+      row.storytelling_hook = hookMatch?.[1]?.trim() || '';
+      row.storytelling_context = ctxMatch?.[1]?.trim() || '';
+      row.storytelling_development = devMatch?.[1]?.trim() || '';
+      row.storytelling_twist = twistMatch?.[1]?.trim() || '';
+      row.storytelling_resolution = resMatch?.[1]?.trim() || '';
+    }
+
+    res.json({ success: true, data: row });
   } catch (err) {
     console.error('[YouTube/Settings] Error fetching settings:', err.message);
     res.status(500).json({ success: false, error: err.message });
@@ -128,8 +152,28 @@ router.put('/storytelling', async (req, res) => {
     const {
       storytelling_style, target_video_length, language,
       narrative_template, emotional_triggers, title_template,
-      narration_tone, target_duration_minutes, min_richness_score
+      narration_tone, target_duration_minutes, min_richness_score,
+      // Frontend sends these individual fields + triggers array
+      hook, context, development, twist, resolution, triggers
     } = req.body;
+
+    // Build narrative_template from individual fields if provided
+    let finalNarrativeTemplate = narrative_template || null;
+    if (!finalNarrativeTemplate && (hook || context || development || twist || resolution)) {
+      const parts = [];
+      if (hook) parts.push(`Hook (0:00-0:30): ${hook}`);
+      if (context) parts.push(`Contexto (0:30-5:00): ${context}`);
+      if (development) parts.push(`Desenvolvimento (5:00-20:00): ${development}`);
+      if (twist) parts.push(`Virada (20:00-30:00): ${twist}`);
+      if (resolution) parts.push(`Resolucao Triunfante (30:00+): ${resolution}`);
+      finalNarrativeTemplate = parts.join(' ');
+    }
+
+    // Accept triggers (array of keys from frontend) or emotional_triggers (legacy string)
+    let finalTriggers = emotional_triggers || null;
+    if (!finalTriggers && Array.isArray(triggers)) {
+      finalTriggers = triggers.join(', ');
+    }
 
     const result = await db.analytics.query(`
       UPDATE yt_project_settings
@@ -148,7 +192,7 @@ router.put('/storytelling', async (req, res) => {
       RETURNING *
     `, [
       storytelling_style, target_video_length, language,
-      narrative_template, emotional_triggers, title_template,
+      finalNarrativeTemplate, finalTriggers, title_template,
       narration_tone, target_duration_minutes, min_richness_score,
       projectId
     ]);
