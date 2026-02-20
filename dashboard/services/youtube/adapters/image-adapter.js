@@ -36,14 +36,13 @@ export async function generateImage({
 }
 
 async function _generateImageOnce({ apiKey, prompt, negativePrompt, width, height }) {
-  const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
+  const createResponse = await fetch('https://api.replicate.com/v1/models/prunaai/z-image-turbo/predictions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'prunaai/z-image-turbo',
       input: {
         prompt,
         negative_prompt: negativePrompt || '',
@@ -57,8 +56,11 @@ async function _generateImageOnce({ apiKey, prompt, negativePrompt, width, heigh
   });
 
   const prediction = await createResponse.json();
-  if (prediction.error) {
-    throw new Error(`Z-Image-Turbo: ${prediction.error}`);
+  if (!createResponse.ok || prediction.error || prediction.detail) {
+    throw new Error(`Z-Image-Turbo: ${prediction.error || prediction.detail || createResponse.statusText}`);
+  }
+  if (!prediction.id) {
+    throw new Error(`Z-Image-Turbo: No prediction ID returned`);
   }
 
   const result = await pollReplicatePrediction(apiKey, prediction.id, 300000);
