@@ -47,10 +47,32 @@ export function getAvailableProviders() {
  */
 export function parseJsonResponse(text) {
   let cleaned = text.trim();
-  const codeBlockMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
+
+  // Try direct parse first
+  try {
+    return JSON.parse(cleaned);
+  } catch (_) {
+    // Fall through to cleanup
+  }
+
+  // Remove markdown code blocks (```json ... ``` or ``` ... ```)
+  const codeBlockMatch = cleaned.match(/```(?:json|JSON)?\s*\n?([\s\S]*?)```/);
   if (codeBlockMatch) {
     cleaned = codeBlockMatch[1].trim();
   }
+
+  // Remove any leading/trailing non-JSON characters
+  const firstBracket = cleaned.search(/[\[{]/);
+  if (firstBracket > 0) {
+    cleaned = cleaned.substring(firstBracket);
+  }
+
+  // Find matching closing bracket
+  const lastBracket = cleaned[0] === '[' ? cleaned.lastIndexOf(']') : cleaned.lastIndexOf('}');
+  if (lastBracket > 0) {
+    cleaned = cleaned.substring(0, lastBracket + 1);
+  }
+
   return JSON.parse(cleaned);
 }
 
