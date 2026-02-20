@@ -1,13 +1,13 @@
 /**
  * LLM Adapter - Google Gemini.
- * Default model: gemini-2.0-flash (~$0.10/$0.40 per 1M tokens).
+ * Default model: gemini-2.5-flash (~$0.10/$0.40 per 1M tokens).
  */
 
 /**
  * Generate text using Gemini.
  * @param {Object} opts
  * @param {string} opts.apiKey - Google API key
- * @param {string} [opts.model='gemini-2.0-flash']
+ * @param {string} [opts.model='gemini-2.5-flash']
  * @param {string} opts.systemPrompt
  * @param {string} opts.userPrompt
  * @param {number} [opts.maxTokens=4096]
@@ -21,7 +21,7 @@ export async function generateText({
   maxTokens = 4096, temperature = 0.7,
   responseFormat = 'text',
 }) {
-  const geminiModel = model || 'gemini-2.0-flash';
+  const geminiModel = model || 'gemini-2.5-flash';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`;
 
   const body = {

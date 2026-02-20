@@ -35,7 +35,7 @@ export async function initYouTubeTables() {
         -- LLM
         llm_provider VARCHAR(20) NOT NULL DEFAULT 'gemini',
         llm_api_key TEXT,
-        llm_model VARCHAR(100) NOT NULL DEFAULT 'gemini-2.0-flash',
+        llm_model VARCHAR(100) NOT NULL DEFAULT 'gemini-2.5-flash',
         -- Search
         search_provider VARCHAR(20) NOT NULL DEFAULT 'serper',
         search_api_key TEXT,

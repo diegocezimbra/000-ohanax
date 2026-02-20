@@ -3,7 +3,7 @@
  * Used by all pipeline services to get AI provider configs.
  *
  * Providers:
- * - LLM: Gemini (gemini-2.0-flash)
+ * - LLM: Gemini (gemini-2.5-flash)
  * - Image: Z-Image-Turbo (Replicate)
  * - TTS: Fish Audio (OpenAudio S1)
  * - STT: OpenAI Whisper (forced alignment)

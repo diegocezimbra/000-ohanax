@@ -121,7 +121,7 @@ router.post('/', async (req, res) => {
     const project = projectResult.rows[0];
 
     const defaultLlm = 'gemini';
-    const defaultModel = 'gemini-2.0-flash';
+    const defaultModel = 'gemini-2.5-flash';
 
     await client.query(`
       INSERT INTO yt_project_settings (id, project_id, llm_provider, llm_model)
