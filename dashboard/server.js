@@ -237,7 +237,7 @@ app.listen(PORT, () => {
     console.error('Publishing cron error:', err.message)
   ), 30 * 60 * 1000);
 
-  // Content Engine cron: auto-generate content every 30 minutes
-  startContentEngine(30 * 60 * 1000);
-  console.log('Content Engine started (interval: 30 min)');
+  // Content Engine cron: auto-generate content every 1 hour
+  startContentEngine(60 * 60 * 1000);
+  console.log('Content Engine started (interval: 1 hour)');
 });
