@@ -4,8 +4,11 @@
  * Model: prunaai/z-image-turbo on Replicate.
  */
 
+const IMAGE_RETRY_LIMIT = 3;
+const IMAGE_RETRY_DELAY_MS = 5000;
+
 /**
- * Generate an image from a text prompt.
+ * Generate an image from a text prompt (with retry on transient failures).
  * @param {Object} opts
  * @param {string} opts.apiKey - Replicate API token
  * @param {string} opts.prompt
@@ -18,6 +21,21 @@ export async function generateImage({
   apiKey, prompt, negativePrompt = '',
   width = 1920, height = 1080,
 }) {
+  for (let attempt = 1; attempt <= IMAGE_RETRY_LIMIT; attempt++) {
+    try {
+      return await _generateImageOnce({ apiKey, prompt, negativePrompt, width, height });
+    } catch (err) {
+      const isRetryable = err.message.includes('timed out') || err.message.includes('504')
+        || err.message.includes('502') || err.message.includes('503');
+      if (attempt === IMAGE_RETRY_LIMIT || !isRetryable) throw err;
+      const delay = IMAGE_RETRY_DELAY_MS * attempt;
+      console.warn(`[ImageAdapter] Attempt ${attempt} failed: ${err.message}. Retrying in ${delay}ms...`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+}
+
+async function _generateImageOnce({ apiKey, prompt, negativePrompt, width, height }) {
   const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
     method: 'POST',
     headers: {
@@ -43,7 +61,7 @@ export async function generateImage({
     throw new Error(`Z-Image-Turbo: ${prediction.error}`);
   }
 
-  const result = await pollReplicatePrediction(apiKey, prediction.id, 180000);
+  const result = await pollReplicatePrediction(apiKey, prediction.id, 300000);
   const imageUrl = Array.isArray(result.output) ? result.output[0] : result.output;
 
   if (!imageUrl) {
