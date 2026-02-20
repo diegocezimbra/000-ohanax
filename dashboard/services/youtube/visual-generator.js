@@ -18,10 +18,12 @@ import { uploadFile, buildKey, uniqueFilename, getPresignedUrl } from './s3.js';
 import { getProjectSettings } from './settings-helper.js';
 
 // Segment types that ALWAYS get video treatment
-const ALWAYS_VIDEO_TYPES = ['hook', 'climax', 'transition'];
+// Empty = no video clips generated (100% images with Ken Burns + crossfades)
+const ALWAYS_VIDEO_TYPES = [];
 
-// Minimum percentage of segments that must be video clips for monetization
-const MIN_VIDEO_RATIO = 0.4;
+// Minimum percentage of segments that must be video clips
+// 0 = all images, relies on 3-composition Ken Burns + xfade transitions
+const MIN_VIDEO_RATIO = 0;
 
 // Number of image variants for non-video segments (3:1 visual ratio)
 const IMAGE_VARIANTS_PER_SEGMENT = 3;
@@ -215,15 +217,8 @@ function shouldGenerateVideo(segment, context = {}) {
   if (context.forceVideo === true) return true;
   if (context.forceVideo === false) return false;
 
-  // Named types always get video
-  if (ALWAYS_VIDEO_TYPES.includes(segment.segment_type)) return true;
-
-  // Every 3rd main segment gets video for visual variety
-  const index = context.segmentIndex ?? 0;
-  if (segment.segment_type === 'main' && index % 3 === 0) return true;
-
-  // Data/example segments with high narrative density benefit from video
-  if (['data', 'example'].includes(segment.segment_type) && index % 2 === 0) return true;
+  // Only hook and climax ALWAYS get video (most critical for retention)
+  if (['hook', 'climax'].includes(segment.segment_type)) return true;
 
   return false;
 }
