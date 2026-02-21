@@ -9,6 +9,8 @@ let running = false;
 const BILLING_ERROR_PATTERNS = [
   'insufficient credit', 'billing', 'payment required',
   'account suspended', 'quota exceeded',
+  'authorization header is malformed', 'Access Key (AKID) must be provided',
+  'missing credentials',
 ];
 function isBillingError(message) {
   const lower = (message || '').toLowerCase();

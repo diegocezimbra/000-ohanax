@@ -89,13 +89,16 @@ export async function completeJob(jobId, result = {}) {
   return res.rows[0];
 }
 
-// Errors that should never be retried (billing, account issues)
+// Errors that should never be retried (billing, account, config issues)
 const FATAL_ERROR_PATTERNS = [
   'insufficient credit',
   'billing',
   'payment required',
   'account suspended',
   'quota exceeded',
+  'authorization header is malformed',
+  'Access Key (AKID) must be provided',
+  'missing credentials',
 ];
 
 function isFatalError(message) {
@@ -145,9 +148,12 @@ export async function failJob(jobId, error) {
 
   if (topic_id) {
     // Store a user-friendly error message for billing errors
-    const displayError = isFatalError(errorMsg)
-      ? `BILLING: Crédito insuficiente no Replicate. Recarregue em https://replicate.com/account/billing e reprocesse este tópico.`
-      : errorMsg;
+    let displayError = errorMsg;
+    if (errorMsg.toLowerCase().includes('insufficient credit') || errorMsg.toLowerCase().includes('billing')) {
+      displayError = `BILLING: Crédito insuficiente no Replicate. Recarregue em https://replicate.com/account/billing e reprocesse este tópico.`;
+    } else if (errorMsg.toLowerCase().includes('akid') || errorMsg.toLowerCase().includes('authorization header') || errorMsg.toLowerCase().includes('missing credentials')) {
+      displayError = `CONFIG: Credenciais AWS S3 não configuradas. Configure YT_S3_ACCESS_KEY e YT_S3_SECRET_KEY no App Runner.`;
+    }
     await db.analytics.query(`
       UPDATE yt_topics
       SET pipeline_stage = 'error', pipeline_error = $2, updated_at = NOW()
