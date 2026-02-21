@@ -41,6 +41,8 @@ async function getEngineConfig(projectId) {
 }
 
 let _engineInterval = null;
+let _engineIntervalMs = ENGINE_DEFAULTS.check_interval_ms;
+let _lastCronRun = null;
 
 /**
  * Get content engine status for a project.
@@ -89,9 +91,15 @@ export async function getEngineStatus(projectId) {
   const genToday = parseInt(todayResult.rows[0].count, 10);
   const activePipeline = parseInt(activeResult.rows[0].count, 10);
 
-  // Calculate next run
+  // Calculate next run based on actual last cron execution
   const engineActive = !isPaused && config.active;
-  const nextRun = engineActive ? new Date(Date.now() + ENGINE_DEFAULTS.check_interval_ms) : null;
+  let nextRun = null;
+  if (engineActive && _lastCronRun) {
+    nextRun = new Date(_lastCronRun.getTime() + _engineIntervalMs);
+  } else if (engineActive) {
+    // Engine just started, first run is interval from now
+    nextRun = new Date(Date.now() + _engineIntervalMs);
+  }
 
   return {
     active: engineActive,
@@ -231,6 +239,7 @@ export async function resumeEngine(projectId) {
  * Called periodically by the main server.
  */
 export async function runContentEngineCron() {
+  _lastCronRun = new Date();
   const pool = db.analytics;
 
   // Only run for active, non-paused projects that have content_engine_active enabled
@@ -262,6 +271,8 @@ export function startContentEngine(intervalMs = ENGINE_DEFAULTS.check_interval_m
   if (_engineInterval) {
     clearInterval(_engineInterval);
   }
+  _engineIntervalMs = intervalMs;
+  _lastCronRun = new Date(); // Mark engine start as first reference point
   _engineInterval = setInterval(runContentEngineCron, intervalMs);
   console.log(`[ContentEngine] Started with interval: ${intervalMs / 1000}s`);
 }
