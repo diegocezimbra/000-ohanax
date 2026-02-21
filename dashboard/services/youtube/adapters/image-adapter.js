@@ -40,9 +40,10 @@ export async function generateImage({
   apiKey, prompt, negativePrompt = '',
   width = 1920, height = 1088,
 }) {
-  // Z-Image-Turbo requires dimensions divisible by 16
-  width = Math.round(width / 16) * 16;
-  height = Math.round(height / 16) * 16;
+  // Z-Image-Turbo requires dimensions divisible by 64 (not just 16)
+  // to avoid internal tensor size mismatches (split_with_sizes errors)
+  width = Math.round(width / 64) * 64;
+  height = Math.round(height / 64) * 64;
   for (let attempt = 1; attempt <= IMAGE_RETRY_LIMIT; attempt++) {
     try {
       return await _generateImageOnce({ apiKey, prompt, negativePrompt, width, height });

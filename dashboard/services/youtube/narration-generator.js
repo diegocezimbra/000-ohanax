@@ -100,9 +100,13 @@ export async function generateNarration(topicId) {
     }
   }
 
-  // Upload full audio to S3
+  // Upload full audio to S3 — if this fails after TTS was paid for, throw fatal error
   const audioKey = buildKey(topic.project_id, 'narrations', uniqueFilename('mp3'));
-  await uploadFile(fullAudioBuffer, audioKey, 'audio/mpeg');
+  try {
+    await uploadFile(fullAudioBuffer, audioKey, 'audio/mpeg');
+  } catch (err) {
+    throw new Error(`S3 upload failed: ${err.message}. Paid narration audio LOST — stopping pipeline.`);
+  }
 
   // Run forced alignment for word-level timestamps
   const alignment = await runAlignment(settings, fullAudioBuffer);
@@ -169,7 +173,11 @@ export async function regenerateSegmentAudio(topicId, segmentId) {
   );
 
   const key = buildKey(topic.project_id, 'narration-segments', uniqueFilename('mp3'));
-  await uploadFile(audio.buffer, key, 'audio/mpeg');
+  try {
+    await uploadFile(audio.buffer, key, 'audio/mpeg');
+  } catch (err) {
+    throw new Error(`S3 upload failed: ${err.message}. Paid narration segment LOST — stopping pipeline.`);
+  }
 
   return { buffer: audio.buffer, s3Key: key, durationSeconds };
 }

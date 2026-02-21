@@ -17,6 +17,20 @@ import { generateVideo } from './adapters/video-adapter.js';
 import { uploadFile, buildKey, uniqueFilename, getPresignedUrl } from './s3.js';
 import { getProjectSettings } from './settings-helper.js';
 
+/**
+ * Safe upload wrapper: if S3 upload fails AFTER an image was already paid for,
+ * throw a clearly-labeled fatal error so the job queue cancels all siblings
+ * instead of retrying (which would generate AND lose another paid image).
+ */
+async function safeUpload(buffer, key, contentType) {
+  try {
+    return await uploadFile(buffer, key, contentType);
+  } catch (err) {
+    const msg = err.message || String(err);
+    throw new Error(`S3 upload failed: ${msg}. Paid image LOST — stopping pipeline to prevent further waste.`);
+  }
+}
+
 // Segment types that ALWAYS get video treatment
 // Empty = no video clips generated (100% images with Ken Burns + crossfades)
 const ALWAYS_VIDEO_TYPES = [];
@@ -86,7 +100,7 @@ export async function generateVisualForSegment(topicId, segmentId, context = {})
   if (needsVideo && hasVideoProvider) {
     const asset = await createVideoAsset(artPrompt, topic, settings);
     const key = buildKey(topic.project_id, 'visuals', uniqueFilename(asset.extension));
-    await uploadFile(asset.buffer, key, asset.mimeType);
+    await safeUpload(asset.buffer, key, asset.mimeType);
 
     const { rows } = await pool.query(
       `INSERT INTO yt_visual_assets
@@ -107,7 +121,7 @@ export async function generateVisualForSegment(topicId, segmentId, context = {})
     for (let i = 0; i < variants.length; i++) {
       const variant = variants[i];
       const key = buildKey(topic.project_id, 'visuals', uniqueFilename(variant.extension));
-      await uploadFile(variant.buffer, key, variant.mimeType);
+      await safeUpload(variant.buffer, key, variant.mimeType);
 
       const { rows } = await pool.query(
         `INSERT INTO yt_visual_assets
@@ -484,7 +498,7 @@ async function createVideoAsset(artPrompt, topic, settings) {
 
   // Upload image temporarily for video generation input
   const tempKey = buildKey(topic.project_id, 'temp', uniqueFilename('png'));
-  await uploadFile(image.buffer, tempKey, 'image/png');
+  await safeUpload(image.buffer, tempKey, 'image/png');
 
   const imageUrl = await getPresignedUrl(tempKey, 3600);
 

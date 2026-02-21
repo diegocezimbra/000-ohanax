@@ -89,7 +89,7 @@ export async function completeJob(jobId, result = {}) {
   return res.rows[0];
 }
 
-// Errors that should never be retried (billing, account, config issues)
+// Errors that should never be retried (billing, account, config, upload issues)
 const FATAL_ERROR_PATTERNS = [
   'insufficient credit',
   'billing',
@@ -99,6 +99,13 @@ const FATAL_ERROR_PATTERNS = [
   'authorization header is malformed',
   'Access Key (AKID) must be provided',
   'missing credentials',
+  // S3 upload failures — image was already paid for, retrying wastes money
+  's3 upload failed',
+  'accessdenied',
+  'nosuchbucket',
+  'invalidsecurity',
+  'signaturedoesnotmatch',
+  'invalidaccesskeyid',
 ];
 
 function isFatalError(message) {
@@ -153,6 +160,8 @@ export async function failJob(jobId, error) {
       displayError = `BILLING: Crédito insuficiente no Replicate. Recarregue em https://replicate.com/account/billing e reprocesse este tópico.`;
     } else if (errorMsg.toLowerCase().includes('akid') || errorMsg.toLowerCase().includes('authorization header') || errorMsg.toLowerCase().includes('missing credentials')) {
       displayError = `CONFIG: Credenciais AWS S3 não configuradas. Configure YT_S3_ACCESS_KEY e YT_S3_SECRET_KEY no App Runner.`;
+    } else if (errorMsg.toLowerCase().includes('s3 upload failed') || errorMsg.toLowerCase().includes('accessdenied') || errorMsg.toLowerCase().includes('nosuchbucket')) {
+      displayError = `UPLOAD: Falha ao salvar imagem no S3. Verifique permissões do bucket e credenciais AWS. A imagem gerada (já paga) foi perdida.`;
     }
     await db.analytics.query(`
       UPDATE yt_topics

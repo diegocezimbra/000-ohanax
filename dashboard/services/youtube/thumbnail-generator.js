@@ -70,9 +70,13 @@ export async function generateThumbnails(topicId) {
       concept,
     );
 
-    // Upload to S3
+    // Upload to S3 — if this fails after image was paid for, throw fatal error
     const key = buildKey(topic.project_id, 'thumbnails', uniqueFilename('png'));
-    await uploadFile(finalBuffer, key, 'image/png');
+    try {
+      await uploadFile(finalBuffer, key, 'image/png');
+    } catch (err) {
+      throw new Error(`S3 upload failed: ${err.message}. Paid thumbnail LOST — stopping pipeline.`);
+    }
 
     // Save to database (first variant is auto-selected)
     const { rows } = await pool.query(

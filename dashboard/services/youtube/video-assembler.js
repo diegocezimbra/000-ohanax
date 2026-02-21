@@ -67,7 +67,11 @@ export async function assembleVideo(topicId) {
 
     const videoBuffer = await readFile(outputPath);
     const s3Key = buildKey(topic.project_id, 'videos', uniqueFilename('mp4'));
-    await uploadFile(videoBuffer, s3Key, 'video/mp4');
+    try {
+      await uploadFile(videoBuffer, s3Key, 'video/mp4');
+    } catch (err) {
+      throw new Error(`S3 upload failed: ${err.message}. Assembled video LOST — stopping pipeline.`);
+    }
 
     const fileSizeMb = Math.round(videoBuffer.length / (1024 * 1024) * 100) / 100;
 
