@@ -306,17 +306,20 @@ async function updateTopicStage(topicId, stage) {
 }
 
 async function checkAllVisualsComplete(topicId) {
+  // Count total segments vs segments that have at least 1 completed asset
   const result = await db.analytics.query(`
     SELECT
-      COUNT(*) FILTER (WHERE va.status = 'completed') as done,
-      COUNT(*) as total
-    FROM yt_visual_assets va
-    JOIN yt_script_segments ss ON va.segment_id = ss.id
+      COUNT(DISTINCT ss.id) as total_segments,
+      COUNT(DISTINCT CASE WHEN va.status = 'completed' THEN ss.id END) as segments_with_visuals
+    FROM yt_script_segments ss
     JOIN yt_scripts s ON ss.script_id = s.id
-    WHERE s.topic_id = $1 AND va.is_selected = true
+    LEFT JOIN yt_visual_assets va ON va.segment_id = ss.id
+    WHERE s.topic_id = $1
   `, [topicId]);
-  const { done, total } = result.rows[0];
-  return parseInt(total) > 0 && parseInt(done) === parseInt(total);
+  const { total_segments, segments_with_visuals } = result.rows[0];
+  const total = parseInt(total_segments);
+  const done = parseInt(segments_with_visuals);
+  return total > 0 && done === total;
 }
 
 async function createPublicationEntry(job) {
