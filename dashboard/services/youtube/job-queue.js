@@ -47,7 +47,24 @@ export async function claimNextJob(workerId) {
             WHERE dep.id = j.depends_on AND dep.status = 'completed'
           )
         )
-      ORDER BY j.priority DESC, j.created_at ASC
+      -- Prioritize jobs from topics that are furthest in the pipeline (closest to done).
+      -- This ensures one topic completes fully before resources go to the next.
+      ORDER BY j.priority DESC,
+               CASE j.job_type
+                 WHEN 'assemble_video' THEN 1
+                 WHEN 'generate_narration' THEN 2
+                 WHEN 'generate_thumbnails' THEN 3
+                 WHEN 'generate_visual_asset' THEN 4
+                 WHEN 'generate_visual_prompts' THEN 5
+                 WHEN 'generate_script' THEN 6
+                 WHEN 'expand_script' THEN 6
+                 WHEN 'generate_story' THEN 7
+                 WHEN 'generate_topics' THEN 8
+                 WHEN 'web_research_source' THEN 9
+                 WHEN 'extract_source' THEN 10
+                 ELSE 11
+               END ASC,
+               j.created_at ASC
       LIMIT 1
       FOR UPDATE OF j SKIP LOCKED
     )
@@ -72,8 +89,23 @@ export async function completeJob(jobId, result = {}) {
   return res.rows[0];
 }
 
+// Errors that should never be retried (billing, account issues)
+const FATAL_ERROR_PATTERNS = [
+  'insufficient credit',
+  'billing',
+  'payment required',
+  'account suspended',
+  'quota exceeded',
+];
+
+function isFatalError(message) {
+  const lower = (message || '').toLowerCase();
+  return FATAL_ERROR_PATTERNS.some(pattern => lower.includes(pattern));
+}
+
 /**
  * Mark a job as failed. Auto-retries with exponential backoff if attempts remain.
+ * Billing/credit errors skip retry and fail immediately.
  */
 export async function failJob(jobId, error) {
   const job = await db.analytics.query(
@@ -86,7 +118,10 @@ export async function failJob(jobId, error) {
   const errorMsg = error?.message || String(error);
   const errorStack = error?.stack || '';
 
-  if (attempt < max_attempts) {
+  // Billing/credit errors: skip retry, fail immediately
+  const canRetry = attempt < max_attempts && !isFatalError(errorMsg);
+
+  if (canRetry) {
     const backoffSeconds = 30 * Math.pow(2, attempt - 1);
     await db.analytics.query(`
       UPDATE yt_jobs
@@ -109,11 +144,15 @@ export async function failJob(jobId, error) {
   `, [jobId, errorMsg, errorStack]);
 
   if (topic_id) {
+    // Store a user-friendly error message for billing errors
+    const displayError = isFatalError(errorMsg)
+      ? `BILLING: Crédito insuficiente no Replicate. Recarregue em https://replicate.com/account/billing e reprocesse este tópico.`
+      : errorMsg;
     await db.analytics.query(`
       UPDATE yt_topics
       SET pipeline_stage = 'error', pipeline_error = $2, updated_at = NOW()
       WHERE id = $1
-    `, [topic_id, errorMsg]);
+    `, [topic_id, displayError]);
   }
 
   return { retrying: false };

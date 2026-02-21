@@ -1,9 +1,19 @@
-import { claimNextJob, completeJob, failJob, logJob, resetStaleJobs } from './job-queue.js';
+import { claimNextJob, completeJob, failJob, logJob, resetStaleJobs, cancelJobsForTopic } from './job-queue.js';
 import { onJobCompleted } from './pipeline-orchestrator.js';
 import os from 'os';
 
 const JOB_HANDLERS = {};
 let running = false;
+
+// Billing/credit errors that should cancel all sibling jobs immediately
+const BILLING_ERROR_PATTERNS = [
+  'insufficient credit', 'billing', 'payment required',
+  'account suspended', 'quota exceeded',
+];
+function isBillingError(message) {
+  const lower = (message || '').toLowerCase();
+  return BILLING_ERROR_PATTERNS.some(p => lower.includes(p));
+}
 let activeJobs = 0;
 let pollTimer = null;
 let workerId = '';
@@ -123,6 +133,14 @@ async function processJob(job) {
     console.error(`[YouTube Worker] Job ${job.job_type} failed (${durationMs}ms):`, err.message);
     await logJob(job.id, 'error', err.message, { stack: err.stack });
     await failJob(job.id, err);
+
+    // On billing/credit errors: cancel all pending sibling jobs for this topic
+    // to prevent hundreds of doomed retries
+    if (job.topic_id && isBillingError(err.message)) {
+      console.error(`[YouTube Worker] BILLING ERROR detected — cancelling all pending jobs for topic ${job.topic_id}`);
+      const cancelled = await cancelJobsForTopic(job.topic_id);
+      console.error(`[YouTube Worker] Cancelled ${cancelled} pending jobs for topic ${job.topic_id}`);
+    }
   }
 }
 

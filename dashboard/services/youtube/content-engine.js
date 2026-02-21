@@ -141,6 +141,13 @@ export async function triggerEngine(projectId) {
     return { triggered: false, reason: `Buffer is full (${status.buffer_current}/${status.buffer_target})` };
   }
 
+  // CRITICAL: Don't start new topics while others are still in the pipeline.
+  // Each topic generates ~100 image jobs ($0.003/each = $0.30/topic).
+  // Running multiple in parallel wastes money if one fails.
+  if (status.active_pipeline > 0) {
+    return { triggered: false, reason: `Pipeline busy (${status.active_pipeline} topic(s) in progress). Waiting for completion before starting new.` };
+  }
+
   // Get processed sources from the pool
   const sourcesResult = await pool.query(`
     SELECT id, processed_content
@@ -156,12 +163,11 @@ export async function triggerEngine(projectId) {
     return { triggered: false, reason: 'No processed sources in pool' };
   }
 
-  // How many new topics to generate
-  const needed = Math.min(
-    status.buffer_target - status.buffer_current,
-    status.max_gen - status.gen_today,
-    3, // Max 3 per trigger to avoid overload
-  );
+  // Generate exactly 1 topic per trigger.
+  // The engine runs periodically and will generate more on the next cycle.
+  // This ensures each topic completes its full pipeline before starting another,
+  // preventing wasted API credits on parallel failures.
+  const needed = 1;
 
   const minRichness = status.min_richness_score || ENGINE_DEFAULTS.min_richness_score;
   const generated = [];
@@ -176,10 +182,12 @@ export async function triggerEngine(projectId) {
         .filter(t => (t.richness_score || 0) >= minRichness)
         .sort((a, b) => (b.richness_score || 0) - (a.richness_score || 0));
 
+      // Only pick the SINGLE best topic — never start multiple pipelines at once
       const bestTopic = qualifiedTopics[0];
       if (bestTopic) {
         await triggerPipelineFromTopic(projectId, bestTopic.id, 'generate_story');
         generated.push({ topicId: bestTopic.id, title: bestTopic.title, richness: bestTopic.richness_score });
+        break; // Stop after first successful topic — one at a time
       } else {
         console.log(`[ContentEngine] Source ${source.id}: No topics met min richness score ${minRichness}`);
       }

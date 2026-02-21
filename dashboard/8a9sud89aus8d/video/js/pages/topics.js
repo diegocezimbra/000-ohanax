@@ -81,8 +81,18 @@ function renderTopicCard(t) {
     const duration = t.estimated_duration || t.estimatedDuration || 0;
     const scorePercent = score != null ? (score / 10) * 100 : 0;
 
+    const pipelineError = t.pipeline_error || t.pipelineError || '';
+    const isError = stage === 'error';
+    const isBilling = pipelineError.toLowerCase().includes('billing') || pipelineError.toLowerCase().includes('insufficient credit');
+    let errorHtml = '';
+    if (isError && pipelineError) {
+        const icon = isBilling ? '&#128179;' : '&#9888;';
+        const shortMsg = pipelineError.length > 100 ? pipelineError.substring(0, 100) + '...' : pipelineError;
+        errorHtml = `<div style="font-size:12px;color:${isBilling ? 'var(--color-warning)' : 'var(--color-danger)'};margin-bottom:8px;line-height:1.3;" title="${escapeHtml(pipelineError)}">${icon} ${escapeHtml(shortMsg)}</div>`;
+    }
+
     return `
-        <div class="yt-card" data-topic-id="${t.id}">
+        <div class="yt-card ${isError ? 'yt-card--error' : ''}" data-topic-id="${t.id}">
             <div class="yt-card-header" style="align-items:flex-start;">
                 <label class="yt-topic-check" style="display:flex;align-items:center;gap:8px;"
                        onclick="event.stopPropagation();">
@@ -94,7 +104,7 @@ function renderTopicCard(t) {
                 <h3 class="yt-card-title" style="margin-bottom:8px;">${title}</h3>
                 <p style="color:var(--color-text-secondary);font-size:13px;margin-bottom:12px;">
                     ${angle}
-                </p>
+                </p>${errorHtml}
                 <div style="margin-bottom:8px;">
                     <label class="yt-label" style="font-size:12px;">
                         Riqueza: ${score != null ? score + '/10' : '--'}

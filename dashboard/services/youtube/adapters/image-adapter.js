@@ -7,6 +7,25 @@
 const IMAGE_RETRY_LIMIT = 4;
 const IMAGE_RETRY_DELAY_MS = 8000;
 
+// Billing/credit errors that should NEVER be retried (they won't resolve on their own)
+const NON_RETRYABLE_PATTERNS = [
+  'insufficient credit',
+  'billing',
+  'payment required',
+  'account suspended',
+  'quota exceeded',
+];
+
+/**
+ * Check if an error is a billing/credit issue that will never resolve with retries.
+ * @param {string} message
+ * @returns {boolean}
+ */
+function isBillingError(message) {
+  const lower = message.toLowerCase();
+  return NON_RETRYABLE_PATTERNS.some(pattern => lower.includes(pattern));
+}
+
 /**
  * Generate an image from a text prompt (with retry on transient failures).
  * @param {Object} opts
@@ -28,6 +47,11 @@ export async function generateImage({
     try {
       return await _generateImageOnce({ apiKey, prompt, negativePrompt, width, height });
     } catch (err) {
+      // Billing/credit errors: fail immediately, no retry
+      if (isBillingError(err.message)) {
+        console.error(`[ImageAdapter] BILLING ERROR (no retry): ${err.message}`);
+        throw err;
+      }
       const isRetryable = err.message.includes('timed out') || err.message.includes('504')
         || err.message.includes('502') || err.message.includes('503')
         || err.message.includes('throttled') || err.message.includes('rate limit');

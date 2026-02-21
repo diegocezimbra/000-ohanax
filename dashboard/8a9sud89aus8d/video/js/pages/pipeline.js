@@ -200,11 +200,23 @@ function renderKanban(data) {
 function renderCard(item) {
     const title = escapeHtml(item.title || item.name || 'Sem titulo');
     const timeInStage = relativeTime(item.stageEnteredAt || item.stage_entered_at || item.updatedAt || item.updated_at);
-    const progress = stageProgress(item.pipelineStage || item.pipeline_stage || item.stage || 'topics_generated');
+    const stage = item.pipelineStage || item.pipeline_stage || item.stage || 'topics_generated';
+    const progress = stageProgress(stage);
     const isSelected = _selectedIds.has(item.id);
+    const pipelineError = item.pipeline_error || item.pipelineError || '';
+    const isError = stage === 'error';
+    const isBilling = pipelineError.toLowerCase().includes('billing') || pipelineError.toLowerCase().includes('insufficient credit');
+
+    let errorHtml = '';
+    if (isError && pipelineError) {
+        const errorClass = isBilling ? 'color: var(--color-warning);' : 'color: var(--color-danger);';
+        const icon = isBilling ? '💳' : '⚠';
+        const shortMsg = pipelineError.length > 80 ? pipelineError.substring(0, 80) + '...' : pipelineError;
+        errorHtml = `<div style="font-size: 0.6875rem; ${errorClass} margin-top: 4px; line-height: 1.3;" title="${escapeHtml(pipelineError)}">${icon} ${escapeHtml(shortMsg)}</div>`;
+    }
 
     return `
-    <div class="yt-kanban-card ${isSelected ? 'yt-kanban-card--selected' : ''}"
+    <div class="yt-kanban-card ${isSelected ? 'yt-kanban-card--selected' : ''} ${isError ? 'yt-kanban-card--error' : ''}"
          data-id="${escapeHtml(item.id)}" data-topic-id="${escapeHtml(item.topicId || item.id)}">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
             <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; flex: 1;">
@@ -212,7 +224,7 @@ function renderCard(item) {
                        ${isSelected ? 'checked' : ''}>
                 <span style="font-weight: 500; font-size: 0.8125rem; line-height: 1.3;">${title}</span>
             </label>
-        </div>
+        </div>${errorHtml}
         <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.6875rem; color: var(--text-tertiary);">
             <span>Ha ${timeInStage}</span>
             <span>${progress}%</span>
