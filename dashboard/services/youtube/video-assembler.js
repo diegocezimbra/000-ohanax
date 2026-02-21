@@ -259,12 +259,12 @@ function buildKenBurnsFilter(inputLabel, outputLabel, effect, durationSeconds) {
   const totalFrames = Math.round(durationSeconds * FPS);
   const zoomExpr = `'${effect.startZoom}+(${effect.endZoom}-${effect.startZoom})*on/${totalFrames}'`;
 
-  // Use output resolution directly for zoompan — no upscale.
-  // Images are 1920x1088 (already close to output), zoompan handles crop internally.
-  // The max zoom is 1.12x so slight edge softness is acceptable to save massive RAM.
+  // Zoompan needs input LARGER than output to crop during zoom (max zoom = 1.12x).
+  // Scale to 2150x1210 (~12% larger than 1920x1080) — enough headroom for zoom
+  // without the massive 2560x1440 that caused OOM.
   return [
     `[${inputLabel}]`,
-    `scale=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT},`,
+    `scale=2150:1210,`,
     `zoompan=`,
     `z=${zoomExpr}:`,
     `x='${effect.xExpr}':`,
