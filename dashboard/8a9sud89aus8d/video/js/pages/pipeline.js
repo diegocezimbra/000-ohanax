@@ -9,6 +9,17 @@ let _projectId = null;
 let _selectedIds = new Set();
 let _configLoaded = false;
 
+// Stage dot colors (matches badge.js STAGE_CONFIG)
+const STAGE_COLORS = {
+    idea: 'gray', topics_generated: 'purple', selected: 'purple',
+    researching: 'blue', story_created: 'blue', script_created: 'cyan',
+    visuals_creating: 'orange', visuals_created: 'yellow',
+    thumbnails_created: 'pink', narration_created: 'pink',
+    video_assembled: 'green', queued_for_publishing: 'gray',
+    scheduled: 'orange', published: 'green',
+    discarded: 'gray', rejected: 'red', error: 'red',
+};
+
 function escapeHtml(str) {
     if (!str) return '';
     return String(str).replace(/[&<>"']/g, (ch) =>
@@ -150,6 +161,21 @@ function renderEngineStatus(status) {
     }
 }
 
+function renderColumn(stage, cards) {
+    const dotColor = STAGE_COLORS[stage.key] || 'gray';
+    return `
+    <div class="yt-kanban-column" data-stage="${stage.key}">
+        <div class="yt-kanban-column-header">
+            <span class="yt-kanban-dot yt-kanban-dot--${dotColor}"></span>
+            <span>${escapeHtml(stage.label)}</span>
+            <span class="yt-kanban-column-count">${cards.length}</span>
+        </div>
+        <div class="yt-kanban-cards" data-stage="${stage.key}">
+            ${cards.map((card) => renderCard(card)).join('')}
+        </div>
+    </div>`;
+}
+
 function renderKanban(data) {
     const kanban = document.getElementById('pipe-kanban');
 
@@ -180,20 +206,18 @@ function renderKanban(data) {
 
     const allCols = [...STAGES, ...EXTRA_STAGES.filter(c => (grouped[c.key] || []).length > 0)];
 
-    kanban.innerHTML = allCols.map((stage) => {
-        const cards = grouped[stage.key] || [];
-        return `
-        <div class="yt-kanban-column" data-stage="${stage.key}">
-            <div class="yt-kanban-column-header">
-                <span>${escapeHtml(stage.label)}</span>
-                <span class="yt-badge">${cards.length}</span>
-            </div>
-            <div class="yt-kanban-cards" data-stage="${stage.key}">
-                ${cards.map((card) => renderCard(card)).join('')}
-            </div>
-        </div>`;
-    }).join('');
+    // Split into 2 rows: first half = Production, second half = Finalization
+    const midpoint = Math.ceil(allCols.length / 2);
+    const row1 = allCols.slice(0, midpoint);
+    const row2 = allCols.slice(midpoint);
 
+    let html = '';
+    html += '<div class="yt-kanban-row-label">Producao</div>';
+    html += row1.map((stage) => renderColumn(stage, grouped[stage.key] || [])).join('');
+    html += '<div class="yt-kanban-row-label">Finalizacao</div>';
+    html += row2.map((stage) => renderColumn(stage, grouped[stage.key] || [])).join('');
+
+    kanban.innerHTML = html;
     updateBulkButtons();
 }
 
@@ -209,27 +233,25 @@ function renderCard(item) {
 
     let errorHtml = '';
     if (isError && pipelineError) {
-        const errorClass = isBilling ? 'color: var(--color-warning);' : 'color: var(--color-danger);';
+        const errorStyle = isBilling ? 'color: var(--color-warning);' : 'color: var(--color-danger);';
         const icon = isBilling ? '💳' : '⚠';
-        const shortMsg = pipelineError.length > 80 ? pipelineError.substring(0, 80) + '...' : pipelineError;
-        errorHtml = `<div style="font-size: 0.6875rem; ${errorClass} margin-top: 4px; line-height: 1.3;" title="${escapeHtml(pipelineError)}">${icon} ${escapeHtml(shortMsg)}</div>`;
+        const shortMsg = pipelineError.length > 50 ? pipelineError.substring(0, 50) + '...' : pipelineError;
+        errorHtml = `<div style="font-size: 10px; ${errorStyle} margin-top: 2px; line-height: 1.2;" title="${escapeHtml(pipelineError)}">${icon} ${escapeHtml(shortMsg)}</div>`;
     }
 
     return `
     <div class="yt-kanban-card ${isSelected ? 'yt-kanban-card--selected' : ''} ${isError ? 'yt-kanban-card--error' : ''}"
          data-id="${escapeHtml(item.id)}" data-topic-id="${escapeHtml(item.topicId || item.id)}">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; flex: 1;">
-                <input type="checkbox" class="pipe-card-check" data-id="${escapeHtml(item.id)}"
-                       ${isSelected ? 'checked' : ''}>
-                <span style="font-weight: 500; font-size: 0.8125rem; line-height: 1.3;">${title}</span>
-            </label>
+        <div class="yt-kanban-card-row">
+            <input type="checkbox" class="pipe-card-check" data-id="${escapeHtml(item.id)}"
+                   ${isSelected ? 'checked' : ''}>
+            <span class="yt-kanban-card-title">${title}</span>
         </div>${errorHtml}
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.6875rem; color: var(--text-tertiary);">
-            <span>Ha ${timeInStage}</span>
+        <div class="yt-kanban-card-meta">
+            <span>${timeInStage}</span>
             <span>${progress}%</span>
         </div>
-        <div class="yt-progress" style="height: 4px; margin-top: 4px;">
+        <div class="yt-progress" style="height: 3px; margin-top: 2px;">
             <div class="yt-progress-bar" style="width: ${progress}%;"></div>
         </div>
     </div>`;

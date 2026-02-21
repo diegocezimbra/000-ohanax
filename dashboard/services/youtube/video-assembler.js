@@ -1,9 +1,14 @@
 /**
  * Video Assembler - Assembles final video from visuals + narration using FFmpeg.
  *
+ * Architecture: Progressive chunked rendering to stay within 2GB RAM limits.
+ * - Phase 1: Render chunks of ~10 clips each into intermediate MP4s
+ * - Phase 2: Concatenate intermediates with crossfade transitions
+ * - Phase 3: Mux narration audio onto the final video
+ *
  * Features:
  * - Varied Ken Burns effects (zoom-in, zoom-out, pan-left, pan-right, diagonal)
- * - Crossfade transitions between segments (xfade filter)
+ * - Crossfade transitions between clips (xfade filter)
  * - Multiple images per segment support (split duration, inner transitions)
  * - Video clip handling (scale+pad, no Ken Burns)
  * - YouTube-optimized encoding (CRF 20, tune film, 256k audio)
@@ -39,6 +44,9 @@ const FPS = 25;
 const OUTPUT_WIDTH = 1920;
 const OUTPUT_HEIGHT = 1080;
 
+// Max clips per chunk — keeps RAM under ~800MB per FFmpeg process
+const MAX_CLIPS_PER_CHUNK = 10;
+
 /**
  * Assemble final video from visual assets + narration audio.
  * @param {string} topicId
@@ -73,7 +81,16 @@ export async function assembleVideo(topicId) {
     }
 
     const outputPath = join(tempDir, 'output.mp4');
-    await runFfmpegAssembly(audioPath, visualClips, outputPath, settings);
+
+    if (visualClips.length <= MAX_CLIPS_PER_CHUNK) {
+      // Small video — single pass is fine
+      console.log(`[VideoAssembler] Single-pass: ${visualClips.length} clips`);
+      await runSinglePassAssembly(audioPath, visualClips, outputPath);
+    } else {
+      // Large video — chunked progressive rendering
+      console.log(`[VideoAssembler] Chunked: ${visualClips.length} clips in chunks of ${MAX_CLIPS_PER_CHUNK}`);
+      await runChunkedAssembly(audioPath, visualClips, outputPath, tempDir);
+    }
 
     const videoBuffer = await readFile(outputPath);
     const s3Key = buildKey(topic.project_id, 'videos', uniqueFilename('mp4'));
@@ -206,7 +223,8 @@ async function downloadAndGroupVisuals(segments, tempDir) {
     for (let vi = 0; vi < segment.visuals.length; vi++) {
       const visual = segment.visuals[vi];
       const buffer = await downloadFile(visual.s3Key);
-      const ext = visual.assetType === 'video' ? 'mp4' : 'png';
+      // Use .webp extension since images are actually WebP format
+      const ext = visual.assetType === 'video' ? 'mp4' : 'webp';
       const filePath = join(tempDir, `visual_${String(fileIndex).padStart(3, '0')}.${ext}`);
       await writeFile(filePath, buffer);
 
@@ -227,27 +245,16 @@ async function downloadAndGroupVisuals(segments, tempDir) {
   return clips;
 }
 
-// --- FFmpeg Assembly ---
+// --- FFmpeg Helpers ---
 
-/**
- * Select a Ken Burns effect based on the clip's global index.
- * Cycles through all 5 effects to avoid repetition.
- */
 function selectKenBurnsEffect(globalIndex) {
   return KEN_BURNS_EFFECTS[globalIndex % KEN_BURNS_EFFECTS.length];
 }
 
-/**
- * Select an xfade transition based on the clip pair index.
- * Cycles through all 5 transition types.
- */
 function selectXfadeTransition(transitionIndex) {
   return XFADE_TRANSITIONS[transitionIndex % XFADE_TRANSITIONS.length];
 }
 
-/**
- * Build the zoompan filter string for a Ken Burns effect.
- */
 function buildKenBurnsFilter(inputLabel, outputLabel, effect, durationSeconds) {
   const totalFrames = Math.round(durationSeconds * FPS);
   const zoomExpr = `'${effect.startZoom}+(${effect.endZoom}-${effect.startZoom})*on/${totalFrames}'`;
@@ -266,9 +273,6 @@ function buildKenBurnsFilter(inputLabel, outputLabel, effect, durationSeconds) {
   ].join('');
 }
 
-/**
- * Build the scale+pad filter for video clips (no Ken Burns).
- */
 function buildVideoScaleFilter(inputLabel, outputLabel) {
   return [
     `[${inputLabel}]`,
@@ -282,60 +286,41 @@ function buildVideoScaleFilter(inputLabel, outputLabel) {
 }
 
 /**
- * Run FFmpeg to assemble the final video with varied effects and transitions.
+ * Build filter graph for a set of clips with Ken Burns + xfade transitions.
+ * @param {Array} clips - The clips to process
+ * @param {number} inputOffset - The FFmpeg input index offset (0-based, excluding audio)
+ * @param {number} globalTransitionIdx - Starting transition index for variety
+ * @returns {{ filterGraph: string, totalDuration: number }}
  */
-async function runFfmpegAssembly(audioPath, clips, outputPath, settings) {
-  if (clips.length === 0) {
-    throw new Error('No clips to assemble');
-  }
-
-  const inputs = ['-i', audioPath];
+function buildFilterGraphForClips(clips, inputOffset, globalTransitionIdx) {
   const filterParts = [];
 
-  // Add input for each clip
+  // Build per-clip filters
   for (let i = 0; i < clips.length; i++) {
     const clip = clips[i];
-    if (clip.type === 'image') {
-      inputs.push('-loop', '1', '-t', String(clip.duration), '-i', clip.path);
-    } else {
-      inputs.push('-t', String(clip.duration), '-i', clip.path);
-    }
-  }
-
-  // Build per-clip filters (Ken Burns for images, scale+pad for videos)
-  for (let i = 0; i < clips.length; i++) {
-    const clip = clips[i];
-    const inputLabel = `${i + 1}:v`;
+    const inputLabel = `${inputOffset + i}:v`;
     const outputLabel = `v${i}`;
 
     if (clip.type === 'image') {
       const effect = selectKenBurnsEffect(clip.globalIndex);
-      filterParts.push(
-        buildKenBurnsFilter(inputLabel, outputLabel, effect, clip.duration),
-      );
+      filterParts.push(buildKenBurnsFilter(inputLabel, outputLabel, effect, clip.duration));
     } else {
-      filterParts.push(
-        buildVideoScaleFilter(inputLabel, outputLabel),
-      );
+      filterParts.push(buildVideoScaleFilter(inputLabel, outputLabel));
     }
   }
 
-  // Chain xfade transitions between clips
+  // Chain xfade transitions
+  // xfade offset = time in the OUTPUT stream where the crossfade starts
+  let outputStreamDuration = clips[0].duration;
+
   if (clips.length === 1) {
-    // Single clip: just rename the output
     filterParts.push(`[v0]copy[vout]`);
   } else {
     let currentLabel = 'v0';
-    let transitionIndex = 0;
-    let accumulatedOffset = 0;
 
     for (let i = 1; i < clips.length; i++) {
-      const prevClipDuration = clips[i - 1].duration;
-      accumulatedOffset += prevClipDuration - CROSSFADE_DURATION;
-
-      // Ensure offset is never negative
-      const offset = Math.max(accumulatedOffset, 0);
-      const transition = selectXfadeTransition(transitionIndex);
+      const offset = Math.max(outputStreamDuration - CROSSFADE_DURATION, 0);
+      const transition = selectXfadeTransition(globalTransitionIdx + i - 1);
       const outLabel = i < clips.length - 1 ? `xf${i}` : 'vout';
 
       filterParts.push(
@@ -343,18 +328,34 @@ async function runFfmpegAssembly(audioPath, clips, outputPath, settings) {
       );
 
       currentLabel = outLabel;
-      transitionIndex++;
+      outputStreamDuration = offset + clips[i].duration;
     }
   }
 
-  // Final scale to ensure exact 1920x1080 output
+  // Final scale
   filterParts.push(
     `[vout]scale=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT}:flags=lanczos,setsar=1[vfinal]`,
   );
 
-  const filterGraph = filterParts.join(';\n');
+  return { filterGraph: filterParts.join(';\n'), totalDuration: outputStreamDuration };
+}
 
-  // Write filter graph to file to avoid ARG_MAX limits with many clips
+// --- Single-Pass Assembly (for small videos, <=MAX_CLIPS_PER_CHUNK clips) ---
+
+async function runSinglePassAssembly(audioPath, clips, outputPath) {
+  const inputs = ['-i', audioPath];
+
+  for (const clip of clips) {
+    if (clip.type === 'image') {
+      inputs.push('-loop', '1', '-t', String(clip.duration), '-i', clip.path);
+    } else {
+      inputs.push('-t', String(clip.duration), '-i', clip.path);
+    }
+  }
+
+  // inputOffset=1 because input 0 is audio
+  const { filterGraph } = buildFilterGraphForClips(clips, 1, 0);
+
   const filterPath = join(dirname(outputPath), 'filters.txt');
   await writeFile(filterPath, filterGraph);
 
@@ -363,13 +364,182 @@ async function runFfmpegAssembly(audioPath, clips, outputPath, settings) {
     '-filter_complex_script', filterPath,
     '-map', '[vfinal]',
     '-map', '0:a',
+    ...ENCODING_ARGS,
+    '-shortest',
+    '-y',
+    outputPath,
+  ];
+
+  return runFfmpeg(args);
+}
+
+// --- Chunked Assembly (for large videos) ---
+
+/**
+ * Split clips into chunks and render progressively:
+ * 1. Render each chunk into an intermediate MP4 (video only)
+ * 2. Concatenate all intermediates with crossfade between them
+ * 3. Mux audio onto the final video
+ */
+async function runChunkedAssembly(audioPath, clips, outputPath, tempDir) {
+  // Split clips into chunks
+  const chunks = [];
+  for (let i = 0; i < clips.length; i += MAX_CLIPS_PER_CHUNK) {
+    chunks.push(clips.slice(i, i + MAX_CLIPS_PER_CHUNK));
+  }
+
+  console.log(`[VideoAssembler] Rendering ${chunks.length} chunks...`);
+
+  // Phase 1: Render each chunk into an intermediate MP4
+  const intermediates = [];
+  let globalTransitionIdx = 0;
+
+  for (let chunkIdx = 0; chunkIdx < chunks.length; chunkIdx++) {
+    const chunk = chunks[chunkIdx];
+    const chunkPath = join(tempDir, `chunk_${String(chunkIdx).padStart(2, '0')}.mp4`);
+
+    console.log(`[VideoAssembler] Rendering chunk ${chunkIdx + 1}/${chunks.length} (${chunk.length} clips)`);
+    await renderChunk(chunk, chunkPath, tempDir, chunkIdx, globalTransitionIdx);
+    intermediates.push(chunkPath);
+
+    globalTransitionIdx += chunk.length;
+  }
+
+  if (intermediates.length === 1) {
+    // Only one chunk — just mux the audio
+    console.log(`[VideoAssembler] Single chunk — muxing audio`);
+    await muxAudio(intermediates[0], audioPath, outputPath);
+  } else {
+    // Phase 2: Concatenate intermediates with crossfades
+    console.log(`[VideoAssembler] Concatenating ${intermediates.length} chunks...`);
+    const concatPath = join(tempDir, 'concat_output.mp4');
+    await concatenateChunks(intermediates, concatPath, tempDir);
+
+    // Phase 3: Mux audio
+    console.log(`[VideoAssembler] Muxing audio onto final video`);
+    await muxAudio(concatPath, audioPath, outputPath);
+  }
+}
+
+/**
+ * Render a single chunk of clips into an intermediate MP4 (video only, no audio).
+ */
+async function renderChunk(clips, outputPath, tempDir, chunkIdx, globalTransitionIdx) {
+  const inputs = [];
+
+  for (const clip of clips) {
+    if (clip.type === 'image') {
+      inputs.push('-loop', '1', '-t', String(clip.duration), '-i', clip.path);
+    } else {
+      inputs.push('-t', String(clip.duration), '-i', clip.path);
+    }
+  }
+
+  // inputOffset=0 because there's no audio input in chunk rendering
+  const { filterGraph } = buildFilterGraphForClips(clips, 0, globalTransitionIdx);
+
+  const filterPath = join(tempDir, `chunk_${chunkIdx}_filters.txt`);
+  await writeFile(filterPath, filterGraph);
+
+  const args = [
+    ...inputs,
+    '-filter_complex_script', filterPath,
+    '-map', '[vfinal]',
+    '-c:v', 'libx264',
+    '-preset', 'medium',
+    '-crf', '18',       // Slightly higher quality for intermediates
+    '-profile:v', 'high',
+    '-pix_fmt', 'yuv420p',
+    '-an',              // No audio in chunks
+    '-y',
+    outputPath,
+  ];
+
+  return runFfmpeg(args);
+}
+
+/**
+ * Concatenate intermediate chunk videos with crossfade transitions between them.
+ */
+async function concatenateChunks(chunkPaths, outputPath, tempDir) {
+  if (chunkPaths.length <= 1) {
+    // Nothing to concatenate — just copy
+    const buffer = await readFile(chunkPaths[0]);
+    await writeFile(outputPath, buffer);
+    return;
+  }
+
+  // For up to ~15 chunks, a single xfade chain is fine since inputs are pre-encoded
+  const inputs = [];
+  for (const chunkPath of chunkPaths) {
+    inputs.push('-i', chunkPath);
+  }
+
+  // Get duration of each chunk using ffprobe
+  const durations = [];
+  for (const chunkPath of chunkPaths) {
+    const duration = await getVideoDuration(chunkPath);
+    durations.push(duration);
+  }
+
+  // Build xfade chain between chunks
+  // xfade offset = time in the OUTPUT stream where the crossfade starts.
+  // After each xfade, the output stream duration = offset + CROSSFADE_DURATION
+  // (because xfade overlaps CROSSFADE_DURATION seconds from both streams).
+  const filterParts = [];
+  let currentLabel = '0:v';
+  let outputStreamDuration = durations[0];
+
+  for (let i = 1; i < chunkPaths.length; i++) {
+    // The crossfade starts CROSSFADE_DURATION before the end of the current output
+    const offset = Math.max(outputStreamDuration - CROSSFADE_DURATION, 0);
+    const transition = selectXfadeTransition(i - 1);
+    const outLabel = i < chunkPaths.length - 1 ? `xf${i}` : 'vout';
+
+    filterParts.push(
+      `[${currentLabel}][${i}:v]xfade=transition=${transition}:duration=${CROSSFADE_DURATION}:offset=${offset.toFixed(2)}[${outLabel}]`,
+    );
+
+    currentLabel = outLabel;
+    // After xfade, the new output duration = offset + duration of new input
+    outputStreamDuration = offset + durations[i];
+  }
+
+  filterParts.push(
+    `[vout]scale=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT}:flags=lanczos,setsar=1[vfinal]`,
+  );
+
+  const filterGraph = filterParts.join(';\n');
+  const filterPath = join(tempDir, 'concat_filters.txt');
+  await writeFile(filterPath, filterGraph);
+
+  const args = [
+    ...inputs,
+    '-filter_complex_script', filterPath,
+    '-map', '[vfinal]',
     '-c:v', 'libx264',
     '-preset', 'medium',
     '-crf', '20',
-    '-tune', 'film',
     '-profile:v', 'high',
-    '-level', '4.1',
     '-pix_fmt', 'yuv420p',
+    '-an',
+    '-y',
+    outputPath,
+  ];
+
+  return runFfmpeg(args, 1800000); // 30 min timeout for concat
+}
+
+/**
+ * Mux audio onto a video file.
+ */
+async function muxAudio(videoPath, audioPath, outputPath) {
+  const args = [
+    '-i', videoPath,
+    '-i', audioPath,
+    '-map', '0:v',
+    '-map', '1:a',
+    '-c:v', 'copy',         // No re-encode for video
     '-c:a', 'aac',
     '-b:a', '256k',
     '-ar', '44100',
@@ -383,15 +553,55 @@ async function runFfmpegAssembly(audioPath, clips, outputPath, settings) {
 }
 
 /**
+ * Get video duration using ffprobe.
+ */
+function getVideoDuration(filePath) {
+  return new Promise((resolve, reject) => {
+    execFile('ffprobe', [
+      '-v', 'error',
+      '-show_entries', 'format=duration',
+      '-of', 'default=noprint_wrappers=1:nokey=1',
+      filePath,
+    ], { timeout: 30000 }, (error, stdout) => {
+      if (error) {
+        reject(new Error(`ffprobe failed: ${error.message}`));
+        return;
+      }
+      const duration = parseFloat(stdout.trim());
+      if (isNaN(duration)) {
+        reject(new Error(`Could not parse duration from ffprobe output: ${stdout}`));
+        return;
+      }
+      resolve(duration);
+    });
+  });
+}
+
+// --- Shared Encoding Args ---
+
+const ENCODING_ARGS = [
+  '-c:v', 'libx264',
+  '-preset', 'medium',
+  '-crf', '20',
+  '-tune', 'film',
+  '-profile:v', 'high',
+  '-level', '4.1',
+  '-pix_fmt', 'yuv420p',
+  '-c:a', 'aac',
+  '-b:a', '256k',
+  '-ar', '44100',
+  '-movflags', '+faststart',
+];
+
+/**
  * Execute FFmpeg as a child process with timeout.
  */
-function runFfmpeg(args) {
+function runFfmpeg(args, timeout = 900000) {
   return new Promise((resolve, reject) => {
-    const maxTimeout = 900000; // 15 minutes for long videos
-
-    execFile('ffmpeg', args, { timeout: maxTimeout, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+    execFile('ffmpeg', args, { timeout, maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error) {
-        console.error('[VideoAssembler] FFmpeg stderr:', stderr?.slice(-2000));
+        // Log last 3000 chars of stderr for debugging
+        console.error('[VideoAssembler] FFmpeg stderr:', stderr?.slice(-3000));
         reject(new Error(`FFmpeg failed: ${error.message}`));
         return;
       }
