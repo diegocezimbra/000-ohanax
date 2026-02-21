@@ -4,8 +4,8 @@
  * Model: prunaai/z-image-turbo on Replicate.
  */
 
-const IMAGE_RETRY_LIMIT = 4;
-const IMAGE_RETRY_DELAY_MS = 8000;
+const IMAGE_RETRY_LIMIT = 2;
+const IMAGE_RETRY_DELAY_MS = 10000;
 
 // Billing/credit errors that should NEVER be retried (they won't resolve on their own)
 const NON_RETRYABLE_PATTERNS = [
@@ -59,7 +59,7 @@ export async function generateImage({
       if (attempt === IMAGE_RETRY_LIMIT || !isRetryable) throw err;
       // Longer delay for rate-limit errors (wait for window to reset)
       const isRateLimit = err.message.includes('throttled') || err.message.includes('rate limit');
-      const delay = isRateLimit ? 15000 * attempt : IMAGE_RETRY_DELAY_MS * attempt;
+      const delay = isRateLimit ? 30000 * attempt : IMAGE_RETRY_DELAY_MS * attempt;
       console.warn(`[ImageAdapter] Attempt ${attempt} failed: ${err.message}. Retrying in ${delay}ms...`);
       await new Promise(r => setTimeout(r, delay));
     }

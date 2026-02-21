@@ -5,7 +5,7 @@ import os from 'os';
 const JOB_HANDLERS = {};
 let running = false;
 
-// Billing/credit/upload errors that should cancel all sibling jobs immediately
+// Billing/credit/upload/auth errors that should cancel all sibling jobs immediately
 const BILLING_ERROR_PATTERNS = [
   'insufficient credit', 'billing', 'payment required',
   'account suspended', 'quota exceeded',
@@ -14,6 +14,9 @@ const BILLING_ERROR_PATTERNS = [
   // S3 upload failures — every retry generates another paid image that gets lost
   's3 upload failed', 'accessdenied', 'nosuchbucket',
   'invalidsecurity', 'signaturedoesnotmatch', 'invalidaccesskeyid',
+  // TTS / Fish Audio — invalid key or no balance
+  'invalid api key', 'insufficient balance', 'invalid_api_key',
+  'unauthorized', 'api key is invalid',
 ];
 function isBillingError(message) {
   const lower = (message || '').toLowerCase();

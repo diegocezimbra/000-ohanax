@@ -89,7 +89,7 @@ export async function completeJob(jobId, result = {}) {
   return res.rows[0];
 }
 
-// Errors that should never be retried (billing, account, config, upload issues)
+// Errors that should never be retried (billing, account, config, upload, auth issues)
 const FATAL_ERROR_PATTERNS = [
   'insufficient credit',
   'billing',
@@ -106,6 +106,12 @@ const FATAL_ERROR_PATTERNS = [
   'invalidsecurity',
   'signaturedoesnotmatch',
   'invalidaccesskeyid',
+  // TTS / Fish Audio failures — invalid key or no balance
+  'invalid api key',
+  'insufficient balance',
+  'invalid_api_key',
+  'unauthorized',
+  'api key is invalid',
 ];
 
 function isFatalError(message) {
@@ -162,6 +168,8 @@ export async function failJob(jobId, error) {
       displayError = `CONFIG: Credenciais AWS S3 não configuradas. Configure YT_S3_ACCESS_KEY e YT_S3_SECRET_KEY no App Runner.`;
     } else if (errorMsg.toLowerCase().includes('s3 upload failed') || errorMsg.toLowerCase().includes('accessdenied') || errorMsg.toLowerCase().includes('nosuchbucket')) {
       displayError = `UPLOAD: Falha ao salvar imagem no S3. Verifique permissões do bucket e credenciais AWS. A imagem gerada (já paga) foi perdida.`;
+    } else if (errorMsg.toLowerCase().includes('invalid api key') || errorMsg.toLowerCase().includes('fish audio')) {
+      displayError = `TTS: API key do Fish Audio inválida ou sem saldo. Verifique FISH_AUDIO_API_KEY nas configurações do projeto.`;
     }
     await db.analytics.query(`
       UPDATE yt_topics
