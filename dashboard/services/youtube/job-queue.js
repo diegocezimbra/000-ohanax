@@ -135,10 +135,13 @@ export async function failJob(jobId, error) {
   const errorStack = error?.stack || '';
 
   // Billing/credit errors: skip retry, fail immediately
-  const canRetry = attempt < max_attempts && !isFatalError(errorMsg);
+  // Throttle/rate-limit: always retry with longer backoff
+  const isThrottle = errorMsg.toLowerCase().includes('throttled') || errorMsg.toLowerCase().includes('rate limit');
+  const canRetry = (attempt < max_attempts && !isFatalError(errorMsg)) || isThrottle;
 
   if (canRetry) {
-    const backoffSeconds = 30 * Math.pow(2, attempt - 1);
+    // Throttle errors get longer backoff (60s base) to let rate limit reset
+    const backoffSeconds = isThrottle ? 60 * attempt : 30 * Math.pow(2, attempt - 1);
     await db.analytics.query(`
       UPDATE yt_jobs
       SET status = 'pending',

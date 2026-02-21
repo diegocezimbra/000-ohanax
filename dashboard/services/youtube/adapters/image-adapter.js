@@ -4,7 +4,7 @@
  * Model: prunaai/z-image-turbo on Replicate.
  */
 
-const IMAGE_RETRY_LIMIT = 2;
+const IMAGE_RETRY_LIMIT = 5;
 const IMAGE_RETRY_DELAY_MS = 10000;
 
 // Billing/credit errors that should NEVER be retried (they won't resolve on their own)
@@ -53,14 +53,15 @@ export async function generateImage({
         console.error(`[ImageAdapter] BILLING ERROR (no retry): ${err.message}`);
         throw err;
       }
-      const isRetryable = err.message.includes('timed out') || err.message.includes('504')
-        || err.message.includes('502') || err.message.includes('503')
-        || err.message.includes('throttled') || err.message.includes('rate limit');
-      if (attempt === IMAGE_RETRY_LIMIT || !isRetryable) throw err;
-      // Longer delay for rate-limit errors (wait for window to reset)
       const isRateLimit = err.message.includes('throttled') || err.message.includes('rate limit');
-      const delay = isRateLimit ? 30000 * attempt : IMAGE_RETRY_DELAY_MS * attempt;
-      console.warn(`[ImageAdapter] Attempt ${attempt} failed: ${err.message}. Retrying in ${delay}ms...`);
+      const isRetryable = isRateLimit || err.message.includes('timed out') || err.message.includes('504')
+        || err.message.includes('502') || err.message.includes('503');
+      if (attempt === IMAGE_RETRY_LIMIT || !isRetryable) throw err;
+      // Rate-limit: wait longer, extract reset time from error if possible
+      const resetMatch = err.message.match(/resets? in ~?(\d+)s/i);
+      const resetSeconds = resetMatch ? parseInt(resetMatch[1], 10) + 2 : null;
+      const delay = isRateLimit ? (resetSeconds ? resetSeconds * 1000 : 15000 * attempt) : IMAGE_RETRY_DELAY_MS * attempt;
+      console.warn(`[ImageAdapter] Attempt ${attempt}/${IMAGE_RETRY_LIMIT} failed: ${err.message}. Retrying in ${delay}ms...`);
       await new Promise(r => setTimeout(r, delay));
     }
   }

@@ -85,7 +85,7 @@ export async function loadPipeline(params) {
             renderKanban(data);
             initSortable();
         } catch { /* silent */ }
-    }, 60000);
+    }, 10000);
 }
 
 function renderStats(stats) {

@@ -254,22 +254,50 @@ async function loadVisuals() {
     p.innerHTML = '<div class="yt-spinner"></div>';
     try {
         const vis = await api.visuals.list(_pid, _tid);
-        const items = vis.segments || vis || [];
-        if (!items.length) {
+        const segments = vis.segments || vis || [];
+        if (!segments.length) {
             p.innerHTML = '<p style="color:var(--color-text-secondary);padding:16px;">Nenhum visual gerado.</p>';
             return;
         }
-        p.innerHTML = `<div class="yt-grid-3">${items.map(v => `
-            <div class="yt-card">
-                <div class="yt-card-body" style="text-align:center;">
-                    <div class="yt-img-placeholder" style="aspect-ratio:16/9;margin-bottom:8px;">
-                        <img src="${escapeHtml(v.url || v.image_url || '')}" alt="Seg ${v.segment_index ?? ''}"
-                             style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);"
-                             onerror="this.style.display='none'">
+        p.innerHTML = segments.map(seg => {
+            const assets = (seg.assets || []).filter(a => a.status === 'completed' && a.url);
+            const segIdx = seg.segmentIndex ?? seg.segment_index ?? '?';
+            const segType = seg.segmentType || seg.segment_type || '';
+            const typeColor = SEG_COLORS[segType] || 'info';
+            if (!assets.length) {
+                return `<div class="yt-card" style="margin-bottom:16px;">
+                    <div class="yt-card-header" style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-weight:600;">Segmento ${segIdx}</span>
+                        ${segType ? `<span class="yt-badge yt-badge-${typeColor}">${segType}</span>` : ''}
                     </div>
-                    <p style="font-size:var(--font-size-sm);color:var(--color-text-secondary);">Segmento ${v.segment_index ?? v.segmentIndex ?? '?'}</p>
+                    <div class="yt-card-body">
+                        <p style="color:var(--color-text-muted);font-size:var(--font-size-sm);">Nenhuma imagem gerada para este segmento.</p>
+                    </div>
+                </div>`;
+            }
+            return `<div class="yt-card" style="margin-bottom:16px;">
+                <div class="yt-card-header" style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-weight:600;">Segmento ${segIdx}</span>
+                    ${segType ? `<span class="yt-badge yt-badge-${typeColor}">${segType}</span>` : ''}
+                    <span style="color:var(--color-text-muted);font-size:var(--font-size-sm);">${assets.length} variante(s)</span>
                 </div>
-            </div>`).join('')}</div>`;
+                <div class="yt-card-body" style="padding:12px;">
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+                        ${assets.map(a => {
+                            const comp = a.metadata?.composition || '';
+                            const selected = a.isSelected ? 'border:2px solid var(--color-primary);' : 'border:2px solid transparent;';
+                            return `<div style="position:relative;${selected}border-radius:var(--radius-md);overflow:hidden;">
+                                <img src="${escapeHtml(a.url)}" alt="Seg ${segIdx} - ${comp}"
+                                     style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;"
+                                     loading="lazy"
+                                     onerror="this.parentElement.innerHTML='<div style=\\'aspect-ratio:16/9;background:var(--bg-tertiary);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:var(--font-size-sm);\\'>Erro ao carregar</div>'">
+                                ${comp ? `<div style="position:absolute;bottom:0;left:0;right:0;padding:4px 8px;background:rgba(0,0,0,0.7);color:#fff;font-size:11px;">${escapeHtml(comp)}${a.isSelected ? ' ✓' : ''}</div>` : ''}
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
     } catch {
         p.innerHTML = '<p style="color:var(--color-text-secondary);padding:16px;">Visuais nao disponiveis.</p>';
     }

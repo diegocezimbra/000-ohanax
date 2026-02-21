@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../../db.js';
 import { enqueueJob } from '../../services/youtube/job-queue.js';
+import { getPresignedUrl } from '../../services/youtube/s3.js';
 
 const router = Router({ mergeParams: true });
 
@@ -62,6 +63,21 @@ router.get('/', async (req, res) => {
     }
 
     const segments = Array.from(segmentMap.values());
+
+    // Generate presigned URLs for all completed assets with s3_key
+    await Promise.all(segments.map(seg =>
+      Promise.all(seg.assets.map(async (asset) => {
+        if (asset.s3Key && asset.status === 'completed') {
+          try {
+            asset.url = await getPresignedUrl(asset.s3Key, 3600);
+          } catch (e) {
+            console.error(`[Visuals] Presigned URL error for ${asset.s3Key}:`, e.message);
+            asset.url = null;
+          }
+        }
+      }))
+    ));
+
     res.json({ success: true, data: { segments, totalSegments: segments.length } });
   } catch (err) {
     console.error('[Visuals] Error fetching assets:', err.message);

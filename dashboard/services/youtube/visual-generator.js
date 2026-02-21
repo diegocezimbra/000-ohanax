@@ -413,8 +413,9 @@ async function generateMultipleImagesForSegment(artPrompt, topic, settings) {
     });
 
     // Rate-limit delay between variants to avoid Replicate throttling
+    // With <$5 credit: 6 req/min = 1 every 10s, add safety margin
     if (i < IMAGE_VARIANTS_PER_SEGMENT - 1) {
-      await new Promise(r => setTimeout(r, 10000));
+      await new Promise(r => setTimeout(r, 12000));
     }
   }
 

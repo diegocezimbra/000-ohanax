@@ -23,6 +23,7 @@ function isBillingError(message) {
   return BILLING_ERROR_PATTERNS.some(p => lower.includes(p));
 }
 let activeJobs = 0;
+let activeRateLimitedJobs = 0; // Track rate-limited jobs separately
 let pollTimer = null;
 let workerId = '';
 
@@ -38,13 +39,13 @@ export function registerHandler(jobType, handler) {
  */
 // Job types that use rate-limited external APIs (process one at a time with cooldown)
 const RATE_LIMITED_JOBS = new Set(['generate_visual_asset', 'generate_thumbnails']);
-const RATE_LIMIT_COOLDOWN_MS = 12000; // 12s cooldown between rate-limited jobs
+const RATE_LIMIT_COOLDOWN_MS = 15000; // 15s cooldown between rate-limited jobs
 
 export function start({ pollIntervalMs = 2000, maxConcurrent = 3 } = {}) {
   if (running) return;
   running = true;
   workerId = `worker-${os.hostname()}-${process.pid}-${Date.now()}`;
-  console.log(`[YouTube Worker] Starting ${workerId} (concurrency: ${maxConcurrent})`);
+  console.log(`[YouTube Worker] Starting ${workerId} (concurrency: ${maxConcurrent}, rate-limited: 1 at a time)`);
 
   // Recover stale jobs on startup
   resetStaleJobs(10).then(stale => {
@@ -91,8 +92,21 @@ async function poll(intervalMs, maxConcurrent) {
       if (activeJobs < maxConcurrent && hasHandlers()) {
         const job = await claimNextJob(workerId);
         if (job) {
+          // Rate-limited jobs (images/thumbnails): only 1 at a time
+          if (RATE_LIMITED_JOBS.has(job.job_type) && activeRateLimitedJobs > 0) {
+            // Put it back — release the claim by resetting to pending
+            await releaseJob(job.id);
+            await sleep(intervalMs);
+            continue;
+          }
+
           activeJobs++;
-          processJob(job).finally(() => { activeJobs--; });
+          if (RATE_LIMITED_JOBS.has(job.job_type)) activeRateLimitedJobs++;
+
+          processJob(job).finally(() => {
+            activeJobs--;
+            if (RATE_LIMITED_JOBS.has(job.job_type)) activeRateLimitedJobs--;
+          });
           continue; // Try to claim more immediately
         }
       }
@@ -101,6 +115,23 @@ async function poll(intervalMs, maxConcurrent) {
     }
 
     await sleep(intervalMs);
+  }
+}
+
+/**
+ * Release a claimed job back to pending (when we can't process it right now).
+ */
+async function releaseJob(jobId) {
+  try {
+    const { db } = await import('../../db.js');
+    await db.analytics.query(`
+      UPDATE yt_jobs
+      SET status = 'pending', locked_by = NULL, locked_at = NULL,
+          attempt = GREATEST(attempt - 1, 0), updated_at = NOW()
+      WHERE id = $1
+    `, [jobId]);
+  } catch (err) {
+    console.error('[YouTube Worker] Error releasing job:', err.message);
   }
 }
 
@@ -125,6 +156,7 @@ async function processJob(job) {
 
     // Cooldown after rate-limited jobs to avoid API throttling
     if (RATE_LIMITED_JOBS.has(job.job_type)) {
+      console.log(`[YouTube Worker] Rate-limit cooldown: waiting ${RATE_LIMIT_COOLDOWN_MS}ms before next image job`);
       await new Promise(r => setTimeout(r, RATE_LIMIT_COOLDOWN_MS));
     }
 
@@ -141,6 +173,14 @@ async function processJob(job) {
     console.error(`[YouTube Worker] Job ${job.job_type} failed (${durationMs}ms):`, err.message);
     await logJob(job.id, 'error', err.message, { stack: err.stack });
     await failJob(job.id, err);
+
+    // Cooldown after failed rate-limited jobs too (prevent hammering the API)
+    if (RATE_LIMITED_JOBS.has(job.job_type)) {
+      const isThrottle = err.message.includes('throttled') || err.message.includes('rate limit');
+      const cooldown = isThrottle ? 30000 : RATE_LIMIT_COOLDOWN_MS;
+      console.log(`[YouTube Worker] Rate-limit cooldown after failure: waiting ${cooldown}ms`);
+      await new Promise(r => setTimeout(r, cooldown));
+    }
 
     // On billing/credit errors: cancel all pending sibling jobs for this topic
     // to prevent hundreds of doomed retries
