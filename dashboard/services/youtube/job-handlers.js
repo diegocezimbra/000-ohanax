@@ -127,8 +127,13 @@ async function handleGenerateVisualPrompts(job) {
 
 async function handleGenerateVisualAsset(job) {
   const { topicId, assetId } = job.payload;
-  const asset = await generateVisualForSegment(topicId, assetId);
-  return { assetId: asset.id, assetType: asset.asset_type };
+  const assets = await generateVisualForSegment(topicId, assetId);
+  const first = Array.isArray(assets) ? assets[0] : assets;
+  return {
+    assetId: first?.id,
+    assetType: first?.asset_type,
+    assetCount: Array.isArray(assets) ? assets.length : 1,
+  };
 }
 
 async function handleGenerateThumbnails(job) {

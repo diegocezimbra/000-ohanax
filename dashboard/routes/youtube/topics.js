@@ -249,7 +249,7 @@ router.post('/:topicId/reprocess', async (req, res) => {
 router.post('/:topicId/restart-from', async (req, res) => {
   try {
     const { projectId, topicId } = req.params;
-    const { stage } = req.body;
+    const { stage, force } = req.body;
     if (!stage || !VALID_RESTART_STAGES.includes(stage)) {
       return res.status(400).json({ success: false, error: `Invalid stage. Valid: ${VALID_RESTART_STAGES.join(', ')}` });
     }
@@ -260,6 +260,29 @@ router.post('/:topicId/restart-from', async (req, res) => {
     if (topicCheck.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Topic not found' });
     }
+
+    // Validate prerequisites for stages that depend on complete visuals
+    const NEEDS_VISUALS = ['generate_thumbnails', 'generate_narration', 'assemble_video'];
+    if (!force && NEEDS_VISUALS.includes(stage)) {
+      const visualCheck = await db.analytics.query(`
+        SELECT
+          COUNT(DISTINCT ss.id) as total_segments,
+          COUNT(DISTINCT CASE WHEN va.id IS NOT NULL THEN ss.id END) as segments_with_visuals
+        FROM yt_script_segments ss
+        JOIN yt_scripts s ON ss.script_id = s.id
+        LEFT JOIN yt_visual_assets va ON va.segment_id = ss.id
+        WHERE s.topic_id = $1
+      `, [topicId]);
+      const total = parseInt(visualCheck.rows[0].total_segments);
+      const done = parseInt(visualCheck.rows[0].segments_with_visuals);
+      if (total > 0 && done < total) {
+        return res.status(400).json({
+          success: false,
+          error: `Cannot restart from ${stage}: ${total - done}/${total} segments missing visuals. Use "generate_visual_prompts" or pass force: true.`
+        });
+      }
+    }
+
     restartPipelineFromStage(projectId, topicId, stage).catch(err => {
       console.error('[YouTube/Topics] Restart trigger failed:', err.message);
     });

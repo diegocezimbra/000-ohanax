@@ -13,7 +13,7 @@ import { uploadFile, downloadFile, buildKey, uniqueFilename } from './s3.js';
 import { getProjectSettings } from './settings-helper.js';
 import { execFile } from 'child_process';
 import { writeFile, readFile, unlink, mkdtemp, readdir, rmdir } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { tmpdir } from 'os';
 
 // --- Effect & Transition Definitions ---
@@ -55,6 +55,16 @@ export async function assembleVideo(topicId) {
   const tempDir = await mkdtemp(join(tmpdir(), 'yt-assembly-'));
 
   try {
+    // Validate ALL segments have visual assets before starting assembly
+    const missingVisuals = segmentsWithVisuals.filter(s => s.visuals.length === 0);
+    if (missingVisuals.length > 0) {
+      const missingIndexes = missingVisuals.map(s => s.segmentIndex).join(', ');
+      throw new Error(
+        `${missingVisuals.length} segment(s) have no visual assets (indexes: ${missingIndexes}). ` +
+        `Restart from generate_visual_prompts to regenerate.`
+      );
+    }
+
     const audioPath = await downloadAudioToTemp(narration, tempDir);
     const visualClips = await downloadAndGroupVisuals(segmentsWithVisuals, tempDir);
 
@@ -344,9 +354,13 @@ async function runFfmpegAssembly(audioPath, clips, outputPath, settings) {
 
   const filterGraph = filterParts.join(';\n');
 
+  // Write filter graph to file to avoid ARG_MAX limits with many clips
+  const filterPath = join(dirname(outputPath), 'filters.txt');
+  await writeFile(filterPath, filterGraph);
+
   const args = [
     ...inputs,
-    '-filter_complex', filterGraph,
+    '-filter_complex_script', filterPath,
     '-map', '[vfinal]',
     '-map', '0:a',
     '-c:v', 'libx264',

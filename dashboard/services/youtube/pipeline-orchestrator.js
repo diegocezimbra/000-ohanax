@@ -310,7 +310,7 @@ async function checkAllVisualsComplete(topicId) {
   const result = await db.analytics.query(`
     SELECT
       COUNT(DISTINCT ss.id) as total_segments,
-      COUNT(DISTINCT CASE WHEN va.status = 'completed' THEN ss.id END) as segments_with_visuals
+      COUNT(DISTINCT CASE WHEN va.id IS NOT NULL THEN ss.id END) as segments_with_visuals
     FROM yt_script_segments ss
     JOIN yt_scripts s ON ss.script_id = s.id
     LEFT JOIN yt_visual_assets va ON va.segment_id = ss.id
@@ -319,7 +319,34 @@ async function checkAllVisualsComplete(topicId) {
   const { total_segments, segments_with_visuals } = result.rows[0];
   const total = parseInt(total_segments);
   const done = parseInt(segments_with_visuals);
-  return total > 0 && done === total;
+
+  if (total > 0 && done === total) return true;
+
+  // Check if any sibling visual jobs permanently failed (exhausted retries)
+  const failedJobs = await db.analytics.query(`
+    SELECT COUNT(*) as failed_count
+    FROM yt_jobs
+    WHERE topic_id = $1
+      AND job_type = 'generate_visual_asset'
+      AND status = 'failed'
+  `, [topicId]);
+
+  const failedCount = parseInt(failedJobs.rows[0].failed_count);
+  if (failedCount > 0) {
+    // Some jobs permanently failed — mark topic as error instead of waiting forever
+    console.error(`[Pipeline] Topic ${topicId}: ${done}/${total} segments have visuals, ${failedCount} visual jobs failed permanently`);
+    await db.analytics.query(`
+      UPDATE yt_topics
+      SET pipeline_stage = 'error',
+          pipeline_error = $2,
+          updated_at = NOW()
+      WHERE id = $1
+    `, [topicId, `${done}/${total} segmentos com imagens geradas. ${failedCount} job(s) de geração falharam. Reprocesse a partir de "generate_visual_prompts".`]);
+    return false;
+  }
+
+  // Still waiting for pending/processing sibling jobs
+  return false;
 }
 
 async function createPublicationEntry(job) {
