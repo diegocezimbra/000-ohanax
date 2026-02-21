@@ -17,7 +17,20 @@ router.get('/', async (req, res) => {
     if (!result.rows[0]) {
       return res.json({ success: true, data: null, message: 'No narration generated yet' });
     }
-    res.json({ success: true, data: result.rows[0] });
+
+    const narration = result.rows[0];
+
+    // Generate presigned URL for audio playback
+    if (narration.s3_key) {
+      try {
+        narration.audioUrl = await getPresignedUrl(narration.s3_key, 3600);
+      } catch (e) {
+        console.error(`[Narrations] Presigned URL error for ${narration.s3_key}:`, e.message);
+        narration.audioUrl = null;
+      }
+    }
+
+    res.json({ success: true, data: narration });
   } catch (err) {
     console.error('[Narrations] Error fetching narration:', err.message);
     res.status(500).json({ success: false, error: err.message });

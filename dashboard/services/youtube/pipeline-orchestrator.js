@@ -280,9 +280,27 @@ function getTimezoneOffsetMs(timezone) {
 
 // --- Internal helpers ---
 
+// Ordered pipeline stages — used to prevent regression
+const STAGE_ORDER = [
+  'idea', 'topics_generated', 'story_created', 'script_created',
+  'visuals_creating', 'visuals_created', 'thumbnails_created',
+  'narration_created', 'video_assembled', 'queued_for_publishing', 'published',
+];
+
 async function updateTopicStage(topicId, stage) {
+  // Only advance — never regress the pipeline stage
+  const current = await db.analytics.query(
+    'SELECT pipeline_stage FROM yt_topics WHERE id = $1', [topicId]
+  );
+  if (current.rows[0]) {
+    const currentIdx = STAGE_ORDER.indexOf(current.rows[0].pipeline_stage);
+    const newIdx = STAGE_ORDER.indexOf(stage);
+    if (currentIdx >= 0 && newIdx >= 0 && newIdx <= currentIdx) {
+      return; // Already at or past this stage — skip
+    }
+  }
   await db.analytics.query(
-    'UPDATE yt_topics SET pipeline_stage = $2, updated_at = NOW() WHERE id = $1',
+    'UPDATE yt_topics SET pipeline_stage = $2, pipeline_error = NULL, updated_at = NOW() WHERE id = $1',
     [topicId, stage]
   );
 }

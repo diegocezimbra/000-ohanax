@@ -309,12 +309,13 @@ async function loadNarration() {
     p.innerHTML = '<div class="yt-spinner"></div>';
     try {
         const n = await api.narration.get(_pid, _tid);
-        const url = n.audio_url || n.audioUrl || '';
+        const url = n.audioUrl || n.audio_url || '';
+        const dur = n.duration_seconds || n.duration || 0;
         p.innerHTML = `
         <div class="yt-card">
             <div class="yt-card-body">
                 ${url ? `<audio controls style="width:100%;margin-bottom:12px;"><source src="${escapeHtml(url)}" type="audio/mpeg"></audio>` : '<p style="color:var(--color-text-secondary);">Audio nao disponivel</p>'}
-                <p style="color:var(--color-text-secondary);">Duracao: ${formatDuration(n.duration || 0)}</p>
+                <p style="color:var(--color-text-secondary);">Duracao: ${formatDuration(dur)}</p>
                 <button class="yt-btn yt-btn-sm yt-btn-primary" id="nr-regen" style="margin-top:12px;">Regenerar</button>
             </div>
         </div>`;
