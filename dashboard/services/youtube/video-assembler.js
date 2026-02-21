@@ -44,8 +44,8 @@ const FPS = 25;
 const OUTPUT_WIDTH = 1920;
 const OUTPUT_HEIGHT = 1080;
 
-// Max clips per chunk — keeps RAM under ~800MB per FFmpeg process
-const MAX_CLIPS_PER_CHUNK = 10;
+// Max clips per chunk — keeps RAM under ~500MB per FFmpeg process (2GB container)
+const MAX_CLIPS_PER_CHUNK = 6;
 
 /**
  * Assemble final video from visual assets + narration audio.
@@ -259,9 +259,12 @@ function buildKenBurnsFilter(inputLabel, outputLabel, effect, durationSeconds) {
   const totalFrames = Math.round(durationSeconds * FPS);
   const zoomExpr = `'${effect.startZoom}+(${effect.endZoom}-${effect.startZoom})*on/${totalFrames}'`;
 
+  // Use output resolution directly for zoompan — no upscale.
+  // Images are 1920x1088 (already close to output), zoompan handles crop internally.
+  // The max zoom is 1.12x so slight edge softness is acceptable to save massive RAM.
   return [
     `[${inputLabel}]`,
-    `scale=2560:1440,`,
+    `scale=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT},`,
     `zoompan=`,
     `z=${zoomExpr}:`,
     `x='${effect.xExpr}':`,
