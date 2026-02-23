@@ -213,8 +213,11 @@ export async function runPublishingCron() {
      LIMIT 3`,
   );
 
+  console.log(`[Publisher] Cron tick: ${due.length} publications due`);
+
   for (const pub of due) {
     try {
+      console.log(`[Publisher] Publishing ${pub.id}...`);
       await publishToYouTube(pub.id);
       console.log(`[Publisher] Published: ${pub.id}`);
     } catch (err) {

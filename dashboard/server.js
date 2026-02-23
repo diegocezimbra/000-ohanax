@@ -227,6 +227,10 @@ app.listen(PORT, () => {
   console.log('YouTube pipeline worker started');
 
   // Publishing cron: check every 30 minutes for due publications
+  // Run once immediately on startup, then every 30 min
+  runPublishingCron().catch(err =>
+    console.error('Publishing cron initial run error:', err.message)
+  );
   setInterval(() => runPublishingCron().catch(err =>
     console.error('Publishing cron error:', err.message)
   ), 30 * 60 * 1000);

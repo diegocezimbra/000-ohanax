@@ -238,14 +238,15 @@ async function downloadAndGroupVisuals(segments, tempDir) {
 
 /**
  * Render a single image into an MP4 clip (static frame, no animation).
- * Simple and fast: scale+pad to 1920x1080, encode N frames.
+ *
+ * Uses -framerate 1/{duration} to decode the image ONCE, then -r {FPS} to
+ * duplicate frames. This avoids re-decoding webp/png every frame.
+ * Preset ultrafast + CRF 28 keeps encoding fast on low-CPU containers.
  */
 async function renderSingleClip(clip, outputPath) {
   if (clip.type === 'video') {
     return renderVideoClip(clip, outputPath);
   }
-
-  const totalFrames = Math.round(clip.duration * FPS);
 
   const filterGraph = [
     `[0:v]`,
@@ -257,13 +258,14 @@ async function renderSingleClip(clip, outputPath) {
 
   const args = [
     '-loop', '1',
+    '-framerate', '1',
+    '-t', String(clip.duration),
     '-i', clip.path,
     '-filter_complex', filterGraph,
     '-map', '[vout]',
-    '-frames:v', String(totalFrames),
     '-c:v', 'libx264',
-    '-preset', 'fast',
-    '-crf', '23',
+    '-preset', 'ultrafast',
+    '-crf', '28',
     '-profile:v', 'high',
     '-pix_fmt', 'yuv420p',
     '-r', String(FPS),
@@ -272,7 +274,7 @@ async function renderSingleClip(clip, outputPath) {
     outputPath,
   ];
 
-  return runFfmpeg(args, 120000); // 2 min timeout per clip
+  return runFfmpeg(args, 600000); // 10 min timeout per clip
 }
 
 /**
@@ -295,8 +297,8 @@ async function renderVideoClip(clip, outputPath) {
     '-filter_complex', filterGraph,
     '-map', '[vout]',
     '-c:v', 'libx264',
-    '-preset', 'fast',
-    '-crf', '23',
+    '-preset', 'ultrafast',
+    '-crf', '28',
     '-profile:v', 'high',
     '-pix_fmt', 'yuv420p',
     '-an',
@@ -304,7 +306,7 @@ async function renderVideoClip(clip, outputPath) {
     outputPath,
   ];
 
-  return runFfmpeg(args, 120000);
+  return runFfmpeg(args, 600000);
 }
 
 // --- Concatenation ---
@@ -329,7 +331,7 @@ async function concatenateClips(clipPaths, outputPath, tempDir) {
     outputPath,
   ];
 
-  return runFfmpeg(args, 300000); // 5 min timeout for concat
+  return runFfmpeg(args, 600000); // 10 min timeout for concat
 }
 
 // --- BGM Selection ---
