@@ -245,7 +245,8 @@ async function downloadAndGroupVisuals(segments, tempDir) {
  * Render a single image into an MP4 clip with slow zoom-in effect.
  *
  * Zoom: linear 1.0 → 1.05 across all frames, centered.
- * Uses zoompan at native 1920x1080 with trunc() on x/y to prevent sub-pixel flicker.
+ * Zoompan runs at 960x540 (quarter pixels) for speed, then scales up to 1080p.
+ * trunc() on x/y prevents sub-pixel flicker.
  */
 async function renderSingleClip(clip, outputPath) {
   if (clip.type === 'video') {
@@ -254,26 +255,25 @@ async function renderSingleClip(clip, outputPath) {
 
   const totalFrames = Math.round(clip.duration * FPS);
 
+  // Zoompan at half-res for 4x speed boost (960x540 → upscale to 1920x1080)
+  const zpW = 960;
+  const zpH = 540;
+
   // Zoompan zoom expression: linear interpolation from ZOOM_START to ZOOM_END
-  // z = start + (end - start) * (on / totalFrames)
-  // on = current frame number (0-based) within zoompan
   const zExpr = `${ZOOM_START}+(${ZOOM_END}-${ZOOM_START})*on/${totalFrames}`;
 
-  // Keep zoom centered: x = (iw - iw/zoom)/2, y = (ih - ih/zoom)/2
-  // trunc() ensures integer pixel positions — no sub-pixel jitter
+  // Keep zoom centered with integer pixel positions
   const xExpr = `trunc((iw-iw/zoom)/2)`;
   const yExpr = `trunc((ih-ih/zoom)/2)`;
 
-  // Pipeline:
-  // 1. Scale source image to output resolution (1920x1080)
-  // 2. zoompan with slow zoom-in, centered
-  // No upscale — keeps file sizes small and avoids >2GB errors
+  // Pipeline: scale to 960x540 → zoompan → upscale to 1920x1080
   const filterGraph = [
     `[0:v]`,
-    `scale=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT}:force_original_aspect_ratio=decrease,`,
-    `pad=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT}:(ow-iw)/2:(oh-ih)/2:black,`,
+    `scale=${zpW}:${zpH}:force_original_aspect_ratio=decrease,`,
+    `pad=${zpW}:${zpH}:(ow-iw)/2:(oh-ih)/2:black,`,
     `setsar=1,`,
-    `zoompan=z='${zExpr}':x='${xExpr}':y='${yExpr}':d=${totalFrames}:s=${OUTPUT_WIDTH}x${OUTPUT_HEIGHT}:fps=${FPS},`,
+    `zoompan=z='${zExpr}':x='${xExpr}':y='${yExpr}':d=${totalFrames}:s=${zpW}x${zpH}:fps=${FPS},`,
+    `scale=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT}:flags=lanczos,`,
     `setsar=1`,
     `[vout]`,
   ].join('');
