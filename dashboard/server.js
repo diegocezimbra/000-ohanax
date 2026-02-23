@@ -204,15 +204,9 @@ app.use('/api', overviewRoutes);
 // WEBSITE ESTATICO (RAIZ)
 // =============================================================================
 
-// Serve arquivos estaticos do site principal
-app.use(express.static(__dirname, {
-  index: 'index.html',
-  extensions: ['html']
-}));
-
-// Fallback para o site principal
+// Redirect root to dashboard
 app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, 'index.html'));
+  res.redirect(SECRET_ROUTE);
 });
 
 app.listen(PORT, () => {

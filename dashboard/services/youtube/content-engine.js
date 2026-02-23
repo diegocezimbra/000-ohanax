@@ -71,13 +71,13 @@ export async function getEngineStatus(projectId) {
       AND is_deleted = false
   `, [projectId]);
 
-  // Count active pipeline items
+  // Count topics actively being processed (have pending/processing jobs)
   const activeResult = await pool.query(`
-    SELECT COUNT(*) AS count
-    FROM yt_topics
-    WHERE project_id = $1
-      AND pipeline_stage NOT IN ('published', 'error', 'discarded', 'rejected', 'idea')
-      AND is_deleted = false
+    SELECT COUNT(DISTINCT t.id) AS count
+    FROM yt_topics t
+    INNER JOIN yt_jobs j ON j.topic_id = t.id AND j.status IN ('pending', 'processing')
+    WHERE t.project_id = $1
+      AND t.is_deleted = false
   `, [projectId]);
 
   // Get project paused state
@@ -156,7 +156,33 @@ export async function triggerEngine(projectId) {
     return { triggered: false, reason: `Pipeline busy (${status.active_pipeline} topic(s) in progress). Waiting for completion before starting new.` };
   }
 
-  // Get processed sources from the pool
+  // PRIORITY 1: Advance existing topics stuck at 'topics_generated' before creating new ones.
+  // These already have richness scores — just need to enter the pipeline.
+  const minRichness = status.min_richness_score || ENGINE_DEFAULTS.min_richness_score;
+  const stuckTopics = await pool.query(`
+    SELECT id, title, richness_score
+    FROM yt_topics
+    WHERE project_id = $1
+      AND pipeline_stage = 'topics_generated'
+      AND is_deleted = false
+      AND richness_score >= $2
+    ORDER BY richness_score DESC, created_at ASC
+    LIMIT 1
+  `, [projectId, minRichness]);
+
+  if (stuckTopics.rows.length > 0) {
+    const topic = stuckTopics.rows[0];
+    console.log(`[ContentEngine] Advancing stuck topic ${topic.id}: "${topic.title}" (richness: ${topic.richness_score})`);
+    await triggerPipelineFromTopic(projectId, topic.id, 'generate_story');
+    return {
+      triggered: true,
+      generated: 1,
+      topics: [{ topicId: topic.id, title: topic.title, richness: topic.richness_score, source: 'existing' }],
+      buffer_status: `${status.buffer_current + 1}/${status.buffer_target}`,
+    };
+  }
+
+  // PRIORITY 2: Generate new topics from processed sources
   const sourcesResult = await pool.query(`
     SELECT id, processed_content
     FROM yt_content_sources
@@ -168,34 +194,25 @@ export async function triggerEngine(projectId) {
   `, [projectId]);
 
   if (sourcesResult.rows.length === 0) {
-    return { triggered: false, reason: 'No processed sources in pool' };
+    return { triggered: false, reason: 'No processed sources and no stuck topics to advance' };
   }
 
-  // Generate exactly 1 topic per trigger.
-  // The engine runs periodically and will generate more on the next cycle.
-  // This ensures each topic completes its full pipeline before starting another,
-  // preventing wasted API credits on parallel failures.
-  const needed = 1;
-
-  const minRichness = status.min_richness_score || ENGINE_DEFAULTS.min_richness_score;
   const generated = [];
 
-  // Pick sources and generate topics
-  for (let i = 0; i < needed && i < sourcesResult.rows.length; i++) {
+  // Generate exactly 1 topic per trigger — one at a time for cost safety
+  for (let i = 0; i < 1 && i < sourcesResult.rows.length; i++) {
     const source = sourcesResult.rows[i];
     try {
       const topics = await generateTopicsFromSource(projectId, source.id);
-      // Pick best topic that meets minimum richness score
       const qualifiedTopics = topics
         .filter(t => (t.richness_score || 0) >= minRichness)
         .sort((a, b) => (b.richness_score || 0) - (a.richness_score || 0));
 
-      // Only pick the SINGLE best topic — never start multiple pipelines at once
       const bestTopic = qualifiedTopics[0];
       if (bestTopic) {
         await triggerPipelineFromTopic(projectId, bestTopic.id, 'generate_story');
         generated.push({ topicId: bestTopic.id, title: bestTopic.title, richness: bestTopic.richness_score });
-        break; // Stop after first successful topic — one at a time
+        break;
       } else {
         console.log(`[ContentEngine] Source ${source.id}: No topics met min richness score ${minRichness}`);
       }

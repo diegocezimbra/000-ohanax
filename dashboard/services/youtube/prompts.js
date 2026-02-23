@@ -627,8 +627,7 @@ Use this as a structural guide, replacing placeholders with topic-specific conte
   5. CONTENT SUMMARY: 2-3 sentences with secondary keywords
   6. BLANK LINE
   7. 3 HASHTAGS: #PrimaryKeyword #SecondaryKeyword #BroadCategory
-  8. BLANK LINE
-  9. AI DISCLOSURE: "Este video foi criado com auxilio de ferramentas de IA."
+  8. END
 
 - 800-1500 characters total. Main keyword 2-3 times naturally.
 

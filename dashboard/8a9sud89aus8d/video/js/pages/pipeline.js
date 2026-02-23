@@ -8,6 +8,8 @@ let EXTRA_STAGES = [];
 let _projectId = null;
 let _selectedIds = new Set();
 let _configLoaded = false;
+let _nextRunIso = null;
+let _countdownInterval = null;
 
 // Stage dot colors (matches badge.js STAGE_CONFIG)
 const STAGE_COLORS = {
@@ -125,6 +127,13 @@ function renderStats(stats) {
     btn.className = paused ? 'yt-btn yt-btn-primary' : 'yt-btn yt-btn-primary';
 }
 
+function updateCountdown(el) {
+    if (!_nextRunIso || !el) return;
+    const diff = new Date(_nextRunIso).getTime() - Date.now();
+    const mins = Math.max(0, Math.floor(diff / 60000));
+    el.textContent = mins > 0 ? `em ${mins}min` : 'agora';
+}
+
 function renderEngineStatus(status) {
     if (!status) return;
     const bufferEl = document.getElementById('pipe-buffer-text');
@@ -141,14 +150,13 @@ function renderEngineStatus(status) {
     if (bufferEl) bufferEl.textContent = `${bufCur}/${bufTarget}`;
     if (bufferBar) bufferBar.style.width = `${Math.min((bufCur / bufTarget) * 100, 100)}%`;
     if (genEl) genEl.textContent = `${genToday}/${maxGen}`;
-    if (nextEl) {
-        if (nextRun) {
-            const diff = new Date(nextRun).getTime() - Date.now();
-            const mins = Math.max(0, Math.floor(diff / 60000));
-            nextEl.textContent = mins > 0 ? `em ${mins}min` : 'agora';
-        } else {
-            nextEl.textContent = '--';
-        }
+    _nextRunIso = nextRun;
+    if (_countdownInterval) clearInterval(_countdownInterval);
+    if (nextEl && nextRun) {
+        updateCountdown(nextEl);
+        _countdownInterval = setInterval(() => updateCountdown(nextEl), 30000);
+    } else if (nextEl) {
+        nextEl.textContent = '--';
     }
 
     // Update engine status badge from engine API too

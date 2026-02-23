@@ -372,9 +372,12 @@ async function createPublicationEntry(job) {
       project_id, topic_id, video_id,
       youtube_title, youtube_description, youtube_tags, status
     ) VALUES ($1, $2, $3, $4, $5, $6, 'pending_review')
+    ON CONFLICT ON CONSTRAINT uq_yt_pubs_topic DO UPDATE
+    SET video_id = $3, youtube_title = $4, youtube_description = $5,
+        youtube_tags = $6, status = 'pending_review'
   `, [
     job.project_id, job.topic_id, video.rows[0].id,
     scriptData.youtube_title, scriptData.youtube_description,
-    scriptData.youtube_tags,
+    JSON.stringify(scriptData.youtube_tags || []),
   ]);
 }

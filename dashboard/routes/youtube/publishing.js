@@ -125,31 +125,39 @@ router.get('/:pubId', async (req, res) => {
 
 // POST /:pubId/approve - Approve for scheduling
 router.post('/:pubId/approve', async (req, res) => {
+  const client = await db.analytics.connect();
   try {
     const projectId = getProjectId(req);
     const { pubId } = req.params;
-    const pub = await db.analytics.query(
+    const pub = await client.query(
       'SELECT id, status, topic_id FROM yt_publications WHERE id = $1', [pubId]
     );
     if (!pub.rows[0]) {
+      client.release();
       return res.status(404).json({ success: false, error: 'Publication not found' });
     }
     if (pub.rows[0].status !== 'pending_review') {
+      client.release();
       return res.status(400).json({ success: false, error: `Cannot approve status '${pub.rows[0].status}'` });
     }
     const scheduledAt = await calculateNextPublishSlot(projectId);
-    await db.analytics.query(
+    await client.query('BEGIN');
+    await client.query(
       `UPDATE yt_publications SET status = 'approved', scheduled_for = $2, updated_at = NOW() WHERE id = $1`,
       [pubId, scheduledAt]
     );
-    await db.analytics.query(
+    await client.query(
       `UPDATE yt_topics SET pipeline_stage = 'scheduled', updated_at = NOW() WHERE id = $1`,
       [pub.rows[0].topic_id]
     );
+    await client.query('COMMIT');
     res.json({ success: true, data: { pubId, scheduledAt } });
   } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
     console.error('[Publishing] Error approving publication:', err.message);
     res.status(500).json({ success: false, error: err.message });
+  } finally {
+    client.release();
   }
 });
 

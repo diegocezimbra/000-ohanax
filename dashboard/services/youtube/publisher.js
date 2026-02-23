@@ -137,12 +137,7 @@ export async function publishToYouTube(publicationId) {
     tags = typeof pub.youtube_tags === 'string' ? JSON.parse(pub.youtube_tags) : pub.youtube_tags;
   } catch { tags = []; }
 
-  // AI disclosure required by YouTube policy (March 2024) to maintain YPP eligibility
-  const aiDisclosure = '\n\n---\nEste vídeo foi produzido com auxílio de ferramentas de inteligência artificial para geração de roteiro, narração e elementos visuais. Todo o conteúdo foi revisado e curado por humanos.';
   let description = pub.youtube_description || '';
-  if (!description.includes('auxílio de ferramentas de inteligência artificial')) {
-    description += aiDisclosure;
-  }
 
   // Upload to YouTube
   const result = await uploadVideo({

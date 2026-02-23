@@ -352,6 +352,18 @@ export async function initYouTubeTables() {
       ALTER TABLE yt_project_settings ADD COLUMN IF NOT EXISTS fish_audio_api_key TEXT;
       ALTER TABLE yt_project_settings ALTER COLUMN tts_provider SET DEFAULT 'fish';
       ALTER TABLE yt_project_settings ALTER COLUMN tts_model SET DEFAULT 's1';
+      ALTER TABLE yt_narrations ADD COLUMN IF NOT EXISTS srt_s3_key TEXT;
+      ALTER TABLE yt_final_videos ADD COLUMN IF NOT EXISTS bgm_track VARCHAR(200);
+
+      -- Fix pipeline_stage CHECK constraint (add 'scheduled' and 'rejected' if missing)
+      ALTER TABLE yt_topics DROP CONSTRAINT IF EXISTS yt_topics_pipeline_stage_check;
+      ALTER TABLE yt_topics ADD CONSTRAINT yt_topics_pipeline_stage_check CHECK (pipeline_stage IN (
+        'idea','topics_generated','story_created','script_created',
+        'visuals_creating','visuals_created',
+        'thumbnails_created','narration_created',
+        'video_assembled','queued_for_publishing',
+        'scheduled','published','error','discarded','rejected'
+      ));
     `);
   } catch (err) {
     console.error('[YouTube] Error initializing tables:', err.message);

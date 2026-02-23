@@ -12,20 +12,21 @@ import { db } from '../../db.js';
 import { generateSpeech, transcribeWithTimestamps } from './adapters/tts-adapter.js';
 import { uploadFile, buildKey, uniqueFilename } from './s3.js';
 import { getProjectSettings } from './settings-helper.js';
+import { generateSubtitles } from './subtitle-generator.js';
 
 // --- Constants ---
 
-const SILENCE_BETWEEN_SEGMENTS_MS = 350; // 0.35 seconds
+const SILENCE_BETWEEN_SEGMENTS_MS = 600; // 0.6 seconds for dramatic pacing
 const WORDS_PER_MINUTE_FALLBACK = 150;
 const MP3_SAMPLE_RATE = 44100;
 const SEGMENT_SPEED_MODIFIERS = {
-  hook: 1.05,
-  intro: 1.0,
-  body: 1.0,
-  climax: 0.95,
-  twist: 0.95,
-  conclusion: 1.0,
-  outro: 1.0,
+  hook: 0.90,
+  intro: 0.95,
+  body: 0.95,
+  climax: 0.85,
+  twist: 0.85,
+  conclusion: 0.90,
+  outro: 0.95,
 };
 
 /**
@@ -137,6 +138,16 @@ export async function generateNarration(topicId) {
     [topicId],
   );
 
+  // Generate SRT subtitles (non-critical — don't block pipeline on failure)
+  if (alignment?.words?.length) {
+    try {
+      const srt = await generateSubtitles(topicId);
+      console.log(`[NarrationGenerator] SRT generated: ${srt.cueCount} cues`);
+    } catch (err) {
+      console.error('[NarrationGenerator] SRT generation failed (non-critical):', err.message);
+    }
+  }
+
   return rows[0];
 }
 
@@ -229,9 +240,26 @@ function preprocessNarrationText(text, segmentType) {
 
   let processed = text;
 
-  // Add ellipsis before dramatic reveals (pattern interrupt markers)
-  // Patterns: "Mas", "No entanto", "Porém", "Acontece que", "A verdade é que"
-  const dramaticPatterns = [
+  // Add LONG pauses before dramatic reveals (English patterns)
+  const dramaticPatternsEN = [
+    /(?<=[.!?])\s+(But\b)/g,
+    /(?<=[.!?])\s+(However\b)/g,
+    /(?<=[.!?])\s+(Yet\b)/g,
+    /(?<=[.!?])\s+(The truth\b)/gi,
+    /(?<=[.!?])\s+(And then\b)/g,
+    /(?<=[.!?])\s+(Suddenly\b)/g,
+    /(?<=[.!?])\s+(What no one\b)/g,
+    /(?<=[.!?])\s+(Except\b)/g,
+    /(?<=[.!?])\s+(Until\b)/g,
+    /(?<=[.!?])\s+(Because\b)/g,
+    /(?<=[.!?])\s+(That's when\b)/g,
+    /(?<=[.!?])\s+(Nobody\b)/g,
+    /(?<=[.!?])\s+(Everything\b)/g,
+    /(?<=[.!?])\s+(Nothing\b)/g,
+  ];
+
+  // Portuguese patterns
+  const dramaticPatternsPT = [
     /(?<=[.!?])\s+(Mas\b)/g,
     /(?<=[.!?])\s+(No entanto\b)/g,
     /(?<=[.!?])\s+(Porém\b)/g,
@@ -242,25 +270,29 @@ function preprocessNarrationText(text, segmentType) {
     /(?<=[.!?])\s+(O que ninguém\b)/g,
   ];
 
-  for (const pattern of dramaticPatterns) {
-    processed = processed.replace(pattern, '... $1');
+  const allPatterns = [...dramaticPatternsEN, ...dramaticPatternsPT];
+  for (const pattern of allPatterns) {
+    processed = processed.replace(pattern, '...... $1'); // 6 dots = longer pause
   }
 
-  // For climax/twist segments, add extra dramatic pauses
-  if (segmentType === 'climax' || segmentType === 'twist') {
-    // Add pause after exclamation marks
-    processed = processed.replace(/!\s+/g, '!... ');
+  // Add pause after ALL sentence-ending punctuation
+  processed = processed.replace(/\.\s+/g, '. ... ');
+  processed = processed.replace(/\?\s+/g, '? ...... ');
+  processed = processed.replace(/!\s+/g, '! ... ');
+
+  // For climax/twist/hook segments, add extra long pauses
+  if (segmentType === 'climax' || segmentType === 'twist' || segmentType === 'hook') {
     // Add pause before final sentence of the segment
     const sentences = processed.split(/(?<=[.!?])\s+/);
     if (sentences.length >= 3) {
-      sentences.splice(-1, 0, '...');
+      sentences.splice(-1, 0, '......');
       processed = sentences.join(' ');
     }
   }
 
-  // For hook segments, ensure it starts punchy (trim leading filler)
+  // For hook segments, trim leading filler words
   if (segmentType === 'hook') {
-    processed = processed.replace(/^(Então,?\s*|Bem,?\s*|Bom,?\s*)/i, '');
+    processed = processed.replace(/^(So,?\s*|Well,?\s*|Now,?\s*|Então,?\s*|Bem,?\s*|Bom,?\s*)/i, '');
   }
 
   return processed.trim();

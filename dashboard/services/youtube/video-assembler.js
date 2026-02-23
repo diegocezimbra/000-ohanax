@@ -2,7 +2,7 @@
  * Video Assembler - Assembles final video from visuals + narration using FFmpeg.
  *
  * Architecture: ONE clip at a time to minimize memory (< 200MB per FFmpeg process).
- * - Phase 1: Render each image individually into its own MP4 with Ken Burns effect
+ * - Phase 1: Render each image individually into its own MP4 with slow zoom-in
  * - Phase 2: Concatenate all clip MP4s using concat demuxer (zero-copy, no re-encode)
  * - Phase 3: Mux narration audio onto the final video
  *
@@ -14,26 +14,24 @@ import { uploadFile, downloadFile, buildKey, uniqueFilename } from './s3.js';
 import { getProjectSettings } from './settings-helper.js';
 import { execFile } from 'child_process';
 import { writeFile, readFile, unlink, mkdtemp, readdir, rmdir } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { tmpdir } from 'os';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const BGM_DIR = join(__dirname, '../../assets/bgm');
 
 // --- Effect Definitions ---
-
-const KEN_BURNS_EFFECTS = [
-  { name: 'zoom-in', startZoom: '1', endZoom: '1.12', xExpr: 'iw/2-(iw/zoom/2)', yExpr: 'ih/2-(ih/zoom/2)' },
-  { name: 'zoom-out', startZoom: '1.12', endZoom: '1', xExpr: 'iw/2-(iw/zoom/2)', yExpr: 'ih/2-(ih/zoom/2)' },
-  { name: 'pan-left', startZoom: '1.04', endZoom: '1.04', xExpr: '(iw-iw/zoom)*on/duration', yExpr: 'ih/2-(ih/zoom/2)' },
-  { name: 'pan-right', startZoom: '1.04', endZoom: '1.04', xExpr: '(iw-iw/zoom)*(1-on/duration)', yExpr: 'ih/2-(ih/zoom/2)' },
-  { name: 'diagonal', startZoom: '1.08', endZoom: '1.08', xExpr: '(iw-iw/zoom)*on/duration', yExpr: '(ih-ih/zoom)*on/duration' },
-];
+// Slow zoom-in (Ken Burns lite): 1.0→1.05 over the clip's full duration.
+// Uses zoompan with integer-truncated x/y to prevent sub-pixel flicker.
 
 const FPS = 25;
 const OUTPUT_WIDTH = 1920;
 const OUTPUT_HEIGHT = 1080;
-// Zoompan input must be larger than output for zoom to work.
-// 12% margin supports max zoom of 1.12x without massive RAM usage.
-const ZOOMPAN_WIDTH = 2150;
-const ZOOMPAN_HEIGHT = 1210;
+const ZOOM_START = 1.0;
+const ZOOM_END = 1.05; // 5% zoom over full clip — subtle, cinematic
+const ZOOMPAN_INPUT_W = 1920;  // zoompan pzs internally scaled
+const ZOOMPAN_INPUT_H = 1080;
 
 /**
  * Assemble final video from visual assets + narration audio.
@@ -90,10 +88,11 @@ export async function assembleVideo(topicId) {
     const concatPath = join(tempDir, 'concat_output.mp4');
     await concatenateClips(clipVideos, concatPath, tempDir);
 
-    // Phase 3: Mux audio
-    console.log(`[VideoAssembler] Muxing audio...`);
+    // Phase 3: Select random BGM + mux narration + BGM onto video
+    const bgm = await selectRandomBgm();
+    console.log(`[VideoAssembler] Muxing audio with BGM: ${bgm.name}`);
     const outputPath = join(tempDir, 'output.mp4');
-    await muxAudio(concatPath, audioPath, outputPath);
+    await muxAudioWithBgm(concatPath, audioPath, bgm.path, outputPath, settings);
 
     const videoBuffer = await readFile(outputPath);
     const s3Key = buildKey(topic.project_id, 'videos', uniqueFilename('mp4'));
@@ -106,12 +105,12 @@ export async function assembleVideo(topicId) {
     const fileSizeMb = Math.round(videoBuffer.length / (1024 * 1024) * 100) / 100;
 
     const { rows } = await pool.query(
-      `INSERT INTO yt_final_videos (topic_id, s3_key, duration_seconds, file_size_mb, resolution)
-       VALUES ($1, $2, $3, $4, '1920x1080')
+      `INSERT INTO yt_final_videos (topic_id, s3_key, duration_seconds, file_size_mb, resolution, bgm_track)
+       VALUES ($1, $2, $3, $4, '1920x1080', $5)
        ON CONFLICT (topic_id) DO UPDATE
-       SET s3_key = $2, duration_seconds = $3, file_size_mb = $4, updated_at = NOW()
+       SET s3_key = $2, duration_seconds = $3, file_size_mb = $4, bgm_track = $5, updated_at = NOW()
        RETURNING *`,
-      [topicId, s3Key, narration.duration_seconds, fileSizeMb],
+      [topicId, s3Key, narration.duration_seconds, fileSizeMb, bgm.name],
     );
 
     await pool.query(
@@ -244,54 +243,66 @@ async function downloadAndGroupVisuals(segments, tempDir) {
 
 // --- Single Clip Rendering ---
 
-function selectKenBurnsEffect(globalIndex) {
-  return KEN_BURNS_EFFECTS[globalIndex % KEN_BURNS_EFFECTS.length];
-}
-
 /**
- * Render a single image into an MP4 with Ken Burns effect.
- * Only 1 zoompan filter active = minimal memory (~100-150MB).
+ * Render a single image into an MP4 clip with slow zoom-in effect.
+ *
+ * Zoom: linear 1.0 → 1.05 across all frames, centered.
+ * Uses zoompan with trunc() on x/y to prevent sub-pixel flicker.
+ * Input image is first upscaled to 10x so zoompan has clean pixels to work with.
  */
 async function renderSingleClip(clip, outputPath) {
   if (clip.type === 'video') {
     return renderVideoClip(clip, outputPath);
   }
 
-  const effect = selectKenBurnsEffect(clip.globalIndex);
   const totalFrames = Math.round(clip.duration * FPS);
-  const zoomExpr = `${effect.startZoom}+(${effect.endZoom}-${effect.startZoom})*on/${totalFrames}`;
+
+  // Zoompan zoom expression: linear interpolation from ZOOM_START to ZOOM_END
+  // z = start + (end - start) * (on / totalFrames)
+  // on = current frame number (0-based) within zoompan
+  const zExpr = `${ZOOM_START}+(${ZOOM_END}-${ZOOM_START})*on/${totalFrames}`;
+
+  // Keep zoom centered: x = (iw - iw/zoom)/2, y = (ih - ih/zoom)/2
+  // trunc() ensures integer pixel positions — no sub-pixel jitter
+  const xExpr = `trunc((iw-iw/zoom)/2)`;
+  const yExpr = `trunc((ih-ih/zoom)/2)`;
+
+  // Pipeline:
+  // 1. Scale source image up to zoompan input size (10x internal for clean zoom)
+  // 2. zoompan with slow zoom-in, centered
+  // 3. scale output to exact 1920x1080
+  const zpW = ZOOMPAN_INPUT_W * 2;
+  const zpH = ZOOMPAN_INPUT_H * 2;
 
   const filterGraph = [
     `[0:v]`,
-    `scale=${ZOOMPAN_WIDTH}:${ZOOMPAN_HEIGHT},`,
-    `zoompan=`,
-    `z='${zoomExpr}':`,
-    `x='${effect.xExpr}':`,
-    `y='${effect.yExpr}':`,
-    `d=${totalFrames}:`,
-    `s=${OUTPUT_WIDTH}x${OUTPUT_HEIGHT}:`,
-    `fps=${FPS},`,
+    `scale=${zpW}:${zpH}:force_original_aspect_ratio=decrease,`,
+    `pad=${zpW}:${zpH}:(ow-iw)/2:(oh-ih)/2:black,`,
+    `setsar=1,`,
+    `zoompan=z='${zExpr}':x='${xExpr}':y='${yExpr}':d=${totalFrames}:s=${zpW}x${zpH}:fps=${FPS},`,
+    `scale=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT},`,
     `setsar=1`,
     `[vout]`,
   ].join('');
 
   const args = [
     '-loop', '1',
-    '-t', String(clip.duration),
     '-i', clip.path,
     '-filter_complex', filterGraph,
     '-map', '[vout]',
+    '-frames:v', String(totalFrames),
     '-c:v', 'libx264',
-    '-preset', 'fast',
+    '-preset', 'ultrafast',
     '-crf', '18',
     '-profile:v', 'high',
     '-pix_fmt', 'yuv420p',
+    '-r', String(FPS),
     '-an',
     '-y',
     outputPath,
   ];
 
-  return runFfmpeg(args, 120000); // 2 min timeout per clip
+  return runFfmpeg(args, 300000); // 5 min timeout per clip
 }
 
 /**
@@ -351,17 +362,58 @@ async function concatenateClips(clipPaths, outputPath, tempDir) {
   return runFfmpeg(args, 300000); // 5 min timeout for concat
 }
 
+// --- BGM Selection ---
+
+/**
+ * Select a random background music track from the assets/bgm directory.
+ * @returns {Promise<{ name: string, path: string }>}
+ */
+async function selectRandomBgm() {
+  const files = await readdir(BGM_DIR);
+  const mp3s = files.filter(f => f.endsWith('.mp3'));
+  if (mp3s.length === 0) {
+    return { name: 'none', path: null };
+  }
+  const chosen = mp3s[Math.floor(Math.random() * mp3s.length)];
+  return { name: chosen.replace('.mp3', ''), path: join(BGM_DIR, chosen) };
+}
+
 // --- Audio Mux ---
 
 /**
- * Mux audio onto a video file (no video re-encode).
+ * Mux narration + looped BGM onto a video file (no video re-encode).
+ * BGM is looped to match video length and mixed at low volume (15%).
+ * Volume is configurable via project settings (background_music_volume).
  */
-async function muxAudio(videoPath, audioPath, outputPath) {
+async function muxAudioWithBgm(videoPath, narrationPath, bgmPath, outputPath, settings) {
+  const bgmVolume = parseFloat(settings?.background_music_volume) || 0.15;
+
+  // If no BGM available, fall back to narration-only mux
+  if (!bgmPath) {
+    const args = [
+      '-i', videoPath,
+      '-i', narrationPath,
+      '-map', '0:v', '-map', '1:a',
+      '-c:v', 'copy', '-c:a', 'aac', '-b:a', '256k', '-ar', '44100',
+      '-shortest', '-movflags', '+faststart', '-y', outputPath,
+    ];
+    return runFfmpeg(args);
+  }
+
+  // Mix narration (full volume) + BGM (looped, low volume)
+  const filterComplex = [
+    `[1:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo[narr];`,
+    `[2:a]aloop=loop=-1:size=2e+09,aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo,volume=${bgmVolume}[bgm];`,
+    `[narr][bgm]amix=inputs=2:duration=first:dropout_transition=3[aout]`,
+  ].join('');
+
   const args = [
     '-i', videoPath,
-    '-i', audioPath,
+    '-i', narrationPath,
+    '-i', bgmPath,
+    '-filter_complex', filterComplex,
     '-map', '0:v',
-    '-map', '1:a',
+    '-map', '[aout]',
     '-c:v', 'copy',
     '-c:a', 'aac',
     '-b:a', '256k',

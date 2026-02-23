@@ -29,7 +29,8 @@ function escapeHtml(str) {
 
 function formatDate(d) {
     if (!d) return '--';
-    return new Date(d).toLocaleDateString('pt-BR');
+    const dt = new Date(d);
+    return dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
 export async function loadPublishing(params) {
@@ -109,7 +110,7 @@ async function fetchList() {
 function renderRow(item) {
     const st = STATUS_BADGES[item.status] || STATUS_BADGES.pending_review;
     const thumb = item.thumbnailUrl || '';
-    const title = escapeHtml(item.title || 'Sem titulo');
+    const title = escapeHtml(item.youtube_title || item.topic_title || item.title || 'Sem titulo');
     const scheduled = formatDate(item.scheduledFor || item.scheduled_for);
 
     return `
@@ -199,15 +200,42 @@ async function openDetail(pubId) {
     try {
         const item = await window.ytApi.publishing.get(_projectId, pubId);
         const st = STATUS_BADGES[item.status] || STATUS_BADGES.pending_review;
-        document.getElementById('pub-modal-title').textContent = item.title || 'Detalhes';
+        const title = item.youtube_title || item.topic_title || item.title || 'Detalhes';
+        document.getElementById('pub-modal-title').textContent = title;
+
+        const desc = item.youtube_description || item.description || '--';
+        const tags = item.youtube_tags || item.tags || [];
+        const tagsStr = Array.isArray(tags) ? tags.join(', ') : String(tags);
+        const duration = item.video_duration ? `${Math.floor(item.video_duration / 60)}:${String(item.video_duration % 60).padStart(2, '0')}` : '--';
+
+        // Fetch video URL
+        let videoHtml = '';
+        if (item.topic_id) {
+            try {
+                const video = await window.ytApi.video.get(_projectId, item.topic_id);
+                const videoUrl = video?.video_url || video?.videoUrl || '';
+                if (videoUrl) {
+                    videoHtml = `
+                        <video controls style="width:100%;border-radius:8px;margin-bottom:16px;background:#000;max-height:400px;">
+                            <source src="${escapeHtml(videoUrl)}" type="video/mp4">
+                        </video>`;
+                }
+            } catch (e) {
+                console.warn('[Publishing] Could not load video:', e.message);
+            }
+        }
 
         body.innerHTML = `
-            ${item.thumbnailUrl ? `<img src="${escapeHtml(item.thumbnailUrl)}" style="width: 100%; border-radius: 8px; margin-bottom: 12px;" alt="">` : ''}
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.875rem;">
-                <div><strong>Status:</strong> <span class="yt-badge yt-badge-${st.badge}">${st.label}</span></div>
-                <div><strong>Agendado:</strong> ${formatDate(item.scheduledFor || item.scheduled_for)}</div>
-                <div><strong>Descricao:</strong> ${escapeHtml(item.description || '--')}</div>
-                <div><strong>Tags:</strong> ${escapeHtml((item.tags || []).join(', ') || '--')}</div>
+            ${videoHtml}
+            <div style="display:flex;flex-direction:column;gap:12px;font-size:0.875rem;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div><strong>Status:</strong> <span class="yt-badge yt-badge-${st.badge}">${st.label}</span></div>
+                    <div><strong>Agendado:</strong> ${formatDate(item.scheduled_for || item.scheduledFor)}</div>
+                    <div><strong>Duracao:</strong> ${duration}</div>
+                    ${item.youtube_url ? `<div><strong>YouTube:</strong> <a href="${escapeHtml(item.youtube_url)}" target="_blank" style="color:var(--color-primary);">Ver no YouTube</a></div>` : ''}
+                </div>
+                <div><strong>Descricao:</strong><p style="white-space:pre-wrap;color:var(--text-secondary);margin:4px 0 0;max-height:200px;overflow-y:auto;font-size:0.8125rem;">${escapeHtml(desc)}</p></div>
+                <div><strong>Tags:</strong><p style="color:var(--text-secondary);margin:4px 0 0;font-size:0.8125rem;">${escapeHtml(tagsStr) || '--'}</p></div>
             </div>`;
 
         if (item.status === 'pending_review') {

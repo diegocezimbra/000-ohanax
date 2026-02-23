@@ -336,13 +336,17 @@ async function loadVideo() {
     p.innerHTML = '<div class="yt-spinner"></div>';
     try {
         const v = await api.video.get(_pid, _tid);
+        if (!v) {
+            p.innerHTML = '<p style="color:var(--color-text-secondary);padding:16px;">Video ainda nao montado.</p>';
+            return;
+        }
         const url = v.video_url || v.videoUrl || '';
-        const sz = v.file_size || v.fileSize || 0;
+        const szMb = v.file_size_mb || v.fileSizeMb || 0;
         p.innerHTML = `
         <div class="yt-card">
             <div class="yt-card-body">
                 ${url ? `<video controls style="width:100%;border-radius:var(--radius-lg);margin-bottom:12px;background:#000;"><source src="${escapeHtml(url)}" type="video/mp4"></video>` : '<p style="color:var(--color-text-secondary);">Video nao disponivel</p>'}
-                <p style="color:var(--color-text-secondary);">Tamanho: ${sz ? (sz / (1024 * 1024)).toFixed(1) + ' MB' : '--'}</p>
+                <p style="color:var(--color-text-secondary);">Tamanho: ${szMb ? Number(szMb).toFixed(1) + ' MB' : '--'}</p>
                 <button class="yt-btn yt-btn-sm yt-btn-primary" id="vd-reas" style="margin-top:12px;">Remontar Video</button>
             </div>
         </div>`;
@@ -352,8 +356,9 @@ async function loadVideo() {
                 toast('Remontagem iniciada!', 'success');
             } catch (e) { toast('Erro: ' + e.message, 'error'); }
         });
-    } catch {
-        p.innerHTML = '<p style="color:var(--color-text-secondary);padding:16px;">Video nao gerado.</p>';
+    } catch (err) {
+        console.error('[Video Tab] Error:', err);
+        p.innerHTML = '<p style="color:var(--color-text-secondary);padding:16px;">Erro ao carregar video: ' + escapeHtml(err.message || 'desconhecido') + '</p>';
     }
 }
 
