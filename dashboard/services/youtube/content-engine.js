@@ -119,6 +119,17 @@ export async function getEngineStatus(projectId) {
  * @param {string} projectId
  * @returns {Promise<Object>} Result of the trigger
  */
+// Map pipeline_stage → job_type needed to resume a stranded topic.
+// visuals_creating is handled specially (needs to restart visual prompts generation).
+const STAGE_TO_RESUME_JOB = {
+  story_created: 'generate_script',
+  script_created: 'generate_visual_prompts',
+  visuals_creating: 'generate_visual_prompts',
+  visuals_created: 'generate_thumbnails',
+  thumbnails_created: 'generate_narration',
+  narration_created: 'assemble_video',
+};
+
 export async function triggerEngine(projectId) {
   const pool = db.analytics;
 
@@ -139,21 +150,53 @@ export async function triggerEngine(projectId) {
     return { triggered: false, reason: 'Engine is disabled in settings' };
   }
 
-  // Check daily limit
-  if (status.gen_today >= status.max_gen) {
-    return { triggered: false, reason: `Daily limit reached (${status.gen_today}/${status.max_gen})` };
-  }
-
-  // Check buffer
-  if (status.buffer_current >= status.buffer_target) {
-    return { triggered: false, reason: `Buffer is full (${status.buffer_current}/${status.buffer_target})` };
-  }
-
   // CRITICAL: Don't start new topics while others are still in the pipeline.
   // Each topic generates ~100 image jobs ($0.003/each = $0.30/topic).
   // Running multiple in parallel wastes money if one fails.
   if (status.active_pipeline > 0) {
     return { triggered: false, reason: `Pipeline busy (${status.active_pipeline} topic(s) in progress). Waiting for completion before starting new.` };
+  }
+
+  // Check buffer — if full, no need to produce more
+  if (status.buffer_current >= status.buffer_target) {
+    return { triggered: false, reason: `Buffer is full (${status.buffer_current}/${status.buffer_target})` };
+  }
+
+  // PRIORITY 0: Resume stranded topics — stuck in intermediate stages with no pending jobs.
+  // These are topics that errored and were reset, or whose jobs got lost.
+  // Only resume 1 per cycle to keep costs under control.
+  const strandedStages = Object.keys(STAGE_TO_RESUME_JOB);
+  const stranded = await pool.query(`
+    SELECT t.id, t.title, t.pipeline_stage
+    FROM yt_topics t
+    WHERE t.project_id = $1
+      AND t.pipeline_stage = ANY($2)
+      AND t.is_deleted = false
+      AND t.status = 'active'
+      AND NOT EXISTS (
+        SELECT 1 FROM yt_jobs j
+        WHERE j.topic_id = t.id AND j.status IN ('pending', 'processing')
+      )
+    ORDER BY t.updated_at ASC
+    LIMIT 1
+  `, [projectId, strandedStages]);
+
+  if (stranded.rows.length > 0) {
+    const topic = stranded.rows[0];
+    const resumeJob = STAGE_TO_RESUME_JOB[topic.pipeline_stage];
+    console.log(`[ContentEngine] Resuming stranded topic ${topic.id}: "${topic.title}" (stage: ${topic.pipeline_stage} → ${resumeJob})`);
+    await triggerPipelineFromTopic(projectId, topic.id, resumeJob);
+    return {
+      triggered: true,
+      generated: 1,
+      topics: [{ topicId: topic.id, title: topic.title, source: 'stranded', resumeJob }],
+      buffer_status: `${status.buffer_current}/${status.buffer_target}`,
+    };
+  }
+
+  // Check daily limit — only applies to PRIORITY 1 and 2 (new topic generation)
+  if (status.gen_today >= status.max_gen) {
+    return { triggered: false, reason: `Daily limit reached (${status.gen_today}/${status.max_gen})` };
   }
 
   // PRIORITY 1: Advance existing topics stuck at 'topics_generated' before creating new ones.

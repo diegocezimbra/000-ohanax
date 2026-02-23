@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>44 — Os 26 -ilities - Quality Attributes | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="43-ai-agents-finetuning-mlops.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>44</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="45-dev-senior-era-ia.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:66.7%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 44</span>
+<h2>Os 26 -ilities — Quality Attributes</h2>
+<div class="section-line"></div>
+
+<p>Quality Attributes (ou "-ilities") são as <strong>propriedades não-funcionais</strong> que determinam o quao bem um sistema funciona — não o que ele faz, mas <strong>como ele faz</strong>. Um sistema pode ter todas as features do mundo, mas se cai a cada 2 horas (availability), demora 10 segundos por request (performance), e impossível de debugar (observability) e precisa de 3 meses para adicionar uma feature (maintainability) — ele falhou.</p>
+
+<p>Em entrevistas de System Design, a primeira pergunta após entender os requisitos funcionais e: <strong>"Quais quality attributes são prioritarios?"</strong> A resposta define toda a arquitetura. Não existe sistema que maximiza todos — você precisa <strong>escolher trade-offs conscientes</strong>.</p>
+
+<p>Organizamos os 26 atributos em 6 categorias. Para cada um: definição, como medir, exemplo real e trade-offs.</p>
+
+<!-- ═══ RELIABILITY ═══ -->
+<h3>Categoria 1: Reliability (Confiabilidade)</h3>
+
+<h4>1. Availability (Disponibilidade)</h4>
+<p><strong>Definição:</strong> Proporcao do tempo que o sistema esta operacional e acessível. Medido em "nines".</p>
+<ul>
+<li><strong>Métrica:</strong> 99.9% = 8.76h downtime/ano | 99.99% = 52min/ano | 99.999% = 5.26min/ano</li>
+<li><strong>Como medir:</strong> <code>uptime / (uptime + downtime)</code>. Use health checks + synthetic monitoring (Pingdom, UptimeRobot)</li>
+<li><strong>Exemplo real:</strong> AWS S3 garante 99.99% availability. Se seu SLA e 99.9% mas a DB e single-instance, você está mentindo</li>
+<li><strong>Trade-offs:</strong> Mais availability = mais replicas, multi-AZ/region, failover automático = <strong>mais custo e complexidade</strong>. 99.99% custa ~10x mais que 99.9%</li>
+</ul>
+
+<h4>2. Reliability (Confiabilidade)</h4>
+<p><strong>Definição:</strong> Probabilidade de o sistema executar sua função corretamente durante um período de tempo. Availability e sobre "está no ar?", reliability e sobre "funciona correto quando está no ar?".</p>
+<ul>
+<li><strong>Métrica:</strong> MTBF (Mean Time Between Failures). Ex: MTBF de 720h = 1 falha a cada 30 dias</li>
+<li><strong>Como medir:</strong> Rastrear taxa de erros 5xx, taxas de retry, inconsistências de dados</li>
+<li><strong>Exemplo real:</strong> Um sistema de pagamentos pode estar "disponível" (200 OK) mas debitar duas vezes (unreliable)</li>
+<li><strong>Trade-offs:</strong> Maior reliability = idempotency, transactions, reconciliação = <strong>maior latência e complexidade</strong></li>
+</ul>
+
+<h4>3. Fault Tolerance (Tolerância a Falhas)</h4>
+<p><strong>Definição:</strong> Capacidade de continuar operando (possívelmente com degradação) quando componentes falham.</p>
+<ul>
+<li><strong>Métrica:</strong> % de funcionalidade mantida durante falha. Blast radius de cada componente</li>
+<li><strong>Como medir:</strong> Chaos engineering (Chaos Monkey). Derrube um serviço e vejá o impacto</li>
+<li><strong>Exemplo real:</strong> Netflix continua funcionando se o serviço de recomendações cai — mostra "popular" ao invés de personalizado</li>
+<li><strong>Trade-offs:</strong> Requer circuit breakers, fallbacks, redundancia = <strong>mais código e testes de cenários de falha</strong></li>
+</ul>
+
+<h4>4. Resilience (Resiliência)</h4>
+<p><strong>Definição:</strong> Capacidade de se recuperar rapidamente após uma falha. Fault tolerance e sobre sobreviver, resilience e sobre voltar ao normal.</p>
+<ul>
+<li><strong>Métrica:</strong> MTTR (Mean Time To Recovery). Ex: MTTR de 5min vs MTTR de 2h</li>
+<li><strong>Como medir:</strong> Tempo entre detecção da falha e restauração completa do serviço</li>
+<li><strong>Exemplo real:</strong> Blue/green deployment permite rollback em 30 segundos vs rollback manual de 1 hora</li>
+<li><strong>Trade-offs:</strong> Requer automação agressiva, runbooks, backups testados = <strong>investimento em tooling e infra</strong></li>
+</ul>
+
+<h4>5. Durability (Durabilidade)</h4>
+<p><strong>Definição:</strong> Garantia de que dados persistidos não serão perdidos. Mesmo com falhas de hardware.</p>
+<ul>
+<li><strong>Métrica:</strong> 99.999999999% (11 nines) = perda de 1 objeto em 10 bilhoes a cada 10.000 anós (S3)</li>
+<li><strong>Como medir:</strong> Replicação factor, testes de restore de backup, checksums de integridade</li>
+<li><strong>Exemplo real:</strong> S3 replica dados em 3+ AZs automáticamente. Um banco single-node com backup diário pode perder 24h de dados</li>
+<li><strong>Trade-offs:</strong> Mais durabilidade = mais replicação e storage = <strong>mais custo e latência de escrita</strong></li>
+</ul>
+
+<h4>6. Recoverability (Recuperabilidade)</h4>
+<p><strong>Definição:</strong> Capacidade de restaurar o sistema e dados a um estado consistente após desastre.</p>
+<ul>
+<li><strong>Métrica:</strong> RPO (Recovery Point Objective) = quanto dado possó perder. RTO (Recovery Time Objective) = quanto tempo para voltar</li>
+<li><strong>Como medir:</strong> Testes regulares de disaster recovery. Restaurar backup e medir tempo</li>
+<li><strong>Exemplo real:</strong> RPO de 0 (zero data loss) exige replicação síncrona. RPO de 1h permite backup hourly mais barato</li>
+<li><strong>Trade-offs:</strong> RPO mais baixo = replicação mais agressiva = <strong>impacto na performance de escrita</strong></li>
+</ul>
+
+<!-- ═══ PERFORMANCE ═══ -->
+<h3>Categoria 2: Performance</h3>
+
+<h4>7. Performance</h4>
+<p><strong>Definição:</strong> Quao rápido é eficiente o sistema responde sob carga normal. Engloba latência, throughput e usó de recursos.</p>
+<ul>
+<li><strong>Métrica:</strong> P50 (mediana), P95, P99 de latência. Ex: P50=50ms, P95=200ms, P99=800ms</li>
+<li><strong>Como medir:</strong> APM tools (Datadog, New Relic), distributed tracing, load testing (k6, Gatling)</li>
+<li><strong>Exemplo real:</strong> Amazon descobriu que cada 100ms de latência adicional reduz vendas em 1%</li>
+<li><strong>Trade-offs:</strong> Mais performance = cache agressivo, desnormalização, CDN = <strong>mais complexidade e eventual consistency</strong></li>
+</ul>
+
+<h4>8. Scalability (Escalabilidade)</h4>
+<p><strong>Definição:</strong> Capacidade de lidar com aumento de carga adicionando recursos. Vertical (mais CPU/RAM) ou Horizontal (mais instâncias).</p>
+<ul>
+<li><strong>Métrica:</strong> Throughput linear com aumento de recursos. Ex: 2x instâncias = ~2x throughput (ideal)</li>
+<li><strong>Como medir:</strong> Load testing progressivo. Plotar requests/s vs instâncias. A curva deve ser (quase) linear</li>
+<li><strong>Exemplo real:</strong> Kubernetes + HPA escala pods automáticamente. Mas se o banco e bottleneck, escalar pods não ajuda</li>
+<li><strong>Trade-offs:</strong> Escalabilidade horizontal = stateless design, sharding, distributed systems = <strong>muito mais complexidade</strong></li>
+</ul>
+
+<h4>9. Elasticity (Elasticidade)</h4>
+<p><strong>Definição:</strong> Capacidade de escalar automáticamente para cima E para baixo conforme demanda. Scalability e poder crescer, elasticity e crescer e encolher automáticamente.</p>
+<ul>
+<li><strong>Métrica:</strong> Tempo para scale-up e scale-down. Custo em períodos de baixa demanda</li>
+<li><strong>Como medir:</strong> Simular spike de tráfego, medir tempo até estabilizar. Verificar scale-down após spike</li>
+<li><strong>Exemplo real:</strong> Black Friday: 100x tráfego normal. Serverless (Lambda) escala em segundos. EC2 com ASG demora minutos</li>
+<li><strong>Trade-offs:</strong> Elasticidade = serverless/containers + auto-scaling = <strong>cold starts, custo imprevisível em spikes</strong></li>
+</ul>
+
+<h4>10. Latency (Latência)</h4>
+<p><strong>Definição:</strong> Tempo entre envio do request e recebimento da primeira resposta. Diferente de throughput — você pode ter alta latência com alto throughput (batch processing).</p>
+<ul>
+<li><strong>Métrica:</strong> P50, P95, P99 em milissegundos. TTFB (Time to First Byte) para APIs</li>
+<li><strong>Como medir:</strong> Distributed tracing (Jaeger, Zipkin) para identificar gargalos. Real User Monitoring (RUM) para end-to-end</li>
+<li><strong>Exemplo real:</strong> Google Search: P99 < 200ms. Trading systems: P99 < 1ms. Chat app: P99 < 500ms é aceitável</li>
+<li><strong>Trade-offs:</strong> Menor latência = próximos do usuário (CDN, edge), cache, conexões keep-alive = <strong>mais complexidade de invalidação</strong></li>
+</ul>
+
+<h4>11. Throughput (Vazao)</h4>
+<p><strong>Definição:</strong> Volume de trabalho processado por unidade de tempo. Requests/segundo, transações/segundo, mensagens/segundo.</p>
+<ul>
+<li><strong>Métrica:</strong> RPS (Requests Per Second), TPS (Transactions Per Second)</li>
+<li><strong>Como medir:</strong> Load testing sustentado. Aumentar carga até encontrar o "joelho" da curva (ponto de saturação)</li>
+<li><strong>Exemplo real:</strong> Kafka processa milhões de msg/s. PostgreSQL tipicamente 10K-50K TPS. Redis 100K+ ops/s</li>
+<li><strong>Trade-offs:</strong> Mais throughput = batching, async processing, filas = <strong>mais latência individual e complexidade de ordering</strong></li>
+</ul>
+
+<!-- ═══ MAINTAINABILITY ═══ -->
+<h3>Categoria 3: Maintainability (Manutenibilidade)</h3>
+
+<h4>12. Maintainability (Manutenibilidade)</h4>
+<p><strong>Definição:</strong> Facilidade de entender, modificar e corrigir o sistema. O atributo mais subestimado — você gasta 80% do tempo mantendo, não criando.</p>
+<ul>
+<li><strong>Métrica:</strong> Tempo medio para implementar uma feature similar. Cyclomatic complexity. Lines changed per bug fix</li>
+<li><strong>Como medir:</strong> DORA metrics (Lead Time for Changes), code review time, onboarding time de novos devs</li>
+<li><strong>Exemplo real:</strong> Um monolito de 500K linhas sem testes leva 3 semanas para adicionar um campo. Um serviço bem estruturado leva 2 horas</li>
+<li><strong>Trade-offs:</strong> Mais manutenibilidade = abstrações, documentação, testes, patterns = <strong>mais tempo upfront</strong></li>
+</ul>
+
+<h4>13. Testability (Testabilidade)</h4>
+<p><strong>Definição:</strong> Facilidade de testar o sistema em diferentes níveis (unit, integration, e2e). Depende diretamente da arquitetura.</p>
+<ul>
+<li><strong>Métrica:</strong> Code coverage (alvo: 80%+), tempo de execução da suite, % de testes flaky</li>
+<li><strong>Como medir:</strong> Cobertura de testes, tempo do CI pipeline, frequência de testes quebrados sem mudança de código</li>
+<li><strong>Exemplo real:</strong> Código com DI (Dependency Injection) e testável: mock da DB. Código com <code>new DatabaseConnection()</code> hardcoded e intestável unitariamente</li>
+<li><strong>Trade-offs:</strong> Mais testabilidade = interfaces, DI, separação de concerns = <strong>mais abstrações e indirection</strong></li>
+</ul>
+
+<h4>14. Deployability (Implantabilidade)</h4>
+<p><strong>Definição:</strong> Facilidade e frequência com que você pode fazer deploy de mudanças em produção.</p>
+<ul>
+<li><strong>Métrica:</strong> DORA Deployment Frequency. Tempo de deploy (minutos vs horas). Rollback time</li>
+<li><strong>Como medir:</strong> Frequência de deploys/semana, % de deploys com rollback, tempo do pipeline CI/CD</li>
+<li><strong>Exemplo real:</strong> Amazon faz 1 deploy a cada 11.7 segundos. Se você faz 1 por mes, seu deployability é baixo</li>
+<li><strong>Trade-offs:</strong> Mais deployability = CI/CD robusto, feature flags, canary deploys = <strong>investimento em tooling</strong></li>
+</ul>
+
+<h4>15. Modularity (Modularidade)</h4>
+<p><strong>Definição:</strong> Grau em que o sistema é dividido em módulos independentes com interfaces bem definidas.</p>
+<ul>
+<li><strong>Métrica:</strong> Coupling (acoplamento entre módulos), Cohesion (coesao interna). Fitness functions automatizadas</li>
+<li><strong>Como medir:</strong> Dependency analysis tools (Madge, ArchUnit). Quantos módulos mudam para 1 feature?</li>
+<li><strong>Exemplo real:</strong> Microsserviços são modularidade máxima. Mas um monolito modular (bem separado internamente) pode ser suficiente</li>
+<li><strong>Trade-offs:</strong> Mais modularidade = boundaries claras, APIs internas = <strong>overhead de comunicação e coordenação</strong></li>
+</ul>
+
+<h4>16. Extensibility (Extensibilidade)</h4>
+<p><strong>Definição:</strong> Facilidade de adicionar novas funcionalidades sem modificar o código existente. Ligado diretamente ao Open/Closed Principle (SOLID).</p>
+<ul>
+<li><strong>Métrica:</strong> Linhas de código alterádas para adicionar feature do tipo X. Número de arquivos tocados</li>
+<li><strong>Como medir:</strong> Quando adicionou o último "tipo" (novo pagamento, nova notificação), quantos arquivos mudou?</li>
+<li><strong>Exemplo real:</strong> Plugin system (VSCode, WordPress) e extensibilidade máxima — adicione funcionalidade sem tocar no core</li>
+<li><strong>Trade-offs:</strong> Mais extensibilidade = abstractions, hook points, event-driven = <strong>complexidade inicial e over-engineering risk</strong></li>
+</ul>
+
+<h4>17. Portability (Portabilidade)</h4>
+<p><strong>Definição:</strong> Facilidade de mover o sistema entre ambientes (cloud providers, SO, runtime).</p>
+<ul>
+<li><strong>Métrica:</strong> Tempo para migrar entre providers. Número de dependências vendor-specific</li>
+<li><strong>Como medir:</strong> Audit de dependências de cloud (AWS SDK direto vs abstrações). Containers (Docker) aumentam portabilidade</li>
+<li><strong>Exemplo real:</strong> App que usa S3 direto = baixa portabilidade. App com interface IStorageProvider e implementações S3/GCS/Azure = alta portabilidade</li>
+<li><strong>Trade-offs:</strong> Mais portabilidade = abstrações sobre cloud services = <strong>perda de features específicas do provider, mais código</strong></li>
+</ul>
+
+<h4>18. Backward Compatibility (Compatibilidade Retroativa)</h4>
+<p><strong>Definição:</strong> Novas versões continuam funcionando com clientes/dados antigos. Crítico para APIs públicas e migrações.</p>
+<ul>
+<li><strong>Métrica:</strong> % de breaking changes por release. Número de versões de API mantidas simultaneamente</li>
+<li><strong>Como medir:</strong> Contract testing (Pact), schema válidation, API versioning</li>
+<li><strong>Exemplo real:</strong> Stripe mantém todas as versões de API desde 2011. Deprecation com meses de aviso</li>
+<li><strong>Trade-offs:</strong> Mais compatibilidade = manter código legado, versionamento = <strong>acumulo de complexidade e tech debt</strong></li>
+</ul>
+
+<!-- ═══ SECURITY ═══ -->
+<h3>Categoria 4: Security (Segurança)</h3>
+
+<h4>19. Security (Segurança)</h4>
+<p><strong>Definição:</strong> Proteção contra acesso não autorizado, modificação ou destruição de dados e serviços.</p>
+<ul>
+<li><strong>Métrica:</strong> Número de vulnerabilidades (CVEs). Tempo para patch de vulnerabilidade crítica. Resultados de pentest</li>
+<li><strong>Como medir:</strong> SAST (SonarQube), DAST (OWASP ZAP), dependency scanning (Snyk), pentests trimestrais</li>
+<li><strong>Exemplo real:</strong> Equifax breach (2017) — vulnerabilidade conhecida não patchada. 147 milhões de registros expostos. Multa de $700M</li>
+<li><strong>Trade-offs:</strong> Mais segurança = autenticação multi-fator, encryption at rest/transit, WAF = <strong>mais latência, mais fricação para usuários</strong></li>
+</ul>
+
+<h4>20. Compliance (Conformidade)</h4>
+<p><strong>Definição:</strong> Aderência a regulamentações legais e padrões da industria (LGPD, GDPR, PCI-DSS, SOC2, HIPAA).</p>
+<ul>
+<li><strong>Métrica:</strong> % de controles atendidos. Número de findings em auditorias. Tempo para responder a DSAR (Data Subject Access Request)</li>
+<li><strong>Como medir:</strong> Checklists de compliance automatizados, auditorias internas regulares, gap analysis contra frameworks</li>
+<li><strong>Exemplo real:</strong> LGPD exige consentimento explicito para dados pessoais. GDPR exige "right to be forgotten" — você precisa conseguir deletar tudo de um usuário</li>
+<li><strong>Trade-offs:</strong> Compliance = processos, documentação, restricoes de arquitetura = <strong>velocidade de desenvolvimento reduzida, custo operacional</strong></li>
+</ul>
+
+<h4>21. Auditability (Auditabilidade)</h4>
+<p><strong>Definição:</strong> Capacidade de rastrear quem fez o que, quando é por que. Essencial para debugging, compliance e forense.</p>
+<ul>
+<li><strong>Métrica:</strong> Cobertura de audit trails. Tempo para responder "quem alterou o registro X?"</li>
+<li><strong>Como medir:</strong> % de operações com audit log. Tempo de resposta para queries de auditoria. Retenção de logs</li>
+<li><strong>Exemplo real:</strong> Banco precisa de audit trail imutável para cada transação. Fintech precisa provar quem aprovou cada emprestimo</li>
+<li><strong>Trade-offs:</strong> Mais auditabilidade = logs imutáveis, event sourcing = <strong>mais storage, mais complexidade de queries</strong></li>
+</ul>
+
+<!-- ═══ USABILITY ═══ -->
+<h3>Categoria 5: Usability</h3>
+
+<h4>22. Usability (Usabilidade)</h4>
+<p><strong>Definição:</strong> Facilidade de usó do sistema pelos usuários finais. Inclui learnability, efficiency e error prevention.</p>
+<ul>
+<li><strong>Métrica:</strong> Task completion rate. Time-on-task. System Usability Scale (SUS) score</li>
+<li><strong>Como medir:</strong> User testing, analytics de fluxo (onde usuários abandonam?), NPS, SUS questionnaire</li>
+<li><strong>Exemplo real:</strong> Nubank simplificou abertura de conta para 3 taps. Bancos tradicionais exigem 15 passos + agência presencial</li>
+<li><strong>Trade-offs:</strong> Mais usabilidade = design simples, menós opções visíveis = <strong>menós power features, pode frustrar usuários avançados</strong></li>
+</ul>
+
+<h4>23. Observability (Observabilidade)</h4>
+<p><strong>Definição:</strong> Capacidade de entender o estado interno do sistema a partir de seus outputs externós (logs, métricas, traces). Não e monitoramento — monitoramento diz "o que está errado", observability diz "POR QUE está errado".</p>
+<ul>
+<li><strong>Métrica:</strong> MTTD (Mean Time To Detect). % de incidentes resolvidos sem escalar. Cobertura de tracing</li>
+<li><strong>Como medir:</strong> 3 pilares: Logs (estruturados, JSON), Métricas (Prometheus/Grafana), Traces (Jaeger/Zipkin). Correlação entre eles</li>
+<li><strong>Exemplo real:</strong> Com distributed tracing, você ve que o request demorou 3s porque o serviço de pagamento fez 5 retries ao banco de dados</li>
+<li><strong>Trade-offs:</strong> Mais observabilidade = instrumentação em cada serviço, storage de telemetria = <strong>overhead de performance (~2-5%), custo de storage</strong></li>
+</ul>
+
+<h4>24. Interoperability (Interoperabilidade)</h4>
+<p><strong>Definição:</strong> Capacidade do sistema se comúnicar e trocar dados com outros sistemas, internós ou externos.</p>
+<ul>
+<li><strong>Métrica:</strong> Número de integrações ativas. Tempo para integrar novo sistema. % de APIs que seguem padrões (REST, OpenAPI, gRPC)</li>
+<li><strong>Como medir:</strong> API documentation coverage, contract tests com parceiros, conformidade com padrões abertos</li>
+<li><strong>Exemplo real:</strong> Open Banking exige que bancos exponham APIs padronizadas. Um sistema com API proprietária sem documentação tem baixa interoperabilidade</li>
+<li><strong>Trade-offs:</strong> Mais interoperabilidade = APIs padronizadas, formato abertos (JSON, OpenAPI) = <strong>menós otimização específica, mais constraints de formato</strong></li>
+</ul>
+
+<!-- ═══ COST ═══ -->
+<h3>Categoria 6: Cost (Custo)</h3>
+
+<h4>25. Cost Efficiency (Eficiência de Custo)</h4>
+<p><strong>Definição:</strong> Relação entre o valor entregue é o custo total de operação. Não e "gastar menos" — e "gastar certo".</p>
+<ul>
+<li><strong>Métrica:</strong> Custo por request. Custo por usuário ativo. Revenue-to-infra ratio</li>
+<li><strong>Como medir:</strong> FinOps dashboards, cost allocation por serviço/feature, unit economics</li>
+<li><strong>Exemplo real:</strong> Uma startup gastando $50K/mes em infra com 1000 usuários esta queimando dinheiro. A mesma infra com 1M usuários é eficiente</li>
+<li><strong>Trade-offs:</strong> Mais eficiência = otimização agressiva, instâncias spot/reserved, rightsizing = <strong>mais tempo de engenharia em otimização, risco de underprovisioning</strong></li>
+</ul>
+
+<h4>26. Total Cost of Ownership (TCO)</h4>
+<p><strong>Definição:</strong> Custo completo de possuir e operar o sistema ao longo de toda sua vida útil. Inclui desenvolvimento, operação, manutenção, licencas e eventual descomissionamento.</p>
+<ul>
+<li><strong>Métrica:</strong> TCO anualizado. Custo de mudança (quanto custa migrar de provider ou stack)</li>
+<li><strong>Como medir:</strong> Somar: salarios de devs, infra, licencas, suporte, training, oportunidade de custo</li>
+<li><strong>Exemplo real:</strong> Oracle DB pode ter licenciamento mais caro que Postgres, mas se o time já tem expertise Oracle, o TCO pode ser menor (menós tempo de aprendizado e bugs)</li>
+<li><strong>Trade-offs:</strong> Menor TCO de curto prazo (solução rápida) pode significar <strong>maior TCO de longo prazo (tech debt)</strong></li>
+</ul>
+
+<!-- ═══ RESUMO VISUAL ═══ -->
+<h3>Resumo: Todos os 26 Quality Attributes</h3>
+
+<div class="table-wrap">
+<table>
+<tr><th>Categoria</th><th>Atributo</th><th>Métrica Chave</th></tr>
+<tr><td rowspan="6"><strong>Reliability</strong></td><td>Availability</td><td>99.99% = 52min downtime/ano</td></tr>
+<tr><td>Reliability</td><td>MTBF (Mean Time Between Failures)</td></tr>
+<tr><td>Fault Tolerance</td><td>% funcionalidade mantida durante falha</td></tr>
+<tr><td>Resilience</td><td>MTTR (Mean Time To Recovery)</td></tr>
+<tr><td>Durability</td><td>11 nines (S3) — dados nunca se perdem</td></tr>
+<tr><td>Recoverability</td><td>RPO + RTO</td></tr>
+<tr><td rowspan="5"><strong>Performance</strong></td><td>Performance</td><td>P50/P95/P99 latência</td></tr>
+<tr><td>Scalability</td><td>Throughput linear com recursos</td></tr>
+<tr><td>Elasticity</td><td>Tempo de scale-up/down automático</td></tr>
+<tr><td>Latency</td><td>P99 em milissegundos</td></tr>
+<tr><td>Throughput</td><td>RPS / TPS</td></tr>
+<tr><td rowspan="7"><strong>Maintainability</strong></td><td>Maintainability</td><td>Lead Time for Changes (DORA)</td></tr>
+<tr><td>Testability</td><td>Coverage 80%+, zero flaky tests</td></tr>
+<tr><td>Deployability</td><td>Deploy frequency, rollback time</td></tr>
+<tr><td>Modularity</td><td>Low coupling, high cohesion</td></tr>
+<tr><td>Extensibility</td><td>Files changed per new feature type</td></tr>
+<tr><td>Portability</td><td>Vendor-specific dependencies count</td></tr>
+<tr><td>Backward Compatibility</td><td>Breaking changes per release</td></tr>
+<tr><td rowspan="3"><strong>Security</strong></td><td>Security</td><td>CVEs, pentest findings, patch time</td></tr>
+<tr><td>Compliance</td><td>% controles atendidos</td></tr>
+<tr><td>Auditability</td><td>Audit trail coverage</td></tr>
+<tr><td rowspan="3"><strong>Usability</strong></td><td>Usability</td><td>SUS score, task completion rate</td></tr>
+<tr><td>Observability</td><td>MTTD, tracing coverage</td></tr>
+<tr><td>Interoperability</td><td>API standards conformance</td></tr>
+<tr><td rowspan="2"><strong>Cost</strong></td><td>Cost Efficiency</td><td>Cost per request / per user</td></tr>
+<tr><td>TCO</td><td>Custo anualizado completo</td></tr>
+</table>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Priorizando Quality Attributes para uma Fintech API</h3>
+<p><strong>Cenário:</strong> Você está projetando a API de uma fintech que processa pagamentos via Pix, transferências e cartao de credito. Quais quality attributes priorizar é como isso afeta a arquitetura?</p>
+
+<div class="diagram">
+<div class="diagram-box green">1. Availability<br><small>99.99% (52min/ano)</small></div>
+<div class="diagram-arrow">&gt;</div>
+<div class="diagram-box red">2. Security<br><small>PCI-DSS + LGPD</small></div>
+<div class="diagram-arrow">&gt;</div>
+<div class="diagram-box blue">3. Reliability<br><small>(Consistency)</small></div>
+<div class="diagram-arrow">&gt;</div>
+<div class="diagram-box purple">4. Performance<br><small>P99 &lt; 500ms</small></div>
+</div>
+
+<p><strong>Justificativa e impacto arquitetural:</strong></p>
+<ol>
+<li><strong>Availability (99.99%)</strong> — Dinheiro parado = cliente perdido. Impacto: multi-AZ, database replicas, health checks agressivos, circuit breakers. Custo: ~3x mais infra que single-AZ</li>
+<li><strong>Security</strong> — Compliance PCI-DSS e mandatorio para processar cartoes. LGPD para dados pessoais. Impacto: encryption at rest + transit, WAF, tokenização de cartao, audit logs imutáveis, penetration testing trimestral</li>
+<li><strong>Reliability (Consistency)</strong> — Debitar duas vezes e inaceitável. Impacto: idempotency keys em todas as operações, saga pattern para transações distribuidas, reconciliação batch diária, event sourcing para audit trail</li>
+<li><strong>Performance</strong> — Importante mas não é o principal. P99 < 500ms é suficiente. Se precisasse de P99 < 10ms (trading), priorizaria acima de security</li>
+</ol>
+
+<p><strong>O que sacrificamos conscientemente:</strong></p>
+<ul>
+<li><strong>Elasticity:</strong> Fintech tem tráfego previsível (picos em dia de pagamento). Reserved instances > serverless. Custo menor</li>
+<li><strong>Portability:</strong> Usamos serviços AWS nativos (KMS, SQS, Aurora) ao invés de abstrações. Aceitamos vendor lock-in em troca de security e reliability melhores</li>
+<li><strong>Extensibility:</strong> O core de pagamentos muda pouco. Priorizamos stability sobre flexibility nessa camada</li>
+</ul>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Querer maximizar todos os atributos:</strong> Impossível. Availability vs Consistency (CAP theorem). Performance vs Security (encryption custa CPU). Extensibility vs Simplicity. Cada priorização é um trade-off consciente. Se alguém diz "queremos tudo", o arquiteto precisa forçar a priorização.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Confundir Availability com Reliability:</strong> Um sistema pode estar disponível (200 OK) mas unreliable (retorna dados incorretos). SLA só de availability e insuficiente — métricas de corretude são igualmente críticas.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Over-engineering observabilidade desde o dia 1:</strong> Distributed tracing em 3 serviços e overkill. Comece com logs estruturados + métricas básicas. Adicione tracing quando tiver > 5 serviços e problemas de latência entre eles.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Escolha os 3 quality attributes mais críticos para seu domínio. Projete a arquitetura para maximizar esses 3. Para os demais, aceite "suficientemente bom". Documente as decisões e trade-offs em ADRs (Architecture Decision Records).</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Para um sistema de telemedicina (consultas por video), quais são os 3 quality attributes mais importantes e por que?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> (1) <strong>Availability</strong> — uma consulta interrompida pode ser crítica para o paciente. Alvo: 99.99%. (2) <strong>Security/Compliance</strong> — dados medicos são PII sensíveis (HIPAA/LGPD). Encryption obrigatória, consentimento explicito, audit trails. (3) <strong>Performance/Latency</strong> — video em tempo real exige latência < 150ms para parecer natural. WebRTC + servidores regionais. Trade-off aceito: scalability pode ser menor (tráfego previsível por agendamento).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Qual a diferença prática entre Fault Tolerance e Resilience? De um exemplo onde um sistema tem um mas não outro.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>Fault Tolerance</strong> = continuar funcionando durante a falha (degradation graceful). <strong>Resilience</strong> = voltar ao normal rapidamente após a falha. Exemplo: um sistema com circuit breaker que retorna cached data quando o DB cai e <strong>fault tolerant</strong>. Mas se quando o DB volta, o sistema leva 30 minutos para reabrir circuitos e normalizar — ele tem <strong>baixa resilience</strong>. O ideal e ter ambos: degradar gracefully E recuperar rápido.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Seu CTO quer migrar de AWS para GCP por custo. Como você avaliaria a Portability do sistema atual?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Faca um audit de dependências: (1) Liste todos os serviços AWS usados (RDS, S3, SQS, Lambda, KMS, etc). (2) Para cada um, verifique se ha equivalente GCP e se a interface e compatível. (3) Identifique código que usa SDKs AWS diretamente vs abstrações. (4) Estime LOC a alterár. (5) Verifique formatos de dados (IAM policies, CloudFormation templates não migram). (6) Calcule custo total: engenharia + risco + downtime durante migração. Se > 60% dos serviços são vendor-specific sem abstractions, a portabilidade e baixa é a migração provavelmente custa mais que a economia.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Quality Attributes</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="43-ai-agents-finetuning-mlops.html">&#8592; Anterior: AI Agents & MLOps</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="45-dev-senior-era-ia.html" class="primary">Próximo: Dev Senior na Era da IA &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 44: Quality Attributes
+// ══════════════════════════════════════════
+const SECTION_NUM = 44;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual a diferença entre Availability e Reliability?",
+    options: [
+      "São sinônimos — ambos medem uptime",
+      "Availability mede se está no ar; Reliability mede se funciona corretamente quando está no ar",
+      "Availability e para hardware; Reliability e para software",
+      "Reliability inclui Availability mas não o contrário"
+    ],
+    correct: 1,
+    explanation: "Availability = 'o sistema esta acessível?' (uptime). Reliability = 'o sistema funciona corretamente?' Um sistema pode retornar 200 OK (available) mas debitar duas vezes (unreliable)."
+  },
+  {
+    question: "99.99% de availability equivale a quanto downtime por ano?",
+    options: [
+      "Cerca de 8 horas",
+      "Cerca de 52 minutos",
+      "Cerca de 5 minutos",
+      "Cerca de 3.6 dias"
+    ],
+    correct: 1,
+    explanation: "99.99% (quatro nines) = 52.56 minutos de downtime permitido por ano. Cada 'nine' adicional reduz drasticamente: 99.999% = 5.26 minutos/ano."
+  },
+  {
+    question: "Qual métrica mede a capacidade de recuperação após desastre em termos de perda máxima de dados aceitável?",
+    options: [
+      "MTBF (Mean Time Between Failures)",
+      "MTTR (Mean Time To Recovery)",
+      "RPO (Recovery Point Objective)",
+      "SLA (Service Level Agreement)"
+    ],
+    correct: 2,
+    explanation: "RPO (Recovery Point Objective) define a perda máxima de dados aceitável. RPO de 0 = zero data loss (replicação síncrona). RPO de 1h = pode perder até 1h de dados (backup hourly). RTO é o tempo para voltar a operar."
+  },
+  {
+    question: "Você precisa priorizar quality attributes para um e-commerce na Black Friday. Qual é mais crítico: Scalability ou Elasticity?",
+    options: [
+      "Scalability — precisa lidar com mais carga",
+      "Elasticity — precisa escalar automáticamente para cima E para baixo",
+      "São a mesma coisa",
+      "Nenhum dos dois — Performance é o mais crítico"
+    ],
+    correct: 1,
+    explanation: "Elasticity é mais crítico para Black Friday. Scalability e poder crescer. Elasticity e crescer automáticamente no spike E encolher depois para não pagar por capacidade ociosa. Na Black Friday, o tráfego sobe 100x e volta ao normal — elasticity é o que importa."
+  },
+  {
+    question: "Qual quality attribute e diretamente violado quando você usa 'new DatabaseConnection()' hardcoded dentro de um service?",
+    options: [
+      "Portability",
+      "Testability",
+      "Scalability",
+      "Observability"
+    ],
+    correct: 1,
+    explanation: "Testability e violado diretamente. Sem Dependency Injection, você não consegue substituir a conexão real por um mock nós testes unitários. Isso também afeta portability indiretamente."
+  },
+  {
+    question: "DORA metrics (Deployment Frequency, Lead Time, MTTR, Change Failure Rate) medem qual quality attribute?",
+    options: [
+      "Performance e Scalability",
+      "Deployability e Maintainability",
+      "Reliability e Availability",
+      "Security e Compliance"
+    ],
+    correct: 1,
+    explanation: "DORA metrics medem diretamente Deployability (frequência e velocidade de deploy) e Maintainability (tempo para implementar mudanças). São as métricas padrão da industria para medir eficiência de engenharia."
+  },
+  {
+    question: "Em uma fintech que processa pagamentos, qual combinação de quality attributes é mais crítica?",
+    options: [
+      "Performance > Extensibility > Usability",
+      "Availability > Security > Reliability (Consistency)",
+      "Scalability > Portability > Cost Efficiency",
+      "Observability > Modularity > Testability"
+    ],
+    correct: 1,
+    explanation: "Para fintech: Availability (dinheiro parado = cliente perdido), Security (PCI-DSS obrigatório), Reliability/Consistency (debitar duas vezes e inaceitável). Performance é importante mas secundária — P99 < 500ms é suficiente."
+  },
+  {
+    question: "Qual afirmação sobre o CAP Theorem está correta em relação a quality attributes?",
+    options: [
+      "Você pode ter Consistency, Availability e Partition Tolerance simultaneamente",
+      "Em caso de partição de rede, você deve escolher entre Consistency e Availability",
+      "O CAP Theorem só se aplica a bancos relacionais",
+      "Partition Tolerance é opcional em sistemas distribuídos"
+    ],
+    correct: 1,
+    explanation: "O CAP Theorem diz que em caso de partição de rede (inevitável em sistemas distribuídos), você precisa escolher entre Consistency (todos veem o mesmo dado) e Availability (todos recebem resposta). E o trade-off fundamental de sistemas distribuídos."
+  },
+  {
+    question: "Qual quality attribute é mais diretamente impactado por Event Sourcing como padrão arquitetural?",
+    options: [
+      "Performance — eventos são mais rápidos que CRUD",
+      "Auditability — histórico completo e imutável de todas as mudanças",
+      "Usability — usuários veem dados em tempo real",
+      "Portability — eventos são agnisticos de banco"
+    ],
+    correct: 1,
+    explanation: "Event Sourcing armazena cada mudança como um evento imutável. Isso cria um audit trail completo naturalmente — você pode reconstruir o estado de qualquer momento no tempo e saber exatamente quem fez o que é quando."
+  },
+  {
+    question: "O que significa dizer que observabilidade é diferente de monitoramento?",
+    options: [
+      "Monitoramento é mais caro que observabilidade",
+      "Monitoramento diz 'o que está errado'; observabilidade diz 'por que está errado'",
+      "Observabilidade só funciona com microsserviços",
+      "Monitoramento usa métricas; observabilidade usa apenas logs"
+    ],
+    correct: 1,
+    explanation: "Monitoramento responde perguntas conhecidas ('o CPU esta alto?'). Observabilidade permite responder perguntas que você NÃO previu ('por que o request X demorou 10s ontem as 3h?'). Os 3 pilares (logs, métricas, traces) correlacionados dao observabilidade."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina os Quality Attributes.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

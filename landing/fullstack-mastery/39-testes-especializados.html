@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>39 — Testes Especializados: Chaos, Mutação, Load | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="38-tdd-bdd-piramide-testes.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>39</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="40-ssr-ssg-isr-micro-frontends.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:59.1%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 39</span>
+<h2>Testes Especializados — Chaos, Mutação, Load</h2>
+<div class="section-line"></div>
+
+<p>A pirâmide de testes clássica (unit, integration, e2e) cobre os cenários mais comuns — mas sistemas de produção enfrentam falhas que nenhum teste unitário consegue prever. Um servidor cai no meio de uma transação. A rede introduz 3 segundos de latência. Um input malformado passa pela validação. O deploy funciona, mas a performance degrada 40% sob carga real.</p>
+
+<p>Testes especializados existem para preencher essas lacunas. Eles respondem a perguntas que testes convencionais não fazem: <strong>"Nossos testes realmente válidam o comportamento?"</strong> (mutation testing), <strong>"O sistema sobrevive quando as coisas dão errado?"</strong> (chaos engineering), <strong>"A API aguenta 10.000 usuários simultâneos?"</strong> (load testing). Nesta seção, vamos mergulhar profundamente em cada categoria.</p>
+
+<!-- ═══ CONTRACT TESTING ═══ -->
+<h3>Contract Testing com Pact</h3>
+
+<p>Em arquiteturas de microsserviços, o maior risco não está dentro de um serviço — esta <strong>entre eles</strong>. O serviço A chama o serviço B esperando um campo <code>userId</code>, mas o serviço B renomeou para <code>user_id</code> no último deploy. Testes unitários de ambos passam. Testes de integração passam (cada um testa com mocks). Mas em produção, tudo quebra.</p>
+
+<p><strong>Contract Testing</strong> resolve isso com uma abordagem chamada <strong>Consumer-Driven Contracts (CDC)</strong>. O consumidor (quem chama a API) define o contrato — "eu espero que GET /users/1 retorne {id, name, email}". O provedor (quem fornece a API) verifica que satisfaz esse contrato. Se o provedor mudar a resposta de forma incompatível, o teste do contrato falha <strong>antes do deploy</strong>.</p>
+
+<h4>Como o Pact Funciona — Fluxo Completo</h4>
+
+<div class="diagram">
+<div class="diagram-box green">Consumer<br><small>Define expectativas</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Pact File<br><small>Contrato JSON</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Pact Broker<br><small>Armazena contratos</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Provider<br><small>Verifica contrato</small></div>
+</div>
+
+<ol>
+<li><strong>Consumer test</strong> — O consumidor escreve um teste que define as interáções esperadas (request + response esperada)</li>
+<li><strong>Pact file gerado</strong> — O teste gera um arquivo JSON (o "pact") com todas as interáções</li>
+<li><strong>Públicação no Broker</strong> — O pact e publicado num Pact Broker (ou PactFlow) para versionamento</li>
+<li><strong>Provider verification</strong> — O provedor roda os pacts contra sua API real e verifica que todas as interáções são satisfeitas</li>
+</ol>
+
+<h4>Exemplo: Consumer Test com Pact (TypeScript)</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { PactV3, MatchersV3 } <span class="kw">from</span> <span class="str">'@pact-foundation/pact'</span>;
+<span class="kw">import</span> { UserService } <span class="kw">from</span> <span class="str">'./user.service'</span>;
+
+<span class="kw">const</span> { like, eachLike, string } = MatchersV3;
+
+<span class="kw">const</span> provider = <span class="kw">new</span> <span class="tp">PactV3</span>({
+  consumer: <span class="str">'OrderService'</span>,
+  provider: <span class="str">'UserService'</span>,
+  dir: <span class="str">'./pacts'</span>,
+});
+
+<span class="fn">describe</span>(<span class="str">'User API Contract'</span>, () => {
+  <span class="fn">it</span>(<span class="str">'retorna dados do usuário por ID'</span>, <span class="kw">async</span> () => {
+    <span class="cm">// 1. Define a expectativa (consumer-driven)</span>
+    provider
+      .<span class="fn">given</span>(<span class="str">'usuário com ID 1 existe'</span>)
+      .<span class="fn">uponReceiving</span>(<span class="str">'request para buscar usuário 1'</span>)
+      .<span class="fn">withRequest</span>({
+        method: <span class="str">'GET'</span>,
+        path: <span class="str">'/api/users/1'</span>,
+        headers: { Accept: <span class="str">'application/json'</span> },
+      })
+      .<span class="fn">willRespondWith</span>({
+        status: <span class="num">200</span>,
+        headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+        body: {
+          id: <span class="fn">like</span>(<span class="num">1</span>),
+          name: <span class="fn">string</span>(<span class="str">'Alice'</span>),
+          email: <span class="fn">string</span>(<span class="str">'alice@example.com'</span>),
+          role: <span class="fn">string</span>(<span class="str">'admin'</span>),
+        },
+      });
+
+    <span class="cm">// 2. Executa o teste contra o mock do Pact</span>
+    <span class="kw">await</span> provider.<span class="fn">executeTest</span>(<span class="kw">async</span> (mockServer) => {
+      <span class="kw">const</span> service = <span class="kw">new</span> <span class="tp">UserService</span>(mockServer.url);
+      <span class="kw">const</span> user = <span class="kw">await</span> service.<span class="fn">getUser</span>(<span class="num">1</span>);
+
+      <span class="fn">expect</span>(user.id).<span class="fn">toBe</span>(<span class="num">1</span>);
+      <span class="fn">expect</span>(user.name).<span class="fn">toBeDefined</span>();
+      <span class="fn">expect</span>(user.email).<span class="fn">toContain</span>(<span class="str">'@'</span>);
+    });
+    <span class="cm">// 3. Pact file é gerado automáticamente em ./pacts/</span>
+  });
+});</code></pre>
+
+<h4>Provider Verification</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { Verifier } <span class="kw">from</span> <span class="str">'@pact-foundation/pact'</span>;
+
+<span class="fn">describe</span>(<span class="str">'Provider Verification'</span>, () => {
+  <span class="fn">it</span>(<span class="str">'válida contratos com todos os consumers'</span>, <span class="kw">async</span> () => {
+    <span class="kw">const</span> verifier = <span class="kw">new</span> <span class="tp">Verifier</span>({
+      providerBaseUrl: <span class="str">'http://localhost:3000'</span>,
+      pactBrokerUrl: <span class="str">'https://broker.pactflow.io'</span>,
+      pactBrokerToken: process.env.<span class="tp">PACT_TOKEN</span>,
+      provider: <span class="str">'UserService'</span>,
+      publishVerificationResult: <span class="kw">true</span>,
+      providerVersion: process.env.<span class="tp">GIT_SHA</span>,
+      stateHandlers: {
+        <span class="str">'usuário com ID 1 existe'</span>: <span class="kw">async</span> () => {
+          <span class="cm">// Seed do banco para o estado esperado</span>
+          <span class="kw">await</span> db.users.<span class="fn">create</span>({ id: <span class="num">1</span>, name: <span class="str">'Alice'</span>, email: <span class="str">'alice@example.com'</span> });
+        },
+      },
+    });
+
+    <span class="kw">await</span> verifier.<span class="fn">verifyProvider</span>();
+  });
+});</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando usar Contract Testing:</strong> Sempre que dois serviços se comúnicam via API (REST, GraphQL, mensageria). Especialmente crítico quando times diferentes são donós de serviços diferentes. O Pact Broker integra com CI/CD e pode bloquear deploys incompatíveis automáticamente (can-i-deploy).</div>
+</div>
+
+<!-- ═══ MUTATION TESTING ═══ -->
+<h3>Mutation Testing</h3>
+
+<p>Seus testes passam com 95% de cobertura. Ótimo, certo? Não necessariamente. <strong>Cobertura mede quais linhas foram executadas, não se os testes realmente válidam o comportamento.</strong> Um teste pode executar uma função sem verificar nada — a cobertura sobe, mas o teste e inútil.</p>
+
+<p><strong>Mutation Testing</strong> resolve isso injetando <strong>mutações</strong> (bugs artificiais) no código-fonte e rodando os testes contra cada mutação. Se os testes <strong>continuam passando</strong> com a mutação, significa que os testes são fracos — não detectaram o bug. Se os testes <strong>falham</strong>, a mutação foi "morta" e os testes são eficazes.</p>
+
+<h4>Tipos de Mutações</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Tipo</th><th>Original</th><th>Mutação</th><th>O que Testa</th></tr>
+<tr><td><strong>Conditional Boundary</strong></td><td><code>x > 0</code></td><td><code>x >= 0</code></td><td>Testes cobrem valores limites?</td></tr>
+<tr><td><strong>Negaté Conditional</strong></td><td><code>x === y</code></td><td><code>x !== y</code></td><td>Testes verificam a condição correta?</td></tr>
+<tr><td><strong>Arithmetic Operator</strong></td><td><code>a + b</code></td><td><code>a - b</code></td><td>Testes válidam o resultado da operação?</td></tr>
+<tr><td><strong>Remove Call</strong></td><td><code>válidate(input)</code></td><td><code>// removido</code></td><td>Testes dependem dessa chamada?</td></tr>
+<tr><td><strong>Boolean Literál</strong></td><td><code>return true</code></td><td><code>return false</code></td><td>Testes verificam o retorno booleano?</td></tr>
+<tr><td><strong>String Literál</strong></td><td><code>"hello"</code></td><td><code>""</code></td><td>Testes válidam strings específicas?</td></tr>
+<tr><td><strong>Block Statement</strong></td><td><code>if (x) { doThis() }</code></td><td><code>if (x) { }</code></td><td>Testes verificam o efeito colateral?</td></tr>
+</table>
+</div>
+
+<h4>Stryker — Mutation Testing para JS/TS</h4>
+<pre data-lang="bash"><code><span class="cm"># Instalação</span>
+npm install --save-dev @stryker-mutator/core \
+  @stryker-mutator/jest-runner \
+  @stryker-mutator/typescript-checker</code></pre>
+
+<pre data-lang="json"><code><span class="cm">// stryker.config.json</span>
+{
+  <span class="str">"mutate"</span>: [<span class="str">"src/**/*.ts"</span>, <span class="str">"!src/**/*.spec.ts"</span>],
+  <span class="str">"testRunner"</span>: <span class="str">"jest"</span>,
+  <span class="str">"checkers"</span>: [<span class="str">"typescript"</span>],
+  <span class="str">"reporters"</span>: [<span class="str">"html"</span>, <span class="str">"clear-text"</span>, <span class="str">"progress"</span>],
+  <span class="str">"thresholds"</span>: {
+    <span class="str">"high"</span>: <span class="num">80</span>,
+    <span class="str">"low"</span>: <span class="num">60</span>,
+    <span class="str">"break"</span>: <span class="num">50</span>
+  },
+  <span class="str">"concurrency"</span>: <span class="num">4</span>
+}</code></pre>
+
+<h4>Exemplo Prático: Função e Seus Testes</h4>
+<pre data-lang="typescript"><code><span class="cm">// discount.ts</span>
+<span class="kw">export function</span> <span class="fn">calculateDiscount</span>(price: <span class="tp">number</span>, qty: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">if</span> (qty > <span class="num">10</span>) <span class="kw">return</span> price * <span class="num">0.8</span>;  <span class="cm">// 20% off</span>
+  <span class="kw">if</span> (qty > <span class="num">5</span>)  <span class="kw">return</span> price * <span class="num">0.9</span>;  <span class="cm">// 10% off</span>
+  <span class="kw">return</span> price;
+}
+
+<span class="cm">// discount.spec.ts — Testes FRACOS (100% cobertura, mas...)</span>
+<span class="fn">it</span>(<span class="str">'aplica desconto para qty > 10'</span>, () => {
+  <span class="kw">const</span> result = <span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">15</span>);
+  <span class="fn">expect</span>(result).<span class="fn">toBeDefined</span>();  <span class="cm">// &#10060; Não verifica o VALOR!</span>
+});
+
+<span class="cm">// Stryker muda qty > 10 para qty >= 10...</span>
+<span class="cm">// O teste CONTINUA passando — mutação SOBREVIVEU</span>
+<span class="cm">// Isso revela: o teste não válida valores de fronteira</span>
+
+<span class="cm">// discount.spec.ts — Testes FORTES</span>
+<span class="fn">it</span>(<span class="str">'aplica 20% para qty > 10'</span>, () => {
+  <span class="fn">expect</span>(<span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">11</span>)).<span class="fn">toBe</span>(<span class="num">80</span>);
+  <span class="fn">expect</span>(<span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">10</span>)).<span class="fn">toBe</span>(<span class="num">90</span>);  <span class="cm">// Boundary!</span>
+});
+
+<span class="fn">it</span>(<span class="str">'aplica 10% para qty > 5'</span>, () => {
+  <span class="fn">expect</span>(<span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">6</span>)).<span class="fn">toBe</span>(<span class="num">90</span>);
+  <span class="fn">expect</span>(<span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">5</span>)).<span class="fn">toBe</span>(<span class="num">100</span>);   <span class="cm">// Boundary!</span>
+});
+
+<span class="fn">it</span>(<span class="str">'sem desconto para qty <= 5'</span>, () => {
+  <span class="fn">expect</span>(<span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">3</span>)).<span class="fn">toBe</span>(<span class="num">100</span>);
+});</code></pre>
+
+<div class="card">
+<div class="card-title">Interpretando o Mutation Score</div>
+<ul>
+<li><strong>Mutation Score = Mutantes Mortos / Total de Mutantes</strong></li>
+<li><strong>80%+</strong> — Excelente. Testes são robustos e válidam comportamento real</li>
+<li><strong>60-80%</strong> — Bom, mas ha lacunas. Foque nós mutantes que sobreviveram</li>
+<li><strong>&lt;60%</strong> — Testes são superficiais. Alta cobertura não significa testes eficazes</li>
+<li><strong>Mutante sobrevivente</strong> — Indica um cenário que seus testes não verificam. Pode ser um bug esperando para acontecer</li>
+</ul>
+</div>
+
+<!-- ═══ PROPERTY-BASED TESTING ═══ -->
+<h3>Property-Based Testing</h3>
+
+<p>Em testes tradicionais (example-based), você escolhe inputs específicos: <code>sort([3,1,2])</code> deve retornar <code>[1,2,3]</code>. Mas e se houver um bug que só aparece com arrays de 1000 elementos? Ou com números negativos? Ou com <code>NaN</code>?</p>
+
+<p><strong>Property-Based Testing</strong> inverte a abordagem: ao invés de testar exemplos específicos, você define <strong>propriedades</strong> que devem ser verdadeiras para <strong>qualquer input</strong>. O framework gera centenas/milhares de inputs aleatórios e verifica se as propriedades se mantém. Quando encontra uma falha, faz <strong>shrinking</strong> — reduz o input ao menor caso que reproduz o bug.</p>
+
+<h4>fast-check — Property-Based Testing para JS/TS</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> fc <span class="kw">from</span> <span class="str">'fast-check'</span>;
+
+<span class="cm">// Testando uma função sort() com propriedades</span>
+<span class="fn">describe</span>(<span class="str">'sort()'</span>, () => {
+
+  <span class="cm">// Propriedade 1: Output tem o mesmo tamanho que o input</span>
+  <span class="fn">it</span>(<span class="str">'preserva o tamanho do array'</span>, () => {
+    fc.<span class="fn">assert</span>(
+      fc.<span class="fn">property</span>(
+        fc.<span class="fn">array</span>(fc.<span class="fn">integer</span>()),
+        (arr) => {
+          <span class="kw">const</span> sorted = <span class="fn">sort</span>(arr);
+          <span class="kw">return</span> sorted.length === arr.length;
+        }
+      )
+    );
+  });
+
+  <span class="cm">// Propriedade 2: Output esta ordenado</span>
+  <span class="fn">it</span>(<span class="str">'resultado está em ordem crescente'</span>, () => {
+    fc.<span class="fn">assert</span>(
+      fc.<span class="fn">property</span>(
+        fc.<span class="fn">array</span>(fc.<span class="fn">integer</span>()),
+        (arr) => {
+          <span class="kw">const</span> sorted = <span class="fn">sort</span>(arr);
+          <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i < sorted.length; i++) {
+            <span class="kw">if</span> (sorted[i] < sorted[i - <span class="num">1</span>]) <span class="kw">return false</span>;
+          }
+          <span class="kw">return true</span>;
+        }
+      )
+    );
+  });
+
+  <span class="cm">// Propriedade 3: Output contém os mesmos elementos</span>
+  <span class="fn">it</span>(<span class="str">'contém exatamente os mesmos elementos'</span>, () => {
+    fc.<span class="fn">assert</span>(
+      fc.<span class="fn">property</span>(
+        fc.<span class="fn">array</span>(fc.<span class="fn">integer</span>()),
+        (arr) => {
+          <span class="kw">const</span> sorted = <span class="fn">sort</span>(arr);
+          <span class="kw">const</span> original = [...arr].<span class="fn">sort</span>((a, b) => a - b);
+          <span class="kw">return</span> JSON.<span class="fn">stringify</span>(sorted) === JSON.<span class="fn">stringify</span>(original);
+        }
+      )
+    );
+  });
+
+  <span class="cm">// Propriedade 4: Idempotência — sort(sort(x)) === sort(x)</span>
+  <span class="fn">it</span>(<span class="str">'e idempotente'</span>, () => {
+    fc.<span class="fn">assert</span>(
+      fc.<span class="fn">property</span>(
+        fc.<span class="fn">array</span>(fc.<span class="fn">integer</span>()),
+        (arr) => {
+          <span class="kw">const</span> once = <span class="fn">sort</span>(arr);
+          <span class="kw">const</span> twice = <span class="fn">sort</span>(once);
+          <span class="kw">return</span> JSON.<span class="fn">stringify</span>(once) === JSON.<span class="fn">stringify</span>(twice);
+        }
+      )
+    );
+  });
+});</code></pre>
+
+<h4>fast-check com Dados Complexos</h4>
+<pre data-lang="typescript"><code><span class="cm">// Testando um parser de email</span>
+<span class="kw">const</span> emailArbitrary = fc.<span class="fn">record</span>({
+  local: fc.<span class="fn">stringOf</span>(fc.<span class="fn">constantFrom</span>(...<span class="str">'abcdefghijklmnop0123456789._-'</span>.<span class="fn">split</span>(<span class="str">''</span>)), { minLength: <span class="num">1</span>, maxLength: <span class="num">64</span> }),
+  domain: fc.<span class="fn">stringOf</span>(fc.<span class="fn">constantFrom</span>(...<span class="str">'abcdefghijklmnop0123456789-'</span>.<span class="fn">split</span>(<span class="str">''</span>)), { minLength: <span class="num">1</span>, maxLength: <span class="num">63</span> }),
+  tld: fc.<span class="fn">constantFrom</span>(<span class="str">'com'</span>, <span class="str">'org'</span>, <span class="str">'net'</span>, <span class="str">'io'</span>),
+}).<span class="fn">map</span>(({ local, domain, tld }) => <span class="str">`${local}@${domain}.${tld}`</span>);
+
+<span class="fn">it</span>(<span class="str">'parse e serialize são inversos'</span>, () => {
+  fc.<span class="fn">assert</span>(
+    fc.<span class="fn">property</span>(emailArbitrary, (email) => {
+      <span class="kw">const</span> parsed = <span class="fn">parseEmail</span>(email);
+      <span class="kw">const</span> serialized = <span class="fn">serializeEmail</span>(parsed);
+      <span class="kw">return</span> serialized === email;
+    })
+  );
+});</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Quando usar Property-Based:</strong> Funções puras, parsers/serializers (roundtrip), codecs (encode/decode), algoritmos de ordenação, estruturas de dados, qualquer função com invariantes matematicas. Não substitui example-based — complementa.</div>
+</div>
+
+<!-- ═══ CHAOS ENGINEERING ═══ -->
+<h3>Chaos Engineering</h3>
+
+<p>Em 2011, a Netflix lancou o <strong>Chaos Monkey</strong> — um serviço que <strong>desliga servidores aleatórios em produção</strong>. A ideia parecia insana, mas o princípio é simples: se seu sistema não aguenta falhas aleatórias em terça-feira as 14h (quando a equipe esta atenta), como vai aguentar numa sexta as 23h (quando ninguém esta olhando)?</p>
+
+<p><strong>Chaos Engineering</strong> é a disciplina de experimentar em sistemas distribuídos para revelar fraquezas sistemicas. Não e "quebrar coisas por diversão" — é um processo cientifico rigoroso.</p>
+
+<h4>Os 5 Princípios do Chaos Engineering</h4>
+
+<div class="card blue">
+<div class="card-title">Princípios Fundamentais</div>
+<ol>
+<li><strong>Defina o "estado estável"</strong> — Identifique métricas que representam comportamento normal (throughput, latência p99, error rate). Este e seu baseline</li>
+<li><strong>Formule uma hipotese</strong> — "Se matarmos 1 pod do serviço de pagamento, o sistema deve continuar processando pedidos com latência &lt;500ms"</li>
+<li><strong>Varie eventos do mundo real</strong> — Simule falhas reais: crash de servidor, particao de rede, disco cheio, CPU throttling, DNS failure</li>
+<li><strong>Rode experimentos em produção</strong> — Ambientes de staging não reproduzem a complexidade real. Comece pequeno, mas o objetivo e testar em produção</li>
+<li><strong>Minimize o raio de explosao</strong> — Use feature flags, circuit breakers, e rollback automático. Afete o menor subconjunto possível de usuários</li>
+</ol>
+</div>
+
+<h4>Tipos de Experimentos</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Experimento</th><th>O que Simula</th><th>Ferramenta</th><th>Hipotese Tipica</th></tr>
+<tr><td><strong>Pod Kill</strong></td><td>Crash de container</td><td>Chaos Monkey, Litmus</td><td>K8s recria pod em &lt;30s, zero downtime</td></tr>
+<tr><td><strong>Network Latency</strong></td><td>Rede lenta entre serviços</td><td>Gremlin, tc (Linux)</td><td>Circuit breaker abre após 3s, fallback ativado</td></tr>
+<tr><td><strong>Dependency Failure</strong></td><td>Redis/DB fora do ar</td><td>Toxiproxy, Gremlin</td><td>Cache miss graceful, degrade sem crash</td></tr>
+<tr><td><strong>Disk Fill</strong></td><td>Disco cheio (logs, temp)</td><td>Gremlin, strêss-ng</td><td>Alertas disparam, log rotation funciona</td></tr>
+<tr><td><strong>CPU Strêss</strong></td><td>CPU 100% em um node</td><td>strêss-ng, Gremlin</td><td>Auto-scaling ativa, requests migram</td></tr>
+<tr><td><strong>DNS Failure</strong></td><td>Resolução DNS falha</td><td>Gremlin, iptables</td><td>Service mesh redireciona, cache DNS funciona</td></tr>
+<tr><td><strong>AZ Outage</strong></td><td>Availability Zone inteira cai</td><td>AWS FIS, Gremlin</td><td>Multi-AZ failover, dados consistentes</td></tr>
+</table>
+</div>
+
+<h4>Litmus Chaos — Chaos Engineering para Kubernetes</h4>
+<pre data-lang="yaml"><code><span class="cm"># litmus-pod-delete.yaml — Experimento de Chaos</span>
+<span class="kw">apiVersion</span>: litmuschaos.io/v1alpha1
+<span class="kw">kind</span>: ChaosEngine
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: payment-chaos
+  <span class="kw">namespace</span>: production
+<span class="kw">spec</span>:
+  <span class="kw">appinfo</span>:
+    <span class="kw">appns</span>: production
+    <span class="kw">applabel</span>: <span class="str">"app=payment-service"</span>
+    <span class="kw">appkind</span>: deployment
+  <span class="kw">chaosServiceAccount</span>: litmus-admin
+  <span class="kw">experiments</span>:
+    - <span class="kw">name</span>: pod-delete
+      <span class="kw">spec</span>:
+        <span class="kw">components</span>:
+          <span class="kw">env</span>:
+            - <span class="kw">name</span>: TOTAL_CHAOS_DURATION
+              <span class="kw">value</span>: <span class="str">"60"</span>        <span class="cm"># segundos</span>
+            - <span class="kw">name</span>: CHAOS_INTERVAL
+              <span class="kw">value</span>: <span class="str">"15"</span>        <span class="cm"># intervalo entre kills</span>
+            - <span class="kw">name</span>: PODS_AFFECTED_PERC
+              <span class="kw">value</span>: <span class="str">"50"</span>        <span class="cm"># mata 50% dos pods</span>
+  <span class="kw">monitoring</span>:
+    <span class="kw">enabled</span>: <span class="kw">true</span>       <span class="cm"># Exporta métricas para Prometheus</span></code></pre>
+
+<h4>Game Day — Como Comecar</h4>
+
+<div class="card">
+<div class="card-title">Roteiro para Seu Primeiro Game Day</div>
+<ol>
+<li><strong>Escolha um sistema crítico</strong> — Ex: fluxo de checkout</li>
+<li><strong>Mapeie dependências</strong> — DB, cache, filas, APIs externas, DNS</li>
+<li><strong>Defina métricas baseline</strong> — p99 latency, error rate, throughput das últimas 24h</li>
+<li><strong>Escreva hipoteses</strong> — "Se o Redis cair, o checkout deve degradar gracefully usando DB direta com latência &lt;2s"</li>
+<li><strong>Prepare o rollback</strong> — Feature flag para desativar o experimento instantaneamente</li>
+<li><strong>Execute com a equipe presente</strong> — Nunca rode chaos sozinho na primeira vez</li>
+<li><strong>Observe dashboards em tempo real</strong> — Grafana, Datadog, CloudWatch</li>
+<li><strong>Documente findings</strong> — O que quebrou? O que se comportou como esperado? Quais alertas dispararam?</li>
+<li><strong>Crie action items</strong> — Corrijá as fraquezas encontradas antes do próximo game day</li>
+</ol>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Chaos em produção sem preparação e sabotagem, não engenharia.</strong> Antes de qualquer experimento: tenha observabilidade (métricas, logs, traces), tenha rollback automático, tenha a equipe alinhada. Comece em staging, evolua para produção gradualmente.</div>
+</div>
+
+<!-- ═══ LOAD TESTING ═══ -->
+<h3>Load Testing com k6</h3>
+
+<p>Sua API funciona perfeitamente com 1 usuário. Mas e com 1.000? 10.000? 50.000 simultâneos? <strong>Load Testing</strong> responde essas perguntas antes que seus usuários respondam por você (com reclamações). O <strong>k6</strong> (da Grafana Labs) é a ferramenta moderna mais popular — scripts em JavaScript, alta performance (escrito em Go), e métricas ricas.</p>
+
+<h4>Tipos de Teste de Carga</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Tipo</th><th>Objetivo</th><th>Perfil</th><th>Duração Tipica</th></tr>
+<tr><td><strong>Load Test</strong></td><td>Performance sob carga esperada</td><td>Rampa até N usuários, mantém</td><td>10-30 min</td></tr>
+<tr><td><strong>Strêss Test</strong></td><td>Encontrar ponto de ruptura</td><td>Rampa crescente até quebrar</td><td>15-45 min</td></tr>
+<tr><td><strong>Soak Test</strong></td><td>Detectar memory leaks, degradação</td><td>Carga moderada por horas</td><td>2-12 horas</td></tr>
+<tr><td><strong>Spike Test</strong></td><td>Resposta a picos subitos</td><td>0 &rarr; max &rarr; 0 rapidamente</td><td>5-15 min</td></tr>
+<tr><td><strong>Breakpoint Test</strong></td><td>Capacidade máxima absoluta</td><td>Incremento linear até falha</td><td>Até encontrar limite</td></tr>
+</table>
+</div>
+
+<h4>k6 Script Completo com Scenários</h4>
+<pre data-lang="javascript"><code><span class="kw">import</span> http <span class="kw">from</span> <span class="str">'k6/http'</span>;
+<span class="kw">import</span> { check, sleep } <span class="kw">from</span> <span class="str">'k6'</span>;
+<span class="kw">import</span> { Rate, Trend } <span class="kw">from</span> <span class="str">'k6/metrics'</span>;
+
+<span class="cm">// Métricas customizadas</span>
+<span class="kw">const</span> errorRaté = <span class="kw">new</span> <span class="tp">Rate</span>(<span class="str">'errors'</span>);
+<span class="kw">const</span> orderDuration = <span class="kw">new</span> <span class="tp">Trend</span>(<span class="str">'order_duration'</span>);
+
+<span class="cm">// Configuração com múltiplos cenários</span>
+<span class="kw">export const</span> options = {
+  scenários: {
+    <span class="cm">// Cenário 1: Carga constante (baseline)</span>
+    constant_load: {
+      executor: <span class="str">'constant-vus'</span>,
+      vus: <span class="num">50</span>,
+      duration: <span class="str">'5m'</span>,
+      startTime: <span class="str">'0s'</span>,
+    },
+    <span class="cm">// Cenário 2: Rampa crescente (strêss)</span>
+    ramp_up: {
+      executor: <span class="str">'ramping-vus'</span>,
+      startVUs: <span class="num">0</span>,
+      stages: [
+        { duration: <span class="str">'2m'</span>, target: <span class="num">100</span> },  <span class="cm">// Sobe para 100</span>
+        { duration: <span class="str">'5m'</span>, target: <span class="num">100</span> },  <span class="cm">// Mantém 100</span>
+        { duration: <span class="str">'2m'</span>, target: <span class="num">200</span> },  <span class="cm">// Sobe para 200</span>
+        { duration: <span class="str">'5m'</span>, target: <span class="num">200</span> },  <span class="cm">// Mantém 200</span>
+        { duration: <span class="str">'2m'</span>, target: <span class="num">0</span> },    <span class="cm">// Cool down</span>
+      ],
+      startTime: <span class="str">'5m'</span>,
+    },
+    <span class="cm">// Cenário 3: Spike subito</span>
+    spike: {
+      executor: <span class="str">'ramping-vus'</span>,
+      startVUs: <span class="num">0</span>,
+      stages: [
+        { duration: <span class="str">'10s'</span>, target: <span class="num">500</span> },  <span class="cm">// Spike!</span>
+        { duration: <span class="str">'1m'</span>, target: <span class="num">500</span> },   <span class="cm">// Mantém</span>
+        { duration: <span class="str">'10s'</span>, target: <span class="num">0</span> },    <span class="cm">// Drop</span>
+      ],
+      startTime: <span class="str">'21m'</span>,
+    },
+  },
+  thresholds: {
+    <span class="str">'http_req_duration'</span>: [<span class="str">'p(95)&lt;500'</span>, <span class="str">'p(99)&lt;1000'</span>],  <span class="cm">// p95 &lt; 500ms</span>
+    <span class="str">'errors'</span>: [<span class="str">'rate&lt;0.05'</span>],                                <span class="cm">// &lt;5% errors</span>
+    <span class="str">'http_req_failed'</span>: [<span class="str">'rate&lt;0.01'</span>],                      <span class="cm">// &lt;1% failed</span>
+    <span class="str">'order_duration'</span>: [<span class="str">'p(95)&lt;800'</span>],                      <span class="cm">// Custom metric</span>
+  },
+};
+
+<span class="kw">const</span> BASE_URL = <span class="str">'https://api.staging.example.com'</span>;
+
+<span class="kw">export default function</span>() {
+  <span class="cm">// 1. Login</span>
+  <span class="kw">const</span> loginRes = http.<span class="fn">post</span>(<span class="str">`${BASE_URL}/auth/login`</span>, JSON.<span class="fn">stringify</span>({
+    email: <span class="str">'loadtest@example.com'</span>,
+    password: <span class="str">'test123'</span>,
+  }), { headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> } });
+
+  <span class="fn">check</span>(loginRes, {
+    <span class="str">'login status 200'</span>: (r) => r.status === <span class="num">200</span>,
+    <span class="str">'login has token'</span>: (r) => JSON.<span class="fn">parse</span>(r.body).token !== <span class="kw">undefined</span>,
+  });
+
+  <span class="kw">const</span> token = JSON.<span class="fn">parse</span>(loginRes.body).token;
+  <span class="kw">const</span> authHeaders = {
+    <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>,
+    <span class="str">'Authorization'</span>: <span class="str">`Bearer ${token}`</span>,
+  };
+
+  <span class="cm">// 2. Listar produtos</span>
+  <span class="kw">const</span> productsRes = http.<span class="fn">get</span>(<span class="str">`${BASE_URL}/products?limit=20`</span>, { headers: authHeaders });
+  <span class="fn">check</span>(productsRes, {
+    <span class="str">'products status 200'</span>: (r) => r.status === <span class="num">200</span>,
+    <span class="str">'products has data'</span>: (r) => JSON.<span class="fn">parse</span>(r.body).length > <span class="num">0</span>,
+  });
+
+  errorRate.<span class="fn">add</span>(productsRes.status !== <span class="num">200</span>);
+
+  <span class="cm">// 3. Criar pedido (com timing customizado)</span>
+  <span class="kw">const</span> start = Date.<span class="fn">now</span>();
+  <span class="kw">const</span> orderRes = http.<span class="fn">post</span>(<span class="str">`${BASE_URL}/orders`</span>, JSON.<span class="fn">stringify</span>({
+    items: [{ productId: <span class="str">'prod-1'</span>, quantity: <span class="num">2</span> }],
+  }), { headers: authHeaders });
+
+  orderDuration.<span class="fn">add</span>(Date.<span class="fn">now</span>() - start);
+
+  <span class="fn">check</span>(orderRes, {
+    <span class="str">'order created'</span>: (r) => r.status === <span class="num">201</span>,
+  });
+
+  <span class="fn">sleep</span>(<span class="num">1</span>); <span class="cm">// Simula think time do usuário (1s)</span>
+}</code></pre>
+
+<h4>Interpretando Resultados do k6</h4>
+<pre data-lang="bash"><code><span class="cm"># Executar</span>
+k6 run --out json=results.json load-test.js
+
+<span class="cm"># Output tipico:</span>
+<span class="cm"># http_req_duration...: avg=245ms  min=12ms  med=180ms  max=4.2s  p(90)=420ms  p(95)=680ms</span>
+<span class="cm"># http_req_failed.....: 0.82%   ✓ 4102  ✗ 495698</span>
+<span class="cm"># http_reqs..........: 500000  2083.33/s</span>
+<span class="cm"># iterátions.........: 125000  520.83/s</span>
+<span class="cm"># vus................: 200     min=0    max=500</span></code></pre>
+
+<div class="card blue">
+<div class="card-title">Métricas Chave para Analisar</div>
+<ul>
+<li><strong>p95 Latency</strong> — 95% das requests completam nesse tempo. Use como SLO principal (não use media, ela esconde outliers)</li>
+<li><strong>Throughput (RPS)</strong> — Requests por segundo. Indica capacidade do sistema</li>
+<li><strong>Error Rate</strong> — Percentual de requests com status 4xx/5xx. Deve ser &lt;1% em carga normal</li>
+<li><strong>APDEX Score</strong> — Satisfação do usuário: (satisfeito + tolerável/2) / total. Target: &gt;0.9</li>
+<li><strong>Ponto de inflexao</strong> — O momento onde latência/errors começam a subir exponencialmente. Este é o seu limite real</li>
+</ul>
+</div>
+
+<!-- ═══ FUZZ TESTING ═══ -->
+<h3>Fuzz Testing</h3>
+
+<p><strong>Fuzz Testing</strong> (ou fuzzing) consiste em enviar inputs <strong>aleatórios, malformados, ou inesperados</strong> para encontrar crashes, memory leaks, ou vulnerabilidades de segurança. Diferente de property-based testing (que verifica propriedades lógicas), fuzzing foca em <strong>robustez</strong> — o programa deve não crashar, não importa o que receba.</p>
+
+<p>O fuzzing é responsável por encontrar a maioria das vulnerabilidades críticas em software de infraestrutura. O projeto <strong>OSS-Fuzz</strong> do Google já encontrou mais de 10.000 bugs em projetos open-source como Chrome, OpenSSL, e SQLite.</p>
+
+<h4>Tipos de Fuzzing</h4>
+<ul>
+<li><strong>Dumb Fuzzing</strong> — Gera inputs completamente aleatórios. Simples, mas ineficiente para inputs com estrutura (JSON, XML, protobuf)</li>
+<li><strong>Smart/Grammar-Based Fuzzing</strong> — Conhece a estrutura do input e gera variantes válidas/semi-válidas. Muito mais eficaz para parsers</li>
+<li><strong>Coverage-Guided Fuzzing</strong> — Monitora quais caminhos do código são executados e prioriza inputs que exploram novos caminhos (AFL, libFuzzer)</li>
+<li><strong>Mutation-Based Fuzzing</strong> — Pega inputs válidos e aplica mutações (bit flips, inserções, truncamentos)</li>
+</ul>
+
+<h4>Fuzz Testing para APIs (TypeScript)</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> fc <span class="kw">from</span> <span class="str">'fast-check'</span>;
+
+<span class="cm">// Fuzz: O endpoint NÃO deve crashar com qualquer input</span>
+<span class="fn">describe</span>(<span class="str">'POST /api/users — Fuzz'</span>, () => {
+  <span class="fn">it</span>(<span class="str">'não deve retornar 500 para nenhum payload'</span>, <span class="kw">async</span> () => {
+    <span class="kw">await</span> fc.<span class="fn">assert</span>(
+      fc.<span class="fn">asyncProperty</span>(
+        fc.<span class="fn">record</span>({
+          name: fc.<span class="fn">oneof</span>(fc.<span class="fn">string</span>(), fc.<span class="fn">constant</span>(<span class="kw">null</span>), fc.<span class="fn">constant</span>(<span class="kw">undefined</span>)),
+          email: fc.<span class="fn">oneof</span>(fc.<span class="fn">string</span>(), fc.<span class="fn">constant</span>(<span class="num">12345</span>), fc.<span class="fn">constant</span>({})),
+          age: fc.<span class="fn">oneof</span>(fc.<span class="fn">integer</span>(), fc.<span class="fn">constant</span>(<span class="str">'not-a-number'</span>), fc.<span class="fn">constant</span>(-<span class="num">1</span>)),
+          role: fc.<span class="fn">oneof</span>(fc.<span class="fn">string</span>(), fc.<span class="fn">constant</span>([<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>])),
+        }),
+        <span class="kw">async</span> (payload) => {
+          <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">request</span>(app)
+            .<span class="fn">post</span>(<span class="str">'/api/users'</span>)
+            .<span class="fn">send</span>(payload);
+
+          <span class="cm">// 400 (validação) e OK. 500 (crash) NUNCA é aceitável</span>
+          <span class="kw">return</span> res.status !== <span class="num">500</span>;
+        }
+      ),
+      { numRuns: <span class="num">500</span> }
+    );
+  });
+});</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Casos de usó ideais para fuzzing:</strong> Parsers (JSON, XML, YAML, CSV), codecs de imagem/video, protocol handlers (HTTP, WebSocket), válidadores de input, qualquer função que processa dados externós não confiáveis.</div>
+</div>
+
+<!-- ═══ VISUAL REGRESSION TESTING ═══ -->
+<h3>Visual Regression Testing</h3>
+
+<p>Você muda o padding de um componente e, sem querer, quebra o layout da página de checkout em mobile. Os testes unitários passam. Os testes E2E passam (eles verificam funcionalidade, não aparência). <strong>Visual Regression Testing</strong> captura screenshots automatizadas e compara pixel-a-pixel com uma baseline, detectando qualquer mudança visual — intencional ou não.</p>
+
+<h4>Ferramentas Principais</h4>
+<ul>
+<li><strong>Chromatic</strong> — Integrado com Storybook. Captura cada story automáticamente, review visual no browser. Perfeito para design systems</li>
+<li><strong>Percy (BrowserStack)</strong> — Screenshots cross-browser (Chrome, Firefox, Safari). Integra com qualquer framework de teste</li>
+<li><strong>BackstopJS</strong> — Open-source, Docker-based. Bom para projetos que não usam Storybook</li>
+<li><strong>Playwright</strong> — Screenshot comparison nativo. Zero dependência externa</li>
+</ul>
+
+<h4>Playwright — Screenshot Comparison</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { test, expect } <span class="kw">from</span> <span class="str">'@playwright/test'</span>;
+
+test.<span class="fn">describe</span>(<span class="str">'Visual Regression'</span>, () => {
+  <span class="fn">test</span>(<span class="str">'homepage matches snapshot'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'http://localhost:3000'</span>);
+    <span class="kw">await</span> page.<span class="fn">waitForLoadState</span>(<span class="str">'networkidle'</span>);
+
+    <span class="cm">// Compara screenshot inteira da página</span>
+    <span class="kw">await</span> <span class="fn">expect</span>(page).<span class="fn">toHaveScreenshot</span>(<span class="str">'homepage.png'</span>, {
+      maxDiffPixels: <span class="num">100</span>,       <span class="cm">// Tolerância de 100 pixels</span>
+      threshold: <span class="num">0.2</span>,           <span class="cm">// Sensibilidade (0 = exato, 1 = ignora)</span>
+    });
+  });
+
+  <span class="fn">test</span>(<span class="str">'checkout form matches snapshot'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'http://localhost:3000/checkout'</span>);
+    <span class="kw">await</span> page.<span class="fn">waitForLoadState</span>(<span class="str">'networkidle'</span>);
+
+    <span class="cm">// Compara apenas um componente específico</span>
+    <span class="kw">const</span> form = page.<span class="fn">locator</span>(<span class="str">'[data-testid="checkout-form"]'</span>);
+    <span class="kw">await</span> <span class="fn">expect</span>(form).<span class="fn">toHaveScreenshot</span>(<span class="str">'checkout-form.png'</span>);
+  });
+
+  <span class="fn">test</span>(<span class="str">'responsive: mobile layout'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">setViewportSize</span>({ width: <span class="num">375</span>, height: <span class="num">812</span> }); <span class="cm">// iPhone X</span>
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'http://localhost:3000'</span>);
+    <span class="kw">await</span> <span class="fn">expect</span>(page).<span class="fn">toHaveScreenshot</span>(<span class="str">'homepage-mobile.png'</span>);
+  });
+});
+
+<span class="cm">// Para atualizar baselines quando a mudança e intencional:</span>
+<span class="cm">// npx playwright test --update-snapshots</span></code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Cuidado com flakiness:</strong> Conteúdo dinâmico (datas, números aleatórios, ads) causa falsos positivos. Use <code>mask</code> para ocultar áreas dinâmicas, <code>animations: 'disabled'</code> para parar animações, e <code>waitForLoadState('networkidle')</code> para garantir que a página esta estável antes do screenshot.</div>
+</div>
+
+<!-- ═══ ACCESSIBILITY TESTING ═══ -->
+<h3>Accessibility Testing (a11y)</h3>
+
+<p>Acessibilidade não é um "nice to have" — em muitos paises, e <strong>obrigação legal</strong> (ADA nós EUA, EN 301 549 na UE). Além disso, acessibilidade beneficia <strong>todos</strong>: legendas ajudam em ambientes barulhentos, contraste alto ajuda sob sol forte, navegação por teclado ajuda usuários avançados.</p>
+
+<p><strong>WCAG (Web Content Accessibility Guidelines)</strong> define os criterios em 3 níveis: A (mínimo), AA (recomendado — padrão legal), AAA (máximo). Os criterios cobrem: percepção (contraste, alt text), operabilidade (teclado, tempo), compreensão (labels, mensagens de erro), e robustez (semântica HTML, ARIA).</p>
+
+<h4>axe-core — O Motor de Acessibilidade</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { test, expect } <span class="kw">from</span> <span class="str">'@playwright/test'</span>;
+<span class="kw">import</span> AxeBuilder <span class="kw">from</span> <span class="str">'@axe-core/playwright'</span>;
+
+test.<span class="fn">describe</span>(<span class="str">'Accessibility'</span>, () => {
+  <span class="fn">test</span>(<span class="str">'homepage sem violações WCAG AA'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'http://localhost:3000'</span>);
+
+    <span class="kw">const</span> results = <span class="kw">await new</span> <span class="tp">AxeBuilder</span>({ page })
+      .<span class="fn">withTags</span>([<span class="str">'wcag2a'</span>, <span class="str">'wcag2aa'</span>, <span class="str">'wcag21a'</span>, <span class="str">'wcag21aa'</span>])
+      .<span class="fn">exclude</span>(<span class="str">'#third-party-widget'</span>)  <span class="cm">// Ignora componentes de terceiros</span>
+      .<span class="fn">analyze</span>();
+
+    <span class="fn">expect</span>(results.violations).<span class="fn">toEqual</span>([]);
+  });
+
+  <span class="fn">test</span>(<span class="str">'formulário de login acessível'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'http://localhost:3000/login'</span>);
+
+    <span class="kw">const</span> results = <span class="kw">await new</span> <span class="tp">AxeBuilder</span>({ page })
+      .<span class="fn">include</span>(<span class="str">'form'</span>)  <span class="cm">// Testa apenas o formulário</span>
+      .<span class="fn">analyze</span>();
+
+    <span class="cm">// Log detalhado de violações</span>
+    <span class="kw">if</span> (results.violations.length > <span class="num">0</span>) {
+      console.<span class="fn">log</span>(<span class="str">'Violações de acessibilidade:'</span>);
+      results.violations.<span class="fn">forEach</span>(v => {
+        console.<span class="fn">log</span>(<span class="str">`  [${v.impact}] ${v.id}: ${v.description}`</span>);
+        console.<span class="fn">log</span>(<span class="str">`    Help: ${v.helpUrl}`</span>);
+        v.nodes.<span class="fn">forEach</span>(n => {
+          console.<span class="fn">log</span>(<span class="str">`    Element: ${n.html}`</span>);
+        });
+      });
+    }
+
+    <span class="fn">expect</span>(results.violations).<span class="fn">toEqual</span>([]);
+  });
+});</code></pre>
+
+<h4>Checklist de Acessibilidade para Devs</h4>
+<div class="card">
+<div class="card-title">Mínimo Viável de Acessibilidade</div>
+<ul>
+<li><strong>Semântica HTML</strong> — Use <code>&lt;button&gt;</code> (não <code>&lt;div onclick&gt;</code>), <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;header&gt;</code>, headings em ordem</li>
+<li><strong>Alt text</strong> — Toda <code>&lt;img&gt;</code> com <code>alt</code> descritivo. Decorativas: <code>alt=""</code></li>
+<li><strong>Contraste</strong> — Texto normal: ratio 4.5:1 mínimo. Texto grande: 3:1</li>
+<li><strong>Focus visible</strong> — Nunca remova <code>outline</code> sem substituição visível</li>
+<li><strong>Navegação por teclado</strong> — Tab order lógico, Enter/Space ativam botoes, Escape fecha modais</li>
+<li><strong>Labels</strong> — Todo input tem <code>&lt;label&gt;</code> associado ou <code>aria-label</code></li>
+<li><strong>ARIA</strong> — Use quando HTML semântico não é suficiente. <code>aria-expanded</code>, <code>aria-live</code> para conteúdo dinâmico</li>
+<li><strong>Redução de movimento</strong> — Respeite <code>prefers-reduced-motion</code></li>
+</ul>
+</div>
+
+<!-- ═══ TESTCONTAINERS ═══ -->
+<h3>Testcontainers</h3>
+
+<p>Testes de integração tradicionais usam banco de dados em memória (SQLite, H2) ou mocks — que não reproduzem o comportamento real do Postgres/MySQL/Redis. <strong>Testcontainers</strong> resolve isso: ele sobe containers Docker <strong>reais</strong> durante o teste e os destroi depois. Você testa contra a mesma versão do banco que roda em produção.</p>
+
+<h4>Testcontainers com PostgreSQL (TypeScript)</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { PostgreSqlContainer, <span class="tp">StartedPostgreSqlContainer</span> } <span class="kw">from</span> <span class="str">'@testcontainers/postgresql'</span>;
+<span class="kw">import</span> { DataSource } <span class="kw">from</span> <span class="str">'typeorm'</span>;
+<span class="kw">import</span> { UserRepository } <span class="kw">from</span> <span class="str">'./user.repository'</span>;
+<span class="kw">import</span> { User } <span class="kw">from</span> <span class="str">'./user.entity'</span>;
+
+<span class="fn">describe</span>(<span class="str">'UserRepository Integration'</span>, () => {
+  <span class="kw">let</span> container: <span class="tp">StartedPostgreSqlContainer</span>;
+  <span class="kw">let</span> dataSource: <span class="tp">DataSource</span>;
+  <span class="kw">let</span> repo: <span class="tp">UserRepository</span>;
+
+  <span class="fn">beforeAll</span>(<span class="kw">async</span> () => {
+    <span class="cm">// 1. Sobe PostgreSQL real no Docker</span>
+    container = <span class="kw">await new</span> <span class="tp">PostgreSqlContainer</span>(<span class="str">'postgres:16-alpine'</span>)
+      .<span class="fn">withDatabase</span>(<span class="str">'testdb'</span>)
+      .<span class="fn">withUsername</span>(<span class="str">'test'</span>)
+      .<span class="fn">withPassword</span>(<span class="str">'test'</span>)
+      .<span class="fn">start</span>();
+
+    <span class="cm">// 2. Conecta TypeORM ao container</span>
+    dataSource = <span class="kw">new</span> <span class="tp">DataSource</span>({
+      type: <span class="str">'postgres'</span>,
+      host: container.<span class="fn">getHost</span>(),
+      port: container.<span class="fn">getPort</span>(),
+      database: container.<span class="fn">getDatabase</span>(),
+      username: container.<span class="fn">getUsername</span>(),
+      password: container.<span class="fn">getPassword</span>(),
+      entities: [User],
+      synchronize: <span class="kw">true</span>,  <span class="cm">// Cria tabelas automáticamente</span>
+    });
+    <span class="kw">await</span> dataSource.<span class="fn">initialize</span>();
+
+    repo = <span class="kw">new</span> <span class="tp">UserRepository</span>(dataSource.<span class="fn">getRepository</span>(User));
+  }, <span class="num">60000</span>); <span class="cm">// Timeout maior para pull da imagem</span>
+
+  <span class="fn">afterAll</span>(<span class="kw">async</span> () => {
+    <span class="kw">await</span> dataSource.<span class="fn">destroy</span>();
+    <span class="kw">await</span> container.<span class="fn">stop</span>();
+  });
+
+  <span class="fn">beforeEach</span>(<span class="kw">async</span> () => {
+    <span class="cm">// Limpa tabelas entre testes</span>
+    <span class="kw">await</span> dataSource.<span class="fn">query</span>(<span class="str">'TRUNCATE TABLE "user" CASCADE'</span>);
+  });
+
+  <span class="fn">it</span>(<span class="str">'cria e busca usuário com queries reais do Postgres'</span>, <span class="kw">async</span> () => {
+    <span class="kw">const</span> user = <span class="kw">await</span> repo.<span class="fn">create</span>({
+      name: <span class="str">'Alice'</span>,
+      email: <span class="str">'alice@example.com'</span>,
+    });
+
+    <span class="fn">expect</span>(user.id).<span class="fn">toBeDefined</span>();
+
+    <span class="kw">const</span> found = <span class="kw">await</span> repo.<span class="fn">findByEmail</span>(<span class="str">'alice@example.com'</span>);
+    <span class="fn">expect</span>(found?.name).<span class="fn">toBe</span>(<span class="str">'Alice'</span>);
+  });
+
+  <span class="fn">it</span>(<span class="str">'testa unique constraint real do Postgres'</span>, <span class="kw">async</span> () => {
+    <span class="kw">await</span> repo.<span class="fn">create</span>({ name: <span class="str">'Alice'</span>, email: <span class="str">'alice@example.com'</span> });
+
+    <span class="cm">// Postgres lanca erro real de unique constraint</span>
+    <span class="kw">await</span> <span class="fn">expect</span>(
+      repo.<span class="fn">create</span>({ name: <span class="str">'Bob'</span>, email: <span class="str">'alice@example.com'</span> })
+    ).<span class="fn">rejects</span>.<span class="fn">toThrow</span>(<span class="str">/duplicaté key/</span>);
+  });
+
+  <span class="fn">it</span>(<span class="str">'testa JSONB queries (feature do Postgres)'</span>, <span class="kw">async</span> () => {
+    <span class="kw">await</span> repo.<span class="fn">create</span>({
+      name: <span class="str">'Alice'</span>,
+      email: <span class="str">'alice@example.com'</span>,
+      metadata: { plan: <span class="str">'pro'</span>, features: [<span class="str">'export'</span>, <span class="str">'analytics'</span>] },
+    });
+
+    <span class="cm">// Query JSONB — impossível de testar com SQLite!</span>
+    <span class="kw">const</span> proUsers = <span class="kw">await</span> repo.<span class="fn">findByPlan</span>(<span class="str">'pro'</span>);
+    <span class="fn">expect</span>(proUsers).toHaveLength(<span class="num">1</span>);
+  });
+});</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Além do banco:</strong> Testcontainers suporta Redis, RabbitMQ, Kafka, Elasticsearch, MongoDB, LocalStack (AWS), MinIO, Keycloak — qualquer serviço que rode em Docker. Ideal para testar interáções reais sem mocks.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Estratégia de Testes para uma API de Produção</h3>
+
+<p><strong>Cenário:</strong> Você está projetando a estratégia de testes para uma API de e-commerce (Node.js/NestJS) que processa pagamentos, gerência inventário e envia notificações. A API serve 50.000 usuários diarios.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Unit Tests<br><small>Jest — lógica de negócio</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Integration<br><small>Testcontainers + DB</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Contract<br><small>Pact — inter-serviços</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Load<br><small>k6 — performance</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Chaos<br><small>Game Day mensal</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Visual<br><small>Chromatic — UI</small></div>
+</div>
+
+<h4>Pipeline de CI/CD Integrado</h4>
+<pre data-lang="yaml"><code><span class="cm"># .github/workflows/test-pipeline.yml</span>
+<span class="kw">name</span>: Comprehensive Test Pipeline
+<span class="kw">on</span>: [push, pull_request]
+
+<span class="kw">jobs</span>:
+  <span class="kw">unit-tests</span>:
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: npm run test        <span class="cm"># Jest unit tests</span>
+      - <span class="kw">run</span>: npm run test:cov    <span class="cm"># Coverage report</span>
+
+  <span class="kw">mutation-tests</span>:
+    <span class="kw">needs</span>: unit-tests
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: npx stryker run    <span class="cm"># Mutation score >= 70%</span>
+
+  <span class="kw">integration-tests</span>:
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">services</span>:
+      <span class="kw">docker</span>: { <span class="kw">image</span>: docker:dind }
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: npm run test:integration  <span class="cm"># Testcontainers</span>
+
+  <span class="kw">contract-tests</span>:
+    <span class="kw">needs</span>: integration-tests
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: npm run test:pact         <span class="cm"># Consumer contracts</span>
+      - <span class="kw">run</span>: npx pact-broker can-i-deploy  <span class="cm"># Safe to deploy?</span>
+
+  <span class="kw">load-tests</span>:
+    <span class="kw">needs</span>: contract-tests
+    <span class="kw">if</span>: github.ref == <span class="str">'refs/heads/main'</span>
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: k6 run --out cloud load-test.js  <span class="cm"># k6 Cloud</span>
+
+  <span class="kw">visual-tests</span>:
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: npx chromatic --project-token=$TOKEN  <span class="cm"># Visual diff</span>
+
+  <span class="kw">a11y-tests</span>:
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">steps</span>:
+      - <span class="kw">run</span>: npx playwright test --grep @a11y  <span class="cm"># axe-core</span></code></pre>
+
+<div class="card purple">
+<div class="card-title">Métricas de Qualidade — Targets</div>
+<ul>
+<li><strong>Unit Coverage:</strong> &gt;80% de linhas, &gt;90% de branches críticos</li>
+<li><strong>Mutation Score:</strong> &gt;70% (Stryker)</li>
+<li><strong>Contract:</strong> 100% dos consumer contracts verificados (Pact can-i-deploy)</li>
+<li><strong>Load:</strong> p95 &lt;500ms com 2x carga esperada (k6)</li>
+<li><strong>Chaos:</strong> Game Day mensal com 100% de findings resolvidos antes do próximo</li>
+<li><strong>Visual:</strong> Zero diferenças não-aprovadas (Chromatic)</li>
+<li><strong>a11y:</strong> Zero violações WCAG AA (axe-core)</li>
+</ul>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Chaos Engineering em produção sem preparação:</strong> Rodar experimentos de chaos sem observabilidade (métricas, alertas, dashboards), sem rollback automático, e sem alinhamento do time e sabotagem disfarçada de engenharia. Comece com game days em staging com a equipe inteira presente.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Load testing contra banco de produção:</strong> Executar k6 com milhares de VUs apontando para o banco de produção pode derrubar o sistema para usuários reais. Sempre use ambientes de staging com dados sintéticos, ou shadow traffic (copiar requests sem afetar o banco principal).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Ignorar mutantes sobreviventes:</strong> Se o Stryker mostra 65% de mutation score e você não analisa os mutantes que sobreviveram, o investimento foi desperdicado. Cada mutante sobrevivente é um potencial bug não detectado. Priorize os mutantes em código crítico (pagamentos, autenticação).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Visual regression flaky por conteúdo dinâmico:</strong> Screenshots que capturam datas, contadores, animações ou conteúdo de terceiros geram falsos positivos constantemente. O time para de confiar nós testes e começa a aprovar tudo sem olhar. Use masks, congele datas, desabilite animações.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Testcontainers lentos no CI:</strong> Subir containers Docker adiciona 10-30s por suite. Sem cache de imagens Docker no CI, pode subir para 2+ minutos. Use <code>docker layer caching</code> no GitHub Actions, rode suites de integração em paralelo, e prefira imagens alpine.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Testes especializados não substituem testes unitários — eles completam a pirâmide. Comece com unit + integration sólidos. Depois adicione contract testing (se microsserviços), load testing (antes de lançamento), e mutation testing (para avaliar qualidade dos testes existentes). Chaos engineering vem por último, quando já tiver observabilidade madura.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Seu time tem 95% de cobertura de testes, mas bugs continuam chegando em produção. Como você investigaria e resolveria isso?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Alta cobertura não significa testes eficazes. Rode <strong>Mutation Testing com Stryker</strong> para avaliar a qualidade real dos testes. Análise os mutantes sobreviventes — eles revelam onde os testes executam o código mas não válidam o comportamento (ex: <code>expect(result).toBeDefined()</code> ao invés de <code>expect(result).toBe(42)</code>). Foque em melhorar assertions em código crítico. Além disso, adicione <strong>property-based testing com fast-check</strong> para encontrar edge cases que exemplos específicos não cobrem. Target: mutation score acima de 75% em módulos críticos.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Sua empresa vai lancar uma Black Friday sale e espera 10x mais tráfego que o normal. Que estratégia de load testing você implementaria?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use k6 com uma estratégia progressiva: (1) <strong>Baseline test</strong> — carga normal por 30min para estabelecer métricas de referência. (2) <strong>Load test</strong> — rampa até 5x carga normal, mantém por 15min, verifica p95 &lt;500ms. (3) <strong>Strêss test</strong> — rampa até 10x para encontrar o ponto de ruptura. (4) <strong>Spike test</strong> — de 0 para 10x em 30 segundos para testar auto-scaling. (5) <strong>Soak test</strong> — 3x carga normal por 4 horas para detectar memory leaks. Execute contra ambiente de staging com dados sintéticos. Defina thresholds claros e integre no CI para detectar regressoes de performance antes do deploy.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Dois microsserviços (Orders e Inventory) se comúnicam via REST. Deploys independentes causaram 3 incidentes no último mes por incompatibilidade de API. Como resolver?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Implemente <strong>Contract Testing com Pact</strong>. O serviço Orders (consumer) escreve testes que definem as expectativas da API do Inventory (provider). Os pacts gerados são publicados num Pact Broker. O CI do Inventory roda verificação de pacts antes de cada deploy. Use o comando <code>can-i-deploy</code> como gaté no pipeline — bloqueia deploys que quebram contratos. Configure webhooks para notificar o time do Orders quando o Inventory pública nova verificação. Isso garante que incompatibilidades são detectadas <strong>antes do deploy</strong>, não em produção.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Testes Especializados</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="38-tdd-bdd-piramide-testes.html">&#8592; Anterior</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="40-ssr-ssg-isr-micro-frontends.html" class="primary">Próximo: SSR, SSG, ISR &amp; Micro Frontends &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 39: Testes Especializados
+// ══════════════════════════════════════════
+const SECTION_NUM = 39;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "No Mutation Testing, o que significa um mutante que 'sobreviveu'?",
+    options: [
+      "O teste detectou a mutação e falhou corretamente",
+      "A mutação causou um erro de compilação e foi descartada",
+      "Os testes continuaram passando mesmo com o código mutado — indicando testes fracos",
+      "O mutante foi ignorado pelo Stryker por estar em código não coberto"
+    ],
+    correct: 2,
+    explanation: "Um mutante sobrevivente significa que os testes não detectaram a mudança no código. Isso indica que os testes executam o código mas não verificam o comportamento corretamente — são testes fracos que precisam de assertions mais específicas."
+  },
+  {
+    question: "No Contract Testing com Pact, quem define o contrato?",
+    options: [
+      "O provider (quem fornece a API) define é o consumer aceita",
+      "O consumer (quem consome a API) define suas expectativas é o provider verifica",
+      "Um arquiteto centralizado escreve todos os contratos num schema registry",
+      "O contrato é gerado automáticamente a partir do Swagger/OpenAPI do provider"
+    ],
+    correct: 1,
+    explanation: "Pact usa Consumer-Driven Contracts (CDC). O consumer define o que espera da API, gera um pact file, e o provider verifica que satisfaz essas expectativas. Isso garante que o provider nunca quebre o que o consumer realmente usa."
+  },
+  {
+    question: "Qual é o principal benefício do Property-Based Testing sobre Example-Based Testing?",
+    options: [
+      "E mais rápido de executar",
+      "Não precisa de assertions",
+      "Descobre edge cases que exemplos específicos não cobrem, gerando centenas de inputs aleatórios",
+      "Substitui completamente testes unitários tradicionais"
+    ],
+    correct: 2,
+    explanation: "Property-based testing gera centenas/milhares de inputs aleatórios e verifica se propriedades se mantém. Ele encontra edge cases (overflow, strings vazias, arrays enormes) que um dev jamais pensaria em testar manualmente. Não substitui example-based — complementa."
+  },
+  {
+    question: "Qual é o PRIMEIRO passó ao iniciar Chaos Engineering numa organização?",
+    options: [
+      "Instalar o Chaos Monkey e matar pods aleatórios em produção",
+      "Definir o estado estável do sistema (métricas baseline) e formular hipoteses",
+      "Contratar um SRE especialista em chaos engineering",
+      "Desligar um datacenter inteiro para testar resiliência"
+    ],
+    correct: 1,
+    explanation: "Os princípios de Chaos Engineering começam com 'defina o estado estável' — identifique métricas que representam comportamento normal. Depois formule hipoteses testáveis. Sem baseline e sem hipoteses, você está quebrando coisas sem aprender nada."
+  },
+  {
+    question: "No k6, qual tipo de teste de carga você usaria para detectar memory leaks que só aparecem após horas?",
+    options: [
+      "Spike Test — pico subito de carga",
+      "Strêss Test — carga até o ponto de ruptura",
+      "Soak Test — carga moderada por período prolongado",
+      "Breakpoint Test — incremento linear até falha"
+    ],
+    correct: 2,
+    explanation: "Soak Test (ou Endurance Test) aplica carga moderada por horas (2-12h). Memory leaks, connection pool exhaustion, e degradação gradual de performance só aparecem com tempo. Spike e Strêss testam limites, não estabilidade prolongada."
+  },
+  {
+    question: "Qual métrica de latência você deve usar como SLO principal em load testing e por que?",
+    options: [
+      "Media (avg) — representa a experiência tipica do usuário",
+      "Mediana (p50) — não é afetada por outliers",
+      "p95 ou p99 — representa a pior experiência aceitável e não esconde outliers",
+      "Máximo (max) — garante que nenhum usuário tem experiência ruim"
+    ],
+    correct: 2,
+    explanation: "p95/p99 é o padrão da industria para SLOs. A media esconde outliers (99 requests em 10ms + 1 em 10s = media de 109ms, parece OK). O máximo e volátil demais. p95 diz '95% dos usuários tem latência abaixo desse valor' — uma métrica útil e estável."
+  },
+  {
+    question: "Qual abordagem de Fuzz Testing é mais eficaz para encontrar bugs em parsers?",
+    options: [
+      "Dumb Fuzzing — inputs completamente aleatórios",
+      "Coverage-Guided Fuzzing — monitora caminhos do código e prioriza inputs que exploram novos caminhos",
+      "Manual Testing — um QA testa inputs inesperados",
+      "Snapshot Testing — compara output com baseline"
+    ],
+    correct: 1,
+    explanation: "Coverage-Guided Fuzzing (como AFL e libFuzzer) monitora quais caminhos do código cada input explora e prioriza mutações que alcançam novos caminhos. Isso é muito mais eficiente que fuzzing aleatório, especialmente para parsers complexos com muitos branches."
+  },
+  {
+    question: "No Visual Regression Testing, qual é a principal causa de testes flaky (falsos positivos)?",
+    options: [
+      "Resolução do monitor sendo diferente entre máquinas",
+      "Conteúdo dinâmico como datas, números, animações e dados de terceiros",
+      "Fontes web que não carregam corretamente",
+      "Diferença entre navegadores Chrome e Firefox"
+    ],
+    correct: 1,
+    explanation: "Conteúdo dinâmico é a principal causa de flakiness. Uma data que muda diariamente, um contador que incrementa, ou uma animação CSS capturada em frame diferente gera diffs constantes. A solução: mascarar áreas dinâmicas, congelar datas, e desabilitar animações nós testes."
+  },
+  {
+    question: "Por que Testcontainers é preferível a bancos in-memory (como SQLite) para testes de integração com PostgreSQL?",
+    options: [
+      "Testcontainers é mais rápido que SQLite",
+      "Testcontainers reproduz features específicas do Postgres (JSONB, CTEs, constraints) que SQLite não suporta",
+      "SQLite não suporta transações",
+      "Testcontainers não precisa de Docker instalado"
+    ],
+    correct: 1,
+    explanation: "PostgreSQL tem features únicas (JSONB queries, window functions, CTEs, specific constraint behaviors) que SQLite não reproduz. Testcontainers sobe o Postgres real, garantindo que seus testes válidam o comportamento exato do banco de produção."
+  },
+  {
+    question: "Numa estratégia de testes abrangente para uma API de produção, em qual ordem você adicionaria os tipos de testes especializados?",
+    options: [
+      "Chaos Engineering primeiro, pois testa resiliência real",
+      "Load Testing primeiro, pois performance é a prioridade número 1",
+      "Unit + Integration sólidos primeiro, depois Contract (microsserviços), Load (pre-lançamento), Mutation (avaliar qualidade), Chaos (por último, com observabilidade madura)",
+      "Visual Regression primeiro, pois usuários veem a interface antes de tudo"
+    ],
+    correct: 2,
+    explanation: "A ordem segue maturidade crescente. Sem unit/integration sólidos, testes avançados são prematuros. Contract testing resolve problemas de microsserviços. Load testing previne surpresas em lançamento. Mutation avalia o que já existe. Chaos requer observabilidade madura para ser seguro é útil."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina os testes especializados.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

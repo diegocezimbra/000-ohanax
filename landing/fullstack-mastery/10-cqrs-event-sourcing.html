@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10 — CQRS & Event Sourcing | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="09-microservices-vs-monolito.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>10</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="11-eda-event-driven.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:15.2%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 10</span>
+<h2>CQRS & Event Sourcing</h2>
+<div class="section-line"></div>
+
+<p>Dois padrões arquiteturais que, quando combinados, transformam a forma como pensamos sobre estado e dados em sistemas distribuídos. CQRS separa leitura de escrita. Event Sourcing armazena eventos ao inves de estado atual. Juntos, oferecem <strong>auditoria completa, escalabilidade independente e capacidade de reconstruir qualquer estado passado</strong> — mas com um custo significativo de complexidade.</p>
+
+<p>Uma analogia: pense num livro contabil. Você não apaga o saldo anterior e escreve o novo — você <strong>registra cada transação</strong> (evento). O saldo atual é uma <strong>projecao</strong> derivada de todas as transações. Se alguem questionar o saldo, basta refazer as contas desde o início. Isso e Event Sourcing.</p>
+
+<!-- ═══ CQRS ═══ -->
+<h3>CQRS — Command Query Responsibility Segregation</h3>
+<p><strong>"Separe o modelo de leitura do modelo de escrita."</strong> Em vez de usar a mesma estrutura de dados (e o mesmo serviço) para ler e escrever, você cria dois modelos distintos, cada um otimizado para seu proposito. O lado de <strong>Command</strong> (escrita) cuida de válidacoes, regras de negócio e persistência. O lado de <strong>Query</strong> (leitura) fornece dados denormalizados, otimizados para consultas rápidas.</p>
+
+<h4>Quando usar CQRS</h4>
+<ul>
+<li><strong>Padroes de leitura e escrita muito diferentes</strong> — ex: 95% das requisições são leituras, ou o modelo de escrita é muito complexo enquanto a leitura precisa de dados achatados</li>
+<li><strong>Escalabilidade independente</strong> — escalar read replicas sem impactar writes</li>
+<li><strong>Dominios complexos</strong> — DDD com Aggregates que tem regras de negócio pesadas</li>
+<li><strong>Performance critica</strong> — views materializadas pre-computadas para queries complexas</li>
+</ul>
+
+<h4>Quando NAO usar CQRS</h4>
+<ul>
+<li><strong>CRUD simples</strong> — se leitura e escrita usam o mesmo modelo, CQRS e overengineering</li>
+<li><strong>Equipe pequena</strong> — a complexidade operacional pode não valer para times de 2-3 devs</li>
+<li><strong>Consistência imediata obrigatória</strong> — CQRS tende a eventual consistency</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// ═══ LADO DE COMMAND (Escrita) ═══</span>
+
+<span class="cm">// Command: intencao de alterár estado</span>
+<span class="kw">interface</span> <span class="tp">PlaceOrderCommand</span> {
+  <span class="kw">readonly</span> customerId: <span class="tp">string</span>;
+  <span class="kw">readonly</span> items: <span class="tp">OrderItemDto</span>[];
+  <span class="kw">readonly</span> shippingAddress: <span class="tp">AddressDto</span>;
+}
+
+<span class="cm">// Command Handler: válida e executa</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">PlaceOrderHandler</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> orderRepo: <span class="tp">OrderRepository</span>,
+    <span class="kw">private</span> inventoryService: <span class="tp">InventoryService</span>,
+    <span class="kw">private</span> eventBus: <span class="tp">EventBus</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">execute</span>(cmd: <span class="tp">PlaceOrderCommand</span>): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+    <span class="cm">// 1. Validação de negócio</span>
+    <span class="kw">const</span> available = <span class="kw">await</span> <span class="kw">this</span>.inventoryService.<span class="fn">checkAvailability</span>(cmd.items);
+    <span class="kw">if</span> (!available) <span class="kw">throw new</span> <span class="tp">InsufficientStockError</span>();
+
+    <span class="cm">// 2. Criar aggregate</span>
+    <span class="kw">const</span> order = Order.<span class="fn">create</span>(cmd.customerId, cmd.items, cmd.shippingAddress);
+
+    <span class="cm">// 3. Persistir no modelo de escrita</span>
+    <span class="kw">await</span> <span class="kw">this</span>.orderRepo.<span class="fn">save</span>(order);
+
+    <span class="cm">// 4. Publicar evento para atualizar modelo de leitura</span>
+    <span class="kw">await</span> <span class="kw">this</span>.eventBus.<span class="fn">publish</span>(<span class="kw">new</span> <span class="tp">OrderPlacedEvent</span>(order));
+
+    <span class="kw">return</span> order.id;
+  }
+}
+
+<span class="cm">// ═══ LADO DE QUERY (Leitura) ═══</span>
+
+<span class="cm">// Read model: denormalizado, otimizado para consultas</span>
+<span class="kw">interface</span> <span class="tp">OrderSummaryView</span> {
+  orderId: <span class="tp">string</span>;
+  customerName: <span class="tp">string</span>;
+  totalAmount: <span class="tp">number</span>;
+  itemCount: <span class="tp">number</span>;
+  status: <span class="tp">string</span>;
+  createdAt: <span class="tp">Date</span>;
+}
+
+<span class="cm">// Query Handler: leitura pura, sem lógica de negócio</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">GetOrderSummaryHandler</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> readDb: <span class="tp">ReadDatabase</span>) {}
+
+  <span class="kw">async</span> <span class="fn">execute</span>(orderId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">OrderSummaryView</span>&gt; {
+    <span class="cm">// Consulta direta na view denormalizada — sem JOINs pesados</span>
+    <span class="kw">return</span> <span class="kw">this</span>.readDb.<span class="fn">query</span>&lt;<span class="tp">OrderSummaryView</span>&gt;(
+      <span class="str">'SELECT * FROM order_summary_view WHERE order_id = $1'</span>,
+      [orderId]
+    );
+  }
+}</code></pre>
+
+<!-- ═══ EVENT SOURCING ═══ -->
+<h3>Event Sourcing — Armazene Eventos, Não Estado</h3>
+<p><strong>"O estado atual e derivado da sequência de eventos que ocorreram."</strong> Em vez de salvar apenas o estado final de uma entidade (como uma linha no banco), você armazena <strong>cada evento</strong> que modificou aquela entidade. O estado atual e reconstruido aplicando todos os eventos em ordem (replay). O log de eventos é a <strong>única fonte de verdade</strong>.</p>
+
+<h4>Beneficios do Event Sourcing</h4>
+<ul>
+<li><strong>Auditoria completa</strong> — cada mudança e registrada com timestamp, quem fez, é o que mudou. Ideal para financas, saude, compliance</li>
+<li><strong>Temporal queries</strong> — responda perguntas como "qual era o saldo desta conta em 15/03/2024 as 14:00?"</li>
+<li><strong>Debug</strong> — reproduza exatamente a sequência de eventos que levou a um bug</li>
+<li><strong>Replay e projecoes</strong> — reconstrua read models do zero, crie novos relatórios retroativos</li>
+<li><strong>Desacoplamento</strong> — outros serviços reagem a eventos sem acoplamento direto</li>
+</ul>
+
+<h4>Desafios do Event Sourcing</h4>
+<ul>
+<li><strong>Eventual consistency</strong> — o read model pode estar defasado por milissegundos/segundos</li>
+<li><strong>Event schema evolution</strong> — como versionar eventos quando o formato muda? Upcasting, versionamento</li>
+<li><strong>Complexidade operacional</strong> — mais infraestrutura, mais conceitos, curva de aprendizado</li>
+<li><strong>Reconstrução lenta</strong> — aggregates com milhares de eventos precisam de snapshots</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// ═══ EVENTO: registro imutável do que aconteceu ═══</span>
+
+<span class="kw">interface</span> <span class="tp">DomainEvent</span> {
+  <span class="kw">readonly</span> eventId: <span class="tp">string</span>;
+  <span class="kw">readonly</span> eventType: <span class="tp">string</span>;
+  <span class="kw">readonly</span> aggregateId: <span class="tp">string</span>;
+  <span class="kw">readonly</span> version: <span class="tp">number</span>;
+  <span class="kw">readonly</span> timestamp: <span class="tp">Date</span>;
+  <span class="kw">readonly</span> payload: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">unknown</span>&gt;;
+}
+
+<span class="cm">// Evento concreto: pedido foi criado</span>
+<span class="kw">class</span> <span class="tp">OrderPlacedEvent</span> <span class="kw">implements</span> <span class="tp">DomainEvent</span> {
+  <span class="kw">readonly</span> eventType = <span class="str">'OrderPlaced'</span>;
+  <span class="kw">readonly</span> eventId = <span class="fn">randomUUID</span>();
+  <span class="kw">readonly</span> timestamp = <span class="kw">new</span> <span class="tp">Date</span>();
+
+  <span class="kw">constructor</span>(
+    <span class="kw">public readonly</span> aggregateId: <span class="tp">string</span>,
+    <span class="kw">public readonly</span> version: <span class="tp">number</span>,
+    <span class="kw">public readonly</span> payload: {
+      customerId: <span class="tp">string</span>;
+      items: <span class="tp">OrderItem</span>[];
+      totalAmount: <span class="tp">number</span>;
+      shippingAddress: <span class="tp">Address</span>;
+    },
+  ) {}
+}
+
+<span class="cm">// Evento concreto: item adicionado ao pedido</span>
+<span class="kw">class</span> <span class="tp">OrderItemAddedEvent</span> <span class="kw">implements</span> <span class="tp">DomainEvent</span> {
+  <span class="kw">readonly</span> eventType = <span class="str">'OrderItemAdded'</span>;
+  <span class="kw">readonly</span> eventId = <span class="fn">randomUUID</span>();
+  <span class="kw">readonly</span> timestamp = <span class="kw">new</span> <span class="tp">Date</span>();
+
+  <span class="kw">constructor</span>(
+    <span class="kw">public readonly</span> aggregateId: <span class="tp">string</span>,
+    <span class="kw">public readonly</span> version: <span class="tp">number</span>,
+    <span class="kw">public readonly</span> payload: {
+      productId: <span class="tp">string</span>;
+      quantity: <span class="tp">number</span>;
+      unitPrice: <span class="tp">number</span>;
+    },
+  ) {}
+}</code></pre>
+
+<!-- ═══ EVENT STORE ═══ -->
+<h3>Event Store — O Log Append-Only</h3>
+<p>O Event Store é um banco de dados especializado em armazenar eventos de forma <strong>append-only</strong> (somente adicao — nunca edita, nunca deleta). Cada aggregaté tem seu proprio <strong>stream</strong> de eventos. Snapshots são usados para evitar replay de milhares de eventos ao reconstruir estado.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// ═══ Implementação simplificada de Event Store ═══</span>
+
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">EventStore</span> {
+  <span class="kw">constructor</span>(
+    <span class="ann">@InjectRepository</span>(<span class="tp">EventEntity</span>)
+    <span class="kw">private</span> eventRepo: <span class="tp">Repository</span>&lt;<span class="tp">EventEntity</span>&gt;,
+    <span class="ann">@InjectRepository</span>(<span class="tp">SnapshotEntity</span>)
+    <span class="kw">private</span> snapshotRepo: <span class="tp">Repository</span>&lt;<span class="tp">SnapshotEntity</span>&gt;,
+  ) {}
+
+  <span class="cm">// Salvar eventos de um aggregate</span>
+  <span class="kw">async</span> <span class="fn">appendEvents</span>(
+    aggregateId: <span class="tp">string</span>,
+    events: <span class="tp">DomainEvent</span>[],
+    expectedVersion: <span class="tp">number</span>,
+  ): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="cm">// Optimistic concurrency: verifica versão para evitar conflitos</span>
+    <span class="kw">const</span> currentVersion = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">getLatestVersion</span>(aggregateId);
+
+    <span class="kw">if</span> (currentVersion !== expectedVersion) {
+      <span class="kw">throw new</span> <span class="tp">ConcurrencyError</span>(
+        <span class="str">`Esperada versão ${expectedVersion}, encontrada ${currentVersion}`</span>
+      );
+    }
+
+    <span class="cm">// Append-only: nunca edita eventos anteriores</span>
+    <span class="kw">const</span> entities = events.<span class="fn">map</span>((event, i) => ({
+      aggregateId,
+      eventType: event.eventType,
+      version: expectedVersion + i + <span class="num">1</span>,
+      payload: <span class="tp">JSON</span>.<span class="fn">stringify</span>(event.payload),
+      timestamp: event.timestamp,
+    }));
+
+    <span class="kw">await</span> <span class="kw">this</span>.eventRepo.<span class="fn">save</span>(entities);
+  }
+
+  <span class="cm">// Carregar todos os eventos de um aggregaté (com snapshot)</span>
+  <span class="kw">async</span> <span class="fn">getEvents</span>(aggregateId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">DomainEvent</span>[]&gt; {
+    <span class="cm">// 1. Buscar snapshot mais recente</span>
+    <span class="kw">const</span> snapshot = <span class="kw">await</span> <span class="kw">this</span>.snapshotRepo.<span class="fn">findOne</span>({
+      where: { aggregateId },
+      order: { version: <span class="str">'DESC'</span> },
+    });
+
+    <span class="cm">// 2. Carregar eventos APOS o snapshot (não desde o início)</span>
+    <span class="kw">const</span> fromVersion = snapshot ? snapshot.version : <span class="num">0</span>;
+
+    <span class="kw">return</span> <span class="kw">this</span>.eventRepo.<span class="fn">find</span>({
+      where: {
+        aggregateId,
+        version: <span class="fn">MoreThan</span>(fromVersion),
+      },
+      order: { version: <span class="str">'ASC'</span> },
+    });
+  }
+
+  <span class="cm">// Criar snapshot para otimizar reconstrução</span>
+  <span class="kw">async</span> <span class="fn">saveSnapshot</span>(
+    aggregateId: <span class="tp">string</span>,
+    version: <span class="tp">number</span>,
+    state: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">unknown</span>&gt;,
+  ): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">await</span> <span class="kw">this</span>.snapshotRepo.<span class="fn">save</span>({
+      aggregateId,
+      version,
+      state: <span class="tp">JSON</span>.<span class="fn">stringify</span>(state),
+      createdAt: <span class="kw">new</span> <span class="tp">Date</span>(),
+    });
+  }
+
+  <span class="kw">privaté async</span> <span class="fn">getLatestVersion</span>(aggregateId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">number</span>&gt; {
+    <span class="kw">const</span> latest = <span class="kw">await</span> <span class="kw">this</span>.eventRepo.<span class="fn">findOne</span>({
+      where: { aggregateId },
+      order: { version: <span class="str">'DESC'</span> },
+    });
+    <span class="kw">return</span> latest?.version ?? <span class="num">0</span>;
+  }
+}</code></pre>
+
+<!-- ═══ AGGREGATE REBUILD ═══ -->
+<h3>Aggregaté — Reconstruindo Estado a Partir de Eventos</h3>
+<p>O Aggregaté é o objeto de domínio que aplica regras de negócio. Em Event Sourcing, ele não carrega estado do banco diretamente — ele <strong>recebe eventos e reconstroi seu estado interno</strong> aplicando-os em sequência. Cada método de negócio gera novos eventos ao inves de mutar estado diretamente.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// ═══ Aggregaté que reconstroi estado via eventos ═══</span>
+
+<span class="kw">class</span> <span class="tp">OrderAggregate</span> {
+  <span class="kw">private</span> id: <span class="tp">string</span>;
+  <span class="kw">private</span> customerId: <span class="tp">string</span>;
+  <span class="kw">private</span> items: <span class="tp">OrderItem</span>[] = [];
+  <span class="kw">private</span> status: <span class="tp">OrderStatus</span> = <span class="str">'draft'</span>;
+  <span class="kw">private</span> totalAmount: <span class="tp">number</span> = <span class="num">0</span>;
+  <span class="kw">private</span> version: <span class="tp">number</span> = <span class="num">0</span>;
+
+  <span class="cm">// Eventos pendentes (ainda não persistidos)</span>
+  <span class="kw">private</span> uncommittedEvents: <span class="tp">DomainEvent</span>[] = [];
+
+  <span class="cm">// ── Reconstruir estado a partir de historico ──</span>
+  <span class="kw">static</span> <span class="fn">fromEvents</span>(events: <span class="tp">DomainEvent</span>[]): <span class="tp">OrderAggregate</span> {
+    <span class="kw">const</span> order = <span class="kw">new</span> <span class="tp">OrderAggregate</span>();
+    events.<span class="fn">forEach</span>(event => order.<span class="fn">apply</span>(event));
+    <span class="kw">return</span> order;
+  }
+
+  <span class="cm">// ── Método de negócio: gera evento, NAO muta estado diretamente ──</span>
+  <span class="fn">placeOrder</span>(customerId: <span class="tp">string</span>, items: <span class="tp">OrderItem</span>[], address: <span class="tp">Address</span>) {
+    <span class="cm">// Validacoes de negócio</span>
+    <span class="kw">if</span> (items.length === <span class="num">0</span>) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pedido deve ter ao menós 1 item'</span>);
+    <span class="kw">if</span> (<span class="kw">this</span>.status !== <span class="str">'draft'</span>) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pedido já foi criado'</span>);
+
+    <span class="kw">const</span> total = items.<span class="fn">reduce</span>((sum, i) => sum + i.price * i.qty, <span class="num">0</span>);
+
+    <span class="cm">// Gerar evento (não muda estado aqui)</span>
+    <span class="kw">this</span>.<span class="fn">raise</span>(<span class="kw">new</span> <span class="tp">OrderPlacedEvent</span>(<span class="kw">this</span>.id, <span class="kw">this</span>.version + <span class="num">1</span>, {
+      customerId, items, totalAmount: total, shippingAddress: address,
+    }));
+  }
+
+  <span class="fn">cancelOrder</span>(reason: <span class="tp">string</span>) {
+    <span class="kw">if</span> (<span class="kw">this</span>.status === <span class="str">'shipped'</span>) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Não pode cancelar pedido já enviado'</span>);
+    }
+    <span class="kw">this</span>.<span class="fn">raise</span>(<span class="kw">new</span> <span class="tp">OrderCancelledEvent</span>(<span class="kw">this</span>.id, <span class="kw">this</span>.version + <span class="num">1</span>, { reason }));
+  }
+
+  <span class="cm">// ── Apply: atualiza estado interno baseado no tipo do evento ──</span>
+  <span class="kw">private</span> <span class="fn">apply</span>(event: <span class="tp">DomainEvent</span>) {
+    <span class="kw">switch</span> (event.eventType) {
+      <span class="kw">case</span> <span class="str">'OrderPlaced'</span>:
+        <span class="kw">this</span>.id = event.aggregateId;
+        <span class="kw">this</span>.customerId = event.payload.customerId;
+        <span class="kw">this</span>.items = event.payload.items;
+        <span class="kw">this</span>.totalAmount = event.payload.totalAmount;
+        <span class="kw">this</span>.status = <span class="str">'placed'</span>;
+        <span class="kw">break</span>;
+
+      <span class="kw">case</span> <span class="str">'OrderCancelled'</span>:
+        <span class="kw">this</span>.status = <span class="str">'cancelled'</span>;
+        <span class="kw">break</span>;
+
+      <span class="kw">case</span> <span class="str">'OrderShipped'</span>:
+        <span class="kw">this</span>.status = <span class="str">'shipped'</span>;
+        <span class="kw">break</span>;
+    }
+
+    <span class="kw">this</span>.version = event.version;
+  }
+
+  <span class="kw">private</span> <span class="fn">raise</span>(event: <span class="tp">DomainEvent</span>) {
+    <span class="kw">this</span>.<span class="fn">apply</span>(event);                      <span class="cm">// Atualiza estado local</span>
+    <span class="kw">this</span>.uncommittedEvents.<span class="fn">push</span>(event);    <span class="cm">// Marca para persistir</span>
+  }
+
+  <span class="fn">getUncommittedEvents</span>(): <span class="tp">DomainEvent</span>[] {
+    <span class="kw">return</span> [...<span class="kw">this</span>.uncommittedEvents];
+  }
+}</code></pre>
+
+<!-- ═══ PROJECTIONS ═══ -->
+<h3>Projections — Modelos de Leitura Derivados</h3>
+<p>Projections são <strong>read models construidos a partir do stream de eventos</strong>. Elas escutam eventos e atualizam views denormalizadas otimizadas para consultas específicas. A grande vantagem: você pode criar <strong>multiplas projecoes</strong> do mesmo stream de eventos para necessidades diferentes, e pode <strong>reconstruir qualquer projecao</strong> do zero a qualquer momento.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// ═══ Projection: atualiza read model quando eventos ocorrem ═══</span>
+
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">OrderSummaryProjection</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> readDb: <span class="tp">ReadDatabase</span>,
+    <span class="kw">private</span> customerRepo: <span class="tp">CustomerRepository</span>,
+  ) {}
+
+  <span class="cm">// Escuta evento OrderPlaced e cria/atualiza a view</span>
+  <span class="ann">@OnEvent</span>(<span class="str">'OrderPlaced'</span>)
+  <span class="kw">async</span> <span class="fn">onOrderPlaced</span>(event: <span class="tp">OrderPlacedEvent</span>) {
+    <span class="kw">const</span> customer = <span class="kw">await</span> <span class="kw">this</span>.customerRepo.<span class="fn">findById</span>(
+      event.payload.customerId
+    );
+
+    <span class="cm">// Insere na view denormalizada (dados achatados, sem JOINs)</span>
+    <span class="kw">await</span> <span class="kw">this</span>.readDb.<span class="fn">execute</span>(
+      <span class="str">`INSERT INTO order_summary_view
+       (order_id, customer_name, customer_email, total_amount,
+        item_count, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`</span>,
+      [
+        event.aggregateId,
+        customer.name,
+        customer.email,
+        event.payload.totalAmount,
+        event.payload.items.length,
+        <span class="str">'placed'</span>,
+        event.timestamp,
+      ]
+    );
+  }
+
+  <span class="ann">@OnEvent</span>(<span class="str">'OrderCancelled'</span>)
+  <span class="kw">async</span> <span class="fn">onOrderCancelled</span>(event: <span class="tp">OrderCancelledEvent</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.readDb.<span class="fn">execute</span>(
+      <span class="str">'UPDATE order_summary_view SET status = $1 WHERE order_id = $2'</span>,
+      [<span class="str">'cancelled'</span>, event.aggregateId]
+    );
+  }
+
+  <span class="ann">@OnEvent</span>(<span class="str">'OrderShipped'</span>)
+  <span class="kw">async</span> <span class="fn">onOrderShipped</span>(event: <span class="tp">OrderShippedEvent</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.readDb.<span class="fn">execute</span>(
+      <span class="str">'UPDATE order_summary_view SET status = $1 WHERE order_id = $2'</span>,
+      [<span class="str">'shipped'</span>, event.aggregateId]
+    );
+  }
+
+  <span class="cm">// Reconstruir projecao inteira do zero (em caso de bug ou novo campo)</span>
+  <span class="kw">async</span> <span class="fn">rebuild</span>(allEvents: <span class="tp">DomainEvent</span>[]) {
+    <span class="kw">await</span> <span class="kw">this</span>.readDb.<span class="fn">execute</span>(<span class="str">'TRUNCATE order_summary_view'</span>);
+    <span class="kw">for</span> (<span class="kw">const</span> event <span class="kw">of</span> allEvents) {
+      <span class="kw">if</span> (event.eventType === <span class="str">'OrderPlaced'</span>) {
+        <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">onOrderPlaced</span>(event <span class="kw">as</span> <span class="tp">OrderPlacedEvent</span>);
+      } <span class="kw">else if</span> (event.eventType === <span class="str">'OrderCancelled'</span>) {
+        <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">onOrderCancelled</span>(event <span class="kw">as</span> <span class="tp">OrderCancelledEvent</span>);
+      }
+    }
+  }
+}</code></pre>
+
+<!-- ═══ CQRS + ES DIAGRAM ═══ -->
+<h3>Diagrama: Fluxo Completo CQRS + Event Sourcing</h3>
+<p>O fluxo completo mostra como um comando do usuário percorre o sistema até a leitura por outro usuário (ou o mesmo usuário):</p>
+
+<div class="diagram">
+<div class="diagram-box green">Command<br><small>PlaceOrder</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Aggregate<br><small>OrderAggregate</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Event Store<br><small>Append-Only Log</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Projection<br><small>Event Handler</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Query Model<br><small>Read Database</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Read API<br><small>GET /orders</small></div>
+</div>
+
+<div class="card blue">
+<div class="card-title">CQRS sem Event Sourcing</div>
+<p style="color:var(--text2);font-size:.88rem;margin:0">CQRS e Event Sourcing <strong>não precisam ser usados juntos</strong>. Você pode ter CQRS com um banco relacional comum no lado de escrita é uma read replica ou view materializada no lado de leitura. Event Sourcing adiciona a camada de historico imutável, mas a separacao de leitura/escrita já traz benefícios por si so.</p>
+</div>
+
+<div class="card">
+<div class="card-title">CQRS + ES vs CRUD Tradicional</div>
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>CRUD Tradicional</th><th>CQRS + Event Sourcing</th></tr>
+<tr><td><strong>Armazenamento</strong></td><td>Estado atual (UPDATE sobrescreve)</td><td>Eventos imutaveis (append-only)</td></tr>
+<tr><td><strong>Auditoria</strong></td><td>Precisa de tabela de audit separada</td><td>Nativa — o log de eventos E a auditoria</td></tr>
+<tr><td><strong>Consistência</strong></td><td>Forte (ACID)</td><td>Eventual (entre write e read models)</td></tr>
+<tr><td><strong>Escalabilidade</strong></td><td>Escala junto (read + write)</td><td>Escala independente (read != write)</td></tr>
+<tr><td><strong>Complexidade</strong></td><td>Baixa</td><td>Alta (mais conceitos, infra, debugging)</td></tr>
+<tr><td><strong>Temporal queries</strong></td><td>Impossível (estado antigo perdido)</td><td>Nativa (replay até qualquer ponto)</td></tr>
+<tr><td><strong>Casó ideal</strong></td><td>90% dos sistemas</td><td>Financas, compliance, domínios complexos</td></tr>
+</table>
+</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Sistema Bancario com CQRS + ES</h3>
+<p><strong>Cenário:</strong> Projete o core de um sistema bancario onde cada transação precisa ser auditavel, o saldo precisa ser 100% rastreável, e relatórios mensais são gerados retroativamente.</p>
+
+<h4>Eventos do Dominio</h4>
+<ul>
+<li><strong><code>AccountOpened</code></strong> — conta criada com dados do titular, tipo de conta, saldo inicial</li>
+<li><strong><code>MoneyDeposited</code></strong> — deposito realizado com valor, origem, referência</li>
+<li><strong><code>MoneyWithdrawn</code></strong> — saque ou debito com valor, destino, referência</li>
+<li><strong><code>TransferInitiated</code></strong> — transferencia entre contas com IDs de origem/destino</li>
+<li><strong><code>AccountBlocked</code></strong> — conta bloqueada com motivo (fraude, judicial, etc.)</li>
+</ul>
+
+<h4>Projections (Read Models)</h4>
+<ul>
+<li><strong><code>AccountBalance</code></strong> — saldo atual de cada conta (atualizado em tempo real via eventos)</li>
+<li><strong><code>TransactionHistory</code></strong> — historico páginado de todas as transações de uma conta</li>
+<li><strong><code>MonthlyStatement</code></strong> — extrato mensal gerado retroativamente via replay de eventos</li>
+<li><strong><code>FraudDetectionView</code></strong> — view com padrões suspeitos (muitas transações em curto periodo)</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box green">Cliente<br><small>App/Web</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Command Bus<br><small>Deposit / Withdraw</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Account<br>Aggregate<br><small>Regras de negócio</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Event Store<br><small>Append-only</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Projections<br><small>Balance | History<br>Statement | Fraud</small></div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// ═══ Account Aggregaté — Sistema Bancario ═══</span>
+
+<span class="kw">class</span> <span class="tp">AccountAggregate</span> {
+  <span class="kw">private</span> id: <span class="tp">string</span>;
+  <span class="kw">private</span> balance: <span class="tp">number</span> = <span class="num">0</span>;
+  <span class="kw">private</span> status: <span class="str">'active'</span> | <span class="str">'blocked'</span> = <span class="str">'active'</span>;
+  <span class="kw">private</span> version = <span class="num">0</span>;
+  <span class="kw">private</span> uncommitted: <span class="tp">DomainEvent</span>[] = [];
+
+  <span class="kw">static</span> <span class="fn">fromEvents</span>(events: <span class="tp">DomainEvent</span>[]): <span class="tp">AccountAggregate</span> {
+    <span class="kw">const</span> acct = <span class="kw">new</span> <span class="tp">AccountAggregate</span>();
+    events.<span class="fn">forEach</span>(e => acct.<span class="fn">apply</span>(e));
+    <span class="kw">return</span> acct;
+  }
+
+  <span class="fn">deposit</span>(amount: <span class="tp">number</span>, reference: <span class="tp">string</span>) {
+    <span class="kw">if</span> (<span class="kw">this</span>.status === <span class="str">'blocked'</span>) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Conta bloqueada'</span>);
+    <span class="kw">if</span> (amount &lt;= <span class="num">0</span>) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Valor deve ser positivo'</span>);
+
+    <span class="kw">this</span>.<span class="fn">raise</span>({
+      eventType: <span class="str">'MoneyDeposited'</span>,
+      aggregateId: <span class="kw">this</span>.id,
+      version: <span class="kw">this</span>.version + <span class="num">1</span>,
+      payload: { amount, reference, balanceAfter: <span class="kw">this</span>.balance + amount },
+    });
+  }
+
+  <span class="fn">withdraw</span>(amount: <span class="tp">number</span>, reference: <span class="tp">string</span>) {
+    <span class="kw">if</span> (<span class="kw">this</span>.status === <span class="str">'blocked'</span>) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Conta bloqueada'</span>);
+    <span class="kw">if</span> (amount &gt; <span class="kw">this</span>.balance) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Saldo insuficiente'</span>);
+
+    <span class="kw">this</span>.<span class="fn">raise</span>({
+      eventType: <span class="str">'MoneyWithdrawn'</span>,
+      aggregateId: <span class="kw">this</span>.id,
+      version: <span class="kw">this</span>.version + <span class="num">1</span>,
+      payload: { amount, reference, balanceAfter: <span class="kw">this</span>.balance - amount },
+    });
+  }
+
+  <span class="kw">private</span> <span class="fn">apply</span>(event: <span class="tp">DomainEvent</span>) {
+    <span class="kw">switch</span> (event.eventType) {
+      <span class="kw">case</span> <span class="str">'AccountOpened'</span>:
+        <span class="kw">this</span>.id = event.aggregateId;
+        <span class="kw">this</span>.balance = event.payload.initialBalance ?? <span class="num">0</span>;
+        <span class="kw">this</span>.status = <span class="str">'active'</span>;
+        <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="str">'MoneyDeposited'</span>:
+        <span class="kw">this</span>.balance += event.payload.amount;
+        <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="str">'MoneyWithdrawn'</span>:
+        <span class="kw">this</span>.balance -= event.payload.amount;
+        <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="str">'AccountBlocked'</span>:
+        <span class="kw">this</span>.status = <span class="str">'blocked'</span>;
+        <span class="kw">break</span>;
+    }
+    <span class="kw">this</span>.version = event.version;
+  }
+
+  <span class="kw">private</span> <span class="fn">raise</span>(event: <span class="tp">DomainEvent</span>) {
+    <span class="kw">this</span>.<span class="fn">apply</span>(event);
+    <span class="kw">this</span>.uncommitted.<span class="fn">push</span>(event);
+  }
+}
+
+<span class="cm">// ═══ Projection: Balance (atualizado em tempo real) ═══</span>
+
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">AccountBalanceProjection</span> {
+  <span class="ann">@OnEvent</span>(<span class="str">'AccountOpened'</span>)
+  <span class="kw">async</span> <span class="fn">onOpened</span>(e: <span class="tp">DomainEvent</span>) {
+    <span class="kw">await</span> db.<span class="fn">execute</span>(
+      <span class="str">'INSERT INTO account_balance (id, balance) VALUES ($1, $2)'</span>,
+      [e.aggregateId, e.payload.initialBalance ?? <span class="num">0</span>]
+    );
+  }
+
+  <span class="ann">@OnEvent</span>(<span class="str">'MoneyDeposited'</span>)
+  <span class="kw">async</span> <span class="fn">onDeposited</span>(e: <span class="tp">DomainEvent</span>) {
+    <span class="kw">await</span> db.<span class="fn">execute</span>(
+      <span class="str">'UPDATE account_balance SET balance = $1 WHERE id = $2'</span>,
+      [e.payload.balanceAfter, e.aggregateId]
+    );
+  }
+
+  <span class="ann">@OnEvent</span>(<span class="str">'MoneyWithdrawn'</span>)
+  <span class="kw">async</span> <span class="fn">onWithdrawn</span>(e: <span class="tp">DomainEvent</span>) {
+    <span class="kw">await</span> db.<span class="fn">execute</span>(
+      <span class="str">'UPDATE account_balance SET balance = $1 WHERE id = $2'</span>,
+      [e.payload.balanceAfter, e.aggregateId]
+    );
+  }
+}</code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Event Sourcing para CRUD simples:</strong> Se você tem um cadastro de produtos com create/read/update/delete básico, Event Sourcing é um canhão para matar mosca. O overhead de manter event store, projections, e lidar com eventual consistency não compensa. Reserve ES para domínios onde o historico de mudanças e parte central do negócio.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Não versionar eventos:</strong> Quando o schema de um evento muda (ex: adicionou campo <code>currency</code> ao <code>MoneyDeposited</code>), eventos antigos que não tem esse campo quebram as projections. Solução: <strong>upcasting</strong> (transformar eventos antigos para o formato novo durante leitura) ou versionamento explicito (<code>MoneyDeposited_v2</code>).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Esquecer snapshots:</strong> Um aggregaté com 50.000 eventos demora segundos para reconstruir via replay. Crie snapshots periodicamente (a cada N eventos) para que a reconstrução comece do snapshot mais recente + eventos novos.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Esperar consistência imediata no read model:</strong> Apos um comando ser processado, o read model pode não refletir a mudança por milissegundos ou segundos. Solução: retorne o ID do comando junto com a versão esperada, e no frontend faca polling ou use WebSocket até a projecao alcanccar aquela versão.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Use Event Sourcing quando você precisa responder a pergunta "o que aconteceu?" além de "qual é o estado atual?". Se o historico completo de mudanças tem valor de negócio (financas, saude, logistica, compliance), Event Sourcing faz sentido. Se não, CRUD com audit log é suficiente.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem um sistema de e-commerce onde 90% das requisições são leituras de catálogo e 10% são escritas (pedidos). O catálogo exige JOINs pesados entre produtos, categorias, preços e estoque. Como CQRS ajuda aqui?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Separe o modelo de leitura e escrita. O lado de escrita mantém as tabelas normalizadas (produto, categoria, preço, estoque) com integridade referêncial. O lado de leitura usa uma view materializada ou tabela denormalizada <code>catalog_view</code> com todos os dados achatados (nome do produto, nome da categoria, preço atual, quantidade em estoque) — sem JOINs. Quando um produto ou preço muda, um evento atualiza a view. As 90% de leituras agora são queries simples em uma única tabela.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu aggregaté de conta bancaria tem 100.000 eventos. O tempo para reconstruir o estado via replay e de 8 segundos, causando timeout nas APIs. Como resolver?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Implemente <strong>snapshots</strong>. A cada N eventos (ex: 100 ou 500), salve o estado completo do aggregaté como snapshot. Na reconstrução, carregue o snapshot mais recente e aplique apenas os eventos posteriores a ele. Se o snapshot esta na versão 99.800, você aplica apenas 200 eventos ao inves de 100.000. Resultado: reconstrução em milissegundos ao inves de 8 segundos.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: O formato do evento MoneyDeposited mudou — agora precisa incluir o campo currency (moeda). Eventos antigos não tem esse campo. Como lidar com essa evolução de schema sem perder dados?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>upcasting</strong>. Crie um transformador que, ao ler eventos antigos sem o campo <code>currency</code>, adiciona <code>currency: 'BRL'</code> como valor padrão. O evento original no event store permanece imutável (nunca edite eventos). O upcaster transforma o evento em memória durante a leitura para o formato atualizado. Alternativa: versione explicitamente (<code>MoneyDeposited_v1</code>, <code>MoneyDeposited_v2</code>) e mantenha handlers para cada versão.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — CQRS & Event Sourcing</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="09-microservices-vs-monolito.html">&#8592; Microservices vs Monolito</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="11-eda-event-driven.html" class="primary">Próximo: EDA Event-Driven &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 10: CQRS & Event Sourcing
+// ══════════════════════════════════════════
+const SECTION_NUM = 10;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "O que significa CQRS?",
+    options: [
+      "Command Queue Replicated System",
+      "Command Query Responsibility Segregation",
+      "Centralized Query Response Service",
+      "Command Query Read Separation"
+    ],
+    correct: 1,
+    explanation: "CQRS significa Command Query Responsibility Segregation — a separacao de responsabilidade entre comandos (escrita) e queries (leitura) em modelos distintos."
+  },
+  {
+    question: "Em Event Sourcing, qual é a fonte de verdade (source of truth) do sistema?",
+    options: [
+      "O estado atual das tabelas no banco de dados relacional",
+      "O read model (projecao denormalizada)",
+      "O log de eventos (event store) append-only",
+      "O cache Redis com os dados mais recentes"
+    ],
+    correct: 2,
+    explanation: "Em Event Sourcing, o log de eventos é a única fonte de verdade. O estado atual e derivado (reconstruido) a partir da sequência de eventos. Todas as outras representacoes (read models, caches) são projecoes."
+  },
+  {
+    question: "Qual é o principal benefício de usar snapshots em Event Sourcing?",
+    options: [
+      "Garantir consistência forte entre read e write models",
+      "Eliminar a necessidade do event store",
+      "Acelerar a reconstrução do aggregaté evitando replay de todos os eventos",
+      "Comprimir eventos antigos para economizar espaço em disco"
+    ],
+    correct: 2,
+    explanation: "Snapshots salvam o estado completo do aggregaté em um ponto específico. Na reconstrução, basta carregar o snapshot mais recente e aplicar apenas os eventos posteriores, ao inves de fazer replay de todo o historico."
+  },
+  {
+    question: "CQRS e Event Sourcing devem sempre ser usados juntos?",
+    options: [
+      "Sim, CQRS não funciona sem Event Sourcing",
+      "Sim, Event Sourcing exige CQRS obrigatóriamente",
+      "Não, são padrões independentes que podem ser usados separadamente",
+      "Não, mas Event Sourcing sem CQRS não tem útilidade prática"
+    ],
+    correct: 2,
+    explanation: "CQRS e Event Sourcing são padrões independentes. Você pode usar CQRS com um banco relacional comum (sem Event Sourcing), e pode usar Event Sourcing sem separar read/write models (embora sejá raro). Eles se complementam, mas não são obrigatórios juntos."
+  },
+  {
+    question: "O que é uma Projection (projecao) no contexto de Event Sourcing?",
+    options: [
+      "Uma query SQL que faz JOIN entre tabelas do write model",
+      "Um read model derivado do stream de eventos, otimizado para consultas",
+      "Uma copia exata do event store em outro banco de dados",
+      "Um índice criado no event store para buscas mais rápidas"
+    ],
+    correct: 1,
+    explanation: "Uma Projection é um read model construido escutando eventos e criando/atualizando views denormalizadas otimizadas para consultas específicas. Pode ser reconstruida do zero a qualquer momento refazendo o replay dos eventos."
+  },
+  {
+    question: "Qual problema o optimistic concurrency resolve no Event Store?",
+    options: [
+      "Evita leituras lentas no read model",
+      "Garante que dois comandos concorrentes não gerem versões conflitantes no mesmo aggregate",
+      "Comprime eventos duplicados para economizar espaço",
+      "Acelera o replay de eventos durante reconstrução"
+    ],
+    correct: 1,
+    explanation: "Optimistic concurrency verifica a versão esperada do aggregaté antes de salvar novos eventos. Se dois comandos tentam escrever na mesma versão, o segundo recebe um ConcurrencyError, evitando conflitos e inconsistências."
+  },
+  {
+    question: "Qual é a abordagem correta quando o schema de um evento precisa mudar (ex: adicionar campo currency)?",
+    options: [
+      "Atualizar todos os eventos antigos no event store para o novo formato",
+      "Deletar os eventos antigos e recria-los com o novo schema",
+      "Usar upcasting para transformar eventos antigos durante a leitura, sem modificar o event store",
+      "Criar uma nova tabela de eventos e migrar apenas os eventos recentes"
+    ],
+    correct: 2,
+    explanation: "Eventos no event store são imutaveis — nunca devem ser editados ou deletados. A abordagem correta é usar upcasting: um transformador que converte eventos do formato antigo para o novo durante a leitura em memória, mantendo o event store inalterádo."
+  },
+  {
+    question: "Quando Event Sourcing e claramente um over-engineering (exagero)?",
+    options: [
+      "Em sistemas financeiros que exigem auditoria completa",
+      "Em um sistema de CRUD simples para cadastro de produtos",
+      "Em domínios onde temporal queries tem valor de negócio",
+      "Em sistemas com requisitos de compliance regulatorio"
+    ],
+    correct: 1,
+    explanation: "Para CRUD simples (cadastro de produtos, configurações, etc.), Event Sourcing adiciona complexidade enorme (event store, projections, eventual consistency) sem benefício proporcional. Um audit log simples resolve a necessidade de rastreabilidade sem toda a infraestrutura de ES."
+  },
+  {
+    question: "Sobre eventual consistency em CQRS, qual afirmacao esta CORRETA?",
+    options: [
+      "O read model esta sempre perfeitamente sincronizado com o write model",
+      "O read model pode estar defasado por milissegundos ou segundos após uma escrita",
+      "Eventual consistency só ocorre quando se usa Event Sourcing junto com CQRS",
+      "A eventual consistency pode ser eliminada usando projecoes síncronas"
+    ],
+    correct: 1,
+    explanation: "Em CQRS, o read model e atualizado assíncronamente (via eventos ou mensagens), então pode haver um atrasó entre uma escrita e sua reflexao na leitura. Essa eventual consistency é um tradeoff aceito em troca de escalabilidade e performance independentes."
+  },
+  {
+    question: "Como um Aggregaté funciona em Event Sourcing?",
+    options: [
+      "Ele faz queries diretamente no banco de dados para carregar seu estado",
+      "Ele armazena seu estado em cache Redis e atualiza em cada requisição",
+      "Ele reconstroi seu estado aplicando eventos em sequência e gera novos eventos para cada operação de negócio",
+      "Ele é um DTO imutável que é criado a partir do read model"
+    ],
+    correct: 2,
+    explanation: "Em Event Sourcing, o Aggregaté reconstroi seu estado a partir do historico de eventos (via método apply). Cada operação de negócio (ex: placeOrder) válida regras e gera novos eventos ao inves de mutar estado diretamente. Os novos eventos são persistidos no event store."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina CQRS e Event Sourcing.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>33 — GitFlow, Trunk-Based & Branching | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="32-cicd-pipelines.html">&#8592; CI/CD Pipelines</a>
+<div class="nav-center">Seção <span>33</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="34-deploy-blue-green-canary.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:50%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 33</span>
+<h2>GitFlow, Trunk-Based & Branching Strategies</h2>
+<div class="section-line"></div>
+
+<p>A estratégia de branching que um time adota define o ritmo de entrega, a complexidade de merge é a qualidade do fluxo de trabalho. Não existe estratégia "melhor" — existe a <strong>mais adequada</strong> para o tamanho do time, a frequência de deploys é a maturidade do pipeline de CI/CD. Escolher errado pode paralisar o time com merge conflicts, ou deixar o código em produção sem controle.</p>
+
+<p>Nesta seção vamos dissecar as 4 estratégias principais, entender quando cada uma brilha, e aprender boas práticas que se aplicam a qualquer modelo.</p>
+
+<!-- ═══ GITFLOW ═══ -->
+<h3>GitFlow — O Modelo Classico</h3>
+<p>Criado por Vincent Driessen em 2010, o GitFlow define um modelo rigorosó com <strong>5 tipos de branches</strong>. E o mais estruturado e cerimoniosó dos modelos, ideal para projetos com releases planejadas e versionamento semântico.</p>
+
+<h4>Branches do GitFlow</h4>
+<ul>
+<li><strong><code>main</code></strong> (ou master) — Código em produção. Cada commit aqui é uma release tagueada</li>
+<li><strong><code>develop</code></strong> — Branch de integração. Sempre reflete o próximo release. Features são mergeadas aqui</li>
+<li><strong><code>feature/*</code></strong> — Criadas a partir de develop. Uma branch por feature. Mergeadas de volta em develop</li>
+<li><strong><code>release/*</code></strong> — Criadas a partir de develop quando está pronto para release. Permite bug fixes de última hora. Mergeadas em main E develop</li>
+<li><strong><code>hotfix/*</code></strong> — Criadas a partir de main para correcoes urgentes. Mergeadas em main E develop</li>
+</ul>
+
+<h4>Diagrama: Fluxo GitFlow</h4>
+<div class="diagram">
+<div class="diagram-box green">main<br><small>v1.0 &rarr; v1.1 &rarr; v2.0</small></div>
+<div class="diagram-arrow">&uarr;&darr;</div>
+<div class="diagram-box blue">develop<br><small>integração continua</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box purple">feature/*<br><small>novas funcionalidades</small></div>
+</div>
+<div class="diagram">
+<div class="diagram-box orange">release/*<br><small>preparação de versão</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">main + develop</div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box red">hotfix/*<br><small>correção urgente</small></div>
+</div>
+
+<h4>Comandos Git — Fluxo Completo</h4>
+<pre data-lang="bash"><code><span class="cm"># ═══ CRIAR FEATURE ═══</span>
+<span class="fn">git</span> checkout develop
+<span class="fn">git</span> pull origin develop
+<span class="fn">git</span> checkout -b feature/user-authentication
+
+<span class="cm"># ... trabalhar na feature, commits atomicos ...</span>
+<span class="fn">git</span> add -A
+<span class="fn">git</span> commit -m <span class="str">"feat: add JWT authentication middleware"</span>
+
+<span class="cm"># ═══ FINALIZAR FEATURE ═══</span>
+<span class="fn">git</span> checkout develop
+<span class="fn">git</span> pull origin develop
+<span class="fn">git</span> merge --no-ff feature/user-authentication
+<span class="fn">git</span> push origin develop
+<span class="fn">git</span> branch -d feature/user-authentication
+
+<span class="cm"># ═══ CRIAR RELEASE ═══</span>
+<span class="fn">git</span> checkout develop
+<span class="fn">git</span> checkout -b release/2.0.0
+
+<span class="cm"># ... apenas bug fixes e preparação (changelog, version bump) ...</span>
+<span class="fn">git</span> commit -m <span class="str">"chore: bump version to 2.0.0"</span>
+
+<span class="cm"># ═══ FINALIZAR RELEASE ═══</span>
+<span class="fn">git</span> checkout main
+<span class="fn">git</span> merge --no-ff release/2.0.0
+<span class="fn">git</span> tag -a v2.0.0 -m <span class="str">"Release 2.0.0"</span>
+<span class="fn">git</span> checkout develop
+<span class="fn">git</span> merge --no-ff release/2.0.0
+<span class="fn">git</span> branch -d release/2.0.0
+
+<span class="cm"># ═══ HOTFIX (correção urgente em produção) ═══</span>
+<span class="fn">git</span> checkout main
+<span class="fn">git</span> checkout -b hotfix/fix-payment-crash
+
+<span class="fn">git</span> commit -m <span class="str">"fix: prevent null pointer in payment processor"</span>
+
+<span class="fn">git</span> checkout main
+<span class="fn">git</span> merge --no-ff hotfix/fix-payment-crash
+<span class="fn">git</span> tag -a v2.0.1 -m <span class="str">"Hotfix 2.0.1"</span>
+<span class="fn">git</span> checkout develop
+<span class="fn">git</span> merge --no-ff hotfix/fix-payment-crash
+<span class="fn">git</span> branch -d hotfix/fix-payment-crash</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando usar GitFlow:</strong> Projetos com releases planejadas (a cada 2-4 semanas), times grandes (10+ devs), produtos com versionamento semântico, software embarcado, apps mobile com ciclo de review (App Store / Play Store).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Cuidado:</strong> O <code>--no-ff</code> (no fast-forward) é essencial no GitFlow. Ele cria um merge commit que preserva o histórico da branch, permitindo ver que um conjunto de commits pertência a uma feature específica.</div>
+</div>
+
+<!-- ═══ GITHUB FLOW ═══ -->
+<h3>GitHub Flow — Simplicidade e Deploys Continuos</h3>
+<p>O GitHub Flow é o modelo mais simples: apenas <code>main</code> + feature branches de curta duração. Cada feature branch gera um <strong>Pull Request</strong>, e após review e aprovação, o merge em main dispara um deploy automático. Não existe branch develop, release ou hotfix.</p>
+
+<h4>Regras do GitHub Flow</h4>
+<ol>
+<li><strong>main esta sempre deployável</strong> — nunca commite código quebrado</li>
+<li><strong>Crie uma branch descritiva</strong> a partir de main para qualquer mudança</li>
+<li><strong>Commite regularmente</strong> é faca push para a branch remota</li>
+<li><strong>Abra um Pull Request</strong> quando quiser feedback ou quando estiver pronto</li>
+<li><strong>Após review/aprovação</strong>, faca merge em main</li>
+<li><strong>Deploy imediato</strong> — main vai para produção automáticamente</li>
+</ol>
+
+<pre data-lang="bash"><code><span class="cm"># ═══ GITHUB FLOW ═══</span>
+<span class="fn">git</span> checkout main
+<span class="fn">git</span> pull origin main
+<span class="fn">git</span> checkout -b add-search-filter
+
+<span class="cm"># ... trabalhar, commitar ...</span>
+<span class="fn">git</span> add src/components/SearchFilter.tsx
+<span class="fn">git</span> commit -m <span class="str">"feat: add search filter component with debounce"</span>
+<span class="fn">git</span> push origin add-search-filter
+
+<span class="cm"># Abrir PR no GitHub (ou via CLI)</span>
+<span class="fn">gh</span> pr creaté --title <span class="str">"Add search filter with debounce"</span> \
+  --body <span class="str">"Adds a reusable search filter component with 300ms debounce"</span>
+
+<span class="cm"># Após aprovação do PR:</span>
+<span class="fn">gh</span> pr merge --squash --delete-branch
+
+<span class="cm"># main e deployado automáticamente via CI/CD</span></code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Quando usar GitHub Flow:</strong> Times pequenós a medios (2-10 devs), SaaS com deploy continuo, startups que iterám rápido, projetos open-source, qualquer time com pipeline de CI/CD robusto.</div>
+</div>
+
+<!-- ═══ TRUNK-BASED ═══ -->
+<h3>Trunk-Based Development — A Estrada de Alta Performance</h3>
+<p>No Trunk-Based Development (TBD), <strong>todos commitam diretamente na main</strong> (trunk) ou usam branches extremamente curtas (&lt; 1 dia). Não existe develop, release, ou feature branches de longa duração. A integração e continua de verdade — o código chega na main várias vezes por dia.</p>
+
+<p>A chave para funcionar com segurança são: <strong>feature flags</strong>, testes automatizados robustos, e code review rápido (pair programming ou mob programming como alternativa a PRs).</p>
+
+<h4>Como Funciona</h4>
+<ul>
+<li><strong>Commits diretos na main</strong> (ou branches de &lt; 24h com merge automático)</li>
+<li><strong>Feature flags</strong> controlam a visibilidade de funcionalidades incompletas</li>
+<li><strong>CI robusto</strong> — cada push roda testes, lint, build. Se falhar, reverte</li>
+<li><strong>Releases</strong> são feitas via tags ou feature flags, não via branches</li>
+<li><strong>Zero merge conflicts</strong> porque branches não duram tempo suficiente para divergir</li>
+</ul>
+
+<pre data-lang="bash"><code><span class="cm"># ═══ TRUNK-BASED — Commit direto ═══</span>
+<span class="fn">git</span> checkout main
+<span class="fn">git</span> pull origin main
+
+<span class="cm"># Mudança pequena e atômica</span>
+<span class="fn">git</span> add src/services/payment.ts
+<span class="fn">git</span> commit -m <span class="str">"feat: add PayPal support behind feature flag"</span>
+<span class="fn">git</span> push origin main
+
+<span class="cm"># ═══ TRUNK-BASED — Branch curta (opcional) ═══</span>
+<span class="fn">git</span> checkout -b short-lived/add-paypal
+<span class="cm"># ... trabalhar por algumas horas (máximo 1 dia) ...</span>
+<span class="fn">git</span> commit -m <span class="str">"feat: add PayPal integration"</span>
+<span class="fn">git</span> checkout main
+<span class="fn">git</span> pull origin main
+<span class="fn">git</span> merge short-lived/add-paypal
+<span class="fn">git</span> push origin main
+<span class="fn">git</span> branch -d short-lived/add-paypal</code></pre>
+
+<h4>Feature Flags — O Segredo do Trunk-Based</h4>
+<pre data-lang="typescript"><code><span class="cm">// Feature flags permitem deploy de código incompleto com segurança</span>
+<span class="kw">interface</span> <span class="tp">FeatureFlags</span> {
+  newCheckoutFlow: <span class="tp">boolean</span>;
+  paypalPayment: <span class="tp">boolean</span>;
+  darkMode: <span class="tp">boolean</span>;
+}
+
+<span class="cm">// Em produção: { newCheckoutFlow: false, paypalPayment: false, darkMode: true }</span>
+<span class="cm">// Em staging:  { newCheckoutFlow: true, paypalPayment: true, darkMode: true }</span>
+
+<span class="kw">class</span> <span class="tp">PaymentService</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> featureFlags: <span class="tp">FeatureFlags</span>,
+    <span class="kw">private</span> stripeProcessor: <span class="tp">StripeProcessor</span>,
+    <span class="kw">private</span> paypalProcessor: <span class="tp">PayPalProcessor</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">getAvailableMethods</span>(): <span class="tp">Promise</span>&lt;<span class="tp">string</span>[]&gt; {
+    <span class="kw">const</span> methods = [<span class="str">'credit_card'</span>, <span class="str">'pix'</span>];
+
+    <span class="cm">// Código deployado, mas inativo em produção</span>
+    <span class="kw">if</span> (<span class="kw">this</span>.featureFlags.paypalPayment) {
+      methods.<span class="fn">push</span>(<span class="str">'paypal'</span>);
+    }
+
+    <span class="kw">return</span> methods;
+  }
+}
+
+<span class="cm">// Ferramentas populares de feature flags:</span>
+<span class="cm">// - LaunchDarkly (enterprise)</span>
+<span class="cm">// - Unleash (open-source)</span>
+<span class="cm">// - Flagsmith (open-source)</span>
+<span class="cm">// - Simples: config no banco de dados ou env var</span></code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Quando usar Trunk-Based:</strong> Times de alta performance com cultura de CI/CD madura, empresas como Google/Meta/Netflix, quando você quer maximizar frequência de deploy e minimizar merge conflicts. Exige disciplina, testes automatizados e feature flags.</div>
+</div>
+
+<!-- ═══ RELEASE BRANCHING ═══ -->
+<h3>Release Branching — Múltiplas Versões em Produção</h3>
+<p>O modelo de Release Branching é usado quando você precisa manter <strong>múltiplas versões do software em produção simultaneamente</strong>. Cada release major ganha uma branch de longa duração que recebe backports de bug fixes.</p>
+
+<h4>Quando Usar</h4>
+<ul>
+<li><strong>Bibliotecas e frameworks</strong> — React mantendo v17, v18, v19 ao mesmo tempo</li>
+<li><strong>Software on-premise</strong> — clientes em versões diferentes</li>
+<li><strong>Apps mobile</strong> — versões antigas ainda precisam de patches</li>
+<li><strong>Produtos com contratos de suporte</strong> — SLA exige suporte a N versões</li>
+</ul>
+
+<pre data-lang="bash"><code><span class="cm"># ═══ RELEASE BRANCHING ═══</span>
+
+<span class="cm"># Desenvolvimento principal acontece na main</span>
+<span class="fn">git</span> checkout main
+
+<span class="cm"># Quando a v3.0 está pronta, cria branch de release</span>
+<span class="fn">git</span> checkout -b release/3.x
+<span class="fn">git</span> tag -a v3.0.0 -m <span class="str">"Release 3.0.0"</span>
+<span class="fn">git</span> push origin release/3.x --tags
+
+<span class="cm"># Main continua evoluindo para v4.0...</span>
+<span class="fn">git</span> checkout main
+<span class="cm"># ... novos commits, breaking changes ...</span>
+
+<span class="cm"># Bug fix encontrado que afeta v3.x</span>
+<span class="fn">git</span> checkout release/3.x
+<span class="fn">git</span> cherry-pick abc123  <span class="cm"># Pega o fix da main</span>
+<span class="fn">git</span> tag -a v3.0.1 -m <span class="str">"Patch 3.0.1"</span>
+<span class="fn">git</span> push origin release/3.x --tags
+
+<span class="cm"># Versões ativas: main (dev), release/3.x, release/2.x (legacy)</span></code></pre>
+
+<!-- ═══ COMPARISON TABLE ═══ -->
+<h3>Comparação: Estratégias de Branching</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>GitFlow</th>
+<th>GitHub Flow</th>
+<th>Trunk-Based</th>
+<th>Release Branching</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Branches</strong></td>
+<td>main, develop, feature/*, release/*, hotfix/*</td>
+<td>main + feature branches</td>
+<td>main (+ branches &lt;1 dia)</td>
+<td>main + release/N.x</td>
+</tr>
+<tr>
+<td><strong>Complexidade</strong></td>
+<td>Alta</td>
+<td>Baixa</td>
+<td>Muito baixa</td>
+<td>Media</td>
+</tr>
+<tr>
+<td><strong>Frequência de deploy</strong></td>
+<td>A cada release (semanas)</td>
+<td>Diariamente</td>
+<td>Várias vezes/dia</td>
+<td>Por versão (variável)</td>
+</tr>
+<tr>
+<td><strong>Melhor para</strong></td>
+<td>Releases planejadas, times grandes</td>
+<td>SaaS, startups, times pequenos</td>
+<td>Times de alta performance, CD</td>
+<td>Bibliotecas, software on-premise</td>
+</tr>
+<tr>
+<td><strong>Merge conflicts</strong></td>
+<td>Frequentes (branches longas)</td>
+<td>Poucos</td>
+<td>Raros</td>
+<td>Moderados (cherry-pick)</td>
+</tr>
+<tr>
+<td><strong>Feature flags</strong></td>
+<td>Opcional</td>
+<td>Opcional</td>
+<td>Essencial</td>
+<td>Opcional</td>
+</tr>
+<tr>
+<td><strong>CI/CD necessário</strong></td>
+<td>Recomendado</td>
+<td>Obrigatório</td>
+<td>Obrigatório e robusto</td>
+<td>Recomendado</td>
+</tr>
+<tr>
+<td><strong>Curva de aprendizado</strong></td>
+<td>Alta</td>
+<td>Baixa</td>
+<td>Media (disciplina)</td>
+<td>Media</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ═══ CONVENTIONAL COMMITS ═══ -->
+<h3>Conventional Commits — Padronizando Mensagens</h3>
+<p>Conventional Commits é uma convencao para mensagens de commit que permite <strong>gerar changelogs automáticamente</strong>, determinar o <strong>próximo número de versão</strong> via Semantic Versioning, é fácilitar a compreensão do histórico do projeto.</p>
+
+<h4>Formato</h4>
+<pre data-lang="text"><code><span class="op">&lt;type&gt;</span>[optional scope]: <span class="str">&lt;description&gt;</span>
+
+[optional body]
+
+[optional footer(s)]</code></pre>
+
+<h4>Tipos de Commit</h4>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Descrição</th>
+<th>SemVer</th>
+<th>Exemplo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>feat</code></td>
+<td>Nova funcionalidade</td>
+<td>MINOR (1.x.0)</td>
+<td><code>feat: add user avatar upload</code></td>
+</tr>
+<tr>
+<td><code>fix</code></td>
+<td>Correção de bug</td>
+<td>PATCH (1.0.x)</td>
+<td><code>fix: prevent crash on empty cart</code></td>
+</tr>
+<tr>
+<td><code>chore</code></td>
+<td>Tarefas de manutenção</td>
+<td>-</td>
+<td><code>chore: updaté dependencies</code></td>
+</tr>
+<tr>
+<td><code>refactor</code></td>
+<td>Refatoração sem mudança funcional</td>
+<td>-</td>
+<td><code>refactor: extract payment válidation</code></td>
+</tr>
+<tr>
+<td><code>docs</code></td>
+<td>Documentação</td>
+<td>-</td>
+<td><code>docs: add API authentication guide</code></td>
+</tr>
+<tr>
+<td><code>test</code></td>
+<td>Adicionar/modificar testes</td>
+<td>-</td>
+<td><code>test: add unit tests for OrderService</code></td>
+</tr>
+<tr>
+<td><code>perf</code></td>
+<td>Melhoria de performance</td>
+<td>PATCH</td>
+<td><code>perf: cache database queries</code></td>
+</tr>
+<tr>
+<td><code>ci</code></td>
+<td>Mudanças em CI/CD</td>
+<td>-</td>
+<td><code>ci: add staging deployment step</code></td>
+</tr>
+<tr>
+<td><code>style</code></td>
+<td>Formatação (sem mudança lógica)</td>
+<td>-</td>
+<td><code>style: fix indentation in auth module</code></td>
+</tr>
+<tr>
+<td><code>build</code></td>
+<td>Sistema de build ou dependências</td>
+<td>-</td>
+<td><code>build: upgrade webpack to v5</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h4>Breaking Changes</h4>
+<pre data-lang="text"><code><span class="cm"># Breaking change com ! (incrementa MAJOR: x.0.0)</span>
+<span class="str">feat!: remove legacy authentication endpoint</span>
+
+<span class="cm"># Breaking change com footer</span>
+<span class="str">feat(auth): migraté to OAuth2.0</span>
+
+<span class="str">BREAKING CHANGE: /api/v1/login endpoint removed.</span>
+<span class="str">Use /api/v2/auth/token instead.</span>
+
+<span class="cm"># Com scope</span>
+<span class="str">fix(parser): handle nested arrays correctly</span>
+<span class="str">feat(api): add págination to /users endpoint</span>
+<span class="str">refactor(db): migraté from Sequelize to Prisma</span></code></pre>
+
+<h4>commitlint + Husky — Enforcement Automático</h4>
+<pre data-lang="bash"><code><span class="cm"># Instalar commitlint e husky</span>
+<span class="fn">npm</span> install -D @commitlint/cli @commitlint/config-conventional husky
+
+<span class="cm"># Inicializar husky</span>
+<span class="fn">npx</span> husky init
+
+<span class="cm"># Criar hook de commit-msg</span>
+<span class="fn">echo</span> <span class="str">'npx --no -- commitlint --edit "$1"'</span> > .husky/commit-msg</code></pre>
+
+<pre data-lang="javascript"><code><span class="cm">// commitlint.config.js</span>
+<span class="kw">export default</span> {
+  <span class="fn">extends</span>: [<span class="str">'@commitlint/config-conventional'</span>],
+  rules: {
+    <span class="cm">// Tipos permitidos</span>
+    <span class="str">'type-enum'</span>: [<span class="num">2</span>, <span class="str">'always'</span>, [
+      <span class="str">'feat'</span>, <span class="str">'fix'</span>, <span class="str">'chore'</span>, <span class="str">'refactor'</span>,
+      <span class="str">'docs'</span>, <span class="str">'test'</span>, <span class="str">'perf'</span>, <span class="str">'ci'</span>,
+      <span class="str">'style'</span>, <span class="str">'build'</span>, <span class="str">'revert'</span>,
+    ]],
+    <span class="cm">// Título máximo de 72 caracteres</span>
+    <span class="str">'header-max-length'</span>: [<span class="num">2</span>, <span class="str">'always'</span>, <span class="num">72</span>],
+    <span class="cm">// Tipo sempre em lowercase</span>
+    <span class="str">'type-case'</span>: [<span class="num">2</span>, <span class="str">'always'</span>, <span class="str">'lower-case'</span>],
+    <span class="cm">// Descrição não pode ser vazia</span>
+    <span class="str">'subject-empty'</span>: [<span class="num">2</span>, <span class="str">'never'</span>],
+  },
+};</code></pre>
+
+<h4>Auto-Changelog e Semantic Release</h4>
+<pre data-lang="bash"><code><span class="cm"># semantic-release automatiza versionamento + changelog + publish</span>
+<span class="fn">npm</span> install -D semantic-release @semantic-release/changelog @semantic-release/git
+
+<span class="cm"># Ele analisa os commits desde o último tag:</span>
+<span class="cm"># - fix:  -> incrementa PATCH (1.0.0 -> 1.0.1)</span>
+<span class="cm"># - feat: -> incrementa MINOR (1.0.0 -> 1.1.0)</span>
+<span class="cm"># - feat! ou BREAKING CHANGE: -> incrementa MAJOR (1.0.0 -> 2.0.0)</span></code></pre>
+
+<pre data-lang="json"><code><span class="cm">// .releaserc.json</span>
+{
+  <span class="str">"branches"</span>: [<span class="str">"main"</span>],
+  <span class="str">"plugins"</span>: [
+    <span class="str">"@semantic-release/commit-analyzer"</span>,
+    <span class="str">"@semantic-release/release-notes-generator"</span>,
+    <span class="str">"@semantic-release/changelog"</span>,
+    <span class="str">"@semantic-release/npm"</span>,
+    [<span class="str">"@semantic-release/git"</span>, {
+      <span class="str">"assets"</span>: [<span class="str">"CHANGELOG.md"</span>, <span class="str">"package.json"</span>],
+      <span class="str">"message"</span>: <span class="str">"chore(release): ${nextRelease.version}"</span>
+    }],
+    <span class="str">"@semantic-release/github"</span>
+  ]
+}</code></pre>
+
+<!-- ═══ GIT BEST PRACTICES ═══ -->
+<h3>Git Best Practices</h3>
+
+<h4>Commits Atomicos</h4>
+<p>Um commit atômico é uma única unidade lógica de mudança. Cada commit deve compilar, passar nós testes é fazer sentido isoladamente. Se você precisa de mais de uma frase para descrever o que o commit faz, ele provavelmente deveria ser dividido.</p>
+
+<pre data-lang="bash"><code><span class="cm"># &#10060; Commit "faz tudo" — impossível reverter parcialmente</span>
+<span class="fn">git</span> commit -m <span class="str">"add login page, fix header, updaté deps, refactor útils"</span>
+
+<span class="cm"># &#9989; Commits atomicos — cada um e uma unidade lógica</span>
+<span class="fn">git</span> add src/pages/Login.tsx src/pages/Login.css
+<span class="fn">git</span> commit -m <span class="str">"feat(auth): add login page with form válidation"</span>
+
+<span class="fn">git</span> add src/components/Header.tsx
+<span class="fn">git</span> commit -m <span class="str">"fix(ui): align header logo on mobile"</span>
+
+<span class="fn">git</span> add package.json package-lock.json
+<span class="fn">git</span> commit -m <span class="str">"chore: updaté axios to 1.7.0"</span>
+
+<span class="fn">git</span> add src/útils/format.ts
+<span class="fn">git</span> commit -m <span class="str">"refactor: extract currency formatter to útility"</span></code></pre>
+
+<h4>Signed Commits (GPG)</h4>
+<pre data-lang="bash"><code><span class="cm"># Gerar chave GPG</span>
+<span class="fn">gpg</span> --full-generate-key
+
+<span class="cm"># Listar chaves</span>
+<span class="fn">gpg</span> --list-secret-keys --keyid-format=long
+
+<span class="cm"># Configurar Git para assinar commits</span>
+<span class="fn">git</span> config --global user.signingkey ABC123DEF456
+<span class="fn">git</span> config --global commit.gpgsign true
+
+<span class="cm"># Agora todo commit será assinado automáticamente</span>
+<span class="fn">git</span> commit -m <span class="str">"feat: this commit is signed and verified"</span>
+
+<span class="cm"># Verificar assinatura</span>
+<span class="fn">git</span> log --show-signature -1</code></pre>
+
+<h4>Protected Branches e PR Reviews</h4>
+<pre data-lang="yaml"><code><span class="cm"># .github/branch-protection.yml (conceitual)</span>
+<span class="str">branches</span>:
+  <span class="str">main</span>:
+    <span class="str">protection</span>:
+      <span class="str">required_pull_request_reviews</span>:
+        <span class="str">required_approving_review_count</span>: <span class="num">2</span>
+        <span class="str">dismiss_stale_reviews</span>: <span class="kw">true</span>
+        <span class="str">require_code_owner_reviews</span>: <span class="kw">true</span>
+      <span class="str">required_status_checks</span>:
+        <span class="str">strict</span>: <span class="kw">true</span>
+        <span class="str">contexts</span>:
+          - <span class="str">"ci/tests"</span>
+          - <span class="str">"ci/lint"</span>
+          - <span class="str">"ci/build"</span>
+      <span class="str">enforce_admins</span>: <span class="kw">true</span>
+      <span class="str">required_linear_history</span>: <span class="kw">true</span>
+      <span class="str">allow_force_pushes</span>: <span class="kw">false</span>
+      <span class="str">allow_deletions</span>: <span class="kw">false</span></code></pre>
+
+<h4>Squash vs Merge vs Rebase</h4>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Estratégia</th>
+<th>Resultado</th>
+<th>Quando Usar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Merge commit</strong><br><code>--no-ff</code></td>
+<td>Preserva todos os commits + merge commit</td>
+<td>GitFlow, quando o histórico de cada feature importa</td>
+</tr>
+<tr>
+<td><strong>Squash merge</strong><br><code>--squash</code></td>
+<td>Comprime todos os commits da branch em 1</td>
+<td>GitHub Flow, PRs com commits de WIP/debug</td>
+</tr>
+<tr>
+<td><strong>Rebase + merge</strong><br><code>rebase + ff</code></td>
+<td>Histórico linear, sem merge commits</td>
+<td>Trunk-Based, quando histórico limpo e prioridade</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h4>Interáctive Rebase — Limpando o Histórico</h4>
+<pre data-lang="bash"><code><span class="cm"># Reescrever os últimos 4 commits antes do push</span>
+<span class="fn">git</span> rebase -i HEAD~4
+
+<span class="cm"># No editor interátivo:</span>
+<span class="str">pick   a1b2c3 feat: add user registration form</span>
+<span class="str">squash d4e5f6 fix typo in registration</span>         <span class="cm"># Junta com o anterior</span>
+<span class="str">squash g7h8i9 fix: another typo</span>                <span class="cm"># Junta com o anterior</span>
+<span class="str">pick   j0k1l2 feat: add email verification</span>
+
+<span class="cm"># Resultado: 2 commits limpos ao invés de 4</span>
+
+<span class="cm"># &#9888; NUNCA faca rebase de commits já pushados para branch compartilhada!</span>
+<span class="cm"># Rebase reescreve hashes — causa conflitos para quem já tem os commits</span></code></pre>
+
+<h4>.gitignore Best Practices</h4>
+<pre data-lang="gitignore"><code><span class="cm"># ═══ .gitignore ═══</span>
+
+<span class="cm"># Dependências</span>
+node_modules/
+vendor/
+.venv/
+__pycache__/
+
+<span class="cm"># Build output</span>
+dist/
+build/
+*.js.map
+.next/
+
+<span class="cm"># Segredos (NUNCA commite!)</span>
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+serviceAccountKey.json
+
+<span class="cm"># IDEs</span>
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+<span class="cm"># Logs e temporários</span>
+*.log
+npm-debug.log*
+coverage/
+.nyc_output/
+
+<span class="cm"># OS</span>
+.DS_Store
+Thumbs.db
+desktop.ini</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Dica:</strong> Use <code>gitignore.io</code> (ou <code>npx gitignore node</code>) para gerar .gitignore baseado na stack. Commite o .gitignore no primeiro commit do projeto. Se um arquivo já foi commitado, <code>git rm --cached arquivo</code> remove do tracking sem deletar.</div>
+</div>
+
+<!-- ═══ MONOREPO BRANCHING ═══ -->
+<h3>Monorepo Branching — Considerações Especiais</h3>
+<p>Em monorepos, todas as aplicações e bibliotecas vivem no mesmo repositório. Isso muda a dinâmica de branching porque um commit pode afetar 1 app ou 10. Ferramentas como <strong>Nx</strong> é <strong>Turborepo</strong> resolvem isso com <strong>affected commands</strong> — só rodam testes e builds para o que realmente mudou.</p>
+
+<h4>Path-Based CI Triggers</h4>
+<pre data-lang="yaml"><code><span class="cm"># .github/workflows/ci.yml — Monorepo com path filters</span>
+<span class="str">name</span>: CI
+<span class="str">on</span>:
+  <span class="str">pull_request</span>:
+    <span class="str">paths</span>:
+      - <span class="str">'apps/**'</span>
+      - <span class="str">'packages/**'</span>
+      - <span class="str">'package.json'</span>
+
+<span class="str">jobs</span>:
+  <span class="str">detect-changes</span>:
+    <span class="str">runs-on</span>: ubuntu-latest
+    <span class="str">outputs</span>:
+      <span class="str">frontend</span>: ${{ steps.filter.outputs.frontend }}
+      <span class="str">backend</span>: ${{ steps.filter.outputs.backend }}
+      <span class="str">shared</span>: ${{ steps.filter.outputs.shared }}
+    <span class="str">steps</span>:
+      - <span class="str">uses</span>: dorny/paths-filter@v3
+        <span class="str">id</span>: filter
+        <span class="str">with</span>:
+          <span class="str">filters</span>: |
+            frontend:
+              - 'apps/web/**'
+              - 'packages/ui/**'
+            backend:
+              - 'apps/api/**'
+              - 'packages/shared/**'
+            shared:
+              - 'packages/shared/**'
+
+  <span class="str">test-frontend</span>:
+    <span class="str">needs</span>: detect-changes
+    <span class="str">if</span>: needs.detect-changes.outputs.frontend == 'true'
+    <span class="str">runs-on</span>: ubuntu-latest
+    <span class="str">steps</span>:
+      - <span class="str">run</span>: npx nx affected --target=test --base=origin/main
+
+  <span class="str">test-backend</span>:
+    <span class="str">needs</span>: detect-changes
+    <span class="str">if</span>: needs.detect-changes.outputs.backend == 'true'
+    <span class="str">runs-on</span>: ubuntu-latest
+    <span class="str">steps</span>:
+      - <span class="str">run</span>: npx nx affected --target=test --base=origin/main</code></pre>
+
+<h4>Nx Affected Commands</h4>
+<pre data-lang="bash"><code><span class="cm"># Rodar testes APENAS dos projetos afetados pela mudança</span>
+<span class="fn">npx</span> nx affected --target=test --base=origin/main
+
+<span class="cm"># Build apenas dos projetos afetados</span>
+<span class="fn">npx</span> nx affected --target=build --base=origin/main
+
+<span class="cm"># Lint apenas dos projetos afetados</span>
+<span class="fn">npx</span> nx affected --target=lint --base=origin/main
+
+<span class="cm"># Ver quais projetos são afetados (sem executar)</span>
+<span class="fn">npx</span> nx show projects --affected --base=origin/main
+
+<span class="cm"># Turborepo equivalente</span>
+<span class="fn">npx</span> turbo run test --filter=...[origin/main]
+<span class="fn">npx</span> turbo run build --filter=...[origin/main]</code></pre>
+
+<div class="card blue">
+<div class="card-title">Monorepo + Trunk-Based = Alto Rendimento</div>
+<p style="color:var(--text2);font-size:.88rem;margin-bottom:0">Google, Meta e Microsoft usam monorepos com trunk-based development. O segredo e ter <strong>CI incremental</strong> (só testa o que mudou), <strong>code ownership</strong> (CODEOWNERS file) e <strong>merge queues</strong> para evitar conflitos. GitHub Merge Queue e GitLab Merge Train fazem isso automáticamente.</p>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Escolhendo a Estratégia Certa</h3>
+<p><strong>Cenário:</strong> Você precisa escolher uma estratégia de branching. O fator decisivo não é preferência pessoal — é o <strong>contexto do projeto</strong>.</p>
+
+<h4>Matriz de Decisão</h4>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Fator</th>
+<th>Startup (3 devs)</th>
+<th>Scale-up (15 devs)</th>
+<th>Enterprise (50+ devs)</th>
+<th>Biblioteca OSS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Time</strong></td>
+<td>Pequeno, co-localizado</td>
+<td>Medio, misto</td>
+<td>Grande, distribuído</td>
+<td>Variável, async</td>
+</tr>
+<tr>
+<td><strong>Release</strong></td>
+<td>Continuo</td>
+<td>Semanal</td>
+<td>A cada sprint</td>
+<td>Versionado (SemVer)</td>
+</tr>
+<tr>
+<td><strong>Deploy</strong></td>
+<td>Várias vezes/dia</td>
+<td>Diário</td>
+<td>Semanal/quinzenal</td>
+<td>Sob demanda</td>
+</tr>
+<tr>
+<td><strong>Estratégia ideal</strong></td>
+<td style="color:var(--accent)"><strong>Trunk-Based</strong> ou <strong>GitHub Flow</strong></td>
+<td style="color:var(--blue)"><strong>GitHub Flow</strong></td>
+<td style="color:var(--purple)"><strong>GitFlow</strong> ou <strong>GitHub Flow</strong> com merge queues</td>
+<td style="color:var(--orange)"><strong>Release Branching</strong></td>
+</tr>
+<tr>
+<td><strong>Justificativa</strong></td>
+<td>Velocidade máxima, sem overhead</td>
+<td>Equilíbrio entre controle e velocidade</td>
+<td>Controle de releases, QA rigoroso</td>
+<td>Múltiplas versões em suporte</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="diagram">
+<div class="diagram-box cyan">Time pequeno?<br><small>Trunk-Based</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Precisa de PRs?<br><small>GitHub Flow</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Releases planejadas?<br><small>GitFlow</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Múltiplas versões?<br><small>Release Branching</small></div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Comece com a estratégia mais simples que funciona para o seu contexto. Migrar de GitHub Flow para GitFlow é fácil. Migrar de GitFlow para Trunk-Based exige maturidade. Não complique antes de precisar.</div>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Long-lived feature branches (Merge Hell):</strong> Branches que duram semanas acumulam divergência exponencialmente. Quando finalmente fazem merge, o resultado é um pesadelo de conflitos. Regra: se a branch tem mais de 3 dias, algo está errado. Quebre a feature em incrementos menores.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Não usar Conventional Commits:</strong> Sem padrão, o histórico vira uma bagunca de "fix stuff", "wip", "changes", "update". Impossível gerar changelog, impossível entender o que mudou 3 meses atras. Configure commitlint desde o dia 1 do projeto.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Force push em branches compartilhadas:</strong> <code>git push --force</code> em main ou develop reescreve o histórico e causa conflitos irrecuperáveis para todos do time. Use <code>--force-with-lease</code> APENAS em branches pessoais, e NUNCA em branches protegidas.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Sem branch protection:</strong> Main sem regras de proteção é um acidente esperando acontecer. Um estagiário pode fazer push direto com bug crítico. Configure: reviews obrigatórios, status checks obrigatórios, proibir force push, exigir histórico linear.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>GitFlow sem necessidade:</strong> Usar GitFlow em uma startup de 3 pessoas e over-engineering. O overhead de manter 5 tipos de branches, merges duplos (main + develop) e releases formais não compensa quando você poderia simplesmente mergear em main e deployar.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Trunk-Based sem infraestrutura:</strong> Tentar trunk-based sem CI robusto, sem feature flags e sem testes automatizados e receita para desastre. O modelo só funciona porque a rede de segurança automatizada e impecável. Sem ela, você está commitando código quebrado direto em produção.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Seu time de 5 devs trabalha em um SaaS com deploys diarios. Vocês usam GitFlow e estão sofrendo com merge conflicts frequentes e releases demoradas. O que você recomenda?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Migrar para <strong>GitHub Flow</strong>. O GitFlow e excessivo para 5 devs com deploy diário. Com GitHub Flow: (1) elimine a branch develop — feature branches saem direto de main; (2) configure squash merge nós PRs para histórico limpo; (3) configure CI para rodar em cada PR; (4) habilite auto-deploy da main. O resultado será menós branches para gerenciar, menós merge conflicts (branches de curta duração), e ciclo de entrega mais rápido.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Você está iniciando um projeto open-source de uma biblioteca JavaScript. Você espera manter v1.x e v2.x simultaneamente. Qual estratégia de branching usar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> <strong>Release Branching</strong> combinado com Conventional Commits. Use main para desenvolvimento ativo (próxima major version). Quando v1.0.0 estiver pronta, crie <code>release/1.x</code>. Quando v2.0.0 começar, main avança. Bug fixes em v1.x são cherry-picked de main para <code>release/1.x</code>. Configure semantic-release para auto-versionamento e changelog. Exijá PRs com Conventional Commits para manter histórico rastreável.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Um colega fez <code>git push --force</code> em main, apagando os commits das últimas 2 horas de 4 devs. Como recuperar?</div>
+<div class="qa-a">
+<p><strong>Solução imediata:</strong> (1) Use <code>git reflog</code> no servidor ou em qualquer máquina que tinha os commits para encontrar o hash do último commit válido; (2) <code>git reset --hard &lt;hash-correto&gt;</code> seguido de <code>git push --force-with-lease</code> para restaurar. <strong>Prevenção futura:</strong> (1) Habilite branch protection em main com "Restrict force pushes" para TODOS (incluindo admins); (2) Configure regra de "Require pull request before merging"; (3) Ative audit log para rastrear quem fez o que. Force push em branch compartilhada é um incidente — traté como tal.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — GitFlow, Trunk-Based & Branching</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="32-cicd-pipelines.html">&#8592; CI/CD Pipelines</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="34-deploy-blue-green-canary.html" class="primary">Próximo: Deploy Blue-Green & Canary &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 33: GitFlow, Trunk-Based & Branching
+// ══════════════════════════════════════════
+const SECTION_NUM = 33;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "No GitFlow, qual branch serve como branch de integração onde todas as features são mergeadas antes do release?",
+    options: [
+      "main",
+      "develop",
+      "release/*",
+      "staging"
+    ],
+    correct: 1,
+    explanation: "No GitFlow, a branch 'develop' é a branch de integração. Todas as feature branches são mergeadas em develop, é quando está pronto para release, uma branch release/* e criada a partir de develop."
+  },
+  {
+    question: "Qual é a principal diferença entre GitHub Flow e GitFlow?",
+    options: [
+      "GitHub Flow usa mais branches que GitFlow",
+      "GitHub Flow não usa Pull Requests",
+      "GitHub Flow tem apenas main + feature branches, sem develop/release/hotfix",
+      "GitHub Flow não permite tags de versão"
+    ],
+    correct: 2,
+    explanation: "GitHub Flow e drasticamente mais simples: apenas main + feature branches de curta duração. Não existe develop, release/* ou hotfix/*. Cada PR mergeado em main e potencialmente deployado."
+  },
+  {
+    question: "No Trunk-Based Development, qual mecanismo permite deployar código incompleto com segurança?",
+    options: [
+      "Branch de staging",
+      "Feature flags",
+      "Merge commits",
+      "Release branches"
+    ],
+    correct: 1,
+    explanation: "Feature flags são essenciais no Trunk-Based Development. Elas permitem que código incompleto sejá mergeado e deployado em produção, mas invisível para os usuários até que a flag sejá ativada."
+  },
+  {
+    question: "Qual estratégia de branching é mais adequada para uma biblioteca open-source que mantém v2.x e v3.x simultaneamente?",
+    options: [
+      "GitFlow",
+      "GitHub Flow",
+      "Trunk-Based Development",
+      "Release Branching"
+    ],
+    correct: 3,
+    explanation: "Release Branching é ideal para manter múltiplas versões em produção. Cada major version ganha uma branch de longa duração (release/2.x, release/3.x) que recebe backports de bug fixes via cherry-pick."
+  },
+  {
+    question: "Qual tipo de Conventional Commit incrementa a versão MAJOR no Semantic Versioning?",
+    options: [
+      "feat: (nova funcionalidade)",
+      "fix!: ou BREAKING CHANGE no footer",
+      "perf: (melhoria de performance)",
+      "refactor: (refatoração)"
+    ],
+    correct: 1,
+    explanation: "O sufixo '!' após o tipo (ex: feat!, fix!) ou o footer 'BREAKING CHANGE:' indica uma breaking change, que incrementa a versão MAJOR (ex: 1.0.0 -> 2.0.0) no Semantic Versioning."
+  },
+  {
+    question: "Por que o flag --no-ff (no fast-forward) é essencial no GitFlow?",
+    options: [
+      "Ele torna o merge mais rápido",
+      "Ele evita conflitos de merge",
+      "Ele cria um merge commit que preserva o histórico da branch de feature",
+      "Ele é necessário para push em repositórios remotos"
+    ],
+    correct: 2,
+    explanation: "O --no-ff força a criação de um merge commit mesmo quando um fast-forward seria possível. Isso preserva a informação de que um conjunto de commits pertência a uma feature branch específica, mantendo o histórico semântico."
+  },
+  {
+    question: "Qual é o maior risco de branches de feature de longa duração (mais de 1-2 semanas)?",
+    options: [
+      "O repositório fica maior",
+      "O CI fica mais lento",
+      "Merge conflicts acumulam exponencialmente, gerando 'merge hell'",
+      "O GitHub cobra mais por branches extras"
+    ],
+    correct: 2,
+    explanation: "Branches de longa duração divergem cada vez mais da branch principal. Quanto mais tempo aberta, mais mudanças acontecem em main/develop, é mais conflitos aparecem no merge. A solução e quebrar features em incrementos menores."
+  },
+  {
+    question: "No contexto de monorepos, o que fazem os 'affected commands' de ferramentas como Nx?",
+    options: [
+      "Deletam branches antigas automáticamente",
+      "Executam testes e builds apenas nós projetos impactados pelas mudanças",
+      "Bloqueiam merges que afetam muitos projetos",
+      "Geram changelogs automáticamente para cada projeto"
+    ],
+    correct: 1,
+    explanation: "Affected commands (como 'nx affected --target=test') analisam o grafo de dependências e executam apenas os targets dos projetos que foram impactados pelas mudanças, economizando tempo de CI significativamente."
+  },
+  {
+    question: "Qual a diferença entre 'squash merge' e 'merge commit' ao fechar um PR?",
+    options: [
+      "Squash merge é mais rápido que merge commit",
+      "Squash merge comprime todos os commits da branch em 1; merge commit preserva todos + cria merge commit",
+      "Merge commit não preserva o histórico da branch",
+      "Não ha diferença prática, são equivalentes"
+    ],
+    correct: 1,
+    explanation: "Squash merge condensa todos os commits da feature branch em um único commit na main, ideal para histórico limpo. Merge commit preserva todos os commits individuais e adiciona um merge commit, ideal quando o histórico detalhado importa."
+  },
+  {
+    question: "Seu colega fez 'git push --force' na main compartilhada. Qual a primeira ação para recuperar os commits perdidos?",
+    options: [
+      "Criar uma nova branch main-backup",
+      "Usar 'git reflog' para encontrar o hash do último commit válido e restaurar",
+      "Pedir para todos do time fazerem 'git pull'",
+      "Deletar o repositório e clonar novamente"
+    ],
+    correct: 1,
+    explanation: "O 'git reflog' registra todas as mudanças de referência localmente, mesmo após force push. Encontre o hash do commit correto com reflog, faca 'git reset --hard <hash>' e push novamente. Em seguida, configure branch protection para prevenir futuros force pushes."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina estratégias de branching.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>48 — Comúnicação entre Sistemas & Contratos | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="47-networking-protocolos.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>48</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="49-padroes-arquiteturais-avancados.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:72.7%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 48</span>
+<h2>Comúnicação entre Sistemas & Contratos</h2>
+<div class="section-line"></div>
+
+<p>Quando você tem 2 serviços conversando, e "só uma API". Quando você tem 50 serviços, 12 times e 200 endpoints — vira caos sem <strong>contratos formais</strong>. A comunicação entre sistemas é o ponto onde mais se perde tempo em empresas de engenharia: breaking changes silenciosas, schemas incompativeis, documentação desatualizada, e deploys que quebram consumers em produção.</p>
+
+<p>Esta seção cobre as ferramentas e práticas que <strong>transformam comunicação entre sistemas de "acordo informal" em contratos verificaveis e evolutivos</strong>: Contract Testing (Pact), Schema Registries (Avro/Protobuf), API Governance (Spectral), AsyncAPI para eventos, API Gateway patterns avançados e estratégias de versionamento com backward compatibility.</p>
+
+<p>O objetivo final: <strong>qualquer time pode evoluir sua API sem medo de quebrar consumidores</strong>, e qualquer consumidor sabe exatamente o que esperar — com verificação automática no CI/CD.</p>
+
+
+<!-- ═══ CONTRACT TESTING COM PACT ═══ -->
+<h3>Contract Testing com Pact</h3>
+
+<p><strong>Contract Testing</strong> é uma técnica onde o <strong>consumidor</strong> (client) define o que espera de um provider (server), e essa expectativa e verificada automáticamente contra o provider real. Diferente de integration tests tradicionais (que testam tudo junto), contract tests verificam apenas o <strong>formato da comunicação</strong> — não a lógica de negócio.</p>
+
+<h4>Consumer-Driven Contracts (CDC)</h4>
+<p>No modelo CDC, o fluxo é invertido: quem define o contrato não é o provider, é o <strong>consumer</strong>. Isso garante que o provider só expoe o que alguem realmente usa.</p>
+
+<ul>
+<li><strong>Consumer:</strong> Escreve um teste descrevendo o que espera do provider (request/response). Isso gera um arquivo <code>.pact.json</code> (contrato)</li>
+<li><strong>Pact Broker:</strong> O contrato e publicado em um servidor central que armazena todas as versões</li>
+<li><strong>Provider:</strong> Roda verificação automática contra todos os contratos publicados no broker. Se quebrar algum — o CI falha</li>
+<li><strong>can-i-deploy:</strong> Comando do Pact CLI que verifica se uma versão específica e segura para deploy (todos os contratos verificados)</li>
+</ul>
+
+<!-- Diagram: Pact Flow -->
+<div class="diagram">
+<div class="diagram-box green">Consumer<br><small>escreve expectativas</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Pact File<br><small>.pact.json</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Pact Broker<br><small>armazena contratos</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Provider<br><small>verifica contratos</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box cyan">can-i-deploy<br><small>gaté no CI/CD</small></div>
+</div>
+
+<h4>Pact Test em TypeScript (Consumer Side)</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { PactV3, MatchersV3 } <span class="kw">from</span> <span class="str">'@pact-foundation/pact'</span>;
+<span class="kw">import</span> { OrderService } <span class="kw">from</span> <span class="str">'./order.service'</span>;
+
+<span class="kw">const</span> { like, eachLike, uuid } = MatchersV3;
+
+<span class="kw">const</span> provider = <span class="kw">new</span> <span class="fn">PactV3</span>({
+  consumer: <span class="str">'OrderFrontend'</span>,
+  provider: <span class="str">'OrderAPI'</span>,
+  logLevel: <span class="str">'warn'</span>,
+});
+
+<span class="fn">describe</span>(<span class="str">'Order API Contract'</span>, () =&gt; {
+  <span class="fn">it</span>(<span class="str">'should return order by ID'</span>, <span class="kw">async</span> () =&gt; {
+    <span class="cm">// 1. Define a expectativa (contrato)</span>
+    provider
+      .<span class="fn">given</span>(<span class="str">'an order with ID abc-123 exists'</span>)
+      .<span class="fn">uponReceiving</span>(<span class="str">'a request for order abc-123'</span>)
+      .<span class="fn">withRequest</span>({
+        method: <span class="str">'GET'</span>,
+        path: <span class="str">'/api/orders/abc-123'</span>,
+        headers: { Accept: <span class="str">'application/json'</span> },
+      })
+      .<span class="fn">willRespondWith</span>({
+        status: <span class="num">200</span>,
+        headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+        body: {
+          id: <span class="fn">uuid</span>(<span class="str">'abc-123-def-456'</span>),
+          status: <span class="fn">like</span>(<span class="str">'confirmed'</span>),
+          total: <span class="fn">like</span>(<span class="num">149.90</span>),
+          items: <span class="fn">eachLike</span>({
+            productId: <span class="fn">uuid</span>(),
+            name: <span class="fn">like</span>(<span class="str">'Widget Pro'</span>),
+            quantity: <span class="fn">like</span>(<span class="num">2</span>),
+            price: <span class="fn">like</span>(<span class="num">74.95</span>),
+          }),
+          createdAt: <span class="fn">like</span>(<span class="str">'2025-01-15T10:30:00Z'</span>),
+        },
+      });
+
+    <span class="cm">// 2. Executa contra mock server do Pact</span>
+    <span class="kw">await</span> provider.<span class="fn">executeTest</span>(<span class="kw">async</span> (mockServer) =&gt; {
+      <span class="kw">const</span> service = <span class="kw">new</span> <span class="fn">OrderService</span>(mockServer.url);
+      <span class="kw">const</span> order = <span class="kw">await</span> service.<span class="fn">getOrder</span>(<span class="str">'abc-123'</span>);
+
+      <span class="fn">expect</span>(order.id).<span class="fn">toBeDefined</span>();
+      <span class="fn">expect</span>(order.status).<span class="fn">toBe</span>(<span class="str">'confirmed'</span>);
+      <span class="fn">expect</span>(order.items.length).<span class="fn">toBeGreaterThan</span>(<span class="num">0</span>);
+    });
+    <span class="cm">// Arquivo .pact.json gerado automáticamente em pacts/</span>
+  });
+});</code></pre>
+
+<h4>Provider Verification</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { Verifier } <span class="kw">from</span> <span class="str">'@pact-foundation/pact'</span>;
+
+<span class="kw">const</span> opts = {
+  providerBaseUrl: <span class="str">'http://localhost:3000'</span>,
+  pactBrokerUrl: <span class="str">'https://pact-broker.company.com'</span>,
+  provider: <span class="str">'OrderAPI'</span>,
+  providerVersion: process.env.GIT_SHA,
+  publishVerificationResult: <span class="kw">true</span>,
+  stateHandlers: {
+    <span class="cm">// Setup de estado para o teste</span>
+    <span class="str">'an order with ID abc-123 exists'</span>: <span class="kw">async</span> () =&gt; {
+      <span class="kw">await</span> <span class="fn">seedDatabase</span>({ id: <span class="str">'abc-123'</span>, status: <span class="str">'confirmed'</span> });
+    },
+  },
+};
+
+<span class="kw">new</span> <span class="fn">Verifier</span>(opts).<span class="fn">verifyProvider</span>().<span class="fn">then</span>(() =&gt; {
+  console.<span class="fn">log</span>(<span class="str">'All contracts verified!'</span>);
+});</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Dica prática:</strong> Use Pact matchers (<code>like</code>, <code>eachLike</code>, <code>regex</code>) ao inves de valores exatos. Isso torna o contrato flexível — verifica o <strong>formato/tipo</strong>, não o valor específico. Assim o provider pode mudar dados de teste sem quebrar o contrato.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Pact não substitui integration tests.</strong> Contract tests verificam formato de comunicação. Integration tests verificam comportamento de negócio. Você precisa de ambos. Contract tests rodam em segundos (mock server), integration tests rodam em minutos (ambiente real).</div>
+</div>
+
+
+<!-- ═══ SCHEMA REGISTRIES & EVOLUCAO ═══ -->
+<h3>Schema Registries & Evolucao de Schema</h3>
+
+<p>Em sistemas event-driven (Kafka, RabbitMQ), producers e consumers precisam concordar no formato das mensagens. Sem controle, um producer muda o schema, e 5 consumers quebram em produção. <strong>Schema Registry</strong> resolve isso centralizando schemas e impondo regras de compatibilidade.</p>
+
+<h4>Confluent Schema Registry</h4>
+<ul>
+<li><strong>O que e:</strong> Serviço centralizado que armazena e versiona schemas (Avro, Protobuf, JSON Schema). Integrado nativamente com Kafka</li>
+<li><strong>Como funciona:</strong> Producers registram schemas antes de enviar. Consumers buscam o schema pelo ID embutido na mensagem. Se o schema não existe ou e incompatível — falha no producer, não no consumer</li>
+<li><strong>Schema ID:</strong> Cada mensagem Kafka carrega o schema ID nós primeiros bytes. O consumer resolve o schema no registry para deserializar</li>
+</ul>
+
+<h4>Formatos: Avro vs Protobuf vs JSON Schema</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Avro</th><th>Protobuf</th><th>JSON Schema</th></tr>
+<tr><td><strong>Formato binário</strong></td><td>Sim (compacto)</td><td>Sim (muito compacto)</td><td>Não (texto JSON)</td></tr>
+<tr><td><strong>Schema evolution</strong></td><td>Excelente</td><td>Bom</td><td>Basico</td></tr>
+<tr><td><strong>Self-describing</strong></td><td>Sim (schema no arquivo)</td><td>Não (.proto necessário)</td><td>Sim</td></tr>
+<tr><td><strong>Code generation</strong></td><td>Opcional</td><td>Obrigatorio</td><td>Opcional</td></tr>
+<tr><td><strong>Ecossistema Kafka</strong></td><td>Nativo (Confluent)</td><td>Suportado</td><td>Suportado</td></tr>
+<tr><td><strong>Usó ideal</strong></td><td>Data pipelines, Kafka</td><td>gRPC, microservices</td><td>REST APIs, configs</td></tr>
+<tr><td><strong>Tamanho mensagem</strong></td><td>Menor que JSON (~30%)</td><td>Menor que Avro (~10%)</td><td>Maior (texto)</td></tr>
+</table>
+</div>
+
+<h4>Modos de Compatibilidade</h4>
+<ul>
+<li><strong>BACKWARD:</strong> Novo schema pode ler dados escritos com schema antigo. Permite <strong>adicionar campos com default</strong> é <strong>remover campos opcionais</strong>. Consumer atualiza primeiro</li>
+<li><strong>FORWARD:</strong> Schema antigo pode ler dados escritos com schema novo. Permite <strong>remover campos com default</strong> é <strong>adicionar campos opcionais</strong>. Producer atualiza primeiro</li>
+<li><strong>FULL:</strong> Compativel em ambas as direcoes (backward + forward). Mais restritivo — só permite adicionar/remover campos com default</li>
+<li><strong>NONE:</strong> Sem verificação. Não recomendado para produção — qualquer mudança e permitida</li>
+</ul>
+
+<h4>Avro Schema: Definição e Evolucao</h4>
+<pre data-lang="avro"><code><span class="cm">// v1 - Schema inicial do evento OrderCreated</span>
+{
+  <span class="str">"type"</span>: <span class="str">"record"</span>,
+  <span class="str">"name"</span>: <span class="str">"OrderCreated"</span>,
+  <span class="str">"namespace"</span>: <span class="str">"com.company.events"</span>,
+  <span class="str">"fields"</span>: [
+    { <span class="str">"name"</span>: <span class="str">"orderId"</span>,   <span class="str">"type"</span>: <span class="str">"string"</span> },
+    { <span class="str">"name"</span>: <span class="str">"customerId"</span>, <span class="str">"type"</span>: <span class="str">"string"</span> },
+    { <span class="str">"name"</span>: <span class="str">"total"</span>,      <span class="str">"type"</span>: <span class="str">"double"</span> },
+    { <span class="str">"name"</span>: <span class="str">"createdAt"</span>,  <span class="str">"type"</span>: <span class="str">"long"</span>,
+      <span class="str">"lógicalType"</span>: <span class="str">"timestamp-millis"</span> }
+  ]
+}
+
+<span class="cm">// v2 - Evolucao BACKWARD-compatível</span>
+<span class="cm">// Adicionamos campo com default (safe) e campo opcional (safe)</span>
+{
+  <span class="str">"type"</span>: <span class="str">"record"</span>,
+  <span class="str">"name"</span>: <span class="str">"OrderCreated"</span>,
+  <span class="str">"namespace"</span>: <span class="str">"com.company.events"</span>,
+  <span class="str">"fields"</span>: [
+    { <span class="str">"name"</span>: <span class="str">"orderId"</span>,   <span class="str">"type"</span>: <span class="str">"string"</span> },
+    { <span class="str">"name"</span>: <span class="str">"customerId"</span>, <span class="str">"type"</span>: <span class="str">"string"</span> },
+    { <span class="str">"name"</span>: <span class="str">"total"</span>,      <span class="str">"type"</span>: <span class="str">"double"</span> },
+    { <span class="str">"name"</span>: <span class="str">"createdAt"</span>,  <span class="str">"type"</span>: <span class="str">"long"</span>,
+      <span class="str">"lógicalType"</span>: <span class="str">"timestamp-millis"</span> },
+    <span class="cm">// NOVO: campo com default = backward-compatible</span>
+    { <span class="str">"name"</span>: <span class="str">"currency"</span>,  <span class="str">"type"</span>: <span class="str">"string"</span>,
+      <span class="str">"default"</span>: <span class="str">"BRL"</span> },
+    <span class="cm">// NOVO: campo nullable (union com null) = backward-compatible</span>
+    { <span class="str">"name"</span>: <span class="str">"couponCode"</span>, <span class="str">"type"</span>: [<span class="str">"null"</span>, <span class="str">"string"</span>],
+      <span class="str">"default"</span>: <span class="kw">null</span> }
+  ]
+}</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Regra de ouro para evolução de schema:</strong> Nunca remova campos obrigatórios. Nunca renomeie campos. Nunca mude o tipo de um campo. Sempre adicione campos com <code>default</code>. Se precisar de mudança incompatível — crie um novo tópico/evento (ex: <code>OrderCreatedV2</code>).</div>
+</div>
+
+
+<!-- ═══ API GOVERNANCE & LINTING ═══ -->
+<h3>API Governance & Linting</h3>
+
+<p><strong>API Governance</strong> é o conjunto de regras, processos e ferramentas que garantem consistência e qualidade em todas as APIs de uma organização. Sem governance, cada time cria APIs de formas diferentes — um usa camelCase, outro snake_case; um versiona via URL, outro via header; um retorna 404 para lista vazia, outro retorna 200 com array vazio.</p>
+
+<h4>Richardson Maturity Model</h4>
+<p>Modelo que classifica APIs REST em 4 níveis de maturidade:</p>
+
+<ul>
+<li><strong>Level 0 — The Swamp of POX:</strong> Um único endpoint (ex: <code>POST /api</code>) com action no body. Basicamente RPC sobre HTTP. XML/SOAP tipicamente</li>
+<li><strong>Level 1 — Resources:</strong> URLs representam recursos (<code>/orders</code>, <code>/users</code>). Mas tudo via POST</li>
+<li><strong>Level 2 — HTTP Verbs:</strong> Usa GET, POST, PUT, DELETE corretamente. Status codes semânticos (201, 404, 409). A maioria das APIs modernas para aqui</li>
+<li><strong>Level 3 — HATEOAS:</strong> Respostas incluem links para acoes possiveis. Auto-descoberta. Poucos implementam — complexidade alta, benefício discutivel</li>
+</ul>
+
+<h4>API-First Development</h4>
+<p>No modelo API-first, você <strong>escreve a específicacao OpenAPI antes de qualquer código</strong>. O spec funciona como contrato entre frontend e backend. Ambos os times podem trabalhar em paralelo — frontend usa mock server gerado do spec, backend implementa contra o spec.</p>
+
+<h4>OpenAPI Spec com Spectral Linting</h4>
+<pre data-lang="yaml"><code><span class="cm"># openapi.yaml — Spec da API de Pedidos</span>
+<span class="kw">openapi</span>: <span class="str">"3.1.0"</span>
+<span class="kw">info</span>:
+  <span class="kw">title</span>: <span class="str">"Orders API"</span>
+  <span class="kw">version</span>: <span class="str">"2.1.0"</span>
+  <span class="kw">description</span>: <span class="str">"API para gerenciamento de pedidos"</span>
+  <span class="kw">contact</span>:
+    <span class="kw">name</span>: <span class="str">"Orders Team"</span>
+    <span class="kw">email</span>: <span class="str">"orders-team@company.com"</span>
+
+<span class="kw">servers</span>:
+  - <span class="kw">url</span>: <span class="str">"https://api.company.com/v2"</span>
+    <span class="kw">description</span>: <span class="str">"Production"</span>
+
+<span class="kw">paths</span>:
+  <span class="str">/orders</span>:
+    <span class="kw">get</span>:
+      <span class="kw">operationId</span>: <span class="str">listOrders</span>
+      <span class="kw">summary</span>: <span class="str">"Lista pedidos páginados"</span>
+      <span class="kw">tags</span>: [<span class="str">Orders</span>]
+      <span class="kw">parameters</span>:
+        - <span class="kw">name</span>: <span class="str">page</span>
+          <span class="kw">in</span>: <span class="str">query</span>
+          <span class="kw">schema</span>: { <span class="kw">type</span>: <span class="str">integer</span>, <span class="kw">default</span>: <span class="num">1</span> }
+        - <span class="kw">name</span>: <span class="str">limit</span>
+          <span class="kw">in</span>: <span class="str">query</span>
+          <span class="kw">schema</span>: { <span class="kw">type</span>: <span class="str">integer</span>, <span class="kw">default</span>: <span class="num">20</span>, <span class="kw">maximum</span>: <span class="num">100</span> }
+      <span class="kw">responses</span>:
+        <span class="str">"200"</span>:
+          <span class="kw">description</span>: <span class="str">"Lista de pedidos"</span>
+          <span class="kw">content</span>:
+            <span class="str">application/json</span>:
+              <span class="kw">schema</span>:
+                <span class="kw">$ref</span>: <span class="str">"#/components/schemas/OrderList"</span>
+
+  <span class="str">/orders/{orderId}</span>:
+    <span class="kw">get</span>:
+      <span class="kw">operationId</span>: <span class="str">getOrder</span>
+      <span class="kw">summary</span>: <span class="str">"Busca pedido por ID"</span>
+      <span class="kw">tags</span>: [<span class="str">Orders</span>]
+      <span class="kw">parameters</span>:
+        - <span class="kw">name</span>: <span class="str">orderId</span>
+          <span class="kw">in</span>: <span class="str">path</span>
+          <span class="kw">required</span>: <span class="kw">true</span>
+          <span class="kw">schema</span>: { <span class="kw">type</span>: <span class="str">string</span>, <span class="kw">format</span>: <span class="str">uuid</span> }
+      <span class="kw">responses</span>:
+        <span class="str">"200"</span>:
+          <span class="kw">description</span>: <span class="str">"Pedido encontrado"</span>
+          <span class="kw">content</span>:
+            <span class="str">application/json</span>:
+              <span class="kw">schema</span>:
+                <span class="kw">$ref</span>: <span class="str">"#/components/schemas/Order"</span>
+        <span class="str">"404"</span>:
+          <span class="kw">description</span>: <span class="str">"Pedido não encontrado"</span>
+
+<span class="kw">components</span>:
+  <span class="kw">schemas</span>:
+    <span class="kw">Order</span>:
+      <span class="kw">type</span>: <span class="str">object</span>
+      <span class="kw">required</span>: [<span class="str">id</span>, <span class="str">status</span>, <span class="str">total</span>]
+      <span class="kw">properties</span>:
+        <span class="kw">id</span>:
+          <span class="kw">type</span>: <span class="str">string</span>
+          <span class="kw">format</span>: <span class="str">uuid</span>
+        <span class="kw">status</span>:
+          <span class="kw">type</span>: <span class="str">string</span>
+          <span class="kw">enum</span>: [<span class="str">pending</span>, <span class="str">confirmed</span>, <span class="str">shipped</span>, <span class="str">delivered</span>]
+        <span class="kw">total</span>:
+          <span class="kw">type</span>: <span class="str">number</span>
+          <span class="kw">format</span>: <span class="str">double</span></code></pre>
+
+<h4>Regras Spectral para Linting</h4>
+<pre data-lang="yaml"><code><span class="cm"># .spectral.yaml — Regras customizadas de API governance</span>
+<span class="kw">extends</span>: [<span class="str">"spectral:oas"</span>]
+
+<span class="kw">rules</span>:
+  <span class="cm"># Toda operação precisa de operationId</span>
+  <span class="str">operation-operationId</span>:
+    <span class="kw">severity</span>: <span class="str">error</span>
+    <span class="kw">given</span>: <span class="str">"$.paths[*][get,post,put,patch,delete]"</span>
+    <span class="kw">then</span>:
+      <span class="kw">field</span>: <span class="str">operationId</span>
+      <span class="kw">function</span>: <span class="str">truthy</span>
+
+  <span class="cm"># Nomes de propriedades devem ser camelCase</span>
+  <span class="str">properties-camelCase</span>:
+    <span class="kw">severity</span>: <span class="str">warn</span>
+    <span class="kw">given</span>: <span class="str">"$.components.schemas[*].properties[*]~"</span>
+    <span class="kw">then</span>:
+      <span class="kw">function</span>: <span class="str">casing</span>
+      <span class="kw">functionOptions</span>:
+        <span class="kw">type</span>: <span class="str">camel</span>
+
+  <span class="cm"># Toda resposta 2xx precisa de content-type</span>
+  <span class="str">response-must-have-content</span>:
+    <span class="kw">severity</span>: <span class="str">error</span>
+    <span class="kw">given</span>: <span class="str">"$.paths[*][*].responses[?(@property >= 200 &amp;&amp; @property &lt; 300)]"</span>
+    <span class="kw">then</span>:
+      <span class="kw">field</span>: <span class="str">content</span>
+      <span class="kw">function</span>: <span class="str">truthy</span>
+
+  <span class="cm"># Paths devem usar kebab-case</span>
+  <span class="str">paths-kebab-case</span>:
+    <span class="kw">severity</span>: <span class="str">error</span>
+    <span class="kw">given</span>: <span class="str">"$.paths[*]~"</span>
+    <span class="kw">then</span>:
+      <span class="kw">function</span>: <span class="str">pattern</span>
+      <span class="kw">functionOptions</span>:
+        <span class="kw">match</span>: <span class="str">"^(/[a-z][a-z0-9-]*({[^}]+})?)+$"</span>
+
+  <span class="cm"># Paginacao obrigatória em endpoints de listagem</span>
+  <span class="str">list-must-have-págination</span>:
+    <span class="kw">severity</span>: <span class="str">warn</span>
+    <span class="kw">message</span>: <span class="str">"GET endpoints que retornam listas devem ter parametros de páginação"</span>
+    <span class="kw">given</span>: <span class="str">"$.paths[*].get.parameters"</span>
+    <span class="kw">then</span>:
+      <span class="kw">function</span>: <span class="str">length</span>
+      <span class="kw">functionOptions</span>:
+        <span class="kw">min</span>: <span class="num">1</span></code></pre>
+
+<pre data-lang="bash"><code><span class="cm"># Executar linting no CI/CD</span>
+npx @stoplight/spectral-cli lint openapi.yaml --ruleset .spectral.yaml
+
+<span class="cm"># Resultado esperado:</span>
+<span class="cm"># openapi.yaml</span>
+<span class="cm">#  12:5  warning  properties-camelCase  Property must be camelCase</span>
+<span class="cm">#  45:3  error    paths-kebab-case      Path must use kebab-case</span>
+<span class="cm"># 2 problems (1 error, 1 warning)</span></code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>API-first workflow:</strong> (1) Product define requisitos. (2) Backend escreve OpenAPI spec. (3) Spec e revisada em PR como código. (4) Spectral lint roda no CI. (5) Frontend gera tipos TypeScript do spec (<code>openapi-typescript</code>). (6) Ambos implementam em paralelo. (7) Contract test válida no merge.</div>
+</div>
+
+
+<!-- ═══ ASYNCAPI ═══ -->
+<h3>AsyncAPI — Contratos Event-Driven</h3>
+
+<p>OpenAPI resolve contratos para APIs síncronas (REST/HTTP). Mas e os eventos assíncronos? Quem documenta os tópicos Kafka, as filas SQS, os canais WebSocket? <strong>AsyncAPI</strong> é a específicacao que faz para event-driven o que OpenAPI faz para REST.</p>
+
+<h4>Estrutura da Especificacao</h4>
+<ul>
+<li><strong>info:</strong> Metadados do serviço (nome, versão, descricao)</li>
+<li><strong>servers:</strong> Brokers de mensageria (Kafka, RabbitMQ, MQTT)</li>
+<li><strong>channels:</strong> Topicos/filas onde mensagens fluem (equivalente a paths no OpenAPI)</li>
+<li><strong>operations:</strong> Acoes que o serviço realiza (send/receive em cada channel)</li>
+<li><strong>components/schemas:</strong> Schemas das mensagens (reusaveis, como no OpenAPI)</li>
+</ul>
+
+<!-- Diagram: AsyncAPI vs OpenAPI -->
+<div class="diagram">
+<div class="diagram-box blue">OpenAPI<br><small>REST / HTTP</small></div>
+<div class="diagram-arrow">&#8596;</div>
+<div class="diagram-box purple">AsyncAPI<br><small>Events / Messaging</small></div>
+</div>
+<div class="diagram" style="margin-top:-8px">
+<div class="diagram-box green">paths</div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box green">channels</div>
+<div class="diagram-arrow" style="margin-left:24px">|</div>
+<div class="diagram-box orange">request/response</div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">publish/subscribe</div>
+<div class="diagram-arrow" style="margin-left:24px">|</div>
+<div class="diagram-box cyan">HTTP verbs</div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box cyan">send/receive</div>
+</div>
+
+<h4>AsyncAPI YAML Definition</h4>
+<pre data-lang="yaml"><code><span class="cm"># asyncapi.yaml — Serviço de Pedidos (event-driven)</span>
+<span class="kw">asyncapi</span>: <span class="str">"3.0.0"</span>
+<span class="kw">info</span>:
+  <span class="kw">title</span>: <span class="str">"Order Events Service"</span>
+  <span class="kw">version</span>: <span class="str">"1.2.0"</span>
+  <span class="kw">description</span>: |
+    Serviço responsável por emitir eventos do ciclo
+    de vida de pedidos para consumers downstream.
+
+<span class="kw">servers</span>:
+  <span class="str">production</span>:
+    <span class="kw">host</span>: <span class="str">"kafka.company.com:9092"</span>
+    <span class="kw">protocol</span>: <span class="str">kafka</span>
+    <span class="kw">description</span>: <span class="str">"Kafka cluster de produção"</span>
+  <span class="str">staging</span>:
+    <span class="kw">host</span>: <span class="str">"kafka-stg.company.com:9092"</span>
+    <span class="kw">protocol</span>: <span class="str">kafka</span>
+
+<span class="kw">channels</span>:
+  <span class="str">orderCreated</span>:
+    <span class="kw">address</span>: <span class="str">"orders.created"</span>
+    <span class="kw">description</span>: <span class="str">"Emitido quando um novo pedido e confirmado"</span>
+    <span class="kw">messages</span>:
+      <span class="str">OrderCreatedMessage</span>:
+        <span class="kw">$ref</span>: <span class="str">"#/components/messages/OrderCreated"</span>
+
+  <span class="str">orderStatusChanged</span>:
+    <span class="kw">address</span>: <span class="str">"orders.status-changed"</span>
+    <span class="kw">description</span>: <span class="str">"Emitido quando o status de um pedido muda"</span>
+    <span class="kw">messages</span>:
+      <span class="str">OrderStatusChangedMessage</span>:
+        <span class="kw">$ref</span>: <span class="str">"#/components/messages/OrderStatusChanged"</span>
+
+  <span class="str">orderCancelled</span>:
+    <span class="kw">address</span>: <span class="str">"orders.cancelled"</span>
+    <span class="kw">description</span>: <span class="str">"Emitido quando pedido e cancelado"</span>
+    <span class="kw">messages</span>:
+      <span class="str">OrderCancelledMessage</span>:
+        <span class="kw">$ref</span>: <span class="str">"#/components/messages/OrderCancelled"</span>
+
+<span class="kw">operations</span>:
+  <span class="str">publishOrderCreated</span>:
+    <span class="kw">action</span>: <span class="str">send</span>
+    <span class="kw">channel</span>:
+      <span class="kw">$ref</span>: <span class="str">"#/channels/orderCreated"</span>
+    <span class="kw">summary</span>: <span class="str">"Publica evento de pedido criado"</span>
+
+  <span class="str">publishOrderStatusChanged</span>:
+    <span class="kw">action</span>: <span class="str">send</span>
+    <span class="kw">channel</span>:
+      <span class="kw">$ref</span>: <span class="str">"#/channels/orderStatusChanged"</span>
+
+<span class="kw">components</span>:
+  <span class="kw">messages</span>:
+    <span class="str">OrderCreated</span>:
+      <span class="kw">name</span>: <span class="str">OrderCreated</span>
+      <span class="kw">contentType</span>: <span class="str">application/json</span>
+      <span class="kw">headers</span>:
+        <span class="kw">type</span>: <span class="str">object</span>
+        <span class="kw">properties</span>:
+          <span class="str">correlationId</span>:
+            <span class="kw">type</span>: <span class="str">string</span>
+            <span class="kw">format</span>: <span class="str">uuid</span>
+      <span class="kw">payload</span>:
+        <span class="kw">$ref</span>: <span class="str">"#/components/schemas/OrderCreatedPayload"</span>
+
+    <span class="str">OrderStatusChanged</span>:
+      <span class="kw">name</span>: <span class="str">OrderStatusChanged</span>
+      <span class="kw">contentType</span>: <span class="str">application/json</span>
+      <span class="kw">payload</span>:
+        <span class="kw">$ref</span>: <span class="str">"#/components/schemas/OrderStatusPayload"</span>
+
+    <span class="str">OrderCancelled</span>:
+      <span class="kw">name</span>: <span class="str">OrderCancelled</span>
+      <span class="kw">contentType</span>: <span class="str">application/json</span>
+      <span class="kw">payload</span>:
+        <span class="kw">$ref</span>: <span class="str">"#/components/schemas/OrderCancelledPayload"</span>
+
+  <span class="kw">schemas</span>:
+    <span class="str">OrderCreatedPayload</span>:
+      <span class="kw">type</span>: <span class="str">object</span>
+      <span class="kw">required</span>: [<span class="str">orderId</span>, <span class="str">customerId</span>, <span class="str">total</span>, <span class="str">items</span>]
+      <span class="kw">properties</span>:
+        <span class="str">orderId</span>:
+          <span class="kw">type</span>: <span class="str">string</span>
+          <span class="kw">format</span>: <span class="str">uuid</span>
+        <span class="str">customerId</span>:
+          <span class="kw">type</span>: <span class="str">string</span>
+          <span class="kw">format</span>: <span class="str">uuid</span>
+        <span class="str">total</span>:
+          <span class="kw">type</span>: <span class="str">number</span>
+          <span class="kw">format</span>: <span class="str">double</span>
+        <span class="str">currency</span>:
+          <span class="kw">type</span>: <span class="str">string</span>
+          <span class="kw">default</span>: <span class="str">"BRL"</span>
+        <span class="str">items</span>:
+          <span class="kw">type</span>: <span class="str">array</span>
+          <span class="kw">items</span>:
+            <span class="kw">$ref</span>: <span class="str">"#/components/schemas/OrderItem"</span>
+        <span class="str">createdAt</span>:
+          <span class="kw">type</span>: <span class="str">string</span>
+          <span class="kw">format</span>: <span class="str">date-time</span>
+
+    <span class="str">OrderItem</span>:
+      <span class="kw">type</span>: <span class="str">object</span>
+      <span class="kw">properties</span>:
+        <span class="str">productId</span>: { <span class="kw">type</span>: <span class="str">string</span> }
+        <span class="str">name</span>: { <span class="kw">type</span>: <span class="str">string</span> }
+        <span class="str">quantity</span>: { <span class="kw">type</span>: <span class="str">integer</span> }
+        <span class="str">price</span>: { <span class="kw">type</span>: <span class="str">number</span> }
+
+    <span class="str">OrderStatusPayload</span>:
+      <span class="kw">type</span>: <span class="str">object</span>
+      <span class="kw">required</span>: [<span class="str">orderId</span>, <span class="str">previousStatus</span>, <span class="str">newStatus</span>]
+      <span class="kw">properties</span>:
+        <span class="str">orderId</span>: { <span class="kw">type</span>: <span class="str">string</span>, <span class="kw">format</span>: <span class="str">uuid</span> }
+        <span class="str">previousStatus</span>: { <span class="kw">type</span>: <span class="str">string</span> }
+        <span class="str">newStatus</span>: { <span class="kw">type</span>: <span class="str">string</span> }
+        <span class="str">changedAt</span>: { <span class="kw">type</span>: <span class="str">string</span>, <span class="kw">format</span>: <span class="str">date-time</span> }
+
+    <span class="str">OrderCancelledPayload</span>:
+      <span class="kw">type</span>: <span class="str">object</span>
+      <span class="kw">required</span>: [<span class="str">orderId</span>, <span class="str">reason</span>]
+      <span class="kw">properties</span>:
+        <span class="str">orderId</span>: { <span class="kw">type</span>: <span class="str">string</span>, <span class="kw">format</span>: <span class="str">uuid</span> }
+        <span class="str">reason</span>: { <span class="kw">type</span>: <span class="str">string</span> }
+        <span class="str">cancelledAt</span>: { <span class="kw">type</span>: <span class="str">string</span>, <span class="kw">format</span>: <span class="str">date-time</span> }</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>AsyncAPI tooling:</strong> Use <code>@asyncapi/generator</code> para gerar documentação HTML, code stubs em TypeScript/Java/Python, e diagramas de fluxo automáticamente a partir do spec. Integre no CI para gerar docs a cada PR merge.</div>
+</div>
+
+
+<!-- ═══ API GATEWAY PATTERNS AVANCADOS ═══ -->
+<h3>API Gateway Patterns Avancados</h3>
+
+<p>O <strong>API Gateway</strong> é o ponto de entrada único para todas as requisições de clientes. Vai muito além de um proxy reversó — implementa cross-cutting concerns como autenticação, raté limiting, transformacao de requests e composicao de APIs.</p>
+
+<h4>Raté Limiting, Throttling & Quotas</h4>
+<ul>
+<li><strong>Raté Limiting:</strong> Limita requests por janela de tempo. Ex: 100 req/min por IP. Algoritmos: Token Bucket (burst-friendly), Sliding Window (mais preciso), Fixed Window (simples)</li>
+<li><strong>Throttling:</strong> Degrada progressivamente ao inves de rejeitar. Ex: após 80% do limite, respostas ficam mais lentas (429 delay). Apos 100%, rejeita</li>
+<li><strong>Quotas:</strong> Limite por periodo maior (diario/mensal). Ex: Free tier = 1000 req/dia. Pro = 100K/dia. Tipicamente por API key</li>
+</ul>
+
+<h4>API Composition & BFF Pattern</h4>
+<p>Clientes mobile precisam de dados diferentes de clientes web. Em vez de o cliente fazer 5 chamadas a 5 microserviços, o gateway (ou BFF) <strong>compoe uma única resposta</strong> agregando dados de múltiplos backends.</p>
+
+<ul>
+<li><strong>API Composition:</strong> Gateway faz requests paralelos a N serviços e agrega o resultado. Problema: se 1 dos N falhar, o que retornar? (timeout, partial response, cached fallback)</li>
+<li><strong>BFF (Backend for Frontend):</strong> Um gateway dedicado por tipo de cliente (mobile BFF, web BFF, partner BFF). Cada BFF formata a resposta otimizada para seu client. Evita "API que tenta servir a todos e não serve bem a ninguem"</li>
+</ul>
+
+<h4>Request/Response Transformation</h4>
+<ul>
+<li><strong>Header injection:</strong> Adicionar correlation-id, request-id, trace-id automáticamente em cada request</li>
+<li><strong>Body transformation:</strong> Converter XML de um parceiro legado para JSON antes de enviar ao microserviço moderno</li>
+<li><strong>Response filtering:</strong> Remover campos senssiveis (CPF, email) para clientes não-autorizados</li>
+<li><strong>Protocol translation:</strong> Receber REST no gateway, converter para gRPC internamente</li>
+</ul>
+
+<h4>Authentication at Gateway Level</h4>
+<ul>
+<li><strong>JWT válidation:</strong> Gateway válida o token (assinatura, expiracao, audience) antes de rotear. Serviços internós recebem headers com claims extraidas — não precisam validar JWT novamente</li>
+<li><strong>API Key management:</strong> Gateway gerencia API keys, associa a raté limits e quotas</li>
+<li><strong>mTLS:</strong> Autenticação mutua entre gateway e serviços internos. Garante que só o gateway pode chamar os microserviços</li>
+<li><strong>OAuth2 token exchange:</strong> Gateway troca token externo por token interno com scopes mais restritos</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Exemplo: API Gateway middleware (NestJS)</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">RateLimitMiddleware</span> <span class="kw">implements</span> <span class="tp">NestMiddleware</span> {
+  <span class="kw">private</span> store = <span class="kw">new</span> <span class="fn">Map</span>&lt;<span class="tp">string</span>, { count: <span class="tp">number</span>; resetAt: <span class="tp">number</span> }&gt;();
+
+  <span class="fn">use</span>(req: <span class="tp">Request</span>, res: <span class="tp">Response</span>, next: <span class="tp">NextFunction</span>) {
+    <span class="kw">const</span> key = req.headers[<span class="str">'x-api-key'</span>] <span class="kw">as</span> <span class="tp">string</span> || req.ip;
+    <span class="kw">const</span> now = Date.<span class="fn">now</span>();
+    <span class="kw">const</span> window = <span class="num">60_000</span>; <span class="cm">// 1 minuto</span>
+    <span class="kw">const</span> limit = <span class="num">100</span>;
+
+    <span class="kw">let</span> record = <span class="kw">this</span>.store.<span class="fn">get</span>(key);
+    <span class="kw">if</span> (!record || now &gt; record.resetAt) {
+      record = { count: <span class="num">0</span>, resetAt: now + window };
+      <span class="kw">this</span>.store.<span class="fn">set</span>(key, record);
+    }
+
+    record.count++;
+
+    <span class="cm">// Headers informativos (RFC 6585)</span>
+    res.<span class="fn">setHeader</span>(<span class="str">'X-RateLimit-Limit'</span>, limit);
+    res.<span class="fn">setHeader</span>(<span class="str">'X-RateLimit-Remaining'</span>, Math.<span class="fn">max</span>(<span class="num">0</span>, limit - record.count));
+    res.<span class="fn">setHeader</span>(<span class="str">'X-RateLimit-Reset'</span>, Math.<span class="fn">ceil</span>(record.resetAt / <span class="num">1000</span>));
+
+    <span class="kw">if</span> (record.count &gt; limit) {
+      res.<span class="fn">setHeader</span>(<span class="str">'Retry-After'</span>, Math.<span class="fn">ceil</span>((record.resetAt - now) / <span class="num">1000</span>));
+      <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">429</span>).<span class="fn">json</span>({
+        error: <span class="str">'Too Many Requests'</span>,
+        retryAfter: Math.<span class="fn">ceil</span>((record.resetAt - now) / <span class="num">1000</span>),
+      });
+    }
+
+    <span class="fn">next</span>();
+  }
+}</code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Raté limiting em memória não escala.</strong> O exemplo acima usa Map in-memory — funciona para single instance. Em produção com multiplas instancias, use Redis com sliding window ou token bucket distribuido. Ferramentas como Kong, AWS API Gateway e Envoy já tem raté limiting built-in.</div>
+</div>
+
+
+<!-- ═══ BACKWARD COMPATIBILITY & VERSIONAMENTO ═══ -->
+<h3>Backward Compatibility & Versionamento</h3>
+
+<p>Toda API publica eventualmente precisa mudar. A questão não é <strong>se</strong> você vai fazer breaking changes, e <strong>como</strong> gerenciar a transição sem quebrar consumidores existentes. Empresas como Stripe, GitHub e Twilio são referência nesse tema.</p>
+
+<h4>Semantic Versioning para APIs</h4>
+<ul>
+<li><strong>MAJOR (v1 → v2):</strong> Breaking changes. Remocao de campos, mudança de tipos, alterácao de comportamento. Requer migration guide</li>
+<li><strong>MINOR (v1.1 → v1.2):</strong> Novos endpoints, novos campos opcionais, novas enum values. Backward-compatible</li>
+<li><strong>PATCH (v1.2.1 → v1.2.2):</strong> Bug fixes que não alterám a interface. Correcao de documentação</li>
+</ul>
+
+<h4>Breaking vs Non-Breaking Changes</h4>
+<div class="card orange">
+<div class="card-title">Breaking Changes (requerem nova major version)</div>
+<ul>
+<li>Remover um campo existente da resposta</li>
+<li>Mudar o tipo de um campo (string → number)</li>
+<li>Renomear um campo (userId → user_id)</li>
+<li>Mudar status code de sucessó (200 → 201)</li>
+<li>Tornar um campo opcional em obrigatório</li>
+<li>Alterár o significado semântico de um campo</li>
+<li>Remover um endpoint inteiro</li>
+<li>Mudar authentication scheme</li>
+</ul>
+</div>
+
+<div class="card">
+<div class="card-title">Non-Breaking Changes (safe em minor version)</div>
+<ul>
+<li>Adicionar novo campo opcional na resposta</li>
+<li>Adicionar novo endpoint</li>
+<li>Adicionar novo valor em enum (se consumer ignora desconhecidos)</li>
+<li>Adicionar novo query parameter opcional</li>
+<li>Relaxar validação (campo obrigatório → opcional)</li>
+<li>Adicionar novo header de resposta</li>
+<li>Melhorar mensagem de erro sem mudar structure</li>
+</ul>
+</div>
+
+<h4>Sunset Policies & Deprecation Headers</h4>
+<pre data-lang="http"><code><span class="cm"># Resposta com headers de deprecacao (RFC 8594)</span>
+HTTP/1.1 200 OK
+Content-Type: application/json
+<span class="ann">Deprecation</span>: <span class="str">Sat, 01 Mar 2026 00:00:00 GMT</span>
+<span class="ann">Sunset</span>: <span class="str">Sat, 01 Jun 2026 00:00:00 GMT</span>
+<span class="ann">Link</span>: &lt;<span class="str">https://api.company.com/v3/orders</span>&gt;; rel="successor-version"
+
+<span class="cm"># Deprecation = quando o endpoint foi marcado como deprecated</span>
+<span class="cm"># Sunset = quando será removido definitivamente</span>
+<span class="cm"># Link = para onde o consumer deve migrar</span></code></pre>
+
+<h4>Estrategias de Versionamento</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Estrategia</th><th>Exemplo</th><th>Pros</th><th>Cons</th></tr>
+<tr><td><strong>URL Path</strong></td><td><code>/v1/orders</code> → <code>/v2/orders</code></td><td>Explicito, fácil de rotear, cacheable</td><td>Duplica rotas, URL não é o recurso</td></tr>
+<tr><td><strong>Query Param</strong></td><td><code>/orders?version=2</code></td><td>Facil de implementar</td><td>Feio, confunde caching, fácil esquecer</td></tr>
+<tr><td><strong>Header</strong></td><td><code>Accept: application/vnd.company.v2+json</code></td><td>URL limpa, semânticamente correto</td><td>Menós visível, difícil testar no browser</td></tr>
+<tr><td><strong>Date-based</strong></td><td><code>Stripe-Version: 2025-01-15</code></td><td>Granular, não precisa de "v2 inteiro"</td><td>Mais complexo de gerenciar, muitas versões</td></tr>
+</table>
+</div>
+
+<h4>Consumer Compatibility Testing</h4>
+<pre data-lang="typescript"><code><span class="cm">// Pipeline de verificação antes de deploy do provider</span>
+<span class="cm">// Usa Pact + Semantic diff para garantir backward compat</span>
+
+<span class="kw">import</span> { execSync } <span class="kw">from</span> <span class="str">'child_process'</span>;
+
+<span class="kw">async function</span> <span class="fn">verifyBackwardCompatibility</span>() {
+  <span class="cm">// 1. Diff OpenAPI specs (old vs new)</span>
+  <span class="kw">const</span> diff = <span class="fn">execSync</span>(
+    <span class="str">`oasdiff breaking openapi-v1.yaml openapi-v2.yaml --format json`</span>
+  ).<span class="fn">toString</span>();
+
+  <span class="kw">const</span> changes = JSON.<span class="fn">parse</span>(diff);
+
+  <span class="cm">// 2. Classificar mudanças</span>
+  <span class="kw">const</span> breaking = changes.<span class="fn">filter</span>((c: <span class="tp">any</span>) =&gt; c.level === <span class="str">'error'</span>);
+  <span class="kw">const</span> warnings = changes.<span class="fn">filter</span>((c: <span class="tp">any</span>) =&gt; c.level === <span class="str">'warn'</span>);
+
+  <span class="kw">if</span> (breaking.length &gt; <span class="num">0</span>) {
+    console.<span class="fn">error</span>(<span class="str">'BREAKING CHANGES DETECTADAS:'</span>);
+    breaking.<span class="fn">forEach</span>((c: <span class="tp">any</span>) =&gt; {
+      console.<span class="fn">error</span>(<span class="str">`  - ${c.path}: ${c.message}`</span>);
+    });
+    process.<span class="fn">exit</span>(<span class="num">1</span>); <span class="cm">// Falha o CI</span>
+  }
+
+  <span class="cm">// 3. Verificar contratos Pact</span>
+  <span class="fn">execSync</span>(<span class="str">`pact-broker can-i-deploy \
+    --pacticipant OrderAPI \
+    --version ${process.env.GIT_SHA} \
+    --to-environment production`</span>);
+
+  console.<span class="fn">log</span>(<span class="str">'All compatibility checks passed!'</span>);
+}
+
+<span class="fn">verifyBackwardCompatibility</span>();</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra do Stripe:</strong> Nunca quebre um consumer. Cada API key tem uma versão "pinned" na criação. O consumer ve a versão que escolheu até decidir migrar. Internamente, o Stripe mantém <strong>todas as versões desde 2011</strong> usando transformacoes de request/response por versão. E o gold standard de backward compatibility.</div>
+</div>
+
+
+<!-- ═══ Q&A ═══ -->
+<h3>Perguntas Frequentes</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Qual a diferença entre Contract Testing e Integration Testing? Quando usar cada um?</div>
+<div class="qa-a">
+<p><strong>Contract Testing</strong> verifica o <strong>formato da comunicação</strong> entre dois serviços (request shape, response shape, status codes). Roda em segundos com mock server. <strong>Integration Testing</strong> verifica o <strong>comportamento</strong> real com serviços rodando (DB, cache, APIs externas). Roda em minutos. Use contract tests no CI de cada serviço (rápido, independente). Use integration tests em ambiente de staging antes de release (lento, detecta bugs de lógica). Contract tests não substituem integration tests — são complementares.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Schema Registry é necessário se já usó Pact para contract testing?</div>
+<div class="qa-a">
+<p><strong>Sim, são complementares.</strong> Pact funciona para comunicação síncrona (HTTP/REST) entre consumer e provider específicos. Schema Registry funciona para comunicação assíncrona (Kafka/eventos) onde um producer pode ter dezenas de consumers desconhecidos. Pact verifica pares específicos (OrderFrontend ↔ OrderAPI). Schema Registry garante que <strong>qualquer consumer</strong> pode deserializar a mensagem, sem precisar conhecer todos os consumers. Use ambos: Pact para REST, Schema Registry para eventos.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Como lidar com breaking changes quando você tem 50+ consumers e precisa migrar urgentemente?</div>
+<div class="qa-a">
+<p><strong>Expand-Contract pattern:</strong> (1) <strong>Expand</strong> — adicione a nova versão do endpoint/campo mantendo o antigo funcionando. Ambas as versões coexistem. (2) <strong>Migrate</strong> — comunique consumers, forneca migration guide, de prazo (mínimo 3 meses para APIs publicas). Monitore usó do endpoint antigo via métricas. (3) <strong>Contract</strong> — quando o usó do endpoint antigo chegar a zero (ou prazo expirar), remova-o. Para urgencia real (segurança), notifique com 30 dias + sunset header + webhook para consumers registrados.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">API-first vs Code-first: qual abordagem escolher?</div>
+<div class="qa-a">
+<p><strong>API-first</strong> (escrever OpenAPI spec antes do código) é melhor quando: múltiplos consumers, times paralelos (frontend/backend), APIs publicas, ou forte necessidade de governance. <strong>Code-first</strong> (gerar spec do código com decorators como <code>@ApiProperty</code>) é melhor quando: time pequeno, iteráção rápida, API interna com poucos consumers. A maioria das empresas maduras migra para API-first conforme cresce, porque code-first tende a gerar specs inconsistentes quando múltiplos devs contribuem.</p>
+</div>
+</div>
+
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Comúnicação entre Sistemas & Contratos</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="47-networking-protocolos.html">&#8592; Anterior: Networking & Protocolos</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="49-padroes-arquiteturais-avancados.html" class="primary">Próximo: Padroes Arquiteturais Avancados &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 48: Comúnicação entre Sistemas & Contratos
+// ══════════════════════════════════════════
+const SECTION_NUM = 48;
+const STORAGE_KEY = 'fsm_quiz_48';
+
+const QUIZ_DATA = [
+  {
+    question: "No modelo Consumer-Driven Contracts (CDC) com Pact, quem define o contrato?",
+    options: [
+      "O provider (servidor) define o que expoe é o consumer aceita",
+      "O consumer (cliente) define o que espera é o provider verifica",
+      "Um time de arquitetura define os contratos centralmente",
+      "O contrato e gerado automáticamente a partir do código do provider"
+    ],
+    correct: 1,
+    explanation: "No CDC, o consumer escreve testes descrevendo o que espera do provider. Isso gera um arquivo .pact.json (contrato) que o provider verifica automáticamente. A ideia é que o provider só expoe o que alguem realmente usa."
+  },
+  {
+    question: "Qual modo de compatibilidade do Schema Registry permite que consumers atualizem primeiro e producers depois?",
+    options: [
+      "FORWARD — schema antigo le dados novos",
+      "BACKWARD — schema novo le dados antigos",
+      "FULL — compatível em ambas as direcoes",
+      "NONE — sem verificação de compatibilidade"
+    ],
+    correct: 1,
+    explanation: "BACKWARD compatibility significa que o novo schema pode ler dados escritos com o schema antigo. Isso permite que consumers (que leem) atualizem primeiro. Permite adicionar campos com default e remover campos opcionais."
+  },
+  {
+    question: "Qual afirmacao sobre Avro vs Protobuf esta correta?",
+    options: [
+      "Avro requer code generation obrigatória, Protobuf não",
+      "Protobuf e self-describing (schema embutido no arquivo), Avro não",
+      "Avro e nativo no ecossistema Confluent/Kafka, Protobuf gera mensagens mais compactas",
+      "Ambos são formatos texto (JSON), não binários"
+    ],
+    correct: 2,
+    explanation: "Avro é o formato nativo do ecossistema Confluent/Kafka com schema embutido (self-describing) e code generation opcional. Protobuf gera mensagens ~10% menores que Avro mas requer code generation e arquivo .proto separado."
+  },
+  {
+    question: "No Richardson Maturity Model, o que caracteriza o Level 2?",
+    options: [
+      "Um único endpoint POST que recebe todas as acoes no body",
+      "URLs representam recursos mas tudo é POST",
+      "Usó correto de GET, POST, PUT, DELETE com status codes semânticos",
+      "Respostas incluem HATEOAS links para auto-descoberta"
+    ],
+    correct: 2,
+    explanation: "Level 2 usa HTTP verbs corretamente (GET para leitura, POST para criação, etc.) e status codes semânticos (201 Created, 404 Not Found, 409 Conflict). A maioria das APIs REST modernas esta neste nível."
+  },
+  {
+    question: "Qual é a principal diferença entre AsyncAPI e OpenAPI?",
+    options: [
+      "AsyncAPI e para APIs mais rápidas, OpenAPI e para APIs lentas",
+      "OpenAPI documenta APIs síncronas (REST/HTTP), AsyncAPI documenta APIs assíncronas (eventos/messaging)",
+      "AsyncAPI substitui OpenAPI completamente em microserviços",
+      "OpenAPI suporta WebSocket, AsyncAPI não"
+    ],
+    correct: 1,
+    explanation: "OpenAPI documenta APIs síncronas baseadas em HTTP (REST). AsyncAPI documenta APIs assíncronas baseadas em messaging (Kafka, RabbitMQ, MQTT, WebSocket). Em 'paths' do OpenAPI temos request/response; em 'channels' do AsyncAPI temos publish/subscribe."
+  },
+  {
+    question: "Qual destas mudanças em uma API é considerada NON-breaking (safe em minor version)?",
+    options: [
+      "Renomear um campo de userId para user_id na resposta",
+      "Tornar um campo opcional em obrigatório no request body",
+      "Adicionar um novo campo opcional na resposta JSON",
+      "Mudar o status code de sucessó de 200 para 201"
+    ],
+    correct: 2,
+    explanation: "Adicionar um campo opcional na resposta e non-breaking — consumers existentes simplesmente ignoram campos desconhecidos. Renomear campos, mudar obrigatoriedade e mudar status codes são breaking changes que requerem nova major version."
+  },
+  {
+    question: "O que o comando 'pact-broker can-i-deploy' verifica?",
+    options: [
+      "Se o servidor tem recursos suficientes para o deploy",
+      "Se todos os contratos Pact entre a versão do serviço e seus consumers estão verificados com sucesso",
+      "Se o Docker image foi buildado corretamente",
+      "Se os testes unitários estão passando"
+    ],
+    correct: 1,
+    explanation: "O 'can-i-deploy' consulta o Pact Broker e verifica se a versão específica do serviço tem todos os contratos verificados com sucessó contra os consumers que estão em produção. E um gaté de segurança no pipeline CI/CD que previne deploys que quebrariam consumers."
+  },
+  {
+    question: "Qual estratégia de versionamento de API o Stripe útiliza?",
+    options: [
+      "URL Path versioning (/v1/charges, /v2/charges)",
+      "Header versioning com Accept header customizado",
+      "Date-based versioning com header Stripe-Version (ex: 2025-01-15)",
+      "Query parameter versioning (?version=2)"
+    ],
+    correct: 2,
+    explanation: "Stripe usa date-based versioning. Cada API key e 'pinned' a uma versão (data) na criação. O consumer ve a versão que escolheu até decidir migrar. Internamente, Stripe mantém transformacoes por versão para todas as versões desde 2011."
+  },
+  {
+    question: "No padrão BFF (Backend for Frontend), qual é o principal benefício?",
+    options: [
+      "Reduzir o número total de microserviços na arquitetura",
+      "Cada tipo de cliente (mobile, web, partner) tem um gateway dedicado que formata a resposta otimizada para suas necessidades",
+      "Eliminar a necessidade de autenticação nós microserviços",
+      "Cachear todas as respostas automáticamente"
+    ],
+    correct: 1,
+    explanation: "O BFF cria um gateway dedicado por tipo de cliente. O mobile BFF retorna dados compactos otimizados para tela pequena. O web BFF retorna dados mais ricos. Isso evita a 'API genérica' que tenta servir a todos e não serve bem a ninguem, e reduz over-fetching."
+  },
+  {
+    question: "Qual é a abordagem correta para fazer uma breaking change em uma API com muitos consumers?",
+    options: [
+      "Fazer a mudança e notificar consumers por email para atualizarem",
+      "Usar o padrão Expand-Contract: adicionar nova versão, migrar consumers gradualmente, remover versão antiga quando usó zerar",
+      "Criar um novo serviço inteiramente e desligar o antigo",
+      "Manter ambas as versões para sempre sem nunca remover a antiga"
+    ],
+    correct: 1,
+    explanation: "O padrão Expand-Contract e: (1) Expand — adicione nova versão coexistindo com a antiga. (2) Migraté — comunique consumers, de prazo, monitore uso. (3) Contract — remova a versão antiga quando usó chegar a zero. Headers Deprecation e Sunset comúnicam o cronograma."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Comúnicação entre Sistemas & Contratos.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

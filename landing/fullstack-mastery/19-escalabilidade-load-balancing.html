@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>19 — Escalabilidade & Load Balancing | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="18-concorrencia-paralelismo.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>19</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="20-caching-estrategias.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:28.8%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 19</span>
+<h2>Escalabilidade & Load Balancing</h2>
+<div class="section-line"></div>
+
+<p>Escalabilidade é a capacidade de um sistema lidar com <strong>crescimento de carga</strong> — mais usuários, mais requisições, mais dados — sem degradar performance. Não é sobre ser rápido; e sobre <strong>continuar rápido quando a demanda cresce 10x, 100x, 1000x</strong>. Load balancing é o mecanismo que distribui essa carga entre múltiplas instâncias, garantindo que nenhum servidor individual vire gargalo.</p>
+
+<p>A maioria dos sistemas não morre por falta de funcionalidades. Morre por não aguentar a carga quando finalmente consegue usuários. Entender escalabilidade não é opcional para um full-stack senior — e <strong>survival skill</strong>.</p>
+
+<!-- ═══ SCALING STRATEGIES ═══ -->
+<h3>Estratégias de Escalonamento</h3>
+
+<h4>Vertical Scaling (Scale Up)</h4>
+<p><strong>Adicionar mais recursos a uma única máquina:</strong> mais CPU, RAM, disco SSD, rede mais rápida. É a abordagem mais simples — não requer mudança de arquitetura. Você pega seu servidor e troca por um maior.</p>
+
+<ul>
+<li><strong>Vantagens:</strong> Simples, sem mudança de código, sem problemas de consistência distribuída</li>
+<li><strong>Desvantagens:</strong> Tem limite fisico (a maior máquina AWS tem 24TB RAM), single point of failure, custo exponencial (dobrar specs = 3-4x preço)</li>
+<li><strong>Quando usar:</strong> Banco de dados relacional (dificulta sharding), sistemas legados, carga previsível com teto conhecido</li>
+</ul>
+
+<h4>Horizontal Scaling (Scale Out)</h4>
+<p><strong>Adicionar mais máquinas ao pool.</strong> Ao inves de um servidor gigante, você usa 10, 50, 100 servidores menores. Requer um <strong>load balancer</strong> na frente para distribuir tráfego e <strong>serviços stateless</strong> para funcionar.</p>
+
+<ul>
+<li><strong>Vantagens:</strong> Sem limite teórico, tolerância a falhas (uma máquina morre, as outras continuam), custo linear</li>
+<li><strong>Desvantagens:</strong> Complexidade operacional, problemas de consistência, necessidade de serviços stateless</li>
+<li><strong>Quando usar:</strong> APIs web, microsserviços, workloads imprevisiveis, qualquer sistema que precisa de alta disponibilidade</li>
+</ul>
+
+<h4>Auto-Scaling</h4>
+<p>Auto-scaling é o mecanismo que adiciona ou remove instâncias <strong>automáticamente</strong> com base em métricas. Não é magica — e configuração cuidadosa de thresholds e cooldowns.</p>
+
+<ul>
+<li><strong>CPU-based:</strong> Se CPU media > 70% por 3 minutos, adiciona instância. Mais comum, funciona bem para APIs compute-bound</li>
+<li><strong>Memory-based:</strong> Se RAM > 80%, escala. Útil para aplicações que fazem cache em memória</li>
+<li><strong>Queue-based:</strong> Se a fila SQS tem > 1000 mensagens, adiciona workers. Ideal para processamento assíncrono</li>
+<li><strong>Request-based:</strong> Se latência p99 > 500ms, escala. Mais sofisticado, foca na experiência do usuário</li>
+<li><strong>Schedule-based:</strong> Escala para cima as 8h (início do expediente) e para baixo as 22h. Para cargas previsiveis</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Cooldown period:</strong> Depois de escalar, espere 5-10 minutos antes de escalar novamente. Instâncias novas precisam de tempo para warmup (boot, health check, JIT compilation). Sem cooldown, você entra em "flapping" — escalando e desescalando freneticamente.</div>
+</div>
+
+<h4>O Cubo de Escalabilidade (Scale Cube)</h4>
+<p>Modelo criado por Martin Abbott e Michael Fisher no livro "The Art of Scalability". Define três eixos ortogonais de escalonamento:</p>
+
+<div class="diagram">
+<div class="diagram-box green">Eixo X<br><small>Clonagem</small><br><small>N cópias identicas</small></div>
+<div class="diagram-arrow">|</div>
+<div class="diagram-box blue">Eixo Y<br><small>Decomposicao Funcional</small><br><small>Microsserviços</small></div>
+<div class="diagram-arrow">|</div>
+<div class="diagram-box purple">Eixo Z<br><small>Particionamento de Dados</small><br><small>Sharding</small></div>
+</div>
+
+<ul>
+<li><strong>Eixo X (Clonagem):</strong> Rode N cópias identicas da aplicação atrás de um load balancer. Cada instância processa qualquer requisição. É o horizontal scaling clássico. <strong>Resolve:</strong> throughput. <strong>Não resolve:</strong> dados grandes demais para um banco</li>
+<li><strong>Eixo Y (Decomposicao Funcional):</strong> Divida o monolito em serviços por funcionalidade — UserService, OrderService, PaymentService. Cada serviço escala independentemente. É a base dos microsserviços. <strong>Resolve:</strong> complexidade organizacional e escala diferenciada</li>
+<li><strong>Eixo Z (Particionamento de Dados):</strong> Cada instância processa um subconjunto dos dados. Exemplo: usuários A-M vao para o servidor 1, N-Z para o servidor 2. É o sharding. <strong>Resolve:</strong> volume de dados que não cabe em uma máquina</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Quando escalar Up vs Out:</strong> Comece com scale up (e mais simples). Quando atingir o limite da máquina (ou quando o custo ficar proibitivo), migre para scale out. Bancos de dados costumam escalar verticalmente por mais tempo que APIs. APIs stateless são candidatas naturais para scale out desde o dia 1.</div>
+</div>
+
+<!-- ═══ LOAD BALANCING ═══ -->
+<h3>Load Balancing em Profundidade</h3>
+
+<p>Um load balancer é um componente que <strong>distribui requisições entre múltiplos servidores</strong>. Ele fica entre o cliente é os servidores de aplicação, decidindo para qual instância enviar cada request. Sem ele, horizontal scaling não funciona.</p>
+
+<h4>Algoritmos de Balanceamento</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Algoritmo</th><th>Como Funciona</th><th>Quando Usar</th></tr>
+<tr><td><strong>Round Robin</strong></td><td>Distribui sequêncialmente: A, B, C, A, B, C...</td><td>Servidores homogeneos, requests de custo similar</td></tr>
+<tr><td><strong>Weighted Round Robin</strong></td><td>Round Robin com pesos. Servidor com pesó 3 recebe 3x mais que pesó 1</td><td>Servidores heterogeneos (ex: mix de instâncias EC2)</td></tr>
+<tr><td><strong>Least Connections</strong></td><td>Envia para o servidor com menós conexões ativas</td><td>Requests com duração variável (websockets, uploads)</td></tr>
+<tr><td><strong>IP Hash</strong></td><td>Hash do IP do cliente determina o servidor</td><td>Quando precisa de sticky sessions sem cookies</td></tr>
+<tr><td><strong>Consistent Hashing</strong></td><td>Hash ring com virtual nodes. Minimiza redistribuição</td><td>Caches distribuídos, CDNs, bancos NoSQL</td></tr>
+<tr><td><strong>Random</strong></td><td>Escolha aleatória entre servidores saudaveis</td><td>Surpreendentemente eficiente em larga escala (power of two choices)</td></tr>
+</table>
+</div>
+
+<h4>Layer 4 (L4) vs Layer 7 (L7)</h4>
+<p>Load balancers operam em diferentes camadas do modelo OSI, com tradeoffs importantes:</p>
+
+<div class="card">
+<div class="card-title">L4 — Transport Layer (TCP/UDP)</div>
+<ul>
+<li>Opera no nível de <strong>conexão TCP/UDP</strong> — não entende HTTP</li>
+<li>Decide baseado em: IP origem, IP destino, porta origem, porta destino</li>
+<li><strong>Vantagem:</strong> Extremamente rápido (não precisa parsear headers HTTP), baixa latência</li>
+<li><strong>Desvantagem:</strong> Não pode rotear por URL, header, cookie ou conteúdo do request</li>
+<li><strong>Exemplo:</strong> AWS NLB (Network Load Balancer), HAProxy modo TCP</li>
+<li><strong>Casó de uso:</strong> gRPC, WebSockets, bancos de dados, qualquer protocolo não-HTTP</li>
+</ul>
+</div>
+
+<div class="card blue">
+<div class="card-title">L7 — Application Layer (HTTP/HTTPS)</div>
+<ul>
+<li>Opera no nível <strong>HTTP</strong> — entende URLs, headers, cookies, body</li>
+<li>Decide baseado em: path (<code>/api/*</code> vs <code>/static/*</code>), Host header, cookies, JWT claims</li>
+<li><strong>Vantagem:</strong> Roteamento inteligente, SSL termination, compressão, caching, raté limiting</li>
+<li><strong>Desvantagem:</strong> Mais lento que L4 (precisa parsear HTTP), consome mais CPU</li>
+<li><strong>Exemplo:</strong> AWS ALB, Nginx, Envoy, Traefik</li>
+<li><strong>Casó de uso:</strong> APIs REST, aplicações web, roteamento por microsserviço</li>
+</ul>
+</div>
+
+<h4>Health Checks</h4>
+<p>O load balancer precisa saber quais servidores estão saudaveis. Health checks são requisições periódicas para cada instância:</p>
+
+<ul>
+<li><strong>TCP Health Check:</strong> Tenta abrir conexão TCP na porta. Se abrir, está vivo. Rápido, mas não verifica se a app funciona</li>
+<li><strong>HTTP Health Check:</strong> Faz GET em <code>/health</code>. Espera status 200. Pode verificar banco, cache, dependências</li>
+<li><strong>Deep Health Check:</strong> Verifica todas as dependências (DB, Redis, APIs externas). Cuidado: se Redis cair, todas as instâncias ficam "unhealthy" é o LB remove todas</li>
+<li><strong>Shallow Health Check:</strong> Retorna 200 se o processo está rodando. Não verifica dependências. Mais seguro para o LB, complementado com métricas separadas</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Health check endpoint — NestJS com verificacoes graduais</span>
+<span class="ann">@Get</span>(<span class="str">'health'</span>)
+<span class="kw">async</span> <span class="fn">healthCheck</span>() {
+  <span class="kw">const</span> checks = {
+    status: <span class="str">'ok'</span>,
+    uptime: process.<span class="fn">uptime</span>(),
+    timestamp: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">toISOString</span>(),
+  };
+
+  <span class="cm">// Shallow check — para o load balancer</span>
+  <span class="kw">return</span> checks;
+}
+
+<span class="ann">@Get</span>(<span class="str">'health/deep'</span>)
+<span class="kw">async</span> <span class="fn">deepHealthCheck</span>() {
+  <span class="kw">const</span> [db, redis, s3] = <span class="kw">await</span> Promise.<span class="fn">allSettled</span>([
+    <span class="kw">this</span>.db.<span class="fn">query</span>(<span class="str">'SELECT 1'</span>),
+    <span class="kw">this</span>.redis.<span class="fn">ping</span>(),
+    <span class="kw">this</span>.s3.<span class="fn">headBucket</span>({ Bucket: <span class="str">'my-bucket'</span> }),
+  ]);
+
+  <span class="kw">const</span> status = {
+    db: db.status === <span class="str">'fulfilled'</span> ? <span class="str">'ok'</span> : <span class="str">'down'</span>,
+    redis: redis.status === <span class="str">'fulfilled'</span> ? <span class="str">'ok'</span> : <span class="str">'down'</span>,
+    s3: s3.status === <span class="str">'fulfilled'</span> ? <span class="str">'ok'</span> : <span class="str">'down'</span>,
+  };
+
+  <span class="kw">const</span> allHealthy = Object.<span class="fn">values</span>(status).<span class="fn">every</span>(s => s === <span class="str">'ok'</span>);
+  <span class="kw">if</span> (!allHealthy) <span class="kw">throw new</span> <span class="tp">ServiceUnavailableException</span>(status);
+  <span class="kw">return</span> { status: <span class="str">'ok'</span>, services: status };
+}</code></pre>
+
+<h4>Session Affinity / Sticky Sessions</h4>
+<p>Quando uma aplicação mantém estado na memória (sessões, caches locais), requisições do mesmo usuário precisam ir para o mesmo servidor. Isso e <strong>sticky sessions</strong>.</p>
+
+<ul>
+<li><strong>Cookie-based:</strong> O LB insere um cookie (<code>AWSALB</code>, <code>SERVERID</code>) que identifica o servidor. Requests subsequentes usam esse cookie</li>
+<li><strong>IP-based:</strong> Hash do IP do cliente. Problema: usuários atrás de NAT/proxy compartilham IP</li>
+<li><strong>Por que evitar:</strong> Sticky sessions são um anti-pattern para escalabilidade. Se o servidor morre, a sessão morre junto. Prefira <strong>externalizar o estado</strong> (Redis, banco) é manter serviços stateless</li>
+</ul>
+
+<h4>Ferramentas de Load Balancing</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Tipo</th><th>Destaque</th></tr>
+<tr><td><strong>Nginx</strong></td><td>L4 / L7</td><td>Mais popular. Reverse proxy + LB + web server. Config declarativa, muito performático</td></tr>
+<tr><td><strong>HAProxy</strong></td><td>L4 / L7</td><td>Focado em LB. Melhor painel de métricas nativo. Usado por GitHub, Stack Overflow</td></tr>
+<tr><td><strong>AWS ALB</strong></td><td>L7</td><td>Managed. Roteamento por path/host/header. Integra com ECS/EKS/Lambda</td></tr>
+<tr><td><strong>AWS NLB</strong></td><td>L4</td><td>Managed. Ultra-baixa latência. Milhões de requests/segundo. IP estático</td></tr>
+<tr><td><strong>Envoy</strong></td><td>L4 / L7</td><td>Service mesh (Istio). Observabilidade rica. Circuit breaking nativo. gRPC first-class</td></tr>
+<tr><td><strong>Traefik</strong></td><td>L7</td><td>Cloud-native. Auto-discovery de serviços (Docker, K8s). Let's Encrypt automático</td></tr>
+</table>
+</div>
+
+<h4>Exemplo: Configuração Nginx como Load Balancer</h4>
+
+<pre data-lang="nginx"><code><span class="cm"># /etc/nginx/nginx.conf — Load balancer L7</span>
+
+<span class="kw">upstream</span> api_servers {
+    <span class="cm"># Algoritmo: least connections (melhor para requests com duracao variável)</span>
+    <span class="fn">least_conn</span>;
+
+    <span class="cm"># Pool de servidores com health checks</span>
+    <span class="kw">server</span> <span class="num">10.0.1.10</span>:<span class="num">3000</span> weight=<span class="num">3</span> max_fails=<span class="num">3</span> fail_timeout=<span class="num">30</span>s;
+    <span class="kw">server</span> <span class="num">10.0.1.11</span>:<span class="num">3000</span> weight=<span class="num">3</span> max_fails=<span class="num">3</span> fail_timeout=<span class="num">30</span>s;
+    <span class="kw">server</span> <span class="num">10.0.1.12</span>:<span class="num">3000</span> weight=<span class="num">2</span> max_fails=<span class="num">3</span> fail_timeout=<span class="num">30</span>s;
+    <span class="kw">server</span> <span class="num">10.0.1.13</span>:<span class="num">3000</span> backup;  <span class="cm"># só recebe se os outros cairem</span>
+
+    <span class="cm"># Keepalive connections para o upstream (reútiliza TCP)</span>
+    <span class="fn">keepalive</span> <span class="num">32</span>;
+}
+
+<span class="kw">server</span> {
+    <span class="fn">listen</span> <span class="num">443</span> ssl http2;
+    <span class="kw">server_name</span> api.myapp.com;
+
+    <span class="cm"># SSL termination no LB</span>
+    <span class="kw">ssl_certificate</span>     /etc/ssl/certs/api.myapp.com.crt;
+    <span class="kw">ssl_certificate_key</span> /etc/ssl/private/api.myapp.com.key;
+
+    <span class="cm"># Roteamento L7 por path</span>
+    <span class="kw">location</span> /api/ {
+        <span class="fn">proxy_pass</span> http://api_servers;
+        <span class="kw">proxy_set_header</span> Host $host;
+        <span class="kw">proxy_set_header</span> X-Real-IP $remote_addr;
+        <span class="kw">proxy_set_header</span> X-Forwarded-For $proxy_add_x_forwarded_for;
+        <span class="kw">proxy_set_header</span> X-Forwarded-Proto $scheme;
+
+        <span class="cm"># Timeouts</span>
+        <span class="kw">proxy_connect_timeout</span> <span class="num">5</span>s;
+        <span class="kw">proxy_read_timeout</span>    <span class="num">60</span>s;
+        <span class="kw">proxy_send_timeout</span>    <span class="num">30</span>s;
+
+        <span class="cm"># Se upstream falha, tenta o próximo</span>
+        <span class="kw">proxy_next_upstream</span> error timeout http_502 http_503;
+        <span class="kw">proxy_next_upstream_tries</span> <span class="num">2</span>;
+    }
+
+    <span class="cm"># Arquivos estáticos servidos diretamente (sem upstream)</span>
+    <span class="kw">location</span> /static/ {
+        <span class="fn">root</span> /var/www/app;
+        <span class="fn">expires</span> <span class="num">30</span>d;
+        <span class="fn">add_header</span> Cache-Control <span class="str">"public, immutable"</span>;
+    }
+}</code></pre>
+
+<!-- ═══ CONSISTENT HASHING ═══ -->
+<h3>Consistent Hashing em Detalhe</h3>
+
+<p>Consistent hashing resolve um problema fundamental: <strong>como distribuir dados entre N servidores de forma que, quando um servidor entra ou sai, apenas 1/N dos dados precisem ser redistribuídos?</strong> Com hash simples (<code>key % N</code>), mudar N redistribui quase tudo.</p>
+
+<h4>Como Funciona</h4>
+<ol>
+<li><strong>Hash Ring:</strong> Imagine um círculo (anel) com valores de 0 a 2^32. Cada servidor é "posicionado" no anel pelo hash do seu identificador (ex: <code>hash("server-A") = 45000</code>)</li>
+<li><strong>Posicionar chaves:</strong> Cada dado também e hasheado. A chave vai para o <strong>próximo servidor no sentido horario</strong> do anel</li>
+<li><strong>Adicionar servidor:</strong> Quando um novo servidor entra, ele assume apenas as chaves entre ele é o servidor anterior. Todos os outros servidores não são afetados</li>
+<li><strong>Remover servidor:</strong> As chaves do servidor removido vao para o próximo servidor no sentido horario. Novamente, mínimo de redistribuição</li>
+</ol>
+
+<h4>Diagrama do Hash Ring</h4>
+
+<div class="diagram" style="flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
+<div class="diagram-box green">Server A<br><small>hash: 0</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Keys 0-90</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Server B<br><small>hash: 90</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Keys 91-210</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Server C<br><small>hash: 210</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Keys 211-359</div>
+<div class="diagram-arrow">&circlearrowleft;</div>
+</div>
+<div style="color:var(--text2);font-size:.82rem;text-align:center">Anel com 3 servidores. Cada chave vai para o próximo servidor no sentido horario.<br>Se Server B cai, apenas as Keys 91-210 são redistribuidas para Server C.</div>
+</div>
+
+<h4>Virtual Nodes (VNodes)</h4>
+<p>O problema do consistent hashing básico é que servidores podem ficar <strong>desbalanceados</strong> — se os hashes ficam mal distribuídos, um servidor pode ter 60% das chaves e outro apenas 10%. A solução: <strong>virtual nodes</strong>.</p>
+
+<ul>
+<li>Cada servidor fisico e mapeado para <strong>100-200 pontos virtuais</strong> no anel (ex: <code>hash("server-A-v1")</code>, <code>hash("server-A-v2")</code>, ...)</li>
+<li>Os pontos virtuais ficam espalhados uniformemente pelo anel, garantindo distribuição equilibrada</li>
+<li>Servidores mais potentes podem ter mais virtual nodes (proporcionais a sua capacidade)</li>
+<li>Quando um servidor sai, seus virtual nodes são distribuídos entre todos os outros — não sobrecarrega um único servidor</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Implementação simplificada de Consistent Hashing com VNodes</span>
+<span class="kw">import</span> { createHash } <span class="kw">from</span> <span class="str">'crypto'</span>;
+
+<span class="kw">class</span> <span class="tp">ConsistentHashRing</span> {
+  <span class="kw">private</span> ring: <span class="tp">Map</span>&lt;<span class="tp">number</span>, <span class="tp">string</span>&gt; = <span class="kw">new</span> <span class="tp">Map</span>();
+  <span class="kw">private</span> sortedKeys: <span class="tp">number</span>[] = [];
+
+  <span class="kw">constructor</span>(<span class="kw">private</span> vnodeCount = <span class="num">150</span>) {}
+
+  <span class="kw">private</span> <span class="fn">hash</span>(key: <span class="tp">string</span>): <span class="tp">number</span> {
+    <span class="kw">return</span> parseInt(
+      createHash(<span class="str">'md5'</span>).<span class="fn">update</span>(key).<span class="fn">digest</span>(<span class="str">'hex'</span>).<span class="fn">substring</span>(<span class="num">0</span>, <span class="num">8</span>), <span class="num">16</span>
+    );
+  }
+
+  <span class="fn">addServer</span>(server: <span class="tp">string</span>) {
+    <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="kw">this</span>.vnodeCount; i++) {
+      <span class="kw">const</span> vkey = <span class="kw">this</span>.<span class="fn">hash</span>(<span class="str">`${server}-vnode-${i}`</span>);
+      <span class="kw">this</span>.ring.<span class="fn">set</span>(vkey, server);
+      <span class="kw">this</span>.sortedKeys.<span class="fn">push</span>(vkey);
+    }
+    <span class="kw">this</span>.sortedKeys.<span class="fn">sort</span>((a, b) => a - b);
+  }
+
+  <span class="fn">removeServer</span>(server: <span class="tp">string</span>) {
+    <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="kw">this</span>.vnodeCount; i++) {
+      <span class="kw">const</span> vkey = <span class="kw">this</span>.<span class="fn">hash</span>(<span class="str">`${server}-vnode-${i}`</span>);
+      <span class="kw">this</span>.ring.<span class="fn">delete</span>(vkey);
+    }
+    <span class="kw">this</span>.sortedKeys = <span class="kw">this</span>.sortedKeys.<span class="fn">filter</span>(k => <span class="kw">this</span>.ring.<span class="fn">has</span>(k));
+  }
+
+  <span class="fn">getServer</span>(key: <span class="tp">string</span>): <span class="tp">string</span> {
+    <span class="kw">const</span> h = <span class="kw">this</span>.<span class="fn">hash</span>(key);
+    <span class="cm">// Encontra o próximo servidor no sentido horario</span>
+    <span class="kw">for</span> (<span class="kw">const</span> sk <span class="kw">of</span> <span class="kw">this</span>.sortedKeys) {
+      <span class="kw">if</span> (sk >= h) <span class="kw">return</span> <span class="kw">this</span>.ring.<span class="fn">get</span>(sk)!;
+    }
+    <span class="cm">// Wraparound — volta ao início do anel</span>
+    <span class="kw">return</span> <span class="kw">this</span>.ring.<span class="fn">get</span>(<span class="kw">this</span>.sortedKeys[<span class="num">0</span>])!;
+  }
+}
+
+<span class="cm">// Uso:</span>
+<span class="kw">const</span> ring = <span class="kw">new</span> <span class="tp">ConsistentHashRing</span>(<span class="num">150</span>);
+ring.<span class="fn">addServer</span>(<span class="str">'cache-01'</span>);
+ring.<span class="fn">addServer</span>(<span class="str">'cache-02'</span>);
+ring.<span class="fn">addServer</span>(<span class="str">'cache-03'</span>);
+
+ring.<span class="fn">getServer</span>(<span class="str">'user:1234'</span>);  <span class="cm">// => 'cache-02'</span>
+ring.<span class="fn">getServer</span>(<span class="str">'user:5678'</span>);  <span class="cm">// => 'cache-01'</span>
+
+<span class="cm">// Adicionar cache-04: apenas ~25% das chaves mudam de dono</span>
+ring.<span class="fn">addServer</span>(<span class="str">'cache-04'</span>);</code></pre>
+
+<div class="card purple">
+<div class="card-title">Onde Consistent Hashing e Usado</div>
+<ul>
+<li><strong>DynamoDB:</strong> Particiona dados entre storage nodes usando consistent hashing</li>
+<li><strong>Apache Cassandra:</strong> Distribui dados entre nodes do cluster com virtual tokens</li>
+<li><strong>CDNs (Akamai, CloudFront):</strong> Decide qual edge server armazena qual conteúdo</li>
+<li><strong>Memcached/Redis Cluster:</strong> Distribui chaves entre shards</li>
+<li><strong>Load Balancers:</strong> IP hash é uma forma simplificada de consistent hashing</li>
+<li><strong>Kafka:</strong> Particionamento de tópicos entre brokers</li>
+</ul>
+</div>
+
+<!-- ═══ DATABASE SCALING ═══ -->
+<h3>Escalabilidade de Banco de Dados</h3>
+
+<h4>Read Réplicas</h4>
+<p>A maioria das aplicações tem <strong>90% leituras e 10% escritas</strong>. Read réplicas permitem escalar as leituras horizontalmente enquanto mantémos um único ponto de escrita (primary/master).</p>
+
+<ul>
+<li><strong>Replicação assíncrona:</strong> O primary envia WAL (Write-Ahead Log) para as réplicas. Há um pequeno delay (lag) — geralmente < 100ms. Leituras podem ver dados ligeiramente desatualizados (eventual consistency)</li>
+<li><strong>Replicação síncrona:</strong> O primary espera confirmação da réplica antes de confirmar o commit. Zero lag, mas <strong>dobra a latência de escrita</strong>. Use para dados críticos (financeiros)</li>
+<li><strong>Topologia:</strong> 1 Primary + N Réplicas. Promocao automática: se o primary morre, uma réplica e promovida</li>
+</ul>
+
+<pre data-lang="sql"><code><span class="cm">-- PostgreSQL: Configurar Streaming Replication</span>
+<span class="cm">-- No PRIMARY (postgresql.conf):</span>
+<span class="kw">wal_level</span> = replica
+<span class="kw">max_wal_senders</span> = <span class="num">5</span>
+<span class="kw">synchronous_commit</span> = on       <span class="cm">-- 'on' para síncrono, 'off' para assíncrono</span>
+<span class="kw">synchronous_standby_names</span> = <span class="str">'replica1'</span>
+
+<span class="cm">-- Na REPLICA (recovery.conf / postgresql.conf em v12+):</span>
+<span class="kw">primary_conninfo</span> = <span class="str">'host=10.0.1.10 port=5432 user=replicator password=xxx application_name=replica1'</span>
+<span class="kw">primary_slot_name</span> = <span class="str">'replica1_slot'</span>
+
+<span class="cm">-- Na aplicação: direcionar leituras para replicas</span>
+<span class="cm">-- TypeORM suporta replication nativo:</span></code></pre>
+
+<pre data-lang="typescript"><code><span class="cm">// TypeORM com read replicas</span>
+<span class="kw">const</span> dataSource = <span class="kw">new</span> <span class="tp">DataSource</span>({
+  type: <span class="str">'postgres'</span>,
+  replication: {
+    master: {
+      host: <span class="str">'db-primary.internal'</span>,
+      port: <span class="num">5432</span>,
+      username: <span class="str">'app'</span>,
+      password: process.env.<span class="tp">DB_PASS</span>,
+      database: <span class="str">'myapp'</span>,
+    },
+    slaves: [
+      { host: <span class="str">'db-replica-1.internal'</span>, port: <span class="num">5432</span>, username: <span class="str">'app'</span>, password: process.env.<span class="tp">DB_PASS</span>, database: <span class="str">'myapp'</span> },
+      { host: <span class="str">'db-replica-2.internal'</span>, port: <span class="num">5432</span>, username: <span class="str">'app'</span>, password: process.env.<span class="tp">DB_PASS</span>, database: <span class="str">'myapp'</span> },
+    ],
+  },
+});
+
+<span class="cm">// TypeORM automáticamente envia:</span>
+<span class="cm">// - SELECT para slaves (round-robin)</span>
+<span class="cm">// - INSERT/UPDATE/DELETE para master</span></code></pre>
+
+<h4>Sharding (Particionamento Horizontal)</h4>
+<p>Quando um único banco não comporta o volume de dados (TB+), dividimos os dados entre <strong>múltiplos bancos independentes</strong> (shards). Cada shard armazena um subconjunto dos dados.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Estratégia</th><th>Como Funciona</th><th>Pros/Cons</th></tr>
+<tr><td><strong>Range-based</strong></td><td>Dados divididos por faixa. Ex: user_id 1-1M no shard1, 1M-2M no shard2</td><td>Simples, mas hotspots se um range é mais acessado</td></tr>
+<tr><td><strong>Hash-based</strong></td><td><code>shard = hash(user_id) % N</code>. Distribuição uniforme</td><td>Equilibrado, mas redistribui tudo ao mudar N shards (use consistent hashing)</td></tr>
+<tr><td><strong>Directory-based</strong></td><td>Lookup table mapeia cada chave ao shard. Ex: <code>users_shard_map</code></td><td>Flexível, mas a lookup table é um single point of failure</td></tr>
+<tr><td><strong>Geographic</strong></td><td>Dados particionados por região. Ex: LATAM no shard-sa, EU no shard-eu</td><td>Baixa latência por região, compliance (LGPD, GDPR), mas cross-region e caro</td></tr>
+</table>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Shard key é a decisão mais importante.</strong> Uma shard key ruim cria hotspots (um shard sobrecarregado enquanto outros ficam ociosos). Escolha uma chave com alta cardinalidade e distribuição uniforme. <code>user_id</code> geralmente e boa. <code>country_code</code> geralmente não (Brasil teria 80% dos dados num shard do LATAM).</div>
+</div>
+
+<h4>Connection Pooling</h4>
+<p>Cada conexão ao PostgreSQL consome ~10MB de RAM é um processo no servidor. Com 50 instâncias da aplicação, cada uma com 20 conexões, são <strong>1000 conexões</strong> — o banco não aguenta. Connection pooling resolve isso.</p>
+
+<pre data-lang="ini"><code><span class="cm"># PgBouncer — Connection Pooler para PostgreSQL</span>
+<span class="cm"># /etc/pgbouncer/pgbouncer.ini</span>
+
+[databases]
+<span class="kw">myapp</span> = host=<span class="num">10.0.1.10</span> port=<span class="num">5432</span> dbname=myapp
+
+[pgbouncer]
+<span class="cm"># Modo de pooling:</span>
+<span class="cm"># - session: uma conexão por sessão (conservador)</span>
+<span class="cm"># - transaction: uma conexão por transação (recomendado)</span>
+<span class="cm"># - statement: uma conexão por statement (agressivo, sem multi-statement txn)</span>
+<span class="kw">pool_mode</span> = transaction
+
+<span class="cm"># Limites</span>
+<span class="kw">max_client_conn</span> = <span class="num">1000</span>    <span class="cm"># aceita até 1000 clientes</span>
+<span class="kw">default_pool_size</span> = <span class="num">25</span>    <span class="cm"># mantém 25 conexões reais ao PostgreSQL</span>
+<span class="kw">min_pool_size</span> = <span class="num">5</span>         <span class="cm"># mínimo de conexões abertas</span>
+<span class="kw">reserve_pool_size</span> = <span class="num">5</span>     <span class="cm"># conexões extras para picos</span>
+<span class="kw">reserve_pool_timeout</span> = <span class="num">3</span>  <span class="cm"># segundos antes de usar reserve</span>
+
+<span class="cm"># 1000 clientes compartilham 25 conexões reais ao banco</span>
+<span class="cm"># Reducao de 97.5% no número de conexões</span>
+<span class="kw">listen_addr</span> = <span class="num">0.0.0.0</span>
+<span class="kw">listen_port</span> = <span class="num">6432</span></code></pre>
+
+<h4>Denormalização para Performance de Leitura</h4>
+<p>Normalização (3NF) elimina redundância mas cria JOINs. Em escala, JOINs entre tabelas grandes são custosos. Denormalização <strong>duplica dados intencionalmente</strong> para evitar JOINs nas leituras críticas.</p>
+
+<ul>
+<li><strong>Materializar dados frequentes:</strong> Ao inves de JOIN user + address + orders em todo request, mantenha <code>user_display_name</code> é <code>user_city</code> diretamente na tabela de orders</li>
+<li><strong>Materialized Views:</strong> PostgreSQL permite criar views materializadas que são pre-computadas e atualizadas periodicamente</li>
+<li><strong>CQRS:</strong> Command Query Responsibility Segregation — modelo de escrita normalizado, modelo de leitura denormalizado. Escritas vao para o banco relacional, leituras vem de um banco otimizado (Elasticsearch, DynamoDB)</li>
+</ul>
+
+<!-- ═══ APPLICATION-LEVEL SCALING ═══ -->
+<h3>Escalabilidade a Nível de Aplicação</h3>
+
+<h4>Serviços Stateless</h4>
+<p>Um serviço stateless <strong>não armazena estado na memória entre requests</strong>. Cada request contém toda a informação necessária para ser processado. Isso é pre-requisito para horizontal scaling — se o serviço não tem estado, qualquer instância pode processar qualquer request.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; STATEFUL — armazena sessão na memória</span>
+<span class="kw">const</span> sessions: <span class="tp">Map</span>&lt;<span class="tp">string</span>, <span class="tp">UserSession</span>&gt; = <span class="kw">new</span> <span class="tp">Map</span>();
+
+<span class="ann">@Post</span>(<span class="str">'login'</span>)
+<span class="kw">async</span> <span class="fn">login</span>(dto: <span class="tp">LoginDto</span>) {
+  <span class="kw">const</span> user = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">authenticate</span>(dto);
+  <span class="kw">const</span> sessionId = <span class="fn">uuid</span>();
+  sessions.<span class="fn">set</span>(sessionId, { userId: user.id, role: user.role });
+  <span class="cm">// Se esta instancia morrer, todas as sessões são perdidas!</span>
+  <span class="kw">return</span> { sessionId };
+}
+
+<span class="cm">// &#9989; STATELESS — estado externalizado no Redis</span>
+<span class="ann">@Post</span>(<span class="str">'login'</span>)
+<span class="kw">async</span> <span class="fn">login</span>(dto: <span class="tp">LoginDto</span>) {
+  <span class="kw">const</span> user = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">authenticate</span>(dto);
+  <span class="kw">const</span> sessionId = <span class="fn">uuid</span>();
+  <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">setex</span>(
+    <span class="str">`session:${sessionId}`</span>,
+    <span class="num">3600</span>, <span class="cm">// TTL: 1 hora</span>
+    JSON.<span class="fn">stringify</span>({ userId: user.id, role: user.role })
+  );
+  <span class="cm">// Qualquer instancia pode ler a sessão do Redis</span>
+  <span class="kw">return</span> { sessionId };
+}</code></pre>
+
+<h4>Circuit Breaker</h4>
+<p>Quando um serviço dependente está fora do ar, continuar enviando requisições causa <strong>cascading failure</strong> — requests acumulam, threads ficam bloqueadas, timeouts se propagam. O circuit breaker "abre o circuito" e falha imediatamente (fail fast) quando detecta que o serviço está com problemas.</p>
+
+<ul>
+<li><strong>Closed (normal):</strong> Requests passam normalmente. Se falhas ultrapassam o threshold (ex: 50% em 10 segundos), muda para Open</li>
+<li><strong>Open (bloqueado):</strong> Todas as requests falham imediatamente (sem chamar o serviço). Após timeout (ex: 30s), muda para Half-Open</li>
+<li><strong>Half-Open (testando):</strong> Permite 1-2 requests de teste. Se sucesso, volta para Closed. Se falha, volta para Open</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box green">CLOSED<br><small>Requests passam</small></div>
+<div class="diagram-arrow">&rarr; falhas > threshold &rarr;</div>
+<div class="diagram-box red">OPEN<br><small>Fail fast</small></div>
+<div class="diagram-arrow">&rarr; timeout &rarr;</div>
+<div class="diagram-box cyan">HALF-OPEN<br><small>Teste</small></div>
+<div class="diagram-arrow">&circlearrowleft;</div>
+</div>
+
+<h4>Bulkhead Pattern</h4>
+<p>Isolamento de recursos. Assim como compartimentos estanques de um navio (se um alaga, os outros continuam secos), o bulkhead limita o impacto de uma falha a um subconjunto do sistema.</p>
+
+<ul>
+<li><strong>Thread pool isolation:</strong> Cada serviço dependente tem seu próprio pool de threads/conexões. Se PaymentService trava, apenas seu pool se esgota — OrderService continua funcional</li>
+<li><strong>Semaphore isolation:</strong> Limita o número de requests concorrentes para um recurso. Mais leve que thread pool</li>
+<li><strong>Na prática:</strong> Limite conexões HTTP por serviço, use filas separadas por prioridade, mantenha bancos separados por contexto</li>
+</ul>
+
+<h4>Raté Limiting</h4>
+<p>Limita o número de requests que um cliente pode fazer em um período. Protege contra abuso, DDoS, e garante fairness entre usuários.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Raté limiting com Redis — Token Bucket simplificado</span>
+<span class="kw">async</span> <span class="fn">checkRateLimit</span>(
+  userId: <span class="tp">string</span>,
+  limit: <span class="tp">number</span> = <span class="num">100</span>,   <span class="cm">// max requests</span>
+  window: <span class="tp">number</span> = <span class="num">60</span>,    <span class="cm">// por 60 segundos</span>
+): <span class="tp">Promise</span>&lt;<span class="tp">boolean</span>&gt; {
+  <span class="kw">const</span> key = <span class="str">`rate:${userId}`</span>;
+  <span class="kw">const</span> current = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">incr</span>(key);
+
+  <span class="kw">if</span> (current === <span class="num">1</span>) {
+    <span class="cm">// Primeira request — define TTL da janela</span>
+    <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">expire</span>(key, window);
+  }
+
+  <span class="kw">if</span> (current > limit) {
+    <span class="kw">const</span> ttl = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">ttl</span>(key);
+    <span class="kw">throw new</span> <span class="tp">HttpException</span>(
+      { message: <span class="str">'Raté limit exceeded'</span>, retryAfter: ttl },
+      <span class="num">429</span>
+    );
+  }
+
+  <span class="kw">return true</span>;
+}</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: URL Shortener para 100M URLs</h3>
+
+<p><strong>Cenário:</strong> Projetar um serviço que encurta URLs (como bit.ly). Deve armazenar 100 milhões de URLs, com leituras muito mais frequentes que escritas (~100:1 ratio). Latência de leitura < 10ms. Alta disponibilidade.</p>
+
+<h4>Estimativas de Capacidade</h4>
+<ul>
+<li><strong>Storage:</strong> 100M URLs x ~500 bytes media (URL original + metadata) = ~50GB</li>
+<li><strong>Write QPS:</strong> 100M URLs / (365 dias x 86400s) = ~3.2 writes/s (baixo)</li>
+<li><strong>Read QPS:</strong> Se cada URL e acessada 10x/mês = 1B reads/mês = ~385 reads/s (medio). Pico: ~2000 reads/s</li>
+</ul>
+
+<h4>Write Path (Criar short URL)</h4>
+
+<div class="diagram">
+<div class="diagram-box green">Cliente</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">API Server<br><small>(Stateless)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Hash Generator<br><small>Base62(counter)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">PostgreSQL<br><small>Primary</small></div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// Gerar short code com counter distribuido (Snowflake-like)</span>
+<span class="kw">class</span> <span class="tp">UrlShortenerService</span> {
+  <span class="kw">private</span> <span class="kw">readonly</span> BASE62 = <span class="str">'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'</span>;
+
+  <span class="kw">async</span> <span class="fn">shorten</span>(originalUrl: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+    <span class="cm">// 1. Gerar ID único (counter atomico no Redis ou DB sequence)</span>
+    <span class="kw">const</span> id = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">incr</span>(<span class="str">'url:counter'</span>);
+
+    <span class="cm">// 2. Converter para Base62 (7 chars = 62^7 = 3.5 trilhoes de combinacoes)</span>
+    <span class="kw">const</span> shortCode = <span class="kw">this</span>.<span class="fn">toBase62</span>(id);
+
+    <span class="cm">// 3. Persistir</span>
+    <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">save</span>({
+      shortCode,
+      originalUrl,
+      createdAt: <span class="kw">new</span> <span class="tp">Date</span>(),
+      clicks: <span class="num">0</span>,
+    });
+
+    <span class="cm">// 4. Pre-aquecer o cache</span>
+    <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">setex</span>(
+      <span class="str">`url:${shortCode}`</span>, <span class="num">86400</span>, originalUrl
+    );
+
+    <span class="kw">return</span> <span class="str">`https://short.io/${shortCode}`</span>;
+  }
+
+  <span class="kw">private</span> <span class="fn">toBase62</span>(num: <span class="tp">number</span>): <span class="tp">string</span> {
+    <span class="kw">let</span> result = <span class="str">''</span>;
+    <span class="kw">while</span> (num > <span class="num">0</span>) {
+      result = <span class="kw">this</span>.BASE62[num % <span class="num">62</span>] + result;
+      num = Math.<span class="fn">floor</span>(num / <span class="num">62</span>);
+    }
+    <span class="kw">return</span> result.<span class="fn">padStart</span>(<span class="num">7</span>, <span class="str">'0'</span>);
+  }
+}</code></pre>
+
+<h4>Read Path (Redirecionar)</h4>
+
+<div class="diagram">
+<div class="diagram-box green">Cliente<br><small>GET /abc1234</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Load Balancer<br><small>(L7 Nginx)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">API Server</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Redis Cache<br><small>Cache Hit: 95%+</small></div>
+<div class="diagram-arrow">&rarr; miss &rarr;</div>
+<div class="diagram-box purple">DB Réplica</div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// Read path — otimizado para latência</span>
+<span class="ann">@Get</span>(<span class="str">':code'</span>)
+<span class="kw">async</span> <span class="fn">redirect</span>(<span class="ann">@Param</span>(<span class="str">'code'</span>) code: <span class="tp">string</span>, <span class="ann">@Res</span>() res: <span class="tp">Response</span>) {
+  <span class="cm">// 1. Tentar cache primeiro (< 1ms)</span>
+  <span class="kw">let</span> url = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">get</span>(<span class="str">`url:${code}`</span>);
+
+  <span class="kw">if</span> (!url) {
+    <span class="cm">// 2. Cache miss — buscar no DB (replica)</span>
+    <span class="kw">const</span> record = <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">findOne</span>({ where: { shortCode: code } });
+    <span class="kw">if</span> (!record) <span class="kw">throw new</span> <span class="tp">NotFoundException</span>();
+
+    url = record.originalUrl;
+
+    <span class="cm">// 3. Popular cache para próximas requests</span>
+    <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">setex</span>(<span class="str">`url:${code}`</span>, <span class="num">86400</span>, url);
+  }
+
+  <span class="cm">// 4. Incrementar clicks assíncronamente (não bloqueia o redirect)</span>
+  <span class="kw">this</span>.clickQueue.<span class="fn">add</span>({ code, timestamp: Date.<span class="fn">now</span>() });
+
+  <span class="cm">// 5. Redirect 301 (permanente) ou 302 (temporário)</span>
+  <span class="kw">return</span> res.<span class="fn">redirect</span>(<span class="num">301</span>, url);
+}</code></pre>
+
+<h4>Estratégia de Escalabilidade</h4>
+
+<div class="card">
+<div class="card-title">Como o URL Shortener Escala</div>
+<ul>
+<li><strong>API Servers (Eixo X):</strong> Stateless — escala horizontal com auto-scaling. 4-8 instâncias para 2000 QPS</li>
+<li><strong>Cache Layer:</strong> Redis Cluster com consistent hashing. 3+ nodes. Cache hit raté > 95% elimina pressão no banco</li>
+<li><strong>Database:</strong> 1 Primary (writes) + 2-3 Réplicas (reads). 50GB cabe confortavelmente em uma instância. Sharding só necessário se ultrapassar 1 bilhão de URLs</li>
+<li><strong>CDN:</strong> Para URLs extremamente populares (virais), cachear no edge. CloudFront com TTL de 5 minutos</li>
+<li><strong>Analytics:</strong> Clicks são processados assíncronamente via fila (SQS/Bull). Batch inserts a cada 10 segundos. Não bloqueia o redirect path</li>
+</ul>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Serviços stateful bloqueando horizontal scaling:</strong> Se sua API armazena sessões na memória, uploads em disco local, ou filas em uma variável global, você Não pode escalar horizontalmente. A solução: externalize tudo — sessões no Redis, uploads no S3, filas no SQS/RabbitMQ.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Sharding cedo demais:</strong> Sharding adiciona complexidade enorme — queries cross-shard, transações distribuídas, resharding. Se seu banco tem 10GB, você Não precisa de sharding. Use read réplicas, índices otimizados e connection pooling primeiro. Sharding é o último recurso, não o primeiro.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Ignorar connection pooling:</strong> 50 instâncias x 20 conexões = 1000 conexões simultâneas ao banco. PostgreSQL com 1000 conexões fica lento e consome 10GB+ de RAM só em overhead. Use PgBouncer ou pgpool-II. Redução tipica: 1000 conexões de app → 30 conexões reais ao banco.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Sem health checks no load balancer:</strong> Se um servidor morre mas o LB continua enviando tráfego para ele, 1/N dos seus usuários tem erro. Configure health checks com thresholds adequados (3 falhas consecutivas antes de remover). Use shallow checks para o LB e deep checks para monitoramento.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Escalar sem entender o gargalo:</strong> Adicionar mais servidores de aplicação quando o gargalo é o banco de dados não resolve nada — piora, porque mais instâncias geram mais conexões é mais queries. Antes de escalar, identifique o gargalo (CPU? memória? I/O de disco? rede? banco?).</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Meca antes de escalar. Use métricas (p50, p95, p99 de latência, CPU, memória, IOPS) para identificar gargalos. Otimize o que tem (índices, queries, cache) antes de adicionar infraestrutura. A instância mais barata é a que você não precisa ligar.</div>
+</div>
+
+<!-- ═══ EXERCICIOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Sua API REST tem 10 instâncias atrás de um ALB. Você percebe que requests de upload de imagem (que levam 5-30 segundos) estão causando timeout em requests rápidos. Qual algoritmo de load balancing resolve isso é por que?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>Least Connections</strong> ao inves de Round Robin. Com Round Robin, um servidor pode receber 5 requests de upload simultâneos (bloqueando threads/conexões) enquanto outros servidores estão ociosos. Least Connections envia novas requests para o servidor com menós conexões ativas, garantindo que uploads longos não acumulem em um único servidor. Complementar com <strong>bulkhead</strong>: separar o endpoint de upload em um pool de instâncias dedicado, com timeout específico de 60s, enquanto APIs rápidas ficam em outro pool com timeout de 5s.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Você tem um Redis Cluster com 4 nodes usando consistent hashing. Precisa adicionar um 5o node. Quantas chaves precisam ser redistribuidas? E sem consistent hashing (hash simples)?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Com <strong>consistent hashing</strong>, apenas ~1/5 (20%) das chaves precisam ser movidas — o novo node assume um segmento do anel, pegando chaves do seu vizinho. Sem consistent hashing (usando <code>key % N</code>), mudar N de 4 para 5 redistribui a <strong>maioria das chaves</strong> (~75-80%), porque <code>hash(key) % 4 != hash(key) % 5</code> para a maioria dos valores. Com virtual nodes (ex: 150 por servidor), a distribuição é ainda mais equilibrada, com cada servidor existente perdendo ~5% das suas chaves para o novo.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Sua aplicação usa sessões armazenadas na memória do servidor (in-memory Map). Ao fazer horizontal scaling, usuários perdem a sessão quando o LB envia para outra instância. Quais são as 3 soluções possiveis, e qual é a recomendada?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong></p>
+<p>1. <strong>Sticky Sessions</strong> — configurar o LB para enviar requests do mesmo usuário sempre para a mesma instância (via cookie). Problema: se a instância morre, a sessão e perdida. Não resolve o problema fundamental.</p>
+<p>2. <strong>Session Replication</strong> — replicar sessões entre todas as instâncias. Cada instância tem cópia de todas as sessões. Problema: overhead de rede O(N), não escala para muitas instâncias.</p>
+<p>3. <strong>Externalized Sessions (RECOMENDADA)</strong> — armazenar sessões no Redis/Memcached. Todas as instâncias leem/escrevem do mesmo store. O serviço se torna verdadeiramente stateless. Redis tem latência < 1ms, suporta TTL nativo, e pode ter suas proprias replicas para alta disponibilidade. Esta é a solução correta para produção.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Escalabilidade & Load Balancing</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="18-concorrencia-paralelismo.html">&#8592; Concorrência & Paralelismo</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="20-caching-estrategias.html" class="primary">Próximo: Caching & Estratégias &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 19: Escalabilidade & Load Balancing
+// ══════════════════════════════════════════
+const SECTION_NUM = 19;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a principal desvantagem do vertical scaling (scale up)?",
+    options: [
+      "Requer serviços stateless",
+      "Tem limite fisico e e single point of failure",
+      "Exige um load balancer",
+      "Não funciona com bancos de dados relacionais"
+    ],
+    correct: 1,
+    explanation: "Vertical scaling tem limites fisicos (existe uma maior máquina possível), custo exponencial, e e single point of failure — se essa única máquina morre, tudo para."
+  },
+  {
+    question: "No Scale Cube, o Eixo Y (decomposicao funcional) corresponde a qual conceito?",
+    options: [
+      "Sharding de dados",
+      "Clonagem de instâncias identicas",
+      "Microsserviços — dividir por funcionalidade",
+      "Consistent hashing"
+    ],
+    correct: 2,
+    explanation: "O Eixo Y do Scale Cube é a decomposicao funcional: dividir o sistema em serviços por funcionalidade (UserService, PaymentService, etc.), que é a base dos microsserviços."
+  },
+  {
+    question: "Qual algoritmo de load balancing é mais adequado quando os requests tem duração muito variável (ex: uploads grandes misturados com GETs rápidos)?",
+    options: [
+      "Round Robin",
+      "IP Hash",
+      "Least Connections",
+      "Random"
+    ],
+    correct: 2,
+    explanation: "Least Connections envia para o servidor com menós conexões ativas. Com requests de duração variável, evita que um servidor acumule muitas conexões longas enquanto outros ficam ociosos."
+  },
+  {
+    question: "Qual a diferença principal entre load balancer L4 e L7?",
+    options: [
+      "L4 é mais lento que L7",
+      "L7 pode rotear por URL/headers/cookies; L4 só ve IP é porta",
+      "L4 suporta HTTPS; L7 só suporta HTTP",
+      "L7 é usado apenas para WebSockets"
+    ],
+    correct: 1,
+    explanation: "L4 opera no nível TCP/UDP (ve IP é porta, não entende HTTP). L7 opera no nível HTTP e pode tomar decisões baseadas em URL path, Host header, cookies, e conteúdo da request."
+  },
+  {
+    question: "No consistent hashing, quando um novo servidor e adicionado ao anel, qual percentual das chaves precisa ser redistribuido (com N servidores existentes)?",
+    options: [
+      "100% — todas as chaves são redistribuidas",
+      "50% — metade das chaves mudam",
+      "Apróximadamente 1/N das chaves",
+      "0% — nenhuma chave precisa mover"
+    ],
+    correct: 2,
+    explanation: "Com consistent hashing, adicionar 1 servidor ao anel de N servidores redistribui apenas ~1/(N+1) das chaves. O novo servidor assume um segmento do anel, pegando chaves do vizinho. Os demais servidores não são afetados."
+  },
+  {
+    question: "Por que virtual nodes (vnodes) são importantes no consistent hashing?",
+    options: [
+      "Aumentam a velocidade do hash function",
+      "Permitem que cada servidor processe mais requests por segundo",
+      "Garantem distribuição mais uniforme de chaves entre servidores",
+      "Eliminam a necessidade de um load balancer"
+    ],
+    correct: 2,
+    explanation: "Sem vnodes, a distribuição de chaves pode ficar desbalanceada (um servidor com 60%, outro com 10%). Virtual nodes espalham cada servidor em 100-200 pontos no anel, resultando em distribuição muito mais uniforme."
+  },
+  {
+    question: "Qual é o principal benefício do connection pooling (ex: PgBouncer) em cenários de horizontal scaling?",
+    options: [
+      "Acelera as queries SQL em 10x",
+      "Permite que centenas de instâncias da app compartilhem poucas conexões reais ao banco",
+      "Substitui a necessidade de read réplicas",
+      "Elimina a necessidade de índices no banco"
+    ],
+    correct: 1,
+    explanation: "Connection pooling permite que 1000 conexões da aplicação compartilhem 25-30 conexões reais ao PostgreSQL. Sem isso, cada instância abre suas próprias conexões, sobrecarregando o banco com overhead de memória e processos."
+  },
+  {
+    question: "Qual é o principal problema de usar sticky sessions para manter estado?",
+    options: [
+      "Aumenta a latência em 100ms por request",
+      "Não funciona com HTTPS",
+      "Se a instância morre, o estado do usuário e perdido",
+      "Requer consistent hashing no load balancer"
+    ],
+    correct: 2,
+    explanation: "Com sticky sessions, se a instância que armazena a sessão do usuário morre, a sessão e perdida. O usuário precisa refazer login, pode perder dados não salvos. A solução correta e externalizar o estado (Redis) é manter serviços stateless."
+  },
+  {
+    question: "No padrão Circuit Breaker, o que acontece quando o circuito está no estado 'Open'?",
+    options: [
+      "Requests são enfileiradas para retry posterior",
+      "Requests passam normalmente mas com timeout reduzido",
+      "Requests falham imediatamente sem chamar o serviço downstream",
+      "O load balancer remove a instância do pool"
+    ],
+    correct: 2,
+    explanation: "No estado Open, o circuit breaker falha imediatamente (fail fast) sem chamar o serviço downstream. Isso evita cascading failures e permite que o serviço com problemas se recupere sem receber mais carga."
+  },
+  {
+    question: "Em um sistema URL Shortener de alta escala, por que o incremento de clicks é feito assíncronamente via fila ao inves de UPDATE direto no banco?",
+    options: [
+      "Porque o PostgreSQL não suporta UPDATE concorrente",
+      "Porque filas são mais baratas que bancos de dados",
+      "Para não bloquear o redirect (path crítico) com uma operação de escrita no banco",
+      "Porque o Redis não suporta contadores"
+    ],
+    correct: 2,
+    explanation: "O redirect é o path crítico — precisa ser < 10ms. Um UPDATE no banco adiciona latência e pode sofrer contention (lock) com muitos acessos simultâneos. Colocar o incremento numa fila (SQS/Bull) permite processar batch inserts assíncronamente sem impactar a experiência do usuário."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina escalabilidade e load balancing.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

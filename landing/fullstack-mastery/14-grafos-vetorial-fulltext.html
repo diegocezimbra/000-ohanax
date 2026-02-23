@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>14 — Grafos, Vetorial & Full-Text Search | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="13-nosql-documento-kv-colunar.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>14</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="15-data-architecture.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:21.2%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 14</span>
+<h2>Grafos, Vetorial & Full-Text Search</h2>
+<div class="section-line"></div>
+
+<p>Bancos de dados relacionais e NoSQL de documentos resolvem a maioria dos problemas. Mas existem três categorias de consulta onde eles são <strong>estruturalmente inadequados</strong>: navegação de relacionamentos profundos (grafos), busca por similaridade semântica (vetorial) e busca textual com ranking de relevância (full-text). Cada uma exige estruturas de dados, algoritmos de indexação e modelos de query fundamentalmente diferentes.</p>
+
+<p>Nesta seção, vamos mergulhar nas três categorias com profundidade técnica: quando usar cada uma, como funcionam por dentro, exemplos práticos em TypeScript e Python, é como combina-las em arquiteturas híbridas que resolvem problemas reais como busca de produtos, detecção de fraude e RAG (Retrieval-Augmented Generation).</p>
+
+<!-- ═══ GRAPH DATABASES ═══ -->
+<h3>Graph Databases — Neo4j, Neptune, ArangoDB</h3>
+
+<p>Um banco de grafos armazena dados como <strong>nós (nodes)</strong>, <strong>arestas (edges/relationships)</strong> é <strong>propriedades</strong>. A diferença fundamental para o modelo relacional: em SQL, relacionamentos são resolvidos em tempo de query via JOINs. Em grafos, relacionamentos são <strong>cidadaos de primeira classe</strong> — armazenados fisicamente junto aos nós, permitindo travessias em tempo constante O(1) por hop, independente do tamanho total do grafo.</p>
+
+<h4>Modelo de Dados: Nodes + Edges + Properties</h4>
+<pre data-lang="cypher"><code><span class="cm">// Cypher — linguagem de query do Neo4j</span>
+<span class="cm">// Criar nós com labels e propriedades</span>
+<span class="kw">CREATE</span> (alice:<span class="tp">Person</span> {name: <span class="str">'Alice'</span>, age: <span class="num">32</span>, role: <span class="str">'Engineer'</span>})
+<span class="kw">CREATE</span> (bob:<span class="tp">Person</span> {name: <span class="str">'Bob'</span>, age: <span class="num">28</span>, role: <span class="str">'Designer'</span>})
+<span class="kw">CREATE</span> (acme:<span class="tp">Company</span> {name: <span class="str">'Acme Corp'</span>, industry: <span class="str">'Tech'</span>})
+<span class="kw">CREATE</span> (react:<span class="tp">Skill</span> {name: <span class="str">'React'</span>, category: <span class="str">'Frontend'</span>})
+
+<span class="cm">// Criar relacionamentos com propriedades</span>
+<span class="kw">CREATE</span> (alice)-[:<span class="fn">WORKS_AT</span> {since: <span class="num">2020</span>, position: <span class="str">'Senior'</span>}]->(acme)
+<span class="kw">CREATE</span> (bob)-[:<span class="fn">WORKS_AT</span> {since: <span class="num">2022</span>, position: <span class="str">'Junior'</span>}]->(acme)
+<span class="kw">CREATE</span> (alice)-[:<span class="fn">KNOWS</span> {level: <span class="str">'expert'</span>}]->(react)
+<span class="kw">CREATE</span> (alice)-[:<span class="fn">MENTORS</span>]->(bob)</code></pre>
+
+<h4>Consultas Cypher — Poder Real dos Grafos</h4>
+<pre data-lang="cypher"><code><span class="cm">// Encontrar amigos de amigos (2 hops) — trivial em grafo, pesadelo em SQL</span>
+<span class="kw">MATCH</span> (me:<span class="tp">Person</span> {name: <span class="str">'Alice'</span>})-[:<span class="fn">KNOWS</span>]->(friend)-[:<span class="fn">KNOWS</span>]->(fof)
+<span class="kw">WHERE</span> fof &lt;&gt; me
+<span class="kw">RETURN</span> fof.name, <span class="fn">count</span>(friend) <span class="kw">AS</span> mutual_friends
+<span class="kw">ORDER BY</span> mutual_friends <span class="kw">DESC</span>
+
+<span class="cm">// Caminho mais curto entre dois nos</span>
+<span class="kw">MATCH</span> path = <span class="fn">shortestPath</span>(
+  (a:<span class="tp">Person</span> {name: <span class="str">'Alice'</span>})-[*..6]-(b:<span class="tp">Person</span> {name: <span class="str">'Zara'</span>})
+)
+<span class="kw">RETURN</span> path, <span class="fn">length</span>(path) <span class="kw">AS</span> distance
+
+<span class="cm">// Deteccao de fraude — ciclos de transações suspeitas</span>
+<span class="kw">MATCH</span> (a:<span class="tp">Account</span>)-[t1:<span class="fn">TRANSFER</span>]->(b:<span class="tp">Account</span>)-[t2:<span class="fn">TRANSFER</span>]->(c:<span class="tp">Account</span>)-[t3:<span class="fn">TRANSFER</span>]->(a)
+<span class="kw">WHERE</span> t1.amount > <span class="num">10000</span>
+  <span class="kw">AND</span> t2.amount > <span class="num">10000</span>
+  <span class="kw">AND</span> t3.amount > <span class="num">10000</span>
+  <span class="kw">AND</span> <span class="fn">duration.between</span>(t1.timestamp, t3.timestamp).hours &lt; <span class="num">24</span>
+<span class="kw">RETURN</span> a, b, c, t1.amount, t2.amount, t3.amount
+
+<span class="cm">// Recomendacao — pessoas que compraram X também compraram Y</span>
+<span class="kw">MATCH</span> (u:<span class="tp">User</span> {id: <span class="str">'user123'</span>})-[:<span class="fn">PURCHASED</span>]->(p:<span class="tp">Product</span>)
+       &lt;-[:<span class="fn">PURCHASED</span>]-(other:<span class="tp">User</span>)-[:<span class="fn">PURCHASED</span>]->(rec:<span class="tp">Product</span>)
+<span class="kw">WHERE NOT</span> (u)-[:<span class="fn">PURCHASED</span>]->(rec)
+<span class="kw">RETURN</span> rec.name, <span class="fn">count</span>(other) <span class="kw">AS</span> score
+<span class="kw">ORDER BY</span> score <span class="kw">DESC</span> <span class="kw">LIMIT</span> <span class="num">10</span></code></pre>
+
+<h4>Casos de Usó Ideais para Graph DB</h4>
+
+<div class="card">
+<div class="card-title">Quando Usar Graph Database</div>
+<ul>
+<li><strong>Redes sociais</strong> — amigos, seguidores, recomendações, grau de conexão</li>
+<li><strong>Detecção de fraude</strong> — padrões ciclicos, laundering chains, contas conectadas</li>
+<li><strong>Knowledge graphs</strong> — ontologias, Wikipedia, Google Knowledge Panel</li>
+<li><strong>Motores de recomendação</strong> — "quem comprou X comprou Y", grafos de afinidade</li>
+<li><strong>Gerenciamento de identidade (IAM)</strong> — roles, permissions, group membership com herança</li>
+<li><strong>Supply chain / logistica</strong> — rotas ótimas, dependências entre fornecedores</li>
+<li><strong>Impact analysis</strong> — "se esse microsserviço cair, quais outros são afetados?"</li>
+</ul>
+</div>
+
+<h4>TypeScript com Neo4j Driver</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> neo4j, { Driver, Session } <span class="kw">from</span> <span class="str">'neo4j-driver'</span>;
+
+<span class="kw">class</span> <span class="tp">GraphService</span> {
+  <span class="kw">private</span> driver: <span class="tp">Driver</span>;
+
+  <span class="kw">constructor</span>() {
+    <span class="kw">this</span>.driver = neo4j.<span class="fn">driver</span>(
+      <span class="str">'bolt://localhost:7687'</span>,
+      neo4j.auth.<span class="fn">basic</span>(<span class="str">'neo4j'</span>, <span class="str">'password'</span>)
+    );
+  }
+
+  <span class="cm">// Encontrar recomendações de produtos baseado em compras similares</span>
+  <span class="kw">async</span> <span class="fn">getRecommendations</span>(userId: <span class="tp">string</span>, limit = <span class="num">10</span>): <span class="tp">Promise</span>&lt;<span class="tp">Product</span>[]&gt; {
+    <span class="kw">const</span> session = <span class="kw">this</span>.driver.<span class="fn">session</span>();
+    <span class="kw">try</span> {
+      <span class="kw">const</span> result = <span class="kw">await</span> session.<span class="fn">run</span>(
+        <span class="str">`
+        MATCH (u:User {id: $userId})-[:PURCHASED]->(p:Product)
+              &lt;-[:PURCHASED]-(other:User)-[:PURCHASED]->(rec:Product)
+        WHERE NOT (u)-[:PURCHASED]->(rec)
+        WITH rec, count(DISTINCT other) AS score,
+             collect(DISTINCT other.name)[..3] AS buyers
+        RETURN rec { .id, .name, .price, .category, score, buyers }
+        ORDER BY score DESC
+        LIMIT $limit
+        `</span>,
+        { userId, limit: neo4j.int(limit) }
+      );
+
+      <span class="kw">return</span> result.records.<span class="fn">map</span>(r => r.<span class="fn">get</span>(<span class="str">'rec'</span>));
+    } <span class="kw">finally</span> {
+      <span class="kw">await</span> session.<span class="fn">close</span>();
+    }
+  }
+
+  <span class="cm">// Detectar ciclos de fraude (circular transactions)</span>
+  <span class="kw">async</span> <span class="fn">detectFraudCycles</span>(minAmount: <span class="tp">number</span>): <span class="tp">Promise</span>&lt;<span class="tp">FraudCycle</span>[]&gt; {
+    <span class="kw">const</span> session = <span class="kw">this</span>.driver.<span class="fn">session</span>();
+    <span class="kw">try</span> {
+      <span class="kw">const</span> result = <span class="kw">await</span> session.<span class="fn">run</span>(
+        <span class="str">`
+        MATCH path = (a:Account)-[:TRANSFER*3..5]->(a)
+        WHERE ALL(r IN relationships(path)
+                  WHERE r.amount > $minAmount)
+        RETURN nodes(path) AS accounts,
+               [r IN relationships(path) | r.amount] AS amounts,
+               length(path) AS hops
+        LIMIT 100
+        `</span>,
+        { minAmount }
+      );
+
+      <span class="kw">return</span> result.records.<span class="fn">map</span>(r => ({
+        accounts: r.<span class="fn">get</span>(<span class="str">'accounts'</span>),
+        amounts: r.<span class="fn">get</span>(<span class="str">'amounts'</span>),
+        hops: r.<span class="fn">get</span>(<span class="str">'hops'</span>).<span class="fn">toNumber</span>()
+      }));
+    } <span class="kw">finally</span> {
+      <span class="kw">await</span> session.<span class="fn">close</span>();
+    }
+  }
+
+  <span class="kw">async</span> <span class="fn">onModuleDestroy</span>() {
+    <span class="kw">await</span> <span class="kw">this</span>.driver.<span class="fn">close</span>();
+  }
+}</code></pre>
+
+<h4>Graph DB vs Relacional com JOINs — Quando Cada Um</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Critério</th><th>Relacional (SQL)</th><th>Graph DB</th></tr>
+<tr><td>JOINs (1-2 níveis)</td><td><strong>Excelente</strong> — otimizado para isso</td><td>Funciona, mas overkill</td></tr>
+<tr><td>Travessias profundas (3+ hops)</td><td>Lento — JOINs exponenciais</td><td><strong>O(1) por hop</strong> — nativo</td></tr>
+<tr><td>Queries ad-hoc de relacionamentos</td><td>Precisa redesenhar schema</td><td><strong>Flexível</strong> — schema-free</td></tr>
+<tr><td>Transações ACID complexas</td><td><strong>Maduro e robusto</strong></td><td>Suportado mas limitado</td></tr>
+<tr><td>Agregações e relatórios</td><td><strong>SQL e rei</strong></td><td>Fraco — não é o foco</td></tr>
+<tr><td>Volume de dados tabulares</td><td><strong>Otimizado</strong></td><td>Não é o caso de uso</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Regra prática:</strong> Se você consegue resolver com 1-2 JOINs em SQL com boa performance, <strong>não precisa de graph DB</strong>. Grafos brilham quando você tem travessias de profundidade variável, pattern matching complexo, ou queries tipo "encontre todos os caminhos entre A e B".</div>
+</div>
+
+<!-- ═══ VECTOR DATABASES ═══ -->
+<h3>Vector Databases — Embeddings e Busca por Similaridade</h3>
+
+<p>Um banco vetorial armazena dados como <strong>vetores de alta dimensionalidade</strong> (embeddings) e permite buscar os vetores mais similares a um vetor de consulta. Enquanto bancos tradicionais buscam por <strong>igualdade exata</strong> (<code>WHERE name = 'X'</code>), bancos vetoriais buscam por <strong>proximidade semântica</strong> — "encontre os itens mais parecidos com este".</p>
+
+<h4>O Que São Embeddings?</h4>
+
+<p>Um embedding é uma representação numérica de dados (texto, imagem, audio) em um espaço vetorial de alta dimensão (tipicamente 384 a 1536 dimensões). Modelos como OpenAI <code>text-embedding-3-small</code> (1536d), Cohere <code>embed-v3</code> (1024d), ou open-source como <code>all-MiniLM-L6-v2</code> (384d) transformam texto em vetores onde <strong>significados similares ficam próximos geométricamente</strong>.</p>
+
+<pre data-lang="text"><code><span class="cm">// Conceito: texto → modelo de embedding → vetor numerico</span>
+
+"Como fazer bolo de chocolate"  → [0.021, -0.134, 0.892, ..., 0.043]  <span class="cm">// 1536 dims</span>
+"Receita de bolo de cacau"      → [0.019, -0.128, 0.887, ..., 0.039]  <span class="cm">// Muito similar!</span>
+"Programacao em Python"         → [0.812, 0.341, -0.221, ..., 0.715]  <span class="cm">// Muito diferente</span>
+
+<span class="cm">// Distancia coseno entre "bolo de chocolate" e "bolo de cacau" ≈ 0.97 (muito próximo)</span>
+<span class="cm">// Distancia coseno entre "bolo de chocolate" e "Python"        ≈ 0.12 (muito distante)</span></code></pre>
+
+<h4>Métricas de Similaridade</h4>
+
+<div class="card blue">
+<div class="card-title">Três Métricas Principais</div>
+<ul>
+<li><strong>Cosine Similarity</strong> — mede o angulo entre vetores (0 a 1). Ignora magnitude, foca na direção. <strong>Mais usado para texto</strong>. Fórmula: cos(theta) = (A . B) / (||A|| * ||B||)</li>
+<li><strong>Euclidean Distance (L2)</strong> — distância geométrica direta. Sensível a magnitude. <strong>Bom para imagens e features numéricas</strong>. Quanto menor, mais similar</li>
+<li><strong>Dot Product (Inner Product)</strong> — produto escalar simples. Rápido, mas assume vetores normalizados. Se normalizados, equivale ao coseno. <strong>Ótimo para performance</strong></li>
+</ul>
+</div>
+
+<h4>Algoritmos ANN (Appróximaté Nearest Neighbors)</h4>
+
+<p>Busca exata (brute force) em milhões de vetores de 1536 dimensões e computacionalmente inviável. A solução são algoritmos de <strong>busca apróximada</strong> que trocam precisão marginal por ganhos enormes de velocidade:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Algoritmo</th><th>Como Funciona</th><th>Trade-offs</th><th>Usado Por</th></tr>
+<tr><td><strong>HNSW</strong><br>(Hierarchical Navigable Small World)</td><td>Constroi um grafo multi-camada. Busca começa nas camadas mais altas (menós nós) e refina nas camadas mais baixas</td><td>Alta precisão, alto usó de memória. O mais popular</td><td>Qdrant, Weaviate, pgvector</td></tr>
+<tr><td><strong>IVF</strong><br>(Inverted File Index)</td><td>Agrupa vetores em clusters (centroids). Na busca, localiza os clusters mais próximos e busca dentro deles</td><td>Rápido em disco, precisa de treino (k-means). Bom para escala</td><td>Milvus, FAISS</td></tr>
+<tr><td><strong>PQ</strong><br>(Product Quantization)</td><td>Comprime vetores dividindo em sub-vetores e quantizando cada um. Reduz dimensionalidade drasticamente</td><td>Menor memória, menor precisão. Ótimo para bilhões de vetores</td><td>FAISS, Milvus</td></tr>
+<tr><td><strong>ScaNN</strong><br>(Scalable Nearest Neighbors)</td><td>Combina tree-based partitioning com quantizacao assimétrica</td><td>Otimizado por Google, excelente throughput</td><td>Google Vertex AI</td></tr>
+</table>
+</div>
+
+<h4>Provedores de Banco Vetorial</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Banco</th><th>Tipo</th><th>Destaques</th><th>Melhor Para</th></tr>
+<tr><td><strong>pgvector</strong></td><td>Extensão PostgreSQL</td><td>Usa seu Postgres existente. Índices HNSW e IVFFlat</td><td>Projetos que já usam Postgres. Escala moderada (&lt;10M vetores)</td></tr>
+<tr><td><strong>Pinecone</strong></td><td>SaaS gerenciado</td><td>Zero ops, escala automática, filtros metadata</td><td>Startups, prototipagem rápida, RAG em produção</td></tr>
+<tr><td><strong>Weaviate</strong></td><td>Open-source / Cloud</td><td>Schema com classes, modules de vectorizacao integrados</td><td>Busca semântica complexa, multi-tenant</td></tr>
+<tr><td><strong>Qdrant</strong></td><td>Open-source / Cloud</td><td>Rust-based, excelente performance, filtros avançados</td><td>Alta performance, filtros complexos</td></tr>
+<tr><td><strong>Milvus</strong></td><td>Open-source</td><td>Escala massiva, suporte GPU, IVF + PQ</td><td>Bilhões de vetores, enterprise</td></tr>
+<tr><td><strong>Chroma</strong></td><td>Open-source</td><td>Simples, embeddings locais, excelente DX</td><td>Desenvolvimento local, prototipos, notebooks</td></tr>
+</table>
+</div>
+
+<h4>Casos de Usó para Vector DB</h4>
+
+<div class="card purple">
+<div class="card-title">Aplicações Reais</div>
+<ul>
+<li><strong>RAG (Retrieval-Augmented Generation)</strong> — busca documentos semânticamente relevantes para contextualizar LLMs</li>
+<li><strong>Busca semântica</strong> — "sapato confortável para corrida" encontra "tenis de running com amortecimento"</li>
+<li><strong>Busca de imagens</strong> — encontrar imagens visualmente similares usando embeddings de CLIP/ViT</li>
+<li><strong>Deduplicação</strong> — detectar conteúdo quase-identico (plagio, produtos duplicados)</li>
+<li><strong>Classificação zero-shot</strong> — classificar textos sem treino, comparando embeddings com labels</li>
+<li><strong>Personalizacao</strong> — encontrar conteúdo similar ao que o usuário já consumiu</li>
+</ul>
+</div>
+
+<h4>TypeScript com pgvector</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { Pool } <span class="kw">from</span> <span class="str">'pg'</span>;
+<span class="kw">import</span> OpenAI <span class="kw">from</span> <span class="str">'openai'</span>;
+
+<span class="kw">const</span> pool = <span class="kw">new</span> <span class="tp">Pool</span>({ connectionString: process.env.DATABASE_URL });
+<span class="kw">const</span> openai = <span class="kw">new</span> <span class="tp">OpenAI</span>();
+
+<span class="cm">// Setup: habilitar extensão e criar tabela</span>
+<span class="kw">async function</span> <span class="fn">setupVectorTable</span>() {
+  <span class="kw">await</span> pool.<span class="fn">query</span>(<span class="str">`
+    CREATE EXTENSION IF NOT EXISTS vector;
+
+    CREATE TABLE IF NOT EXISTS documents (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      content TEXT NOT NULL,
+      metadata JSONB DEFAULT '{}',
+      embedding vector(1536),  -- dimensão do modelo OpenAI
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    -- Índice HNSW para busca rápida (cosine)
+    CREATE INDEX IF NOT EXISTS idx_docs_embedding
+    ON documents USING hnsw (embedding vector_cosine_ops)
+    WITH (m = 16, ef_construction = 64);
+  `</span>);
+}
+
+<span class="cm">// Gerar embedding via OpenAI</span>
+<span class="kw">async function</span> <span class="fn">generateEmbedding</span>(text: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">number</span>[]&gt; {
+  <span class="kw">const</span> response = <span class="kw">await</span> openai.embeddings.<span class="fn">create</span>({
+    model: <span class="str">'text-embedding-3-small'</span>,
+    input: text,
+  });
+  <span class="kw">return</span> response.data[<span class="num">0</span>].embedding;
+}
+
+<span class="cm">// Inserir documento com embedding</span>
+<span class="kw">async function</span> <span class="fn">insertDocument</span>(content: <span class="tp">string</span>, metadata: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">any</span>&gt;) {
+  <span class="kw">const</span> embedding = <span class="kw">await</span> <span class="fn">generateEmbedding</span>(content);
+
+  <span class="kw">await</span> pool.<span class="fn">query</span>(
+    <span class="str">`INSERT INTO documents (content, metadata, embedding)
+     VALUES ($1, $2, $3)`</span>,
+    [content, JSON.<span class="fn">stringify</span>(metadata), JSON.<span class="fn">stringify</span>(embedding)]
+  );
+}
+
+<span class="cm">// Busca semântica — encontra documentos mais similares</span>
+<span class="kw">async function</span> <span class="fn">semanticSearch</span>(
+  query: <span class="tp">string</span>,
+  limit = <span class="num">5</span>,
+  minScore = <span class="num">0.7</span>
+): <span class="tp">Promise</span>&lt;<span class="tp">SearchResult</span>[]&gt; {
+  <span class="kw">const</span> queryEmbedding = <span class="kw">await</span> <span class="fn">generateEmbedding</span>(query);
+
+  <span class="kw">const</span> result = <span class="kw">await</span> pool.<span class="fn">query</span>(
+    <span class="str">`SELECT id, content, metadata,
+            1 - (embedding &lt;=&gt; $1::vector) AS similarity
+     FROM documents
+     WHERE 1 - (embedding &lt;=&gt; $1::vector) > $2
+     ORDER BY embedding &lt;=&gt; $1::vector
+     LIMIT $3`</span>,
+    [JSON.<span class="fn">stringify</span>(queryEmbedding), minScore, limit]
+  );
+
+  <span class="kw">return</span> result.rows;
+}
+
+<span class="cm">// Usó prático — RAG pipeline</span>
+<span class="kw">async function</span> <span class="fn">ragQuery</span>(question: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+  <span class="cm">// 1. Busca documentos relevantes</span>
+  <span class="kw">const</span> docs = <span class="kw">await</span> <span class="fn">semanticSearch</span>(question, <span class="num">3</span>);
+
+  <span class="cm">// 2. Monta contexto para o LLM</span>
+  <span class="kw">const</span> context = docs
+    .<span class="fn">map</span>(d => d.content)
+    .<span class="fn">join</span>(<span class="str">'\n---\n'</span>);
+
+  <span class="cm">// 3. Gera resposta com contexto</span>
+  <span class="kw">const</span> response = <span class="kw">await</span> openai.chat.completions.<span class="fn">create</span>({
+    model: <span class="str">'gpt-4o'</span>,
+    messages: [
+      { role: <span class="str">'system'</span>, content: <span class="str">`Responda baseado no contexto:\n${context}`</span> },
+      { role: <span class="str">'user'</span>, content: question }
+    ],
+  });
+
+  <span class="kw">return</span> response.choices[<span class="num">0</span>].message.content;
+}</code></pre>
+
+<h4>Python com Pinecone</h4>
+<pre data-lang="python"><code><span class="kw">from</span> pinecone <span class="kw">import</span> Pinecone, ServerlessSpec
+<span class="kw">import</span> openai
+
+<span class="cm"># Inicializar Pinecone</span>
+pc = Pinecone(api_key=<span class="str">"YOUR_API_KEY"</span>)
+
+<span class="cm"># Criar índice (se não existir)</span>
+index_name = <span class="str">"product-catalog"</span>
+<span class="kw">if</span> index_name <span class="kw">not in</span> pc.list_indexes().names():
+    pc.create_index(
+        name=index_name,
+        dimension=<span class="num">1536</span>,
+        metric=<span class="str">"cosine"</span>,
+        spec=ServerlessSpec(cloud=<span class="str">"aws"</span>, region=<span class="str">"us-east-1"</span>)
+    )
+
+index = pc.Index(index_name)
+
+<span class="cm"># Gerar embedding</span>
+<span class="kw">def</span> <span class="fn">get_embedding</span>(text: <span class="tp">str</span>) -> <span class="tp">list</span>[<span class="tp">float</span>]:
+    response = openai.embeddings.create(
+        model=<span class="str">"text-embedding-3-small"</span>,
+        input=text
+    )
+    <span class="kw">return</span> response.data[<span class="num">0</span>].embedding
+
+<span class="cm"># Inserir produtos com metadata</span>
+products = [
+    {<span class="str">"id"</span>: <span class="str">"p1"</span>, <span class="str">"text"</span>: <span class="str">"Tenis de corrida leve com amortecimento"</span>,
+     <span class="str">"category"</span>: <span class="str">"calcados"</span>, <span class="str">"price"</span>: <span class="num">299.90</span>},
+    {<span class="str">"id"</span>: <span class="str">"p2"</span>, <span class="str">"text"</span>: <span class="str">"Sapato social couro premium"</span>,
+     <span class="str">"category"</span>: <span class="str">"calcados"</span>, <span class="str">"price"</span>: <span class="num">449.90</span>},
+    {<span class="str">"id"</span>: <span class="str">"p3"</span>, <span class="str">"text"</span>: <span class="str">"Camiseta dry-fit para academia"</span>,
+     <span class="str">"category"</span>: <span class="str">"roupas"</span>, <span class="str">"price"</span>: <span class="num">89.90</span>},
+]
+
+vectors = [
+    (p[<span class="str">"id"</span>], get_embedding(p[<span class="str">"text"</span>]),
+     {<span class="str">"text"</span>: p[<span class="str">"text"</span>], <span class="str">"category"</span>: p[<span class="str">"category"</span>], <span class="str">"price"</span>: p[<span class="str">"price"</span>]})
+    <span class="kw">for</span> p <span class="kw">in</span> products
+]
+index.upsert(vectors=vectors)
+
+<span class="cm"># Busca semântica com filtros de metadata</span>
+query_embedding = get_embedding(<span class="str">"sapato confortavel para exercício"</span>)
+
+results = index.query(
+    vector=query_embedding,
+    top_k=<span class="num">5</span>,
+    include_metadata=<span class="kw">True</span>,
+    filter={
+        <span class="str">"category"</span>: {<span class="str">"$eq"</span>: <span class="str">"calcados"</span>},
+        <span class="str">"price"</span>: {<span class="str">"$lte"</span>: <span class="num">400.0</span>}
+    }
+)
+
+<span class="kw">for</span> match <span class="kw">in</span> results.matches:
+    <span class="fn">print</span>(<span class="str">f"Score: <span class="kw">{</span>match.score:.3f<span class="kw">}</span> | <span class="kw">{</span>match.metadata['text']<span class="kw">}</span>"</span>)
+<span class="cm"># Score: 0.891 | Tenis de corrida leve com amortecimento</span>
+<span class="cm"># Score: 0.723 | Sapato social couro premium</span></code></pre>
+
+<!-- ═══ FULL-TEXT SEARCH ═══ -->
+<h3>Full-Text Search — Elasticsearch, OpenSearch, Typesense</h3>
+
+<p>Full-text search resolve o problema de encontrar documentos relevantes dado uma consulta textual, com <strong>ranking de relevância</strong>, <strong>fuzzy matching</strong>, <strong>facetas</strong> é <strong>highlighting</strong>. E fundamentalmente diferente de <code>LIKE '%termo%'</code> em SQL — que não usa índice, não tem ranking, e não entende linguistica.</p>
+
+<h4>Inverted Index — O Motor por Tras</h4>
+
+<p>A estrutura de dados central do full-text search é o <strong>índice invertido</strong>. Em vez de mapear "documento → palavras" (como um livro), mapeia <strong>"palavra → documentos"</strong> (como o índice remissivo de um livro):</p>
+
+<pre data-lang="text"><code><span class="cm">// Documentos originais</span>
+Doc1: "O gato preto dormiu no tapete"
+Doc2: "O cachorro dormiu na cama"
+Doc3: "O gato branco pulou no tapete"
+
+<span class="cm">// Índice Invertido (após tokenizacao e normalização)</span>
+"gato"      → [Doc1, Doc3]
+"preto"     → [Doc1]
+"dormiu"    → [Doc1, Doc2]      <span class="cm">// aparece em 2 docs</span>
+"tapete"    → [Doc1, Doc3]
+"cachorro"  → [Doc2]
+"cama"      → [Doc2]
+"branco"    → [Doc3]
+"pulou"     → [Doc3]
+
+<span class="cm">// Busca "gato tapete" → interseccao: Doc1 e Doc3</span>
+<span class="cm">// Doc1 tem ambos os termos, Doc3 também → ranking por TF-IDF/BM25</span></code></pre>
+
+<h4>Pipeline de Análise de Texto</h4>
+
+<p>Antes de indexar ou buscar, o texto passa por um <strong>pipeline de análise</strong> que normaliza e enriquece os tokens:</p>
+
+<div class="card orange">
+<div class="card-title">Etapas do Analyzer</div>
+<ol>
+<li><strong>Character Filters</strong> — remove HTML tags, converte acentos (e→e, a→a), normaliza caracteres especiais</li>
+<li><strong>Tokenizer</strong> — divide o texto em tokens. Standard tokenizer divide por espaços e pontuação. Whitespace mantém hifens. NGram gera substrings</li>
+<li><strong>Token Filters</strong> — transforma tokens individuais:
+  <ul>
+    <li><strong>Lowercase</strong> — "Gato" → "gato"</li>
+    <li><strong>Stop words</strong> — remove "o", "a", "de", "no", "na" (palavras sem valor semântico)</li>
+    <li><strong>Stemming</strong> — reduz a raiz: "correndo" → "corr", "corrida" → "corr" (agressivo, pode perder significado)</li>
+    <li><strong>Lemmatization</strong> — reduz a forma canonica: "correndo" → "correr" (mais preciso, mais lento)</li>
+    <li><strong>Synonyms</strong> — "smartphone" → ["celular", "telefone", "smartphone"]</li>
+  </ul>
+</li>
+</ol>
+</div>
+
+<h4>TF-IDF e BM25 — Scoring de Relevância</h4>
+
+<p>Quando você busca "notebook gamer barato", como o search engine decide qual documento é mais relevante?</p>
+
+<ul>
+<li><strong>TF (Term Frequency)</strong> — quantas vezes o termo aparece no documento. Mais aparicoes = mais relevante (com diminishing returns)</li>
+<li><strong>IDF (Inverse Document Frequency)</strong> — quao raro é o termo no corpus inteiro. "notebook" aparece em muitos docs (baixo IDF). "gamer" aparece em poucos (alto IDF, mais discriminante)</li>
+<li><strong>BM25</strong> — evolução do TF-IDF usado pelo Elasticsearch. Adiciona saturacao de frequência (após certo ponto, mais repeticoes não ajudam) e normalização por tamanho do documento (docs menores tem vantagem natural)</li>
+</ul>
+
+<pre data-lang="text"><code><span class="cm">// Formula simplificada do BM25</span>
+score(q, d) = SUM para cada termo t em q:
+  IDF(t) * ( TF(t,d) * (k1 + 1) ) / ( TF(t,d) + k1 * (1 - b + b * |d| / avgdl) )
+
+<span class="cm">// Onde:</span>
+<span class="cm">// k1 = 1.2 (controla saturacao de TF — padrão)</span>
+<span class="cm">// b  = 0.75 (controla normalização por tamanho)</span>
+<span class="cm">// |d| = tamanho do documento</span>
+<span class="cm">// avgdl = tamanho medio dos documentos</span></code></pre>
+
+<h4>Provedores de Full-Text Search</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Engine</th><th>Tipo</th><th>Destaques</th><th>Melhor Para</th></tr>
+<tr><td><strong>Elasticsearch</strong></td><td>Open-source (SSPL)</td><td>Mais maduro, ecossistema gigante, Kibana para visualização</td><td>Enterprise, logs (ELK Stack), e-commerce</td></tr>
+<tr><td><strong>OpenSearch</strong></td><td>Open-source (Apache 2.0)</td><td>Fork do Elasticsearch pela AWS, totalmente open-source</td><td>AWS-native, quem quer licença permissiva</td></tr>
+<tr><td><strong>Typesense</strong></td><td>Open-source</td><td>Fácil de operar, busca instantânea (&lt;50ms), typo-tolerant</td><td>Busca de produtos, search-as-you-type</td></tr>
+<tr><td><strong>Meilisearch</strong></td><td>Open-source</td><td>Setup em 1 minuto, excelente UX para devs, Rust-based</td><td>Aplicações menores, prototipos rápidos</td></tr>
+<tr><td><strong>PostgreSQL FTS</strong></td><td>Built-in</td><td>tsvector/tsquery nativos, sem infra extra</td><td>Projetos menores que já usam Postgres</td></tr>
+</table>
+</div>
+
+<h4>TypeScript com Elasticsearch</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { Client } <span class="kw">from</span> <span class="str">'@elastic/elasticsearch'</span>;
+
+<span class="kw">const</span> client = <span class="kw">new</span> <span class="tp">Client</span>({ node: <span class="str">'http://localhost:9200'</span> });
+
+<span class="cm">// Criar índice com mappings e analyzer customizado</span>
+<span class="kw">async function</span> <span class="fn">createProductIndex</span>() {
+  <span class="kw">await</span> client.índices.<span class="fn">create</span>({
+    index: <span class="str">'products'</span>,
+    body: {
+      settings: {
+        analysis: {
+          analyzer: {
+            product_analyzer: {
+              type: <span class="str">'custom'</span>,
+              tokenizer: <span class="str">'standard'</span>,
+              filter: [<span class="str">'lowercase'</span>, <span class="str">'asciifolding'</span>, <span class="str">'brazilian_stemmer'</span>]
+            }
+          },
+          filter: {
+            brazilian_stemmer: {
+              type: <span class="str">'stemmer'</span>,
+              language: <span class="str">'brazilian'</span>
+            }
+          }
+        }
+      },
+      mappings: {
+        properties: {
+          name:        { type: <span class="str">'text'</span>, analyzer: <span class="str">'product_analyzer'</span> },
+          description: { type: <span class="str">'text'</span>, analyzer: <span class="str">'product_analyzer'</span> },
+          category:    { type: <span class="str">'keyword'</span> },   <span class="cm">// filtro exato, não analisado</span>
+          brand:       { type: <span class="str">'keyword'</span> },
+          price:       { type: <span class="str">'float'</span> },
+          rating:      { type: <span class="str">'float'</span> },
+          inStock:     { type: <span class="str">'boolean'</span> },
+          tags:        { type: <span class="str">'keyword'</span> },   <span class="cm">// array de keywords</span>
+          createdAt:   { type: <span class="str">'date'</span> }
+        }
+      }
+    }
+  });
+}
+
+<span class="cm">// Busca avançada com filtros, aggregations e highlights</span>
+<span class="kw">async function</span> <span class="fn">searchProducts</span>(params: {
+  query: <span class="tp">string</span>;
+  category?: <span class="tp">string</span>;
+  minPrice?: <span class="tp">number</span>;
+  maxPrice?: <span class="tp">number</span>;
+  inStockOnly?: <span class="tp">boolean</span>;
+  page?: <span class="tp">number</span>;
+  size?: <span class="tp">number</span>;
+}) {
+  <span class="kw">const</span> { query, category, minPrice, maxPrice, inStockOnly, page = <span class="num">1</span>, size = <span class="num">20</span> } = params;
+
+  <span class="cm">// Construir filtros dinâmicamente</span>
+  <span class="kw">const</span> filters: <span class="tp">any</span>[] = [];
+  <span class="kw">if</span> (category)   filters.<span class="fn">push</span>({ term: { category } });
+  <span class="kw">if</span> (inStockOnly) filters.<span class="fn">push</span>({ term: { inStock: <span class="kw">true</span> } });
+  <span class="kw">if</span> (minPrice || maxPrice) {
+    filters.<span class="fn">push</span>({
+      range: { price: {
+        ...(minPrice &amp;&amp; { gte: minPrice }),
+        ...(maxPrice &amp;&amp; { lte: maxPrice })
+      }}
+    });
+  }
+
+  <span class="kw">const</span> result = <span class="kw">await</span> client.<span class="fn">search</span>({
+    index: <span class="str">'products'</span>,
+    body: {
+      from: (page - <span class="num">1</span>) * size,
+      size,
+
+      <span class="cm">// Query: combina relevancia textual + filtros exatos</span>
+      query: {
+        bool: {
+          must: [{
+            multi_match: {
+              query,
+              fields: [<span class="str">'name^3'</span>, <span class="str">'description'</span>, <span class="str">'tags^2'</span>],  <span class="cm">// boost name 3x</span>
+              type: <span class="str">'best_fields'</span>,
+              fuzziness: <span class="str">'AUTO'</span>,   <span class="cm">// tolera erros de digitacao</span>
+              operator: <span class="str">'or'</span>
+            }
+          }],
+          filter: filters
+        }
+      },
+
+      <span class="cm">// Highlighting — destaca trechos relevantes</span>
+      highlight: {
+        fields: {
+          name: { number_of_fragments: <span class="num">0</span> },
+          description: { fragment_size: <span class="num">150</span>, number_of_fragments: <span class="num">2</span> }
+        },
+        pre_tags: [<span class="str">'&lt;mark&gt;'</span>],
+        post_tags: [<span class="str">'&lt;/mark&gt;'</span>]
+      },
+
+      <span class="cm">// Aggregations — facetas para o sidebar de filtros</span>
+      aggs: {
+        categories: {
+          terms: { field: <span class="str">'category'</span>, size: <span class="num">20</span> }
+        },
+        brands: {
+          terms: { field: <span class="str">'brand'</span>, size: <span class="num">20</span> }
+        },
+        price_ranges: {
+          range: {
+            field: <span class="str">'price'</span>,
+            ranges: [
+              { key: <span class="str">'ate-100'</span>, to: <span class="num">100</span> },
+              { key: <span class="str">'100-500'</span>, from: <span class="num">100</span>, to: <span class="num">500</span> },
+              { key: <span class="str">'500-1000'</span>, from: <span class="num">500</span>, to: <span class="num">1000</span> },
+              { key: <span class="str">'acima-1000'</span>, from: <span class="num">1000</span> }
+            ]
+          }
+        },
+        avg_rating: {
+          avg: { field: <span class="str">'rating'</span> }
+        }
+      }
+    }
+  });
+
+  <span class="kw">return</span> {
+    total: result.hits.total,
+    hits: result.hits.hits.<span class="fn">map</span>(hit => ({
+      ...hit._source,
+      score: hit._score,
+      highlights: hit.highlight
+    })),
+    facets: {
+      categories: result.aggregations.categories.buckets,
+      brands: result.aggregations.brands.buckets,
+      priceRanges: result.aggregations.price_ranges.buckets,
+      avgRating: result.aggregations.avg_rating.value
+    }
+  };
+}
+
+<span class="cm">// Uso</span>
+<span class="kw">const</span> results = <span class="kw">await</span> <span class="fn">searchProducts</span>({
+  query: <span class="str">'notebook gamer'</span>,
+  category: <span class="str">'eletronicos'</span>,
+  minPrice: <span class="num">3000</span>,
+  maxPrice: <span class="num">8000</span>,
+  inStockOnly: <span class="kw">true</span>
+});</code></pre>
+
+<h4>Fuzzy Matching e Autocomplete</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// Fuzzy: tolera erros de digitacao</span>
+<span class="cm">// "notbook" encontra "notebook", "samsumg" encontra "samsung"</span>
+<span class="kw">const</span> fuzzyQuery = {
+  match: {
+    name: {
+      query: <span class="str">'notbook samsumg'</span>,
+      fuzziness: <span class="str">'AUTO'</span>,       <span class="cm">// 0 edits para 1-2 chars, 1 para 3-5, 2 para 6+</span>
+      prefix_length: <span class="num">1</span>,        <span class="cm">// primeiro char deve ser exato</span>
+      max_expansions: <span class="num">50</span>       <span class="cm">// limite de termos expandidos</span>
+    }
+  }
+};
+
+<span class="cm">// Autocomplete com edge_ngram — search-as-you-type</span>
+<span class="cm">// Analyzer indexa: "not", "note", "noteb", "notebo", "noteboo", "notebook"</span>
+<span class="cm">// Busca por "note" já encontra "notebook"</span>
+<span class="kw">const</span> autocompleteSettings = {
+  analysis: {
+    analyzer: {
+      autocomplete_index: {
+        type: <span class="str">'custom'</span>,
+        tokenizer: <span class="str">'autocomplete_tokenizer'</span>,
+        filter: [<span class="str">'lowercase'</span>]
+      },
+      autocomplete_search: {
+        type: <span class="str">'custom'</span>,
+        tokenizer: <span class="str">'standard'</span>,
+        filter: [<span class="str">'lowercase'</span>]
+      }
+    },
+    tokenizer: {
+      autocomplete_tokenizer: {
+        type: <span class="str">'edge_ngram'</span>,
+        min_gram: <span class="num">2</span>,
+        max_gram: <span class="num">15</span>,
+        token_chars: [<span class="str">'letter'</span>, <span class="str">'digit'</span>]
+      }
+    }
+  }
+};</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Hybrid Search para Produtos</h3>
+
+<p><strong>Cenário:</strong> Projete um sistema de busca de produtos para um e-commerce que combine full-text search (keywords exatas) com vector search (intencao semântica). O usuário digita "roupa confortável para home office" e deve encontrar "moletom oversized", "calca de moletom", "chinelo ergonomico" — nenhum desses tem as palavras da query.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Query do Usuário<br><small>"roupa confortável<br>para home office"</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Orchestrator<br><small>Query Router</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Full-Text<br>(Elasticsearch)<br><small>BM25 keywords</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box blue">Orchestrator<br><small>Query Router</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Embedding API<br><small>text-embedding-3</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Vector DB<br>(pgvector)<br><small>Cosine search</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box purple">Resultados BM25<br><small>score: 0-15</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">RRF Fusion<br><small>Reciprocal Rank<br>Fusion</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box cyan">Resultados Vetoriais<br><small>score: 0-1</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box red">RRF Fusion</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Resultados Finais<br><small>Re-ranked &<br>Deduplicated</small></div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// Hybrid Search — combina BM25 + Vector com Reciprocal Rank Fusion</span>
+
+<span class="kw">interface</span> <span class="tp">SearchResult</span> {
+  id: <span class="tp">string</span>;
+  name: <span class="tp">string</span>;
+  score: <span class="tp">number</span>;
+  source: <span class="str">'bm25'</span> | <span class="str">'vector'</span> | <span class="str">'hybrid'</span>;
+}
+
+<span class="kw">class</span> <span class="tp">HybridSearchService</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> elastic: <span class="tp">ElasticsearchService</span>,
+    <span class="kw">private</span> vector: <span class="tp">VectorSearchService</span>,
+    <span class="kw">private</span> embedder: <span class="tp">EmbeddingService</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">search</span>(query: <span class="tp">string</span>, topK = <span class="num">20</span>): <span class="tp">Promise</span>&lt;<span class="tp">SearchResult</span>[]&gt; {
+    <span class="cm">// Executar ambas as buscas em paralelo</span>
+    <span class="kw">const</span> queryEmbedding = <span class="kw">await</span> <span class="kw">this</span>.embedder.<span class="fn">embed</span>(query);
+
+    <span class="kw">const</span> [bm25Results, vectorResults] = <span class="kw">await</span> Promise.<span class="fn">all</span>([
+      <span class="kw">this</span>.elastic.<span class="fn">search</span>(query, topK),
+      <span class="kw">this</span>.vector.<span class="fn">search</span>(queryEmbedding, topK),
+    ]);
+
+    <span class="cm">// Reciprocal Rank Fusion (RRF)</span>
+    <span class="cm">// score_rrf = SUM( 1 / (k + rank_i) ) para cada lista</span>
+    <span class="kw">const</span> k = <span class="num">60</span>; <span class="cm">// constante de suavizacao (padrão)</span>
+    <span class="kw">const</span> scores = <span class="kw">new</span> <span class="tp">Map</span>&lt;<span class="tp">string</span>, <span class="tp">number</span>&gt;();
+
+    bm25Results.<span class="fn">forEach</span>((r, rank) => {
+      <span class="kw">const</span> prev = scores.<span class="fn">get</span>(r.id) || <span class="num">0</span>;
+      scores.<span class="fn">set</span>(r.id, prev + <span class="num">1</span> / (k + rank + <span class="num">1</span>));
+    });
+
+    vectorResults.<span class="fn">forEach</span>((r, rank) => {
+      <span class="kw">const</span> prev = scores.<span class="fn">get</span>(r.id) || <span class="num">0</span>;
+      scores.<span class="fn">set</span>(r.id, prev + <span class="num">1</span> / (k + rank + <span class="num">1</span>));
+    });
+
+    <span class="cm">// Ordenar por score RRF combinado</span>
+    <span class="kw">const</span> merged = [...scores.entries()]
+      .<span class="fn">sort</span>(([, a], [, b]) => b - a)
+      .<span class="fn">slice</span>(<span class="num">0</span>, topK)
+      .<span class="fn">map</span>(([id, score]) => ({ id, score, source: <span class="str">'hybrid'</span> <span class="kw">as const</span> }));
+
+    <span class="kw">return</span> merged;
+  }
+}</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Por que hybrid?</strong> Full-text search e ótimo para queries com keywords exatas ("iPhone 15 Pro Max 256GB"). Vector search e ótimo para intencao semântica ("celular bom para fotos"). Hybrid combina o melhor dos dois mundos. O Elasticsearch 8.x é o OpenSearch 2.11+ já suportam hybrid search nativo com knn + BM25.</div>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Usar graph DB para tudo:</strong> Se sua query mais complexa é "buscar usuário por ID com seus pedidos" (1 JOIN), você Não precisa de Neo4j. Graph DB adiciona complexidade operacional (novo banco, novo protocolo, nova linguagem de query). Reserve para problemas genuinamente baseados em grafos — travessias profundas, pattern matching, shortest path.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Vector DB sem estratégia de chunking:</strong> O erro mais comum em RAG e jogar documentos inteiros como embeddings. Um PDF de 50 páginas vira UM vetor que não representa nada direito. Você precisa de uma estratégia de chunking: dividir em paragrafos, 256-512 tokens por chunk, com overlap de 10-20%. O tamanho do chunk impacta diretamente a qualidade da busca.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Elasticsearch como banco de dados primário:</strong> Elasticsearch não é um banco ACID. Ele e <strong>eventually consistent</strong> (refresh interval de 1s por padrão), não suporta transações, e pode perder dados em falhas de cluster se não configurado corretamente. Use-o como <strong>índice de busca secundário</strong>, com a fonte de verdade em PostgreSQL/MongoDB. Mantenha a sincronia com CDC (Change Data Capture) ou eventos.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Não monitorar recall e precision:</strong> Busca é um sistema de ML implícito. Se você não mede recall (quantos resultados relevantes foram retornados) e precision (quantos resultados retornados são relevantes), você não sabe se sua busca está funcionando. Implemente logging de clicks é "zero results" queries.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Embeddings desatualizados:</strong> Se o seu catálogo de produtos muda frequentemente, os embeddings ficam stale. Um produto novo não será encontrado por busca vetorial até ser re-embedado. Implemente pipelines de re-indexação (event-driven ou batch).</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática para escolher:</strong> Use <strong>PostgreSQL FTS</strong> para &lt;100K docs com busca simples. <strong>Typesense/Meilisearch</strong> para busca de produtos até ~10M docs. <strong>Elasticsearch</strong> para escala, agregações complexas e observabilidade (logs). <strong>pgvector</strong> para busca semântica até ~5M vetores. <strong>Pinecone/Qdrant</strong> para escala vetorial massiva ou RAG em produção.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você está construindo um sistema de detecção de fraude bancaria. Transações suspeitas formam ciclos (A transfere para B, B para C, C volta para A em menós de 24h). Qual tipo de banco de dados é ideal é por que?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Graph Database (Neo4j ou Neptune). Ciclos de transação são um problema clássico de grafos. Em SQL, detectar ciclos de profundidade variável exigiria CTEs recursivas que escalam mal. Em Cypher, você expressa <code>MATCH path = (a)-[:TRANSFER*3..6]->(a)</code> é o motor de grafos faz a travessia eficientemente. Além disso, você pode adicionar filtros temporais (menós de 24h entre início e fim) e de valor (acima de X reais) diretamente na query. A vantagem é que o tempo de busca depende do número de hops, não do número total de transações no banco.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Sua aplicação precisa de busca semântica em ~50K documentos de suporte técnico. Você já usa PostgreSQL. Vale a pena adotar Pinecone ou pgvector resolve?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Para 50K documentos, <strong>pgvector resolve perfeitamente</strong>. Não ha necessidade de adicionar um novo serviço (Pinecone) quando você já tem PostgreSQL. pgvector suporta índices HNSW para busca rápida e escala tranquilamente até ~5M vetores. A vantagem é que você pode fazer queries que combinam busca vetorial COM filtros SQL tradicionais na mesma query (<code>WHERE category = 'hardware' ORDER BY embedding &lt;=&gt; $1 LIMIT 10</code>). Reserve Pinecone/Qdrant para quando passar de ~5M vetores, precisar de multi-tenancy avançado, ou quiser zero operação de infra.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Explique a diferença entre stemming e lemmatization. Quando cada um é mais apropriado?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>Stemming</strong> corta sufixos usando regras heuristicas: "correndo" → "corr", "corrida" → "corr", "corretor" → "corr". E rápido mas agressivo — pode agrupar palavras com significados diferentes ("universal" → "univers", "universidade" → "univers"). <strong>Lemmatization</strong> usa conhecimento linguistico para reduzir a forma canonica: "correndo" → "correr", "melhor" → "bom". E mais precisó mas mais lento e exige dicionários por idioma. Use stemming para buscas gerais onde recall é mais importante que precision (e-commerce, logs). Use lemmatization quando precision importa (busca jurídica, medica, ou quando falsos positivos são caros).</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Grafos, Vetorial & Full-Text Search</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="13-nosql-documento-kv-colunar.html">&#8592; NoSQL: Documento, KV & Colunar</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="15-data-architecture.html" class="primary">Próximo: Data Architecture &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 14: Grafos, Vetorial & Full-Text Search
+// ══════════════════════════════════════════
+const SECTION_NUM = 14;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a principal vantagem de um graph database sobre JOINs em SQL para travessias de relacionamentos?",
+    options: [
+      "Graph databases são sempre mais rápidos que SQL",
+      "Travessias em grafos tem custo O(1) por hop, independente do tamanho total do banco",
+      "Graph databases não precisam de índices",
+      "Cypher é mais fácil de aprender que SQL"
+    ],
+    correct: 1,
+    explanation: "Em graph databases, relacionamentos são armazenados fisicamente junto aos nós (index-free adjacency), permitindo travessias em O(1) por hop. Em SQL, cada JOIN adicional multiplica o custo porque precisa escanear tabelas de juncao."
+  },
+  {
+    question: "Qual métrica de similaridade é mais usada para comparar embeddings de texto?",
+    options: [
+      "Euclidean Distance (L2)",
+      "Hamming Distance",
+      "Cosine Similarity",
+      "Manhattan Distance (L1)"
+    ],
+    correct: 2,
+    explanation: "Cosine similarity mede o angulo entre vetores, ignorando a magnitude. Para embeddings de texto, a direção do vetor captura o significado semântico, enquanto a magnitude pode variar por tamanho do texto. Por isso coseno é o padrão para busca textual."
+  },
+  {
+    question: "O que é um inverted index no contexto de full-text search?",
+    options: [
+      "Um índice que armazena documentos em ordem reversa cronológica",
+      "Uma estrutura que mapeia de termos/palavras para a lista de documentos que os contém",
+      "Um índice B-tree invertido para buscas DESC",
+      "Um índice que armazena dados comprimidos invertendo bits"
+    ],
+    correct: 1,
+    explanation: "O inverted index mapeia cada termo (palavra) para a lista de documentos onde aparece, incluindo posições e frequência. É o contrário de 'documento → palavras' — funciona como o índice remissivo de um livro, e é a base de todos os motores de full-text search."
+  },
+  {
+    question: "No algoritmo BM25, o que acontece quando um termo de busca aparece em quase todos os documentos do corpus?",
+    options: [
+      "O termo recebe um score muito alto por ser popular",
+      "O termo é completamente ignorado pelo BM25",
+      "O IDF (Inverse Document Frequency) do termo se torna muito baixo, reduzindo seu impacto no score",
+      "O BM25 automáticamente aplica fuzzy matching nesse termo"
+    ],
+    correct: 2,
+    explanation: "IDF mede a raridade de um termo. Se um termo aparece em quase todos os documentos (como 'de', 'o', 'para'), seu IDF se torna muito baixo (~0), reduzindo drasticamente seu impacto no score final. Termos raros e discriminantes tem IDF alto e pesam mais no ranking."
+  },
+  {
+    question: "Qual é a principal diferença entre stemming e lemmatization?",
+    options: [
+      "Stemming é mais precisó que lemmatization",
+      "Lemmatization usa regras heuristicas de corte de sufixo, stemming usa dicionários",
+      "Stemming corta sufixos com heuristicas (rápido, menós preciso); lemmatization usa conhecimento linguistico para encontrar a forma canonica (mais preciso, mais lento)",
+      "Não ha diferença prática — são sinônimos"
+    ],
+    correct: 2,
+    explanation: "Stemming aplica regras simples para cortar sufixos ('correndo' → 'corr'), e rápido mas pode agrupar palavras de significados diferentes. Lemmatization usa dicionários e análise morfológica para encontrar o lema correto ('correndo' → 'correr', 'melhor' → 'bom')."
+  },
+  {
+    question: "Qual algoritmo de busca apróximada (ANN) constroi um grafo multi-camada para navegação hierárquica?",
+    options: [
+      "IVF (Inverted File Index)",
+      "PQ (Product Quantization)",
+      "HNSW (Hierarchical Navigable Small World)",
+      "LSH (Locality-Sensitive Hashing)"
+    ],
+    correct: 2,
+    explanation: "HNSW constroi um grafo em múltiplas camadas. As camadas superiores tem menós nós (visao macro) é as inferiores tem mais (busca refinada). A busca começa no topo e desce refinando. É o algoritmo ANN mais popular por sua combinação de alta precisão e boa performance."
+  },
+  {
+    question: "Por que Não se deve usar Elasticsearch como banco de dados primário?",
+    options: [
+      "Porque Elasticsearch não suporta JSON",
+      "Porque é muito caro em comparação com PostgreSQL",
+      "Porque e eventually consistent, não tem transações ACID, e pode perder dados em falhas de cluster",
+      "Porque não suporta queries de busca textual"
+    ],
+    correct: 2,
+    explanation: "Elasticsearch tem refresh interval de 1s (eventually consistent), não suporta transações ACID, e pode perder dados se réplicas não estiverem configuradas corretamente. Use-o como índice de busca secundário, com a fonte de verdade em um banco relacional ou NoSQL."
+  },
+  {
+    question: "Em um sistema de busca híbrida (full-text + vector), qual técnica é usada para combinar rankings de fontes diferentes?",
+    options: [
+      "Simple Average dos scores",
+      "Reciprocal Rank Fusion (RRF)",
+      "Cross-Join dos resultados",
+      "Max Pooling dos scores"
+    ],
+    correct: 1,
+    explanation: "RRF (Reciprocal Rank Fusion) combina rankings de fontes diferentes usando a fórmula score = SUM(1/(k + rank)). Funciona mesmo quando os scores das fontes tem escalas diferentes (BM25: 0-15, coseno: 0-1), porque se baseia na posição relativa (rank), não no score absoluto."
+  },
+  {
+    question: "Qual caso de usó Não é adequado para vector databases?",
+    options: [
+      "Busca semântica em documentos de suporte técnico",
+      "Detecção de imagens duplicadas",
+      "Relatórios financeiros com agregações e GROUP BY",
+      "Retrieval-Augmented Generation (RAG) para LLMs"
+    ],
+    correct: 2,
+    explanation: "Vector databases são otimizados para busca por similaridade, não para operações analíticas como SUM, COUNT, GROUP BY. Relatórios financeiros com agregações são o domínio de bancos relacionais (SQL) ou OLAP. Vector DBs resolvem 'encontre os itens mais parecidos', não 'calcule a soma por categoria'."
+  },
+  {
+    question: "Qual é o erro mais comum ao implementar RAG com vector databases?",
+    options: [
+      "Usar cosine similarity ao inves de euclidean distance",
+      "Indexar documentos inteiros como um único vetor sem estratégia de chunking",
+      "Usar embeddings de 1536 dimensões ao inves de 384",
+      "Escolher Pinecone ao inves de pgvector"
+    ],
+    correct: 1,
+    explanation: "Jogar um documento inteiro (ex: PDF de 50 páginas) como um único embedding gera um vetor que tenta representar TUDO e acaba não representando nada bem. A estratégia correta e chunking: dividir em pedaços de 256-512 tokens com overlap de 10-20%, para que cada vetor represente um conceito coesó e buscavel."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina grafos, vetorial e full-text search.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>34 — Deploy - Blue-Green, Canary, Feature Flags | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="33-gitflow-trunk-based.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>34</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="35-gitops-progressive-delivery.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:51.5%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 34</span>
+<h2>Deploy — Blue-Green, Canary, Feature Flags</h2>
+<div class="section-line"></div>
+
+<p>Deploy é o momento da verdade. Você pode ter o melhor código do mundo, mas se o processo de deploy falhar, seus usuários sentem dor. Nesta seção, vamos mergulhar fundo nas <strong>estratégias de deploy</strong> que permitem atualizar sistemas em produção com <strong>zero downtime</strong>, risco controlado e rollback instantaneo. Não e teoria academica — é o que empresas como Netflix, Amazon e Spotify fazem centenas de vezes por dia.</p>
+
+<p>A diferença entre uma equipe junior é uma equipe senior não está no código — está no <strong>processo de entrega</strong>. Quem domina deploy strategies pode lancar features com confiança, reverter problemas em segundos, e dormir tranquilo sabendo que o sistema esta protegido.</p>
+
+<!-- ═══ BLUE-GREEN DEPLOYMENT ═══ -->
+<h3>Blue-Green Deployment</h3>
+<p><strong>Conceito:</strong> Manter dois ambientes identicos de produção — <strong>Blue</strong> (versão atual, recebendo tráfego) e <strong>Green</strong> (nova versão, em preparação). Quando o Green está pronto é testado, você <strong>troca o roteador</strong> para apontar todo o tráfego para o Green. O Blue vira o ambiente de standby (e rollback imediato).</p>
+
+<p>A beleza do Blue-Green é a simplicidade: não ha estado intermediário. Em qualquer momento, 100% do tráfego vai para um ambiente ou outro. Isso elimina a complexidade de duas versões rodando simultaneamente.</p>
+
+<div class="diagram">
+<div class="diagram-box blue">Blue (v1.0)<br><small>Produção atual</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box cyan">Load Balancer<br><small>ALB / Route 53</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Green (v2.0)<br><small>Nova versão</small></div>
+</div>
+
+<p>Após a troca:</p>
+
+<div class="diagram">
+<div class="diagram-box purple">Blue (v1.0)<br><small>Standby / Rollback</small></div>
+<div class="diagram-arrow" style="opacity:.3">&larr;</div>
+<div class="diagram-box cyan">Load Balancer<br><small>ALB / Route 53</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Green (v2.0)<br><small>Produção ativa</small></div>
+</div>
+
+<h4>Implementação na AWS com ALB Target Groups</h4>
+<pre data-lang="bash"><code><span class="cm"># 1. Crie dois Target Groups no ALB</span>
+aws elbv2 create-target-group --name app-blue \
+  --protocol HTTP --port <span class="num">3000</span> --vpc-id vpc-xxx \
+  --health-check-path /health
+
+aws elbv2 create-target-group --name app-green \
+  --protocol HTTP --port <span class="num">3000</span> --vpc-id vpc-xxx \
+  --health-check-path /health
+
+<span class="cm"># 2. Deploy nova versão no Green (sem tráfego)</span>
+aws ecs update-service --cluster prod \
+  --service app-green --task-definition app:42
+
+<span class="cm"># 3. Aguarde health checks passarem</span>
+aws elbv2 wait target-in-service \
+  --target-group-arn arn:aws:...app-green
+
+<span class="cm"># 4. Troque o listener do ALB para apontar pro Green</span>
+aws elbv2 modify-listener --listener-arn arn:aws:...listener \
+  --default-actions Type=forward,TargetGroupArn=arn:aws:...app-green
+
+<span class="cm"># 5. Rollback? Troque de volta para o Blue</span>
+aws elbv2 modify-listener --listener-arn arn:aws:...listener \
+  --default-actions Type=forward,TargetGroupArn=arn:aws:...app-blue</code></pre>
+
+<h4>Pros e Contras</h4>
+<ul>
+<li><strong>Pros:</strong> Rollback instantaneo (segundos), zero downtime, ambiente testável antes da troca, simplicidade conceitual</li>
+<li><strong>Contras:</strong> Custo dobrado de infraestrutura, database migrations exigem cuidado especial (ambos ambientes compartilham o mesmo banco), não permite testes com tráfego real parcial</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Dica AWS:</strong> No App Runner e ECS, o blue-green é o padrão de deploy. O AWS CodeDeploy gerência a troca automáticamente com hooks para validação pre e pos-tráfego.</div>
+</div>
+
+<!-- ═══ CANARY DEPLOYMENT ═══ -->
+<h3>Canary Deployment</h3>
+<p><strong>Conceito:</strong> Enviar a nova versão para uma <strong>pequena porcentagem dos usuários</strong> (1%, 5%, 10%) e monitorar métricas críticas. Se tudo estiver saudável, aumentar gradualmente até 100%. Se métricas degradarem, <strong>rollback automático</strong>.</p>
+
+<p>O nome vem dos canarios usados em minas de carvao — se o canario morresse, os mineiros sabiam que havia gas toxico. Aqui, os primeiros usuários são os "canarios" que válidam a nova versão.</p>
+
+<div class="diagram">
+<div class="diagram-box blue">v1.0<br><small>95% tráfego</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box cyan">Load Balancer<br><small>Weighted routing</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">v2.0 (Canary)<br><small>5% tráfego</small></div>
+</div>
+
+<p>Progressão tipica: 5% &rarr; 10% &rarr; 25% &rarr; 50% &rarr; 100%. Cada etapa com período de observação (5-15 min).</p>
+
+<h4>Métricas Críticas para Monitorar</h4>
+<ul>
+<li><strong>Error Rate:</strong> Taxa de erros 5xx — se a canary tem error raté &gt; 1% acima da baseline, rollback</li>
+<li><strong>Latency p99:</strong> Se a latência percentil 99 da canary for &gt; 2x a da versão estável, rollback</li>
+<li><strong>CPU/Memory:</strong> Picos inesperados indicam memory leaks ou processamento ineficiente</li>
+<li><strong>Business Metrics:</strong> Taxa de conversão, carrinho abandonado, erros de pagamento — as vezes o código funciona, mas a feature é ruim</li>
+</ul>
+
+<h4>Implementação AWS com Weighted Target Groups</h4>
+<pre data-lang="bash"><code><span class="cm"># Roteamento ponderado no ALB — 95% v1, 5% v2</span>
+aws elbv2 modify-listener --listener-arn arn:aws:...listener \
+  --default-actions '[
+    {
+      "Type": "forward",
+      "ForwardConfig": {
+        "TargetGroups": [
+          {"TargetGroupArn": "arn:aws:...app-stable", "Weight": 95},
+          {"TargetGroupArn": "arn:aws:...app-canary", "Weight": 5}
+        ]
+      }
+    }
+  ]'
+
+<span class="cm"># Após validação, aumentar canary para 25%</span>
+aws elbv2 modify-listener --listener-arn arn:aws:...listener \
+  --default-actions '[
+    {
+      "Type": "forward",
+      "ForwardConfig": {
+        "TargetGroups": [
+          {"TargetGroupArn": "arn:aws:...app-stable", "Weight": 75},
+          {"TargetGroupArn": "arn:aws:...app-canary", "Weight": 25}
+        ]
+      }
+    }
+  ]'</code></pre>
+
+<h4>Automated Rollback com CloudWatch Alarms</h4>
+<pre data-lang="typescript"><code><span class="cm">// canary-monitor.ts — Lógica de rollback automático</span>
+<span class="kw">interface</span> <span class="tp">CanaryMetrics</span> {
+  errorRate: <span class="tp">number</span>;      <span class="cm">// porcentagem</span>
+  latencyP99: <span class="tp">number</span>;    <span class="cm">// milissegundos</span>
+  successRate: <span class="tp">number</span>;   <span class="cm">// porcentagem</span>
+}
+
+<span class="kw">interface</span> <span class="tp">RollbackThresholds</span> {
+  maxErrorRate: <span class="tp">number</span>;       <span class="cm">// ex: 1.0 (1%)</span>
+  maxLatencyP99: <span class="tp">number</span>;     <span class="cm">// ex: 500 (ms)</span>
+  minSuccessRate: <span class="tp">number</span>;    <span class="cm">// ex: 99.0 (99%)</span>
+}
+
+<span class="kw">class</span> <span class="tp">CanaryMonitor</span> {
+  <span class="kw">private</span> thresholds: <span class="tp">RollbackThresholds</span> = {
+    maxErrorRate: <span class="num">1.0</span>,
+    maxLatencyP99: <span class="num">500</span>,
+    minSuccessRate: <span class="num">99.0</span>,
+  };
+
+  <span class="kw">async</span> <span class="fn">evaluate</span>(metrics: <span class="tp">CanaryMetrics</span>): <span class="tp">Promise</span>&lt;<span class="str">'promote'</span> | <span class="str">'rollback'</span> | <span class="str">'wait'</span>&gt; {
+    <span class="kw">if</span> (metrics.errorRaté > <span class="kw">this</span>.thresholds.maxErrorRate) {
+      <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">triggerRollback</span>(<span class="str">'Error raté exceeded threshold'</span>);
+      <span class="kw">return</span> <span class="str">'rollback'</span>;
+    }
+
+    <span class="kw">if</span> (metrics.latencyP99 > <span class="kw">this</span>.thresholds.maxLatencyP99) {
+      <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">triggerRollback</span>(<span class="str">'Latency p99 exceeded threshold'</span>);
+      <span class="kw">return</span> <span class="str">'rollback'</span>;
+    }
+
+    <span class="kw">if</span> (metrics.successRaté &lt; <span class="kw">this</span>.thresholds.minSuccessRate) {
+      <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">triggerRollback</span>(<span class="str">'Success raté below minimum'</span>);
+      <span class="kw">return</span> <span class="str">'rollback'</span>;
+    }
+
+    <span class="kw">return</span> <span class="str">'promote'</span>; <span class="cm">// Métricas saudáveis, avance o canary</span>
+  }
+
+  <span class="kw">privaté async</span> <span class="fn">triggerRollback</span>(reason: <span class="tp">string</span>) {
+    console.<span class="fn">error</span>(<span class="str">`[CANARY ROLLBACK] ${reason}`</span>);
+    <span class="cm">// Setar pesó do canary para 0, restaurar 100% ao stable</span>
+    <span class="cm">// Enviar alerta via Slack/PagerDuty</span>
+  }
+}</code></pre>
+
+<!-- ═══ ROLLING DEPLOYMENT ═══ -->
+<h3>Rolling Deployment</h3>
+<p><strong>Conceito:</strong> Atualizar instâncias <strong>gradualmente</strong>, uma a uma (ou em lotes). A qualquer momento, algumas instâncias rodam a versão antiga e outras a nova. E o padrão default do Kubernetes Deployment.</p>
+
+<div class="diagram">
+<div class="diagram-box blue">Instance 1<br><small>v2.0 &#10003;</small></div>
+<div class="diagram-box blue">Instance 2<br><small>v2.0 &#10003;</small></div>
+<div class="diagram-box orange">Instance 3<br><small>v1.0 &rarr; v2.0</small></div>
+<div class="diagram-box purple">Instance 4<br><small>v1.0 (aguardando)</small></div>
+</div>
+
+<h4>Kubernetes Rolling Update</h4>
+<pre data-lang="yaml"><code><span class="cm"># deployment.yaml — Estratégia Rolling (padrão do K8s)</span>
+<span class="tp">apiVersion</span>: apps/v1
+<span class="tp">kind</span>: Deployment
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: api-server
+<span class="tp">spec</span>:
+  <span class="tp">replicas</span>: <span class="num">4</span>
+  <span class="tp">strategy</span>:
+    <span class="tp">type</span>: RollingUpdate
+    <span class="tp">rollingUpdate</span>:
+      <span class="tp">maxUnavailable</span>: <span class="num">1</span>      <span class="cm"># No máximo 1 pod indisponível por vez</span>
+      <span class="tp">maxSurge</span>: <span class="num">1</span>            <span class="cm"># No máximo 1 pod extra durante update</span>
+  <span class="tp">template</span>:
+    <span class="tp">spec</span>:
+      <span class="tp">containers</span>:
+      - <span class="tp">name</span>: api
+        <span class="tp">image</span>: <span class="str">myapp:2.0</span>
+        <span class="tp">readinessProbe</span>:        <span class="cm"># CRÍTICO: sem probe, K8s envia tráfego cedo</span>
+          <span class="tp">httpGet</span>:
+            <span class="tp">path</span>: /health
+            <span class="tp">port</span>: <span class="num">3000</span>
+          <span class="tp">initialDelaySeconds</span>: <span class="num">10</span>
+          <span class="tp">periodSeconds</span>: <span class="num">5</span></code></pre>
+
+<ul>
+<li><strong>Pros:</strong> Sem custo extra de infraestrutura, sem downtime, simples de configurar</li>
+<li><strong>Contras:</strong> Duas versões rodam simultaneamente (compatibilidade de API obrigatória), rollback mais lento (precisa atualizar de volta), estado intermediário pode causar bugs se não houver compatibilidade backward/forward</li>
+</ul>
+
+<!-- ═══ RECREATE DEPLOYMENT ═══ -->
+<h3>Recreaté Deployment</h3>
+<p><strong>Conceito:</strong> Parar TODAS as instâncias da versão antiga, depois iniciar TODAS da nova versão. Há <strong>downtime</strong> entre parar e iniciar. E a estratégia mais simples — é a única aceitável em cenários específicos.</p>
+
+<div class="diagram">
+<div class="diagram-box red">v1.0 (todas)<br><small>STOP</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Downtime<br><small>0 instâncias</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">v2.0 (todas)<br><small>START</small></div>
+</div>
+
+<h4>Quando e Aceitável</h4>
+<ul>
+<li><strong>Ambientes dev/staging:</strong> Ninguém depende da disponibilidade 24/7</li>
+<li><strong>Breaking changes no schema:</strong> Quando a migração e tao destrutiva que não ha como ter duas versões rodando ao mesmo tempo</li>
+<li><strong>Sistemas batch/offline:</strong> Processamento noturno que não recebe tráfego real-time</li>
+<li><strong>Janela de manutenção:</strong> Quando você agendou downtime com os usuários</li>
+</ul>
+
+<pre data-lang="yaml"><code><span class="cm"># Kubernetes — Estratégia Recreate</span>
+<span class="tp">spec</span>:
+  <span class="tp">strategy</span>:
+    <span class="tp">type</span>: Recreaté   <span class="cm"># Simples: mata tudo, sobe tudo</span></code></pre>
+
+<!-- ═══ A/B TESTING ═══ -->
+<h3>A/B Testing (Deploy + Experimentação)</h3>
+<p><strong>Conceito:</strong> Diferentes versões para <strong>segmentos específicos</strong> de usuários. Não e apenas uma estratégia de deploy — e uma ferramenta de <strong>experimentação</strong>. O objetivo não é apenas entregar código novo, mas <strong>medir impacto</strong> (conversão, engajamento, receita).</p>
+
+<p>Diferença crítica entre Canary e A/B: no <strong>Canary</strong>, você quer saber se o deploy é seguro (métricas técnicas). No <strong>A/B</strong>, você quer saber se a feature é melhor (métricas de negócio).</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Roteamento A/B baseado em segmento de usuário</span>
+<span class="kw">class</span> <span class="tp">ABRouter</span> {
+  <span class="fn">getVariant</span>(user: <span class="tp">User</span>): <span class="str">'control'</span> | <span class="str">'variant_a'</span> | <span class="str">'variant_b'</span> {
+    <span class="cm">// Hash deterministico — mesmo usuário sempre ve a mesma versão</span>
+    <span class="kw">const</span> hash = <span class="fn">murmurhash</span>(user.id + <span class="str">'experiment_checkout_v2'</span>);
+    <span class="kw">const</span> bucket = hash % <span class="num">100</span>;
+
+    <span class="kw">if</span> (bucket &lt; <span class="num">33</span>) <span class="kw">return</span> <span class="str">'control'</span>;       <span class="cm">// 33% — versão atual</span>
+    <span class="kw">if</span> (bucket &lt; <span class="num">66</span>) <span class="kw">return</span> <span class="str">'variant_a'</span>;     <span class="cm">// 33% — checkout simplificado</span>
+    <span class="kw">return</span> <span class="str">'variant_b'</span>;                       <span class="cm">// 34% — checkout one-click</span>
+  }
+}
+
+<span class="cm">// No frontend, renderize baseado no variant</span>
+<span class="kw">function</span> <span class="fn">CheckoutPage</span>({ variant }: { variant: <span class="tp">string</span> }) {
+  <span class="kw">switch</span> (variant) {
+    <span class="kw">case</span> <span class="str">'variant_a'</span>: <span class="kw">return</span> &lt;<span class="tp">SimplifiedCheckout</span> /&gt;;
+    <span class="kw">case</span> <span class="str">'variant_b'</span>: <span class="kw">return</span> &lt;<span class="tp">OneClickCheckout</span> /&gt;;
+    <span class="kw">default</span>: <span class="kw">return</span> &lt;<span class="tp">StandardCheckout</span> /&gt;;
+  }
+}</code></pre>
+
+<!-- ═══ DARK LAUNCH / SHADOW ═══ -->
+<h3>Dark Launch / Shadow Deployment</h3>
+<p><strong>Conceito:</strong> Deploy do código novo em produção, mas <strong>sem expor aos usuários</strong>. O sistema recebe tráfego real, processa na versão nova "em sombra", mas retorna a resposta da versão antiga. Usado para testar performance e corretude com tráfego real sem risco.</p>
+
+<div class="diagram">
+<div class="diagram-box cyan">Request<br><small>do usuário</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">v1.0 (Produção)<br><small>Responde ao user</small></div>
+<div class="diagram-arrow" style="opacity:.5">&darr;</div>
+<div class="diagram-box purple">v2.0 (Shadow)<br><small>Processa, descarta</small></div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// Shadow/Mirror traffic — processa em ambas, retorna da v1</span>
+<span class="kw">async function</span> <span class="fn">handleRequest</span>(req: <span class="tp">Request</span>): <span class="tp">Promise</span>&lt;<span class="tp">Response</span>&gt; {
+  <span class="cm">// Resposta REAL — versão estável</span>
+  <span class="kw">const</span> stableResponse = <span class="kw">await</span> <span class="fn">forwardToStable</span>(req);
+
+  <span class="cm">// Shadow — processa assíncronamente, não afeta latência</span>
+  <span class="fn">forwardToShadow</span>(req).<span class="fn">then</span>(shadowResponse => {
+    <span class="cm">// Compara respostas para detectar divergências</span>
+    <span class="kw">if</span> (!<span class="fn">deepEqual</span>(stableResponse.body, shadowResponse.body)) {
+      <span class="fn">logDivergence</span>({
+        endpoint: req.url,
+        stable: stableResponse.body,
+        shadow: shadowResponse.body,
+      });
+    }
+  }).<span class="fn">catch</span>(err => {
+    <span class="cm">// Shadow falhou? Não importa — não afeta o usuário</span>
+    metrics.<span class="fn">increment</span>(<span class="str">'shadow.errors'</span>);
+  });
+
+  <span class="kw">return</span> stableResponse; <span class="cm">// Sempre retorna a versão estável</span>
+}</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Quando usar Shadow:</strong> Migração de banco de dados (nova query vs antiga), novo motor de busca, refatoração de algoritmo de recomendação — qualquer mudança onde você quer validar com tráfego real sem arriscar a experiência do usuário.</div>
+</div>
+
+<!-- ═══ COMPARISON TABLE ═══ -->
+<h3>Comparação entre Estratégias</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Estratégia</th>
+<th>Rollback</th>
+<th>Risco</th>
+<th>Downtime</th>
+<th>Complexidade</th>
+<th>Custo Infra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Blue-Green</strong></td>
+<td>Instantaneo</td>
+<td>Baixo</td>
+<td>Zero</td>
+<td>Media</td>
+<td>2x (dois ambientes)</td>
+</tr>
+<tr>
+<td><strong>Canary</strong></td>
+<td>Rápido (segundos)</td>
+<td>Muito baixo</td>
+<td>Zero</td>
+<td>Alta</td>
+<td>1x + canary instances</td>
+</tr>
+<tr>
+<td><strong>Rolling</strong></td>
+<td>Lento (minutos)</td>
+<td>Medio</td>
+<td>Zero</td>
+<td>Baixa</td>
+<td>1x + surge</td>
+</tr>
+<tr>
+<td><strong>Recreate</strong></td>
+<td>Lento (minutos)</td>
+<td>Alto</td>
+<td>Sim</td>
+<td>Mínima</td>
+<td>1x</td>
+</tr>
+<tr>
+<td><strong>A/B Testing</strong></td>
+<td>Instantaneo (flag)</td>
+<td>Baixo</td>
+<td>Zero</td>
+<td>Alta</td>
+<td>1x + routing</td>
+</tr>
+<tr>
+<td><strong>Shadow/Dark</strong></td>
+<td>N/A (não expõe)</td>
+<td>Nenhum</td>
+<td>Zero</td>
+<td>Muito alta</td>
+<td>2x (mirror)</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ═══ FEATURE FLAGS ═══ -->
+<h3>Feature Flags — Controle Total sobre Releases</h3>
+<p>Feature flags (ou feature toggles) são a <strong>separação entre deploy e release</strong>. Você faz deploy do código para produção, mas a feature só e ativada para quem você quiser, quando você quiser. Isso transforma deploy em um evento <strong>técnico sem risco</strong>, e release em uma <strong>decisão de negócio</strong>.</p>
+
+<h4>Tipos de Feature Flags</h4>
+<div class="card">
+<div class="card-title">4 Categorias de Feature Flags</div>
+<ul>
+<li><strong>Release Flags:</strong> Escondem features incompletas. Curta duração (dias/semanas). Removidas após lançamento completo. Ex: nova página de checkout em desenvolvimento</li>
+<li><strong>Experiment Flags:</strong> A/B tests. Media duração (semanas). Removidas após conclusão do experimento. Ex: testar novo algoritmo de recomendação</li>
+<li><strong>Ops Flags:</strong> Circuit breakers e kill switches. Longa duração (permanente). Usadas para desabilitar funcionalidades sob carga. Ex: desativar notificações push durante Black Friday</li>
+<li><strong>Permission Flags:</strong> Controle de acesso a features premium. Permanentes. Ex: feature disponível apenas para plano Enterprise</li>
+</ul>
+</div>
+
+<h4>Implementação: De If/Else Simples a Feature Flag Service</h4>
+<pre data-lang="typescript"><code><span class="cm">// Nível 1: if/else simples (env var)</span>
+<span class="kw">if</span> (process.env.<span class="str">ENABLE_NEW_CHECKOUT</span> === <span class="str">'true'</span>) {
+  <span class="kw">return</span> &lt;<span class="tp">NewCheckout</span> /&gt;;
+}
+
+<span class="cm">// Nível 2: Feature Flag Service com Redis (produção real)</span>
+<span class="kw">interface</span> <span class="tp">FeatureFlag</span> {
+  name: <span class="tp">string</span>;
+  enabled: <span class="tp">boolean</span>;
+  percentage: <span class="tp">number</span>;          <span class="cm">// 0-100 para rollout gradual</span>
+  allowedUsers: <span class="tp">string</span>[];       <span class="cm">// IDs específicos (beta testers)</span>
+  allowedSegments: <span class="tp">string</span>[];    <span class="cm">// 'premium', 'internal', 'beta'</span>
+}
+
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">FeatureFlagService</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> redis: <span class="tp">RedisService</span>,
+    <span class="kw">private</span> logger: <span class="tp">LoggerService</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">isEnabled</span>(flagName: <span class="tp">string</span>, context?: <span class="tp">FlagContext</span>): <span class="tp">Promise</span>&lt;<span class="tp">boolean</span>&gt; {
+    <span class="kw">const</span> flag = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">getFlag</span>(flagName);
+
+    <span class="kw">if</span> (!flag || !flag.enabled) <span class="kw">return false</span>;
+
+    <span class="cm">// Usuários específicos sempre tem acesso</span>
+    <span class="kw">if</span> (context?.userId && flag.allowedUsers.<span class="fn">includes</span>(context.userId)) {
+      <span class="kw">return true</span>;
+    }
+
+    <span class="cm">// Segmentos permitidos</span>
+    <span class="kw">if</span> (context?.segment && flag.allowedSegments.<span class="fn">includes</span>(context.segment)) {
+      <span class="kw">return true</span>;
+    }
+
+    <span class="cm">// Rollout gradual baseado em hash do userId</span>
+    <span class="kw">if</span> (context?.userId && flag.percentage &lt; <span class="num">100</span>) {
+      <span class="kw">const</span> hash = <span class="fn">murmurhash</span>(context.userId + flagName) % <span class="num">100</span>;
+      <span class="kw">return</span> hash &lt; flag.percentage;
+    }
+
+    <span class="kw">return</span> flag.percentage === <span class="num">100</span>;
+  }
+
+  <span class="kw">privaté async</span> <span class="fn">getFlag</span>(name: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">FeatureFlag</span> | <span class="kw">null</span>&gt; {
+    <span class="kw">const</span> cached = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">get</span>(<span class="str">`ff:${name}`</span>);
+    <span class="kw">if</span> (cached) <span class="kw">return</span> JSON.<span class="fn">parse</span>(cached);
+    <span class="kw">return null</span>;
+  }
+
+  <span class="kw">async</span> <span class="fn">setFlag</span>(flag: <span class="tp">FeatureFlag</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">set</span>(<span class="str">`ff:${flag.name}`</span>, JSON.<span class="fn">stringify</span>(flag));
+    <span class="kw">this</span>.logger.<span class="fn">log</span>(<span class="str">`Feature flag '${flag.name}' updated`</span>, flag);
+  }
+}</code></pre>
+
+<h4>Usó no Controller e Frontend</h4>
+<pre data-lang="typescript"><code><span class="cm">// Backend — NestJS Controller</span>
+<span class="ann">@Get</span>(<span class="str">'checkout'</span>)
+<span class="kw">async</span> <span class="fn">getCheckout</span>(<span class="ann">@CurrentUser</span>() user: <span class="tp">AuthUser</span>) {
+  <span class="kw">const</span> useNewCheckout = <span class="kw">await</span> <span class="kw">this</span>.featureFlags.<span class="fn">isEnabled</span>(
+    <span class="str">'new-checkout-flow'</span>,
+    { userId: user.id, segment: user.plan }
+  );
+
+  <span class="kw">if</span> (useNewCheckout) {
+    <span class="kw">return</span> <span class="kw">this</span>.checkoutService.<span class="fn">getNewFlow</span>(user);
+  }
+  <span class="kw">return</span> <span class="kw">this</span>.checkoutService.<span class="fn">getStandardFlow</span>(user);
+}
+
+<span class="cm">// Frontend — React Hook</span>
+<span class="kw">function</span> <span class="fn">useFeatureFlag</span>(flagName: <span class="tp">string</span>): <span class="tp">boolean</span> {
+  <span class="kw">const</span> { data } = <span class="fn">useQuery</span>({
+    queryKey: [<span class="str">'feature-flags'</span>, flagName],
+    queryFn: () => api.<span class="fn">get</span>&lt;{ enabled: <span class="tp">boolean</span> }&gt;(<span class="str">`/flags/${flagName}`</span>),
+    staleTime: <span class="num">60_000</span>, <span class="cm">// Cache por 1 minuto</span>
+  });
+  <span class="kw">return</span> data?.enabled ?? <span class="kw">false</span>;
+}</code></pre>
+
+<h4>Feature Flag Lifecycle</h4>
+<div class="diagram">
+<div class="diagram-box green">Criar Flag<br><small>enabled: false</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Rollout Gradual<br><small>5% &rarr; 50% &rarr; 100%</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Feature Estável<br><small>100% por 2+ semanas</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Remover Flag<br><small>Limpar dead code</small></div>
+</div>
+
+<div class="card blue">
+<div class="card-title">Ferramentas de Feature Flags</div>
+<ul>
+<li><strong>LaunchDarkly:</strong> Referência do mercado. SDK para todas as linguagens, targeting avançado, analytics integrado. Pago</li>
+<li><strong>Flagsmith:</strong> Open-source com versão cloud. Boa alternativa ao LaunchDarkly. Segmentação por atributos</li>
+<li><strong>Unleash:</strong> Open-source, self-hosted. Ótimo para equipes que querem controle total. Strategies customizáveis</li>
+<li><strong>ConfigCat:</strong> Simples é barato. Bom para startups. Feature flags + remote config</li>
+<li><strong>DIY com Redis:</strong> Para quem quer controle total e não precisa de UI complexa (como o exemplo acima)</li>
+</ul>
+</div>
+
+<!-- ═══ DATABASE MIGRATIONS IN DEPLOY ═══ -->
+<h3>Database Migrations em Deploy — Expand-Contract Pattern</h3>
+<p>O maior desafio de deploys zero-downtime é o banco de dados. Você não pode simplesmente renomear uma coluna ou dropar uma tabela — instâncias da versão antiga ainda precisam desses recursos. A solução é o <strong>Expand-Contract Pattern</strong> (também chamado de Parallel Change).</p>
+
+<h4>Exemplo: Renomear coluna "name" para "full_name"</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// ═══ FASE 1: EXPAND (Deploy 1) — Adicionar nova coluna ═══</span>
+<span class="cm">// Migration: adiciona coluna nova, SEM remover a antiga</span>
+<span class="kw">export class</span> <span class="tp">AddFullNameColumn1700000001</span> <span class="kw">implements</span> <span class="tp">MigrationInterface</span> {
+  <span class="kw">async</span> <span class="fn">up</span>(queryRunner: <span class="tp">QueryRunner</span>) {
+    <span class="cm">// 1. Adiciona coluna nullable (não quebra inserts existentes)</span>
+    <span class="kw">await</span> queryRunner.<span class="fn">query</span>(
+      <span class="str">`ALTER TABLE users ADD COLUMN full_name VARCHAR(255)`</span>
+    );
+    <span class="cm">// 2. Backfill — copia dados da coluna antiga</span>
+    <span class="kw">await</span> queryRunner.<span class="fn">query</span>(
+      <span class="str">`UPDATE users SET full_name = name WHERE full_name IS NULL`</span>
+    );
+    <span class="cm">// 3. Trigger para manter sincronizado durante transição</span>
+    <span class="kw">await</span> queryRunner.<span class="fn">query</span>(<span class="str">`
+      CREATE TRIGGER sync_name_to_full_name
+      BEFORE INSERT OR UPDATE ON users
+      FOR EACH ROW EXECUTE FUNCTION sync_columns();
+    `</span>);
+  }
+}
+
+<span class="cm">// Código v1 CONTINUA lendo/escrevendo "name" — não quebra</span>
+<span class="cm">// Código v2 le/escreve "full_name" — funciona também</span>
+
+<span class="cm">// ═══ FASE 2: MIGRATE (Deploy 2) — Código usa nova coluna ═══</span>
+<span class="cm">// Atualizar TODOS os serviços para usar full_name</span>
+<span class="cm">// Verificar que nenhum serviço ainda le "name"</span>
+
+<span class="cm">// ═══ FASE 3: CONTRACT (Deploy 3) — Remover coluna antiga ═══</span>
+<span class="kw">export class</span> <span class="tp">RemoveNameColumn1700000003</span> <span class="kw">implements</span> <span class="tp">MigrationInterface</span> {
+  <span class="kw">async</span> <span class="fn">up</span>(queryRunner: <span class="tp">QueryRunner</span>) {
+    <span class="cm">// Somente após confirmar que nenhum serviço usa "name"</span>
+    <span class="kw">await</span> queryRunner.<span class="fn">query</span>(<span class="str">`DROP TRIGGER sync_name_to_full_name ON users`</span>);
+    <span class="kw">await</span> queryRunner.<span class="fn">query</span>(<span class="str">`ALTER TABLE users DROP COLUMN name`</span>);
+    <span class="kw">await</span> queryRunner.<span class="fn">query</span>(
+      <span class="str">`ALTER TABLE users ALTER COLUMN full_name SET NOT NULL`</span>
+    );
+  }
+}</code></pre>
+
+<h4>Regras de Ouro para Migrations</h4>
+<div class="card orange">
+<div class="card-title">Migrations Seguras em Zero-Downtime</div>
+<ul>
+<li><strong>Adicionar coluna:</strong> Sempre nullable (ou com DEFAULT). Nunca NOT NULL sem default em tabela existente</li>
+<li><strong>Remover coluna:</strong> Primeiro pare de usar no código (deploy 1), depois remova a coluna (deploy 2)</li>
+<li><strong>Renomear coluna:</strong> Expand-Contract em 3 deploys (add nova &rarr; migrar código &rarr; remover antiga)</li>
+<li><strong>Adicionar índice:</strong> Use <code>CREATE INDEX CONCURRENTLY</code> no PostgreSQL para não lockar a tabela</li>
+<li><strong>Remover tabela:</strong> Pare de usar (deploy 1), espere período de segurança, depois DROP (deploy 2)</li>
+<li><strong>Nunca:</strong> ALTER COLUMN type diretamente, DROP NOT NULL em produção sem fase de transição</li>
+</ul>
+</div>
+
+<!-- ═══ ROLLBACK STRATEGIES ═══ -->
+<h3>Rollback Strategies</h3>
+<p>Rollback não é "dar ctrl+z no deploy" — é uma <strong>operação complexa</strong> que precisa ser planejada antes do deploy acontecer. As melhores equipes testam o rollback antes de fazer o deploy.</p>
+
+<h4>1. Automated Rollback por Métricas</h4>
+<pre data-lang="yaml"><code><span class="cm"># AWS CodeDeploy — Rollback automático com CloudWatch Alarms</span>
+<span class="tp">deploymentConfig</span>:
+  <span class="tp">autoRollbackConfiguration</span>:
+    <span class="tp">enabled</span>: <span class="kw">true</span>
+    <span class="tp">events</span>:
+      - DEPLOYMENT_FAILURE
+      - DEPLOYMENT_STOP_ON_ALARM
+  <span class="tp">alarmConfiguration</span>:
+    <span class="tp">enabled</span>: <span class="kw">true</span>
+    <span class="tp">alarms</span>:
+      - <span class="tp">name</span>: <span class="str">HighErrorRate</span>     <span class="cm"># > 1% de 5xx</span>
+      - <span class="tp">name</span>: <span class="str">HighLatency</span>        <span class="cm"># p99 > 500ms</span>
+      - <span class="tp">name</span>: <span class="str">HealthCheckFailed</span>   <span class="cm"># health endpoint down</span></code></pre>
+
+<h4>2. Feature Flag Kill Switch</h4>
+<pre data-lang="typescript"><code><span class="cm">// O rollback mais rápido: desligar a feature flag</span>
+<span class="cm">// Não requer re-deploy, não requer troca de target group</span>
+<span class="kw">await</span> featureFlagService.<span class="fn">setFlag</span>({
+  name: <span class="str">'new-payment-flow'</span>,
+  enabled: <span class="kw">false</span>,           <span class="cm">// Kill switch — instantaneo</span>
+  percentage: <span class="num">0</span>,
+  allowedUsers: [],
+  allowedSegments: [],
+});
+<span class="cm">// Todos os usuários voltam ao fluxo antigo imediatamente</span>
+<span class="cm">// Sem re-deploy, sem downtime, sem risco</span></code></pre>
+
+<h4>3. Database Rollback — O Problema</h4>
+<p>Se a migration adicionou uma coluna, o rollback do código não remove a coluna. Isso é intencional — <strong>nunca faca rollback de migrations automáticamente</strong>. A coluna extra não causa dano (o código antigo simplesmente a ignora). Reverter a migration pode causar perda de dados.</p>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Regra de ouro:</strong> Migrations são forward-only. Se algo deu errado, crie uma NOVA migration para corrigir. Nunca DELETE dados em produção como parte de um rollback automático.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Zero-Downtime Deploy para NestJS API</h3>
+<p><strong>Cenário:</strong> Você precisa implementar deploy zero-downtime para uma API NestJS que roda em AWS com PostgreSQL. A nova versão inclui uma mudança de schema (adicionar campo <code>phone</code> na tabela users) é uma nova feature de notificações SMS que precisa ser lancada gradualmente.</p>
+
+<div class="diagram">
+<div class="diagram-box cyan">GitHub Push<br><small>trigger CI/CD</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Build + Test<br><small>GitHub Actions</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">ECR Image<br><small>Docker push</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Blue-Green Deploy<br><small>CodeDeploy / ALB</small></div>
+</div>
+
+<h4>Plano de Deploy em 3 Fases</h4>
+<ol>
+<li><strong>Fase 1 — Schema Migration (Deploy 1):</strong>
+<ul>
+<li>Adicionar coluna <code>phone VARCHAR(20) NULL</code> na tabela users</li>
+<li>Criar índice CONCURRENTLY se necessário</li>
+<li>Código v1 ignora o campo — nenhuma mudança funcional</li>
+<li>Deploy via Blue-Green com health check válidation</li>
+</ul>
+</li>
+<li><strong>Fase 2 — Feature com Flag (Deploy 2):</strong>
+<ul>
+<li>Código v2 escreve/le o campo phone</li>
+<li>Feature SMS protegida por feature flag <code>sms-notifications</code> (enabled: false)</li>
+<li>Deploy normal — feature não é visível</li>
+</ul>
+</li>
+<li><strong>Fase 3 — Gradual Rollout:</strong>
+<ul>
+<li>Ativar flag para 5% dos usuários (equipe interna primeiro)</li>
+<li>Monitorar error rate, delivery rate, opt-out rate</li>
+<li>Aumentar para 25% &rarr; 50% &rarr; 100% ao longo de 1 semana</li>
+<li>Quando 100% estável por 2 semanas, remover a flag é o dead code</li>
+</ul>
+</li>
+</ol>
+
+<pre data-lang="typescript"><code><span class="cm">// NestJS — SMS Notification com Feature Flag</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">NotificationService</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> featureFlags: <span class="tp">FeatureFlagService</span>,
+    <span class="kw">private</span> smsProvider: <span class="tp">ISmsProvider</span>,
+    <span class="kw">private</span> emailProvider: <span class="tp">IEmailProvider</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">notifyUser</span>(user: <span class="tp">User</span>, message: <span class="tp">string</span>) {
+    <span class="cm">// Email sempre — feature existente</span>
+    <span class="kw">await</span> <span class="kw">this</span>.emailProvider.<span class="fn">send</span>(user.email, message);
+
+    <span class="cm">// SMS — protegido por feature flag</span>
+    <span class="kw">const</span> smsEnabled = <span class="kw">await</span> <span class="kw">this</span>.featureFlags.<span class="fn">isEnabled</span>(
+      <span class="str">'sms-notifications'</span>,
+      { userId: user.id, segment: user.plan }
+    );
+
+    <span class="kw">if</span> (smsEnabled && user.phone) {
+      <span class="kw">await</span> <span class="kw">this</span>.smsProvider.<span class="fn">send</span>(user.phone, message);
+    }
+  }
+}</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Por que Blue-Green + Feature Flags?</strong> Blue-Green garante rollback instantaneo do código. Feature Flags garantem rollback instantaneo da feature. Juntos, você tem dupla camada de segurança: se o deploy falhar técnicamente, Blue-Green salva. Se a feature falhar funcionalmente, o kill switch salva.</div>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Deploy com breaking database changes:</strong> Renomear ou dropar coluna na mesma release que muda o código. Instâncias antigas (durante rolling/canary) vão quebrar ao tentar acessar colunas que não existem mais. Sempre use Expand-Contract com 2-3 deploys separados.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Sem plano de rollback:</strong> "Se der errado, a gente ve" não é estratégia. Antes de CADA deploy, tenha claro: qual é o trigger de rollback (métricas), como reverter (comando/script), quem decide (on-call). Teste o rollback regularmente.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Feature flags que nunca são removidas:</strong> Cada flag e divida técnica. Se não for removida após a feature estar 100% estável, vira um labirinto de <code>if (featureEnabled)</code> espalhado pelo código. Regra: flags de release devem ter data de expiração. Se passou 30 dias em 100%, remova.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Canary sem métricas adequadas:</strong> Canary deployment sem monitoramento é igual a Recreaté — você só descobre o problema quando todos os usuários já foram afetados. Defina thresholds ANTES do deploy: error raté &gt; X% = rollback automático, latency p99 &gt; Y ms = rollback automático.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Confundir Canary com A/B:</strong> Canary mede a saúde do deploy (métricas técnicas). A/B mede o impacto da feature (métricas de negócio). Usar canary para validar conversão ou A/B para validar estabilidade é usar a ferramenta errada para o problema errado.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Todo deploy deve ter 3 componentes prontos antes de executar: (1) health check endpoint funcional, (2) dashboard com métricas de rollback, (3) runbook documentando como reverter manualmente se a automação falhar.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você precisa renomear a coluna "price" para "unit_price" na tabela products. A aplicação tem 10 instâncias rodando em rolling deployment. Como fazer sem downtime?</div>
+<div class="qa-a">
+<p><strong>Solução com Expand-Contract (3 deploys):</strong></p>
+<p><strong>Deploy 1 (Expand):</strong> Migration adiciona coluna <code>unit_price NUMERIC NULL</code>, backfill com <code>UPDATE products SET unit_price = price</code>, cria trigger para manter sincronizado. Código v1 continua usando <code>price</code> normalmente.</p>
+<p><strong>Deploy 2 (Migrate):</strong> Todo o código muda de <code>price</code> para <code>unit_price</code>. Ambas colunas existem, trigger mantém sincronismo. Rolling deployment funciona porque instâncias v1 (lendo price) e v2 (lendo unit_price) funcionam ao mesmo tempo.</p>
+<p><strong>Deploy 3 (Contract):</strong> Remover trigger, dropar coluna <code>price</code>, adicionar NOT NULL em <code>unit_price</code>. Só execute após confirmar que NENHUMA instância v1 ainda roda.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Sua equipe quer lancar um novo motor de busca para substituir o antigo. Como usar Shadow Deployment para validar antes de expor aos usuários?</div>
+<div class="qa-a">
+<p><strong>Solução com Shadow + Feature Flag:</strong></p>
+<p><strong>Passó 1:</strong> Deploy do novo motor em paralelo ao antigo. Configurar traffic mirroring: cada request de busca é processado por AMBOS os motores, mas apenas a resposta do motor antigo e retornada ao usuário.</p>
+<p><strong>Passó 2:</strong> Coletar métricas de comparação: latência do novo vs antigo, divergência de resultados, precision/recall. Logar divergências significativas para investigação.</p>
+<p><strong>Passó 3:</strong> Quando o novo motor tem métricas equivalentes ou superiores por 1+ semana, criar feature flag <code>new-search-engine</code>. Ativar para equipe interna (5%), depois canary para 10% dos usuários com monitoramento de métricas de busca (click-through rate, zero results rate).</p>
+<p><strong>Passó 4:</strong> Escalar para 100%, monitorar por 2 semanas, remover flag e motor antigo.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Durante um canary deployment (5% dos usuários na v2), o CloudWatch Alarm dispara: error raté do canary está em 3% (threshold: 1%). O que você faz?</div>
+<div class="qa-a">
+<p><strong>Resposta — Rollback imediato + investigação:</strong></p>
+<p><strong>1. Rollback automático:</strong> Se o alarm está configurado com CodeDeploy, o rollback já deve ter sido automático (pesó do canary vai para 0%, 100% volta ao stable). Se não foi automático, executar manualmente: <code>aws elbv2 modify-listener</code> para setar pesó do canary para 0.</p>
+<p><strong>2. NÃO tente debugar em produção com tráfego real:</strong> Primeiro protejá os usuários, depois investigue.</p>
+<p><strong>3. Investigação:</strong> Checar logs do CloudWatch Logs para os requests que passaram pelo canary. Filtrar por status 5xx. Identificar o endpoint/rota que está falhando. Verificar se é um bug de código ou um problema de compatibilidade (banco, cache, API externa).</p>
+<p><strong>4. Fix forward:</strong> Corrigir o bug, criar nova imagem, fazer novo canary. NÃO fazer rollback de migrations (colunas novas são inofensivas). Nunca re-usar a imagem que falhou — sempre build nova.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Deploy Strategies & Feature Flags</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="33-gitflow-trunk-based.html">&#8592; GitFlow & Trunk-Based</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="35-gitops-progressive-delivery.html" class="primary">Próximo: GitOps & Progressive Delivery &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 34: Deploy Strategies
+// ══════════════════════════════════════════
+const SECTION_NUM = 34;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "No Blue-Green Deployment, como funciona o rollback?",
+    options: [
+      "Re-deploy da versão anterior em todas as instâncias",
+      "Trocar o roteador/load balancer de volta para o ambiente anterior",
+      "Reverter a migration do banco de dados",
+      "Desligar as instâncias novas e esperar auto-scaling recriar as antigas"
+    ],
+    correct: 1,
+    explanation: "No Blue-Green, o rollback e instantaneo: basta trocar o listener do ALB de volta para o target group anterior. O ambiente antigo (Blue) continua rodando como standby."
+  },
+  {
+    question: "Qual é a principal diferença entre Canary Deployment e A/B Testing?",
+    options: [
+      "Canary usa feature flags, A/B não usa",
+      "A/B é mais rápido que Canary",
+      "Canary mede saúde técnica do deploy, A/B mede impacto de negócio da feature",
+      "Canary e para backend, A/B e para frontend"
+    ],
+    correct: 2,
+    explanation: "Canary válida métricas técnicas (error rate, latência) para garantir que o deploy é seguro. A/B Testing válida métricas de negócio (conversão, engajamento) para determinar qual versão é melhor."
+  },
+  {
+    question: "Você precisa renomear a coluna 'email' para 'primary_email' em produção sem downtime. Quantos deploys mínimos são necessários com Expand-Contract?",
+    options: [
+      "1 deploy — renomear coluna e atualizar código juntos",
+      "2 deploys — adicionar coluna + remover antiga",
+      "3 deploys — adicionar coluna, migrar código, remover antiga",
+      "4 deploys — um para cada fase do processo"
+    ],
+    correct: 2,
+    explanation: "Expand-Contract requer 3 deploys: (1) Expand — adicionar nova coluna + backfill + trigger. (2) Migraté — código passa a usar nova coluna. (3) Contract — remover coluna antiga e trigger. Isso garante que instâncias antigas e novas funcionam em todas as fases."
+  },
+  {
+    question: "Qual tipo de Feature Flag é usado como 'circuit breaker' para desabilitar funcionalidades sob carga?",
+    options: [
+      "Release Flag",
+      "Experiment Flag",
+      "Ops Flag",
+      "Permission Flag"
+    ],
+    correct: 2,
+    explanation: "Ops Flags (Operational Flags) são usadas como kill switches e circuit breakers. São de longa duração e permitem desabilitar funcionalidades rapidamente em situações de emergência, como alta carga."
+  },
+  {
+    question: "No Shadow Deployment, o que acontece com a resposta processada pela versão nova?",
+    options: [
+      "E enviada para 50% dos usuários aleatóriamente",
+      "E descartada — apenas a resposta da versão estável e retornada ao usuário",
+      "E armazenada é enviada ao usuário se for mais rápida",
+      "E mesclada com a resposta da versão estável"
+    ],
+    correct: 1,
+    explanation: "No Shadow/Dark Deployment, a versão nova processa o request real mas sua resposta e descartada. Apenas a versão estável responde ao usuário. A resposta shadow é usada para comparação e validação interna."
+  },
+  {
+    question: "Qual estratégia de deploy tem downtime intencional?",
+    options: [
+      "Blue-Green",
+      "Canary",
+      "Rolling",
+      "Recreate"
+    ],
+    correct: 3,
+    explanation: "Recreaté para todas as instâncias da versão antiga antes de iniciar as novas, causando downtime. E aceitável em ambientes dev/staging, sistemas batch, ou durante janelas de manutenção programadas."
+  },
+  {
+    question: "Ao adicionar uma nova coluna em produção com zero-downtime, qual é a regra correta?",
+    options: [
+      "Sempre NOT NULL com valor padrão",
+      "Sempre NULLABLE (ou com DEFAULT) — nunca NOT NULL sem default em tabela existente",
+      "Sempre TEXT para evitar erros de tipo",
+      "Sempre adicionar um índice junto com a coluna"
+    ],
+    correct: 1,
+    explanation: "Adicionar coluna NOT NULL sem default em tabela existente causa lock e pode falhar com dados existentes. A coluna deve ser NULLABLE ou ter DEFAULT. Depois de backfill e confirmação, pode-se adicionar a constraint NOT NULL em deploy separado."
+  },
+  {
+    question: "O que é o principal risco de Feature Flags que nunca são removidas?",
+    options: [
+      "Aumento no consumo de memória do Redis",
+      "Acumulo de divida técnica com condicionais espalhados pelo código",
+      "Aumento no tamanho do bundle do frontend",
+      "Conflitos de merge no Git"
+    ],
+    correct: 1,
+    explanation: "Feature flags não removidas viram divida técnica: condicionais if/else espalhados pelo código, caminhos de código nunca testados, complexidade cognitiva crescente. Regra: flags de release devem ter data de expiração e serem removidas quando 100% estável por 2+ semanas."
+  },
+  {
+    question: "Em um Canary Deployment com 5% de tráfego, o error raté sobe para 3% (threshold: 1%). Qual é a ação correta?",
+    options: [
+      "Aumentar o canary para 10% para coletar mais dados",
+      "Rollback automático — setar pesó do canary para 0% imediatamente",
+      "Debugar o problema em produção antes de decidir",
+      "Esperar 30 minutos para ver se estabiliza"
+    ],
+    correct: 1,
+    explanation: "Quando o threshold e excedido, rollback automático e imediato. Primeiro protejá os usuários (canary para 0%), depois investigue. Debugar em produção com tráfego real expõe mais usuários ao bug."
+  },
+  {
+    question: "Por que Blue-Green + Feature Flags é considerada a combinação ideal de deploy?",
+    options: [
+      "Porque elimina a necessidade de testes automatizados",
+      "Porque reduz o custo de infraestrutura pela metade",
+      "Porque oferece dupla camada de segurança: rollback de código (Blue-Green) e rollback de feature (flag)",
+      "Porque permite fazer deploy sem CI/CD pipeline"
+    ],
+    correct: 2,
+    explanation: "Blue-Green da rollback instantaneo do código (troca de target group). Feature Flags dão rollback instantaneo da feature (desligar a flag). Se o deploy falhar técnicamente, Blue-Green salva. Se a feature falhar funcionalmente, o kill switch salva. Duas camadas de proteção independentes."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina deploy strategies e feature flags.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

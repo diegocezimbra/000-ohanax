@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05 — Design Patterns Comportamentais | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="04-design-patterns-estruturais.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>05</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="06-ddd-domain-driven-design.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:7.6%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 05</span>
+<h2>Design Patterns Comportamentais</h2>
+<div class="section-line"></div>
+
+<p>Os Design Patterns Comportamentais definem como objetos interágem e distribuem responsabilidades entre si. Enquanto os Criacionais cuidam da <strong>criação</strong> é os Estruturais da <strong>composicao</strong>, os Comportamentais tratam da <strong>comunicação</strong> — como algoritmos são encapsulados, como eventos fluem, como estados mudam. São 11 padrões no catálogo GoF, e dominam a maioria das arquiteturas modernas de backend e frontend.</p>
+
+<p>Na prática do dia a dia, 6 deles aparecem com frequência absurda: Strategy (pagamentos, válidacoes), Observer (eventos, React), Command (undo/redo, CQRS), Chain of Responsibility (middlewares), Staté (máquinas de estado) e Templaté Method (frameworks). Os outros 5 — Iterátor, Mediator, Memento, Visitor e Interpreter — são mais especializados, mas igualmente importantes em contextos específicos.</p>
+
+<!-- ═══ STRATEGY ═══ -->
+<h3>Strategy — Encapsular Algoritmos Intercambiaveis</h3>
+<p><strong>"Defina uma familia de algoritmos, encapsule cada um deles e torne-os intercambiáveis."</strong> O Strategy permite que o algoritmo varie independentemente dos clientes que o útilizam. E o padrão mais direto para eliminar cadeias de <code>if/else</code> é <code>switch</code> — é a implementação mais natural do Open/Closed Principle.</p>
+
+<p><strong>Quando usar:</strong> Sempre que você tem multiplas formas de fazer a mesma coisa (ordenar, validar, calcular preço, processar pagamento) é a escolha depende de contexto em runtime.</p>
+
+<h4>Exemplo Completo: Sistema de Precos com Desconto</h4>
+<pre data-lang="typescript"><code><span class="cm">// Interface da Strategy — contrato único</span>
+<span class="kw">interface</span> <span class="tp">DiscountStrategy</span> {
+  <span class="fn">calculate</span>(price: <span class="tp">number</span>): <span class="tp">number</span>;
+  <span class="kw">readonly</span> name: <span class="tp">string</span>;
+}
+
+<span class="cm">// Strategy concreta 1: Desconto percentual</span>
+<span class="kw">class</span> <span class="tp">PercentageDiscount</span> <span class="kw">implements</span> <span class="tp">DiscountStrategy</span> {
+  <span class="kw">readonly</span> name = <span class="str">'percentage'</span>;
+  <span class="kw">constructor</span>(<span class="kw">private</span> percent: <span class="tp">number</span>) {}
+
+  <span class="fn">calculate</span>(price: <span class="tp">number</span>): <span class="tp">number</span> {
+    <span class="kw">return</span> price * (<span class="num">1</span> - <span class="kw">this</span>.percent / <span class="num">100</span>);
+  }
+}
+
+<span class="cm">// Strategy concreta 2: Desconto fixo</span>
+<span class="kw">class</span> <span class="tp">FixedDiscount</span> <span class="kw">implements</span> <span class="tp">DiscountStrategy</span> {
+  <span class="kw">readonly</span> name = <span class="str">'fixed'</span>;
+  <span class="kw">constructor</span>(<span class="kw">private</span> amount: <span class="tp">number</span>) {}
+
+  <span class="fn">calculate</span>(price: <span class="tp">number</span>): <span class="tp">number</span> {
+    <span class="kw">return</span> Math.<span class="fn">max</span>(<span class="num">0</span>, price - <span class="kw">this</span>.amount);
+  }
+}
+
+<span class="cm">// Strategy concreta 3: Frete gratis (não mexe no preço)</span>
+<span class="kw">class</span> <span class="tp">FreeShippingDiscount</span> <span class="kw">implements</span> <span class="tp">DiscountStrategy</span> {
+  <span class="kw">readonly</span> name = <span class="str">'free_shipping'</span>;
+
+  <span class="fn">calculate</span>(price: <span class="tp">number</span>): <span class="tp">number</span> {
+    <span class="kw">return</span> price; <span class="cm">// Preco não muda, frete e zerado separadamente</span>
+  }
+}
+
+<span class="cm">// Context — usa a strategy sem saber qual e</span>
+<span class="kw">class</span> <span class="tp">PricingService</span> {
+  <span class="kw">private</span> strategy: <span class="tp">DiscountStrategy</span>;
+
+  <span class="fn">setStrategy</span>(strategy: <span class="tp">DiscountStrategy</span>) {
+    <span class="kw">this</span>.strategy = strategy;
+  }
+
+  <span class="fn">getFinalPrice</span>(basePrice: <span class="tp">number</span>): <span class="tp">number</span> {
+    <span class="kw">if</span> (!<span class="kw">this</span>.strategy) <span class="kw">return</span> basePrice;
+    <span class="kw">return</span> <span class="kw">this</span>.strategy.<span class="fn">calculate</span>(basePrice);
+  }
+}
+
+<span class="cm">// Usó — troca de estratégia em runtime</span>
+<span class="kw">const</span> pricing = <span class="kw">new</span> <span class="tp">PricingService</span>();
+
+pricing.<span class="fn">setStrategy</span>(<span class="kw">new</span> <span class="tp">PercentageDiscount</span>(<span class="num">20</span>));
+console.<span class="fn">log</span>(pricing.<span class="fn">getFinalPrice</span>(<span class="num">100</span>)); <span class="cm">// 80</span>
+
+pricing.<span class="fn">setStrategy</span>(<span class="kw">new</span> <span class="tp">FixedDiscount</span>(<span class="num">15</span>));
+console.<span class="fn">log</span>(pricing.<span class="fn">getFinalPrice</span>(<span class="num">100</span>)); <span class="cm">// 85</span></code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Dica pragmatica:</strong> Em TypeScript/JavaScript, você nem sempre precisa de classes para Strategy. Um simples <code>Record&lt;string, Function&gt;</code> (mapa de funções) resolve muitos casos. Classes brilham quando a strategy tem estado interno ou lógica complexa.</div>
+</div>
+
+<!-- ═══ OBSERVER ═══ -->
+<h3>Observer — Publicar e Assinar Eventos</h3>
+<p><strong>"Defina uma dependência um-para-muitos entre objetos. Quando um muda de estado, todos os dependentes são notificados automáticamente."</strong> E o padrão por tras de EventEmitter no Node.js, do sistema de eventos do DOM, do React state/context, do RxJS, e de práticamente toda arquitetura orientada a eventos.</p>
+
+<p><strong>Quando usar:</strong> Sempre que uma acao precisa disparar multiplas reacoes desacopladas. Exemplo: usuário fez checkout &rarr; enviar email, atualizar estoque, gerar nota fiscal, notificar analytics.</p>
+
+<h4>Exemplo Completo: EventBus Tipado</h4>
+<pre data-lang="typescript"><code><span class="cm">// Mapa de eventos tipado — type safety total</span>
+<span class="kw">interface</span> <span class="tp">EventMap</span> {
+  <span class="str">'order:created'</span>: { orderId: <span class="tp">string</span>; total: <span class="tp">number</span> };
+  <span class="str">'order:paid'</span>: { orderId: <span class="tp">string</span>; method: <span class="tp">string</span> };
+  <span class="str">'user:registered'</span>: { userId: <span class="tp">string</span>; email: <span class="tp">string</span> };
+}
+
+<span class="kw">type</span> <span class="tp">EventHandler</span>&lt;<span class="tp">T</span>&gt; = (payload: <span class="tp">T</span>) =&gt; <span class="tp">void</span>;
+
+<span class="kw">class</span> <span class="tp">EventBus</span> {
+  <span class="kw">private</span> listeners = <span class="kw">new</span> <span class="tp">Map</span>&lt;<span class="tp">string</span>, <span class="tp">Set</span>&lt;<span class="tp">EventHandler</span>&lt;<span class="tp">any</span>&gt;&gt;&gt;();
+
+  <span class="fn">on</span>&lt;<span class="tp">K</span> <span class="kw">extends</span> <span class="kw">keyof</span> <span class="tp">EventMap</span>&gt;(
+    event: <span class="tp">K</span>,
+    handler: <span class="tp">EventHandler</span>&lt;<span class="tp">EventMap</span>[<span class="tp">K</span>]&gt;
+  ): () =&gt; <span class="tp">void</span> {
+    <span class="kw">if</span> (!<span class="kw">this</span>.listeners.<span class="fn">has</span>(event <span class="kw">as</span> <span class="tp">string</span>)) {
+      <span class="kw">this</span>.listeners.<span class="fn">set</span>(event <span class="kw">as</span> <span class="tp">string</span>, <span class="kw">new</span> <span class="tp">Set</span>());
+    }
+    <span class="kw">const</span> handlers = <span class="kw">this</span>.listeners.<span class="fn">get</span>(event <span class="kw">as</span> <span class="tp">string</span>)!;
+    handlers.<span class="fn">add</span>(handler);
+
+    <span class="cm">// Retorna função de unsubscribe — previne memory leaks</span>
+    <span class="kw">return</span> () =&gt; handlers.<span class="fn">delete</span>(handler);
+  }
+
+  <span class="fn">emit</span>&lt;<span class="tp">K</span> <span class="kw">extends</span> <span class="kw">keyof</span> <span class="tp">EventMap</span>&gt;(
+    event: <span class="tp">K</span>,
+    payload: <span class="tp">EventMap</span>[<span class="tp">K</span>]
+  ): <span class="tp">void</span> {
+    <span class="kw">const</span> handlers = <span class="kw">this</span>.listeners.<span class="fn">get</span>(event <span class="kw">as</span> <span class="tp">string</span>);
+    <span class="kw">if</span> (handlers) {
+      handlers.<span class="fn">forEach</span>(handler =&gt; handler(payload));
+    }
+  }
+}
+
+<span class="cm">// Uso</span>
+<span class="kw">const</span> bus = <span class="kw">new</span> <span class="tp">EventBus</span>();
+
+<span class="cm">// Subscriber 1: Enviar email de confirmacao</span>
+<span class="kw">const</span> unsub = bus.<span class="fn">on</span>(<span class="str">'order:created'</span>, (data) =&gt; {
+  console.<span class="fn">log</span>(<span class="str">`Email enviado para pedido ${data.orderId}`</span>);
+});
+
+<span class="cm">// Subscriber 2: Atualizar dashboard</span>
+bus.<span class="fn">on</span>(<span class="str">'order:created'</span>, (data) =&gt; {
+  console.<span class="fn">log</span>(<span class="str">`Dashboard: novo pedido R$${data.total}`</span>);
+});
+
+<span class="cm">// Publisher</span>
+bus.<span class="fn">emit</span>(<span class="str">'order:created'</span>, { orderId: <span class="str">'ORD-001'</span>, total: <span class="num">299.90</span> });
+
+<span class="cm">// Cleanup — SEMPRE fazer unsubscribe</span>
+unsub();</code></pre>
+
+<h4>Exemplo em Python: Signal/Slot Pattern</h4>
+<pre data-lang="python"><code><span class="kw">from</span> typing <span class="kw">import</span> Callable, Dict, List, Any
+
+<span class="kw">class</span> <span class="tp">Signal</span>:
+    <span class="str">"""Observer pattern estilo Django signals / Qt signals."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self._slots: <span class="tp">List</span>[<span class="tp">Callable</span>] = []
+
+    <span class="kw">def</span> <span class="fn">connect</span>(self, slot: <span class="tp">Callable</span>) -> <span class="tp">Callable</span>:
+        <span class="str">"""Registra um handler (slot)."""</span>
+        self._slots.append(slot)
+        <span class="kw">return</span> slot
+
+    <span class="kw">def</span> <span class="fn">disconnect</span>(self, slot: <span class="tp">Callable</span>):
+        <span class="str">"""Remove um handler."""</span>
+        self._slots.remove(slot)
+
+    <span class="kw">def</span> <span class="fn">emit</span>(self, **kwargs: <span class="tp">Any</span>):
+        <span class="str">"""Dispara todos os slots conectados."""</span>
+        <span class="kw">for</span> slot <span class="kw">in</span> self._slots:
+            slot(**kwargs)
+
+<span class="cm"># Usó — sistema de pedidos</span>
+order_created = <span class="tp">Signal</span>()
+order_paid = <span class="tp">Signal</span>()
+
+<span class="cm"># Conectar handlers</span>
+<span class="ann">@order_created.connect</span>
+<span class="kw">def</span> <span class="fn">send_confirmation_email</span>(order_id: <span class="tp">str</span>, **kwargs):
+    <span class="fn">print</span>(<span class="str">f"Email enviado: pedido {order_id}"</span>)
+
+<span class="ann">@order_created.connect</span>
+<span class="kw">def</span> <span class="fn">update_analytics</span>(order_id: <span class="tp">str</span>, total: <span class="tp">float</span>, **kwargs):
+    <span class="fn">print</span>(<span class="str">f"Analytics: {order_id} = R${total}"</span>)
+
+<span class="cm"># Emitir evento</span>
+order_created.<span class="fn">emit</span>(order_id=<span class="str">"ORD-001"</span>, total=<span class="num">299.90</span>)</code></pre>
+
+<!-- ═══ COMMAND ═══ -->
+<h3>Command — Encapsular Requisicoes como Objetos</h3>
+<p><strong>"Encapsule uma requisição como um objeto, permitindo parametrizar clientes com diferentes requisições, enfileirar ou registrar requisições, e suportar operações reversas (undo)."</strong> O Command transforma uma acao em um objeto de primeira classe — com toda a informação necessária para executa-la (e potencialmente desfaze-la).</p>
+
+<p><strong>Onde aparece no mundo real:</strong></p>
+<ul>
+<li><strong>Undo/Redo</strong> em editores de texto, Figma, Photoshop</li>
+<li><strong>CQRS</strong> (Command Query Responsibility Segregation) — separa leitura de escrita</li>
+<li><strong>Task Queues</strong> — BullMQ, Celery, SQS encapsulam trabalho como Commands</li>
+<li><strong>Transacoes</strong> — cada operação do banco pode ser um Command com rollback</li>
+</ul>
+
+<h4>Exemplo Completo: Editor com Undo/Redo</h4>
+<pre data-lang="typescript"><code><span class="cm">// Interface base — todo Command sabe executar e desfazer</span>
+<span class="kw">interface</span> <span class="tp">Command</span> {
+  <span class="fn">execute</span>(): <span class="tp">void</span>;
+  <span class="fn">undo</span>(): <span class="tp">void</span>;
+  <span class="kw">readonly</span> description: <span class="tp">string</span>;
+}
+
+<span class="cm">// Model simples</span>
+<span class="kw">class</span> <span class="tp">TextDocument</span> {
+  content = <span class="str">''</span>;
+
+  <span class="fn">insertAt</span>(position: <span class="tp">number</span>, text: <span class="tp">string</span>) {
+    <span class="kw">this</span>.content =
+      <span class="kw">this</span>.content.<span class="fn">slice</span>(<span class="num">0</span>, position) +
+      text +
+      <span class="kw">this</span>.content.<span class="fn">slice</span>(position);
+  }
+
+  <span class="fn">deleteRange</span>(start: <span class="tp">number</span>, length: <span class="tp">number</span>) {
+    <span class="kw">this</span>.content =
+      <span class="kw">this</span>.content.<span class="fn">slice</span>(<span class="num">0</span>, start) +
+      <span class="kw">this</span>.content.<span class="fn">slice</span>(start + length);
+  }
+}
+
+<span class="cm">// Command concreto: Inserir texto</span>
+<span class="kw">class</span> <span class="tp">InsertTextCommand</span> <span class="kw">implements</span> <span class="tp">Command</span> {
+  <span class="kw">readonly</span> description: <span class="tp">string</span>;
+
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> doc: <span class="tp">TextDocument</span>,
+    <span class="kw">private</span> position: <span class="tp">number</span>,
+    <span class="kw">private</span> text: <span class="tp">string</span>,
+  ) {
+    <span class="kw">this</span>.description = <span class="str">`Inserir "${text}" na posicao ${position}`</span>;
+  }
+
+  <span class="fn">execute</span>() { <span class="kw">this</span>.doc.<span class="fn">insertAt</span>(<span class="kw">this</span>.position, <span class="kw">this</span>.text); }
+  <span class="fn">undo</span>() { <span class="kw">this</span>.doc.<span class="fn">deleteRange</span>(<span class="kw">this</span>.position, <span class="kw">this</span>.text.length); }
+}
+
+<span class="cm">// Command concreto: Deletar texto</span>
+<span class="kw">class</span> <span class="tp">DeleteTextCommand</span> <span class="kw">implements</span> <span class="tp">Command</span> {
+  <span class="kw">readonly</span> description: <span class="tp">string</span>;
+  <span class="kw">private</span> deletedText = <span class="str">''</span>;
+
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> doc: <span class="tp">TextDocument</span>,
+    <span class="kw">private</span> start: <span class="tp">number</span>,
+    <span class="kw">private</span> length: <span class="tp">number</span>,
+  ) {
+    <span class="kw">this</span>.description = <span class="str">`Deletar ${length} chars na posicao ${start}`</span>;
+  }
+
+  <span class="fn">execute</span>() {
+    <span class="kw">this</span>.deletedText = <span class="kw">this</span>.doc.content.<span class="fn">slice</span>(<span class="kw">this</span>.start, <span class="kw">this</span>.start + <span class="kw">this</span>.length);
+    <span class="kw">this</span>.doc.<span class="fn">deleteRange</span>(<span class="kw">this</span>.start, <span class="kw">this</span>.length);
+  }
+
+  <span class="fn">undo</span>() { <span class="kw">this</span>.doc.<span class="fn">insertAt</span>(<span class="kw">this</span>.start, <span class="kw">this</span>.deletedText); }
+}
+
+<span class="cm">// Invoker — gerencia historico de comandos</span>
+<span class="kw">class</span> <span class="tp">CommandHistory</span> {
+  <span class="kw">private</span> undoStack: <span class="tp">Command</span>[] = [];
+  <span class="kw">private</span> redoStack: <span class="tp">Command</span>[] = [];
+
+  <span class="fn">execute</span>(cmd: <span class="tp">Command</span>) {
+    cmd.<span class="fn">execute</span>();
+    <span class="kw">this</span>.undoStack.<span class="fn">push</span>(cmd);
+    <span class="kw">this</span>.redoStack = []; <span class="cm">// Limpa redo ao executar novo</span>
+  }
+
+  <span class="fn">undo</span>() {
+    <span class="kw">const</span> cmd = <span class="kw">this</span>.undoStack.<span class="fn">pop</span>();
+    <span class="kw">if</span> (cmd) { cmd.<span class="fn">undo</span>(); <span class="kw">this</span>.redoStack.<span class="fn">push</span>(cmd); }
+  }
+
+  <span class="fn">redo</span>() {
+    <span class="kw">const</span> cmd = <span class="kw">this</span>.redoStack.<span class="fn">pop</span>();
+    <span class="kw">if</span> (cmd) { cmd.<span class="fn">execute</span>(); <span class="kw">this</span>.undoStack.<span class="fn">push</span>(cmd); }
+  }
+}
+
+<span class="cm">// Uso</span>
+<span class="kw">const</span> doc = <span class="kw">new</span> <span class="tp">TextDocument</span>();
+<span class="kw">const</span> history = <span class="kw">new</span> <span class="tp">CommandHistory</span>();
+
+history.<span class="fn">execute</span>(<span class="kw">new</span> <span class="tp">InsertTextCommand</span>(doc, <span class="num">0</span>, <span class="str">'Hello '</span>));
+history.<span class="fn">execute</span>(<span class="kw">new</span> <span class="tp">InsertTextCommand</span>(doc, <span class="num">6</span>, <span class="str">'World'</span>));
+console.<span class="fn">log</span>(doc.content); <span class="cm">// "Hello World"</span>
+
+history.<span class="fn">undo</span>();
+console.<span class="fn">log</span>(doc.content); <span class="cm">// "Hello "</span>
+
+history.<span class="fn">redo</span>();
+console.<span class="fn">log</span>(doc.content); <span class="cm">// "Hello World"</span></code></pre>
+
+<!-- ═══ CHAIN OF RESPONSIBILITY ═══ -->
+<h3>Chain of Responsibility — Pipeline de Handlers</h3>
+<p><strong>"Evite acoplar o remetente de uma requisição ao seu receptor, dando a mais de um objeto a oportunidade de tratar a requisição. Encadeie os objetos receptores e passe a requisição ao longo da cadeia até que um deles a trate."</strong></p>
+
+<p>Este é o padrão por tras de toda arquitetura de <strong>middleware</strong>: Express.js, NestJS Guards/Pipes/Interceptors, Django middleware, ASP.NET pipeline. Cada handler decide se processa a requisição, passa para o próximo, ou rejeita.</p>
+
+<h4>Exemplo Completo: Middleware Pipeline</h4>
+<pre data-lang="typescript"><code><span class="cm">// Interface do Handler</span>
+<span class="kw">interface</span> <span class="tp">Middleware</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="fn">handle</span>(request: <span class="tp">T</span>, next: () =&gt; <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;;
+}
+
+<span class="cm">// Context da requisição</span>
+<span class="kw">interface</span> <span class="tp">HttpContext</span> {
+  path: <span class="tp">string</span>;
+  headers: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt;;
+  body: <span class="tp">any</span>;
+  user?: { id: <span class="tp">string</span>; role: <span class="tp">string</span> };
+  statusCode?: <span class="tp">number</span>;
+  responseBody?: <span class="tp">any</span>;
+}
+
+<span class="cm">// Handler 1: Logging</span>
+<span class="kw">class</span> <span class="tp">LoggingMiddleware</span> <span class="kw">implements</span> <span class="tp">Middleware</span>&lt;<span class="tp">HttpContext</span>&gt; {
+  <span class="kw">async</span> <span class="fn">handle</span>(ctx: <span class="tp">HttpContext</span>, next: () =&gt; <span class="tp">Promise</span>&lt;<span class="tp">HttpContext</span>&gt;) {
+    <span class="kw">const</span> start = Date.<span class="fn">now</span>();
+    console.<span class="fn">log</span>(<span class="str">`[REQ] ${ctx.path}`</span>);
+    <span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">next</span>();
+    console.<span class="fn">log</span>(<span class="str">`[RES] ${ctx.path} - ${Date.<span class="fn">now</span>() - start}ms`</span>);
+    <span class="kw">return</span> result;
+  }
+}
+
+<span class="cm">// Handler 2: Autenticação</span>
+<span class="kw">class</span> <span class="tp">AuthMiddleware</span> <span class="kw">implements</span> <span class="tp">Middleware</span>&lt;<span class="tp">HttpContext</span>&gt; {
+  <span class="kw">async</span> <span class="fn">handle</span>(ctx: <span class="tp">HttpContext</span>, next: () =&gt; <span class="tp">Promise</span>&lt;<span class="tp">HttpContext</span>&gt;) {
+    <span class="kw">const</span> token = ctx.headers[<span class="str">'authorization'</span>];
+    <span class="kw">if</span> (!token) {
+      ctx.statusCode = <span class="num">401</span>;
+      ctx.responseBody = { error: <span class="str">'Token ausente'</span> };
+      <span class="kw">return</span> ctx; <span class="cm">// Para a cadeia — não chama next()</span>
+    }
+    ctx.user = { id: <span class="str">'usr_1'</span>, role: <span class="str">'admin'</span> }; <span class="cm">// Decodifica JWT</span>
+    <span class="kw">return</span> <span class="fn">next</span>(); <span class="cm">// Passa para o próximo handler</span>
+  }
+}
+
+<span class="cm">// Handler 3: Raté Limiting</span>
+<span class="kw">class</span> <span class="tp">RateLimitMiddleware</span> <span class="kw">implements</span> <span class="tp">Middleware</span>&lt;<span class="tp">HttpContext</span>&gt; {
+  <span class="kw">private</span> requests = <span class="kw">new</span> <span class="tp">Map</span>&lt;<span class="tp">string</span>, <span class="tp">number</span>&gt;();
+
+  <span class="kw">async</span> <span class="fn">handle</span>(ctx: <span class="tp">HttpContext</span>, next: () =&gt; <span class="tp">Promise</span>&lt;<span class="tp">HttpContext</span>&gt;) {
+    <span class="kw">const</span> ip = ctx.headers[<span class="str">'x-forwarded-for'</span>] || <span class="str">'unknown'</span>;
+    <span class="kw">const</span> count = (<span class="kw">this</span>.requests.<span class="fn">get</span>(ip) || <span class="num">0</span>) + <span class="num">1</span>;
+    <span class="kw">this</span>.requests.<span class="fn">set</span>(ip, count);
+
+    <span class="kw">if</span> (count &gt; <span class="num">100</span>) {
+      ctx.statusCode = <span class="num">429</span>;
+      ctx.responseBody = { error: <span class="str">'Raté limit excedido'</span> };
+      <span class="kw">return</span> ctx;
+    }
+    <span class="kw">return</span> <span class="fn">next</span>();
+  }
+}
+
+<span class="cm">// Pipeline — encadeia os middlewares</span>
+<span class="kw">class</span> <span class="tp">Pipeline</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="kw">private</span> middlewares: <span class="tp">Middleware</span>&lt;<span class="tp">T</span>&gt;[] = [];
+
+  <span class="fn">use</span>(middleware: <span class="tp">Middleware</span>&lt;<span class="tp">T</span>&gt;): <span class="tp">this</span> {
+    <span class="kw">this</span>.middlewares.<span class="fn">push</span>(middleware);
+    <span class="kw">return this</span>;
+  }
+
+  <span class="kw">async</span> <span class="fn">execute</span>(request: <span class="tp">T</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt; {
+    <span class="kw">let</span> index = <span class="num">0</span>;
+    <span class="kw">const</span> <span class="fn">next</span> = <span class="kw">async</span> (): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt; =&gt; {
+      <span class="kw">if</span> (index &gt;= <span class="kw">this</span>.middlewares.length) <span class="kw">return</span> request;
+      <span class="kw">const</span> middleware = <span class="kw">this</span>.middlewares[index++];
+      <span class="kw">return</span> middleware.<span class="fn">handle</span>(request, next);
+    };
+    <span class="kw">return</span> <span class="fn">next</span>();
+  }
+}
+
+<span class="cm">// Usó — composicao de pipeline</span>
+<span class="kw">const</span> pipeline = <span class="kw">new</span> <span class="tp">Pipeline</span>&lt;<span class="tp">HttpContext</span>&gt;()
+  .<span class="fn">use</span>(<span class="kw">new</span> <span class="tp">LoggingMiddleware</span>())
+  .<span class="fn">use</span>(<span class="kw">new</span> <span class="tp">RateLimitMiddleware</span>())
+  .<span class="fn">use</span>(<span class="kw">new</span> <span class="tp">AuthMiddleware</span>());</code></pre>
+
+<!-- ═══ STATE ═══ -->
+<h3>Staté — Comportamento Baseado em Estado Interno</h3>
+<p><strong>"Permita que um objeto altere seu comportamento quando seu estado interno muda. O objeto parecera ter mudado de classe."</strong> O Staté transforma condicionais complexas (<code>if status === 'pending' ... else if status === 'paid'</code>) em objetos de estado com transicoes explicitas. E a base de toda <strong>máquina de estados finita</strong> (FSM).</p>
+
+<h4>Exemplo Completo: Ciclo de Vida de um Pedido</h4>
+<pre data-lang="typescript"><code><span class="cm">// Interface do Estado</span>
+<span class="kw">interface</span> <span class="tp">OrderState</span> {
+  <span class="kw">readonly</span> name: <span class="tp">string</span>;
+  <span class="fn">pay</span>(order: <span class="tp">Order</span>): <span class="tp">void</span>;
+  <span class="fn">ship</span>(order: <span class="tp">Order</span>): <span class="tp">void</span>;
+  <span class="fn">deliver</span>(order: <span class="tp">Order</span>): <span class="tp">void</span>;
+  <span class="fn">cancel</span>(order: <span class="tp">Order</span>): <span class="tp">void</span>;
+}
+
+<span class="cm">// Estado: Pendente</span>
+<span class="kw">class</span> <span class="tp">PendingState</span> <span class="kw">implements</span> <span class="tp">OrderState</span> {
+  <span class="kw">readonly</span> name = <span class="str">'pending'</span>;
+
+  <span class="fn">pay</span>(order: <span class="tp">Order</span>) {
+    console.<span class="fn">log</span>(<span class="str">'Pagamento processado.'</span>);
+    order.<span class="fn">setState</span>(<span class="kw">new</span> <span class="tp">PaidState</span>());
+  }
+
+  <span class="fn">ship</span>(order: <span class="tp">Order</span>) {
+    <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Não pode enviar pedido não pago.'</span>);
+  }
+
+  <span class="fn">deliver</span>(order: <span class="tp">Order</span>) {
+    <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Não pode entregar pedido não enviado.'</span>);
+  }
+
+  <span class="fn">cancel</span>(order: <span class="tp">Order</span>) {
+    console.<span class="fn">log</span>(<span class="str">'Pedido cancelado.'</span>);
+    order.<span class="fn">setState</span>(<span class="kw">new</span> <span class="tp">CancelledState</span>());
+  }
+}
+
+<span class="cm">// Estado: Pago</span>
+<span class="kw">class</span> <span class="tp">PaidState</span> <span class="kw">implements</span> <span class="tp">OrderState</span> {
+  <span class="kw">readonly</span> name = <span class="str">'paid'</span>;
+
+  <span class="fn">pay</span>(order: <span class="tp">Order</span>) {
+    <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pedido já foi pago.'</span>);
+  }
+
+  <span class="fn">ship</span>(order: <span class="tp">Order</span>) {
+    console.<span class="fn">log</span>(<span class="str">'Pedido enviado para transportadora.'</span>);
+    order.<span class="fn">setState</span>(<span class="kw">new</span> <span class="tp">ShippedState</span>());
+  }
+
+  <span class="fn">deliver</span>(order: <span class="tp">Order</span>) {
+    <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Não pode entregar sem enviar.'</span>);
+  }
+
+  <span class="fn">cancel</span>(order: <span class="tp">Order</span>) {
+    console.<span class="fn">log</span>(<span class="str">'Estornando pagamento e cancelando.'</span>);
+    order.<span class="fn">setState</span>(<span class="kw">new</span> <span class="tp">CancelledState</span>());
+  }
+}
+
+<span class="cm">// Estado: Enviado</span>
+<span class="kw">class</span> <span class="tp">ShippedState</span> <span class="kw">implements</span> <span class="tp">OrderState</span> {
+  <span class="kw">readonly</span> name = <span class="str">'shipped'</span>;
+  <span class="fn">pay</span>() { <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Ja pago.'</span>); }
+  <span class="fn">ship</span>() { <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Ja enviado.'</span>); }
+  <span class="fn">deliver</span>(order: <span class="tp">Order</span>) {
+    console.<span class="fn">log</span>(<span class="str">'Pedido entregue ao cliente.'</span>);
+    order.<span class="fn">setState</span>(<span class="kw">new</span> <span class="tp">DeliveredState</span>());
+  }
+  <span class="fn">cancel</span>() { <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Não pode cancelar pedido em transito.'</span>); }
+}
+
+<span class="cm">// Estado: Entregue (estado final)</span>
+<span class="kw">class</span> <span class="tp">DeliveredState</span> <span class="kw">implements</span> <span class="tp">OrderState</span> {
+  <span class="kw">readonly</span> name = <span class="str">'delivered'</span>;
+  <span class="fn">pay</span>() { <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pedido já finalizado.'</span>); }
+  <span class="fn">ship</span>() { <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pedido já finalizado.'</span>); }
+  <span class="fn">deliver</span>() { <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pedido já entregue.'</span>); }
+  <span class="fn">cancel</span>() { <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Não pode cancelar pedido entregue.'</span>); }
+}
+
+<span class="cm">// Estado: Cancelado (estado final)</span>
+<span class="kw">class</span> <span class="tp">CancelledState</span> <span class="kw">implements</span> <span class="tp">OrderState</span> {
+  <span class="kw">readonly</span> name = <span class="str">'cancelled'</span>;
+  <span class="fn">pay</span>() { <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pedido cancelado.'</span>); }
+  <span class="fn">ship</span>() { <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pedido cancelado.'</span>); }
+  <span class="fn">deliver</span>() { <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pedido cancelado.'</span>); }
+  <span class="fn">cancel</span>() { <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Ja esta cancelado.'</span>); }
+}
+
+<span class="cm">// Context — delega tudo ao estado atual</span>
+<span class="kw">class</span> <span class="tp">Order</span> {
+  <span class="kw">private</span> state: <span class="tp">OrderState</span> = <span class="kw">new</span> <span class="tp">PendingState</span>();
+
+  <span class="fn">setState</span>(state: <span class="tp">OrderState</span>) { <span class="kw">this</span>.state = state; }
+  <span class="fn">getStatus</span>(): <span class="tp">string</span> { <span class="kw">return</span> <span class="kw">this</span>.state.name; }
+  <span class="fn">pay</span>() { <span class="kw">this</span>.state.<span class="fn">pay</span>(<span class="kw">this</span>); }
+  <span class="fn">ship</span>() { <span class="kw">this</span>.state.<span class="fn">ship</span>(<span class="kw">this</span>); }
+  <span class="fn">deliver</span>() { <span class="kw">this</span>.state.<span class="fn">deliver</span>(<span class="kw">this</span>); }
+  <span class="fn">cancel</span>() { <span class="kw">this</span>.state.<span class="fn">cancel</span>(<span class="kw">this</span>); }
+}
+
+<span class="cm">// Usó — fluxo natural do pedido</span>
+<span class="kw">const</span> order = <span class="kw">new</span> <span class="tp">Order</span>();
+order.<span class="fn">pay</span>();     <span class="cm">// pending -> paid</span>
+order.<span class="fn">ship</span>();    <span class="cm">// paid -> shipped</span>
+order.<span class="fn">deliver</span>(); <span class="cm">// shipped -> delivered</span>
+<span class="cm">// order.cancel(); // Error: Não pode cancelar pedido entregue</span></code></pre>
+
+<!-- ═══ TEMPLATE METHOD ═══ -->
+<h3>Templaté Method — Esqueleto de Algoritmo</h3>
+<p><strong>"Defina o esqueleto de um algoritmo em uma operação, postergando alguns passos para as subclasses."</strong> A classe base define a sequência (o "template"), e as subclasses implementam os passos variáveis. E o padrão mais usado em frameworks — React <code>componentDidMount</code>, NestJS lifecycle hooks, Django <code>get_queryset</code>.</p>
+
+<h4>Exemplo Completo: Exportacao de Dados</h4>
+<pre data-lang="typescript"><code><span class="cm">// Classe abstrata — define o esqueleto</span>
+<span class="kw">abstract class</span> <span class="tp">DataExporter</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="cm">// Templaté Method — sequência fixa, passos variáveis</span>
+  <span class="kw">async</span> <span class="fn">export</span>(filters: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">any</span>&gt;): <span class="tp">Promise</span>&lt;<span class="tp">Buffer</span>&gt; {
+    <span class="cm">// Passó 1: Buscar dados (fixo)</span>
+    <span class="kw">const</span> data = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">fetchData</span>(filters);
+
+    <span class="cm">// Passó 2: Validar (fixo)</span>
+    <span class="kw">if</span> (data.length === <span class="num">0</span>) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Nenhum dado para exportar.'</span>);
+    }
+
+    <span class="cm">// Passó 3: Transformar dados (variável — cada formato implementa)</span>
+    <span class="kw">const</span> transformed = <span class="kw">this</span>.<span class="fn">transform</span>(data);
+
+    <span class="cm">// Passó 4: Gerar arquivo (variável)</span>
+    <span class="kw">const</span> buffer = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">generateFile</span>(transformed);
+
+    <span class="cm">// Passó 5: Hook opcional — pos-processamento</span>
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">onExportComplete</span>(buffer);
+
+    <span class="kw">return</span> buffer;
+  }
+
+  <span class="cm">// Passó fixo — igual para todos</span>
+  <span class="kw">protected async</span> <span class="fn">fetchData</span>(filters: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">any</span>&gt;): <span class="tp">Promise</span>&lt;<span class="tp">T</span>[]&gt; {
+    <span class="cm">// Busca no banco com filtros</span>
+    <span class="kw">return</span> []; <span class="cm">// placeholder</span>
+  }
+
+  <span class="cm">// Passos variáveis — subclasses implementam</span>
+  <span class="kw">protected abstract</span> <span class="fn">transform</span>(data: <span class="tp">T</span>[]): <span class="tp">any</span>;
+  <span class="kw">protected abstract</span> <span class="fn">generateFile</span>(data: <span class="tp">any</span>): <span class="tp">Promise</span>&lt;<span class="tp">Buffer</span>&gt;;
+
+  <span class="cm">// Hook opcional — subclasses podem sobrescrever</span>
+  <span class="kw">protected async</span> <span class="fn">onExportComplete</span>(buffer: <span class="tp">Buffer</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="cm">// Default: não faz nada. Subclasses podem logar, enviar email, etc.</span>
+  }
+}
+
+<span class="cm">// Implementação: Exportar CSV</span>
+<span class="kw">class</span> <span class="tp">CsvExporter</span> <span class="kw">extends</span> <span class="tp">DataExporter</span>&lt;<span class="tp">any</span>&gt; {
+  <span class="kw">protected</span> <span class="fn">transform</span>(data: <span class="tp">any</span>[]): <span class="tp">string</span> {
+    <span class="kw">const</span> headers = Object.<span class="fn">keys</span>(data[<span class="num">0</span>]).<span class="fn">join</span>(<span class="str">','</span>);
+    <span class="kw">const</span> rows = data.<span class="fn">map</span>(row =&gt;
+      Object.<span class="fn">values</span>(row).<span class="fn">join</span>(<span class="str">','</span>)
+    );
+    <span class="kw">return</span> [headers, ...rows].<span class="fn">join</span>(<span class="str">'\n'</span>);
+  }
+
+  <span class="kw">protected async</span> <span class="fn">generateFile</span>(csv: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Buffer</span>&gt; {
+    <span class="kw">return</span> Buffer.<span class="fn">from</span>(csv, <span class="str">'utf-8'</span>);
+  }
+}
+
+<span class="cm">// Implementação: Exportar PDF</span>
+<span class="kw">class</span> <span class="tp">PdfExporter</span> <span class="kw">extends</span> <span class="tp">DataExporter</span>&lt;<span class="tp">any</span>&gt; {
+  <span class="kw">protected</span> <span class="fn">transform</span>(data: <span class="tp">any</span>[]): <span class="tp">any</span> {
+    <span class="kw">return</span> { title: <span class="str">'Relatorio'</span>, rows: data, generatedAt: <span class="kw">new</span> <span class="tp">Date</span>() };
+  }
+
+  <span class="kw">protected async</span> <span class="fn">generateFile</span>(pdfData: <span class="tp">any</span>): <span class="tp">Promise</span>&lt;<span class="tp">Buffer</span>&gt; {
+    <span class="cm">// Usa puppeteer/pdfkit para gerar PDF</span>
+    <span class="kw">return</span> Buffer.<span class="fn">from</span>(<span class="str">'%PDF-...'</span>);
+  }
+
+  <span class="kw">protected async</span> <span class="fn">onExportComplete</span>(buffer: <span class="tp">Buffer</span>) {
+    console.<span class="fn">log</span>(<span class="str">`PDF gerado: ${buffer.length} bytes`</span>);
+  }
+}</code></pre>
+
+<!-- ═══ OUTROS PADROES ═══ -->
+<h3>Outros Padroes Comportamentais (GoF)</h3>
+
+<div class="card">
+<div class="card-title">Os 5 Padroes Menós Frequentes (mas Importantes)</div>
+<ul>
+<li><strong>Iterátor</strong> — Fornece acesso sequêncial a elementos de uma coleção sem expor sua representacao interna. Em JS/TS, já temos <code>Symbol.iterátor</code>, <code>for...of</code> é generators (<code>function*</code>) nativamente. Você implementa quando cria coleções customizadas (árvores, grafos, páginação lazy).</li>
+<li><strong>Mediator</strong> — Define um objeto que encapsula como um conjunto de objetos interáge. Reduz acoplamento direto entre componentes. Exemplo clássico: chat room onde usuários não se comúnicam diretamente, mas via sala. No NestJS: <code>@nestjs/cqrs</code> usa um mediator (CommandBus/QueryBus).</li>
+<li><strong>Memento</strong> — Captura e externaliza o estado interno de um objeto sem violar encapsulamento, para restaura-lo depois. E o padrão por tras de snapshots de estado, time-travel debugging (Redux DevTools), e save/load de jogos.</li>
+<li><strong>Visitor</strong> — Permite definir novas operações sobre elementos de uma estrutura sem alterár as classes desses elementos. Usado em compiladores (AST traversal), linters (ESLint rules visitam nós da AST), e ORMs (visitor para gerar SQL de diferentes dialetos).</li>
+<li><strong>Interpreter</strong> — Define uma gramatica é um interpretador para a linguagem. E o padrão por tras de parsers de expressões, templaté engines, e DSLs (Domain-Specific Languages). Pouco usado diretamente, mas presente em regex engines e query builders.</li>
+</ul>
+</div>
+
+<!-- ═══ TABELA COMPARATIVA ═══ -->
+<h3>Comparacao: Quando Usar Qual</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Padrão</th>
+<th>Problema que Resolve</th>
+<th>Exemplo Real</th>
+<th>Sinal de Que Você Precisa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Strategy</strong></td>
+<td>Multiplos algoritmos intercambiáveis</td>
+<td>Formas de pagamento, ordenacao</td>
+<td>switch/if-else crescente por "tipo"</td>
+</tr>
+<tr>
+<td><strong>Observer</strong></td>
+<td>Notificar N objetos sobre mudanças</td>
+<td>Eventos, React state, webhooks</td>
+<td>Dependencia bidirecional entre módulos</td>
+</tr>
+<tr>
+<td><strong>Command</strong></td>
+<td>Encapsular acao como objeto</td>
+<td>Undo/redo, filas, CQRS</td>
+<td>Precisar desfazer, enfileirar ou logar acoes</td>
+</tr>
+<tr>
+<td><strong>Chain of Resp.</strong></td>
+<td>Pipeline de processamento sequêncial</td>
+<td>Middlewares, validação em cascata</td>
+<td>Multiplos handlers opcionais em sequência</td>
+</tr>
+<tr>
+<td><strong>State</strong></td>
+<td>Comportamento muda conforme estado</td>
+<td>Maquina de estados de pedido</td>
+<td>if/else baseado em "status" espalhado</td>
+</tr>
+<tr>
+<td><strong>Templaté Method</strong></td>
+<td>Algoritmo fixo com passos variáveis</td>
+<td>Exportacao em formatos diferentes</td>
+<td>Código duplicado com variacoes pontuais</td>
+</tr>
+<tr>
+<td><strong>Iterátor</strong></td>
+<td>Travessia uniforme de coleções</td>
+<td>Paginacao, travessia de árvore</td>
+<td>Estrutura interna complexa a percorrer</td>
+</tr>
+<tr>
+<td><strong>Mediator</strong></td>
+<td>Reduzir acoplamento entre pares</td>
+<td>Chat room, CQRS bus</td>
+<td>N objetos se comúnicam com N (mesh)</td>
+</tr>
+<tr>
+<td><strong>Memento</strong></td>
+<td>Salvar/restaurar estado</td>
+<td>Ctrl+Z, snapshots, save game</td>
+<td>Precisar voltar a um estado anterior</td>
+</tr>
+<tr>
+<td><strong>Visitor</strong></td>
+<td>Novas operações sem alterár classes</td>
+<td>Compiladores, linters (AST)</td>
+<td>Estrutura estavel + operações que crescem</td>
+</tr>
+<tr>
+<td><strong>Interpreter</strong></td>
+<td>Avaliar expressões de uma linguagem</td>
+<td>Regex, templaté engines, DSLs</td>
+<td>Precisar parsear e executar expressões</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Pipeline de Processamento de Pedidos</h3>
+<p><strong>Cenário:</strong> Projete um sistema de processamento de pedidos e-commerce que combina Chain of Responsibility (pipeline de validação), Staté (ciclo de vida do pedido) e Observer (notificações desacopladas).</p>
+
+<div class="diagram">
+<div class="diagram-box green">Order Created</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Validate<br><small>(Chain)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Process Payment<br><small>(State: pending &rarr; paid)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Reserve Stock<br><small>(Chain)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Notify User<br><small>(Observer)</small></div>
+</div>
+
+<p><strong>Padroes aplicados:</strong></p>
+<ul>
+<li><strong>Chain of Responsibility</strong> — Pipeline de validação: verificar estoque &rarr; validar endereço &rarr; aplicar cupom &rarr; calcular frete. Cada handler pode rejeitar o pedido ou passa-lo adiante.</li>
+<li><strong>State</strong> — O pedido transiciona por estados bem definidos (pending &rarr; paid &rarr; shipped &rarr; delivered). Cada estado define quais operações são permitidas e quais transicoes são válidas.</li>
+<li><strong>Observer</strong> — Eventos desacoplados: <code>order:paid</code> dispara envio de email, atualização de dashboard, notificação push, e analytics — sem que o serviço de pagamento conheça qualquer um deles.</li>
+<li><strong>Strategy</strong> — Usado internamente pelo processador de pagamento para selecionar Pix, Cartao ou Boleto em runtime.</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Composicao dos padrões</span>
+<span class="kw">class</span> <span class="tp">OrderProcessor</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> válidationPipeline: <span class="tp">Pipeline</span>&lt;<span class="tp">OrderContext</span>&gt;,  <span class="cm">// Chain of Resp.</span>
+    <span class="kw">private</span> paymentService: <span class="tp">PaymentService</span>,            <span class="cm">// Strategy</span>
+    <span class="kw">private</span> eventBus: <span class="tp">EventBus</span>,                         <span class="cm">// Observer</span>
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">processOrder</span>(dto: <span class="tp">CreateOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>&gt; {
+    <span class="cm">// 1. Chain — válida em cascata</span>
+    <span class="kw">const</span> ctx = <span class="kw">await</span> <span class="kw">this</span>.válidationPipeline.<span class="fn">execute</span>({ dto });
+
+    <span class="cm">// 2. Staté — cria pedido no estado "pending"</span>
+    <span class="kw">const</span> order = <span class="kw">new</span> <span class="tp">Order</span>(ctx.dto);
+
+    <span class="cm">// 3. Strategy — processa pagamento com método escolhido</span>
+    <span class="kw">await</span> <span class="kw">this</span>.paymentService.<span class="fn">pay</span>(dto.paymentMethod, order.total, dto.meta);
+    order.<span class="fn">pay</span>(); <span class="cm">// State: pending -> paid</span>
+
+    <span class="cm">// 4. Observer — notifica todos os interessados</span>
+    <span class="kw">this</span>.eventBus.<span class="fn">emit</span>(<span class="str">'order:paid'</span>, {
+      orderId: order.id,
+      method: dto.paymentMethod,
+    });
+
+    <span class="kw">return</span> order;
+  }
+}</code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Observer: Memory Leaks</strong> — O erro mais comum. Você faz <code>eventBus.on('event', handler)</code> mas esquece de fazer <code>off()</code> quando o subscriber e destruido. Em React, sempre faca unsubscribe no <code>useEffect</code> cleanup. Em Node.js, cuidado com listeners que crescem a cada request — use <code>emitter.setMaxListeners()</code> como alerta.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Staté sem regras de transição explicitas:</strong> Implementar Staté Pattern mas permitir transicoes inválidas (ex: de "entregue" para "pendente"). Toda máquina de estados precisa de um diagrama de transicoes claro. Se a transição não esta no diagrama, o método deve lancar erro — nunca silenciosamente ignorar.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Strategy com muitas estratégias:</strong> Se você tem 20+ strategies, talvez não precise de classes. Um <code>Map&lt;string, (data: T) =&gt; R&gt;</code> (dicionário de funções) é mais pragmatico. Classes de Strategy brilham quando cada estratégia tem estado interno, dependências injetadas, ou lógica complexa. Para lambdas simples, use lambdas.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Chain of Responsibility infinita:</strong> Chains muito longas (10+ handlers) se tornam dificeis de debugar. Se a request falha no handler 7, rastrear o que aconteceu nós handlers 1-6 e doloroso. Solução: adicione logging em cada handler e defina um limite máximo de profundidade.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática de combinação:</strong> Os padrões comportamentais combinam naturalmente. Staté + Observer = máquina de estados reativa. Chain + Strategy = pipeline com handlers intercambiáveis. Command + Memento = undo com snapshots. Não pense neles isoladamente — pense em composicao.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem um sistema de notificações com 5 canais (email, SMS, push, Slack, WhatsApp). Cada canal tem lógica de envio diferente e novos canais seráo adicionados. Qual padrão usar e por que?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>Strategy Pattern</strong>. Crie uma interface <code>NotificationChannel</code> com método <code>send(notification)</code>. Implemente <code>EmailChannel</code>, <code>SmsChannel</code>, etc. O <code>NotificationService</code> recebe um array de channels e iterá sobre eles. Para adicionar WhatsApp: crie <code>WhatsAppChannel</code> — zero mudanças no serviço. Se cada notificação precisa disparar TODOS os canais ativos simultaneamente, combine com <strong>Observer</strong> (cada canal se inscreve no evento <code>notification:send</code>).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu editor de texto precisa de Ctrl+Z (undo) e Ctrl+Y (redo) para operações de insercao, delecao e formatacao. Qual padrão usar é como estruturar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>Command Pattern</strong>. Cada operação (InsertCommand, DeleteCommand, FormatCommand) implementa a interface <code>Command</code> com <code>execute()</code> é <code>undo()</code>. Um <code>CommandHistory</code> gerencia duas pilhas: <code>undoStack</code> é <code>redoStack</code>. Ao executar: push no undoStack e limpa redoStack. Ao desfazer: pop do undoStack, chama <code>undo()</code>, push no redoStack. Ao refazer: pop do redoStack, chama <code>execute()</code>, push no undoStack. Combine com <strong>Memento</strong> para commands complexos que precisam salvar snapshots do estado.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você precisa validar uma requisição HTTP passando por: autenticação, raté limiting, validação de corpo, permissões de acesso. Cada validação pode rejeitar a request. Qual padrão usar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>Chain of Responsibility</strong>. Crie uma interface <code>Middleware</code> com método <code>handle(request, next)</code>. Implemente <code>AuthMiddleware</code>, <code>RateLimitMiddleware</code>, <code>BodyValidationMiddleware</code>, <code>PermissionsMiddleware</code>. Um <code>Pipeline</code> encadeia todos e executa sequêncialmente. Cada handler decide: processar e chamar <code>next()</code>, ou rejeitar retornando um erro. E exatamente como Express.js e NestJS funcionam internamente.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Design Patterns Comportamentais</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="04-design-patterns-estruturais.html">&#8592; Anterior</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="06-ddd-domain-driven-design.html" class="primary">Próximo: DDD - Domain-Driven Design &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 05: Design Patterns Comportamentais
+// ══════════════════════════════════════════
+const SECTION_NUM = 5;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual Design Pattern Comportamental encapsula uma familia de algoritmos e permite troca-los em runtime?",
+    options: [
+      "Observer",
+      "Command",
+      "Strategy",
+      "State"
+    ],
+    correct: 2,
+    explanation: "O Strategy Pattern define uma familia de algoritmos, encapsula cada um e os torna intercambiáveis. O cliente escolhe qual strategy usar em runtime sem alterár o código que a consome."
+  },
+  {
+    question: "Você tem um sistema de e-commerce onde um checkout precisa: enviar email, atualizar estoque, notificar analytics e gerar nota fiscal. Qual padrão é mais adequado para desacoplar essas reacoes?",
+    options: [
+      "Chain of Responsibility",
+      "Command",
+      "Observer",
+      "Templaté Method"
+    ],
+    correct: 2,
+    explanation: "O Observer (pub/sub) permite que múltiplos subscribers reajam a um evento sem que o publisher (checkout) conheça nenhum deles. Cada reacao é um subscriber independente do evento 'checkout:completed'."
+  },
+  {
+    question: "O que diferencia o Command Pattern de uma simples chamada de função?",
+    options: [
+      "Command é mais rápido em runtime",
+      "Command permite encapsular a acao como objeto, possibilitando undo, enfileiramento e logging",
+      "Command só funciona com classes, não com funções",
+      "Command e exclusivo para aplicações graficas"
+    ],
+    correct: 1,
+    explanation: "O Command transforma uma acao em um objeto de primeira classe. Isso permite desfazer (undo), refazer (redo), enfileirar em filas de trabalho, logar historico de acoes, e serializar para persistência."
+  },
+  {
+    question: "Qual padrão esta por tras da arquitetura de middlewares do Express.js e dos Guards/Pipes do NestJS?",
+    options: [
+      "Strategy",
+      "Observer",
+      "Chain of Responsibility",
+      "Mediator"
+    ],
+    correct: 2,
+    explanation: "Chain of Responsibility encadeia handlers sequêncialmente. Cada middleware decide se processa a request e chama next(), ou rejeita. E exatamente como Express app.use() e NestJS Guards/Interceptors funcionam."
+  },
+  {
+    question: "Você tem um pedido que pode estar nós estados: pending, paid, shipped, delivered, cancelled. Cada estado tem regras diferentes sobre quais operações são permitidas. Qual padrão aplicar?",
+    options: [
+      "Strategy",
+      "State",
+      "Observer",
+      "Command"
+    ],
+    correct: 1,
+    explanation: "O Staté Pattern permite que o objeto (Order) mude seu comportamento conforme seu estado interno. Cada estado é uma classe que define quais operações são válidas e quais transicoes são permitidas."
+  },
+  {
+    question: "No Staté Pattern, o que deve acontecer quando uma operação inválida é chamada para o estado atual (ex: ship() em um pedido cancelado)?",
+    options: [
+      "Ignorar silenciosamente e retornar null",
+      "Fazer log de warning e continuar normalmente",
+      "Lancar um erro explicito informando que a transição e inválida",
+      "Redirecionar automáticamente para o estado correto"
+    ],
+    correct: 2,
+    explanation: "Transicoes inválidas devem lancar erros explicitos. Ignorar silenciosamente esconde bugs. Toda máquina de estados precisa de transicoes claras — se não esta no diagrama, e erro."
+  },
+  {
+    question: "Qual é o maior risco do Observer Pattern em aplicações de longa duracao?",
+    options: [
+      "Performance lenta por ter muitos subscribers",
+      "Memory leaks por esquecer de fazer unsubscribe quando o subscriber e destruido",
+      "Impossibilidade de ter mais de 10 observers",
+      "Falta de type safety nós eventos"
+    ],
+    correct: 1,
+    explanation: "O principal risco e memory leak. Se você faz on('event', handler) mas nunca faz off() quando o subscriber morre, o handler permanece na memória indefinidamente. Em React, sempre faca cleanup no useEffect return."
+  },
+  {
+    question: "O Templaté Method Pattern define o esqueleto de um algoritmo e deixa subclasses implementarem passos variáveis. Qual exemplo abaixo é a melhor aplicação?",
+    options: [
+      "Sistema de pagamentos com Pix, Cartao e Boleto",
+      "Sistema de exportacao de dados onde a sequência (buscar, transformar, gerar arquivo) e fixa mas cada formato (CSV, PDF, Excel) implementa a transformacao diferente",
+      "Sistema de chat onde usuários enviam mensagens",
+      "Sistema de autenticação com JWT e sessões"
+    ],
+    correct: 1,
+    explanation: "Templaté Method brilha quando a SEQUENCIA e fixa (buscar -> transformar -> gerar) mas PASSOS ESPECIFICOS variam (CSV transforma diferente de PDF). A classe base define o esqueleto; subclasses implementam os passos variáveis."
+  },
+  {
+    question: "Quando usar um Map<string, Function> ao inves de classes Strategy completas?",
+    options: [
+      "Nunca — sempre use classes para manter o padrão puro",
+      "Quando as strategies são lambdas simples sem estado interno nem dependências",
+      "Apenas em JavaScript, nunca em TypeScript",
+      "Quando existem mais de 100 strategies"
+    ],
+    correct: 1,
+    explanation: "Se cada strategy e apenas uma função pura (sem estado, sem dependências injetadas), um mapa de funções é mais pragmatico e menós verboso. Classes brilham quando a strategy tem estado interno ou lógica complexa que justifica encapsulamento."
+  },
+  {
+    question: "Qual combinação de padrões comportamentais melhor descreve um pipeline de processamento de pedidos que válida em cascata, gerencia estados do pedido e notifica múltiplos serviços?",
+    options: [
+      "Strategy + Templaté Method + Iterátor",
+      "Command + Memento + Visitor",
+      "Chain of Responsibility + Staté + Observer",
+      "Mediator + Interpreter + Strategy"
+    ],
+    correct: 2,
+    explanation: "Chain of Responsibility para o pipeline de validação sequêncial, Staté para gerenciar transicoes de estado do pedido (pending -> paid -> shipped), e Observer para notificações desacopladas (email, estoque, analytics)."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina os Design Patterns Comportamentais.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

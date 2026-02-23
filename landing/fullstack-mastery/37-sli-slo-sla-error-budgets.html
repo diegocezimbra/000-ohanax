@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>37 — SLI, SLO, SLA & Error Budgets | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="36-logs-metricas-tracing.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>37</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="38-tdd-bdd-piramide-testes.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:56.1%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 37</span>
+<h2>SLI, SLO, SLA & Error Budgets</h2>
+<div class="section-line"></div>
+
+<p>Confiabilidade não é um conceito abstrato — e <strong>mensurável, negociável e tem custo</strong>. A engenharia de confiabilidade (SRE) usa quatro conceitos fundamentais para transformar "o sistema está funcionando?" numa resposta objetiva: SLI (o que medir), SLO (qual meta interna), SLA (qual contrato externo) e Error Budget (quanto erro é aceitável). Sem esses conceitos, decisões sobre deploy, investimento em infraestrutura e priorização de bugs se tornam politicas — não técnicas.</p>
+
+<p>O Google, que inventou o termo SRE, resume assim: <strong>"100% de confiabilidade é o alvo errado."</strong> Cada "nine" adicional de disponibilidade custa exponencialmente mais. O objetivo não é zero downtime — e encontrar o equilíbrio entre velocidade de inovação e confiabilidade que seus usuários realmente precisam.</p>
+
+<div class="diagram">
+<div class="diagram-box green">SLI<br><small>O que medir</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">SLO<br><small>Meta interna</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">SLA<br><small>Contrato externo</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Error Budget<br><small>Orçamento de falhas</small></div>
+</div>
+
+<!-- ═══ SLI ═══ -->
+<h3>SLI — Service Level Indicator</h3>
+<p><strong>SLI é a métrica quantitativa que mede um aspecto da qualidade do serviço.</strong> E o dado bruto — um número entre 0% e 100% — que representa o comportamento real do sistema observado pelo usuário. Sem SLIs bem definidos, você está pilotando no escuro.</p>
+
+<p>Um bom SLI tem três propriedades: e <strong>mensurável</strong> (pode ser extraido de logs/métricas), <strong>relevante para o usuário</strong> (reflete a experiência real) e <strong>expressó como proporcao</strong> (eventos bons / eventos totais).</p>
+
+<h4>SLIs mais comuns</h4>
+<ul>
+<li><strong>Disponibilidade (Availability):</strong> % de requisições que retornam com sucessó (status 2xx/3xx vs total). Formula: <code>requests_success / requests_total * 100</code></li>
+<li><strong>Latência:</strong> % de requisições atendidas abaixo de um limiar. Medida em percentis: p50 (mediana), p95, p99. Exemplo: "99% das requisições respondidas em &lt; 200ms"</li>
+<li><strong>Throughput:</strong> Requisicoes por segundo (RPS) atendidas com sucesso. Importante para sistemas batch e APIs de alto volume</li>
+<li><strong>Taxa de Erro:</strong> % de requisições que resultam em erro 5xx. Formula: <code>errors_5xx / requests_total * 100</code></li>
+<li><strong>Correctness:</strong> % de respostas que retornam dados corretos. Importante para APIs financeiras e de dados críticos</li>
+<li><strong>Freshness:</strong> % de dados que estão atualizados dentro de um limiar. Exemplo: "dados com menós de 5 minutos de atraso"</li>
+</ul>
+
+<h4>PromQL: Medindo cada SLI</h4>
+<pre data-lang="promql"><code><span class="cm"># ── SLI: Disponibilidade (janela de 30 dias) ──</span>
+<span class="cm"># Proporcao de requests com sucessó (não-5xx)</span>
+<span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>{status!~<span class="str">"5.."</span>}[<span class="num">30d</span>]))
+  /
+<span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>[<span class="num">30d</span>]))
+<span class="cm"># Resultado: 0.9995 = 99.95% de disponibilidade</span>
+
+<span class="cm"># ── SLI: Latência p99 ──</span>
+<span class="fn">histogram_quantile</span>(<span class="num">0.99</span>,
+  <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_request_duration_seconds_bucket</span>[<span class="num">5m</span>])) by (le)
+)
+<span class="cm"># Resultado: 0.187 = p99 latência de 187ms</span>
+
+<span class="cm"># ── SLI: Latência como proporcao (% abaixo do limiar) ──</span>
+<span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_request_duration_seconds_bucket</span>{le=<span class="str">"0.2"</span>}[<span class="num">30d</span>]))
+  /
+<span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_request_duration_seconds_count</span>[<span class="num">30d</span>]))
+<span class="cm"># Resultado: 0.991 = 99.1% das requests abaixo de 200ms</span>
+
+<span class="cm"># ── SLI: Taxa de Erro ──</span>
+<span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>{status=~<span class="str">"5.."</span>}[<span class="num">5m</span>]))
+  /
+<span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>[<span class="num">5m</span>]))
+<span class="cm"># Resultado: 0.0003 = 0.03% de erro</span>
+
+<span class="cm"># ── SLI: Throughput com sucessó ──</span>
+<span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>{status=~<span class="str">"2.."</span>}[<span class="num">5m</span>]))
+<span class="cm"># Resultado: 1250 RPS com sucesso</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>SLI como proporcao vs valor absoluto:</strong> Sempre que possível, expresse SLIs como proporcao (ex: "99.1% das requests abaixo de 200ms") em vez de valor absoluto (ex: "p99 = 187ms"). Proporcoes são mais faceie de converter em SLOs e error budgets.</div>
+</div>
+
+<!-- ═══ SLO ═══ -->
+<h3>SLO — Service Level Objective</h3>
+<p><strong>SLO é a meta interna para um SLI.</strong> E a linha que você traca dizendo "se o SLI cair abaixo disso, algo está errado e precisamos agir." SLOs são definidos pela equipe de engenharia, não por contratos — são mais rigorosos que SLAs para dar margem de segurança.</p>
+
+<p>A regra de ouro: <strong>nunca defina um SLO de 100%</strong>. Nenhum sistema distribuído alcança 100% de confiabilidade. Definir 100% significa que qualquer deploy que cause 1 erro já está violando a meta — isso paralisa a inovação.</p>
+
+<h4>Como definir bons SLOs</h4>
+<ol>
+<li><strong>Comece pelos usuários:</strong> O que eles percebem como "funcionando"? Para um e-commerce, página carregando em &lt; 2s e checkout completando sem erro. Para uma API interna de logs, 10s de latência pode ser aceitável</li>
+<li><strong>Análise dados históricos:</strong> Se seu serviço historicamente tem 99.97% de disponibilidade, um SLO de 99.9% e realista. Um de 99.99% pode ser aspiracional</li>
+<li><strong>Considere dependências:</strong> Se seu banco de dados tem SLA de 99.95%, seu serviço não pode ter SLO de 99.99% — a dependência é o gargalo</li>
+<li><strong>Itere:</strong> Comece conservador, ajuste trimestralmente com base em dados reais</li>
+</ol>
+
+<h4>Exemplos de SLOs por tipo de serviço</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Serviço</th><th>SLI</th><th>SLO</th><th>Janela</th></tr>
+<tr><td>API de Checkout</td><td>Disponibilidade</td><td>99.95%</td><td>30 dias</td></tr>
+<tr><td>API de Checkout</td><td>Latência p99</td><td>&lt; 500ms</td><td>30 dias</td></tr>
+<tr><td>Feed de Noticias</td><td>Disponibilidade</td><td>99.9%</td><td>30 dias</td></tr>
+<tr><td>Feed de Noticias</td><td>Latência p50</td><td>&lt; 100ms</td><td>30 dias</td></tr>
+<tr><td>Pipeline de Dados</td><td>Freshness</td><td>99% em &lt; 5min</td><td>7 dias</td></tr>
+<tr><td>API interna (admin)</td><td>Disponibilidade</td><td>99.5%</td><td>30 dias</td></tr>
+</table>
+</div>
+
+<h4>Multi-window SLOs</h4>
+<p>Um único SLO de 30 dias pode mascarar problemas. Se você tem 99.9% no mes, mas ontem teve 95% de disponibilidade por 4 horas, o SLO mensal pode não alertar. Por isso, use <strong>múltiplas janelas</strong>:</p>
+
+<ul>
+<li><strong>Janela longa (30 dias):</strong> Visao estrategica — o serviço esta saudável no geral?</li>
+<li><strong>Janela curta (1 hora, 6 horas):</strong> Detecção rápida — algo esta quebrando AGORA?</li>
+<li><strong>Janela media (1 dia, 7 dias):</strong> Tendência — estamos degradando gradualmente?</li>
+</ul>
+
+<pre data-lang="promql"><code><span class="cm"># ── Multi-window SLO: Disponibilidade ──</span>
+
+<span class="cm"># Janela de 1 hora (detecção rápida)</span>
+<span class="num">1</span> - (
+  <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>{status=~<span class="str">"5.."</span>}[<span class="num">1h</span>]))
+  /
+  <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>[<span class="num">1h</span>]))
+) < <span class="num">0.999</span>
+<span class="cm"># Alerta se disponibilidade caiu abaixo de 99.9% na última hora</span>
+
+<span class="cm"># Janela de 30 dias (visao mensal)</span>
+<span class="num">1</span> - (
+  <span class="fn">sum</span>(<span class="fn">increase</span>(<span class="tp">http_requests_total</span>{status=~<span class="str">"5.."</span>}[<span class="num">30d</span>]))
+  /
+  <span class="fn">sum</span>(<span class="fn">increase</span>(<span class="tp">http_requests_total</span>[<span class="num">30d</span>]))
+) < <span class="num">0.999</span></code></pre>
+
+<!-- ═══ SLA ═══ -->
+<h3>SLA — Service Level Agreement</h3>
+<p><strong>SLA é o contrato formal entre o provedor é o cliente, com consequências financeiras para violações.</strong> Enquanto SLOs são metas internas sem penalidade, SLAs são documentos legais com clausulas de compensação — creditos, reembolsos ou até rescisao de contrato.</p>
+
+<p><strong>Regra crítica: o SLA deve ser MENOS rigorosó que o SLO.</strong> Se seu SLO interno e 99.95%, seu SLA público deve ser 99.9% ou menor. A diferença entre SLO e SLA e seu <strong>buffer de segurança</strong> — o espaço para resolver problemas antes que virem penalidades financeiras.</p>
+
+<h4>Exemplos reais de SLAs</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Provedor</th><th>SLA</th><th>Penalidade</th></tr>
+<tr><td>AWS EC2</td><td>99.99% mensal</td><td>&lt; 99.99%: 10% credito. &lt; 99.0%: 30% credito</td></tr>
+<tr><td>Google Cloud Compute</td><td>99.99% mensal</td><td>&lt; 99.99%: 10% credito. &lt; 99.0%: 50% credito</td></tr>
+<tr><td>Azure VMs</td><td>99.99% (multi-AZ)</td><td>&lt; 99.99%: 10% credito. &lt; 99.0%: 25% credito</td></tr>
+<tr><td>Stripe API</td><td>99.99% mensal</td><td>Creditos proporcionais ao downtime</td></tr>
+<tr><td>SLA interno (exemplo)</td><td>99.95% mensal</td><td>&lt; 99.95%: 10% credito. &lt; 99.0%: 25% credito</td></tr>
+</table>
+</div>
+
+<h4>SLA vs SLO: O buffer de segurança</h4>
+<div class="diagram">
+<div class="diagram-box red">SLA: 99.9%<br><small>Contrato externo</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box orange">Buffer<br><small>Margem de segurança</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box green">SLO: 99.95%<br><small>Meta interna</small></div>
+</div>
+
+<p><strong>Implicações de negócio:</strong></p>
+<ul>
+<li><strong>SLA violado = dinheiro perdido.</strong> AWS gastou milhões em creditos após o us-east-1 outage de 2017</li>
+<li><strong>SLA influência preço:</strong> Maior SLA = maior custo de infraestrutura = maior preço para o cliente</li>
+<li><strong>SLA exige medição independente:</strong> O cliente precisa de uma forma de verificar — dashboards públicos, status pages, third-party monitoring</li>
+<li><strong>SLA sem SLO = risco:</strong> Se você só define SLA sem SLO interno mais rigoroso, só descobre problemas quando já está pagando penalidades</li>
+</ul>
+
+<!-- ═══ ERROR BUDGETS ═══ -->
+<h3>Error Budgets</h3>
+<p><strong>Error Budget = 1 - SLO.</strong> E a quantidade máxima de indisponibilidade permitida num período sem violar o SLO. E o conceito mais transformador de SRE porque transforma confiabilidade em algo <strong>quantificável e gastável</strong> — como um orçamento financeiro.</p>
+
+<p>Se seu SLO é 99.9% de disponibilidade mensal, seu error budget e <strong>0.1% do tempo total do mes</strong>. Em 30 dias (43.200 minutos), isso equivale a <strong>43.2 minutos de downtime permitido</strong>.</p>
+
+<h4>Cálculo detalhado</h4>
+<pre data-lang="text"><code><span class="cm"># ── Error Budget: Cálculo base ──</span>
+
+SLO = 99.9%
+Error Budget = 100% - 99.9% = 0.1%
+
+Minutos no mes = 30 dias * 24 horas * 60 min = 43.200 min
+Budget em minutos = 43.200 * 0.001 = <span class="num">43.2 minutos</span>
+
+<span class="cm"># ── Quanto já gastamos? ──</span>
+
+Requests totais no mes: 10.000.000
+Requests com erro 5xx:      3.500
+Taxa de erro atual: 3.500 / 10.000.000 = 0.035%
+
+Budget total:    0.1% (10.000 requests de erro permitidas)
+Budget gasto:    0.035% (3.500 requests)
+Budget restante: 0.065% (6.500 requests)
+<span class="cm"># Ainda temos 65% do error budget disponível</span>
+
+<span class="cm"># ── Em requests por segundo ──</span>
+
+Se tráfego medio = ~3.86 RPS (10M/mes)
+Budget restante em requests = 6.500
+Dias restantes no mes = 15
+Budget diário = 6.500 / 15 = ~433 erros/dia permitidos</code></pre>
+
+<h4>O que acontece quando o budget acaba?</h4>
+<p>Quando o error budget se esgota (ou esta perto de se esgotar), a equipe entra em <strong>modo de confiabilidade</strong>:</p>
+
+<ul>
+<li><strong>Freeze de deploys:</strong> Nenhuma feature nova vai para produção. Só bugfixes é melhorias de confiabilidade</li>
+<li><strong>Foco total em estabilidade:</strong> Engenheiros param features e trabalham em reducir erros, melhorar observabilidade, adicionar circuit breakers</li>
+<li><strong>Postmortem obrigatório:</strong> Cada incidente que consumiu budget deve ter um postmortem detalhado</li>
+<li><strong>Review de arquitetura:</strong> Se o budget esta acabando repetidamente, a arquitetura pode precisar de mudanças fundamentais</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Error budget e equilíbrio:</strong> Se você NUNCA gasta o error budget, provavelmente está sendo conservador demais — deployando pouco, inovando pouco. O budget existe para ser gasto. O ideal e consumi-lo gradualmente ao longo do mes com deploys normais.</div>
+</div>
+
+<h4>Error Budget Policy Document</h4>
+<p>Todo time que usa error budgets deve ter um <strong>documento de politica</strong> formal:</p>
+
+<div class="card">
+<div class="card-title">Error Budget Policy — Template</div>
+<ul>
+<li><strong>Serviço:</strong> checkout-api</li>
+<li><strong>SLO:</strong> 99.95% disponibilidade, p99 latência &lt; 500ms (janela: 30 dias)</li>
+<li><strong>Budget mensal:</strong> 0.05% = 21.6 min downtime / 5.000 erros em 10M requests</li>
+<li><strong>Threshold 50%:</strong> Quando 50% do budget for consumido, equipe revisa deploys recentes e identifica causas</li>
+<li><strong>Threshold 80%:</strong> Feature freeze parcial. Só deploys de baixo risco e com rollback automático</li>
+<li><strong>Threshold 100%:</strong> Feature freeze total. Apenas hotfixes de confiabilidade. Reuniao de emergência com engineering manager</li>
+<li><strong>Reset:</strong> A cada 30 dias o budget e renovado. Carry-over de budget não útilizado não é permitido</li>
+<li><strong>Exceções:</strong> Deploys de segurança crítica (CVE) podem prosseguir mesmo com budget esgotado, com aprovação do VP de Engenharia</li>
+</ul>
+</div>
+
+<h4>Burn Raté Alerts</h4>
+<p><strong>Burn rate</strong> mede a <strong>velocidade</strong> com que o error budget está sendo consumido. Um burn raté de 1x significa que, nesse ritmo, o budget será totalmente consumido exatamente no fim do período. Burn raté de 10x significa que será consumido em 1/10 do tempo — ou seja, em 3 dias ao invés de 30.</p>
+
+<pre data-lang="promql"><code><span class="cm"># ── Burn Raté Alert (Multi-window) ──</span>
+<span class="cm"># Baseado no Google SRE Workbook Chapter 5</span>
+
+<span class="cm"># Taxa de erro na janela curta (1 hora)</span>
+<span class="kw">- record:</span> slo:error_rate:1h
+  <span class="kw">expr:</span>
+    <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>{status=~<span class="str">"5.."</span>}[<span class="num">1h</span>]))
+    /
+    <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>[<span class="num">1h</span>]))
+
+<span class="cm"># Taxa de erro na janela longa (6 horas)</span>
+<span class="kw">- record:</span> slo:error_rate:6h
+  <span class="kw">expr:</span>
+    <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>{status=~<span class="str">"5.."</span>}[<span class="num">6h</span>]))
+    /
+    <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>[<span class="num">6h</span>]))
+
+<span class="cm"># Alerta: burn raté 14x (consome 100% do budget em ~2 dias)</span>
+<span class="cm"># Requer ambas as janelas acima do limiar (evita falsos positivos)</span>
+<span class="kw">- alert:</span> <span class="tp">ErrorBudgetBurnRateHigh</span>
+  <span class="kw">expr:</span>
+    slo:error_rate:1h > (<span class="num">14</span> * <span class="num">0.001</span>)  <span class="cm"># 14x o budget rate</span>
+    <span class="kw">and</span>
+    slo:error_rate:6h > (<span class="num">14</span> * <span class="num">0.001</span>)  <span class="cm"># Confirmado na janela longa</span>
+  <span class="kw">for:</span> <span class="num">2m</span>
+  <span class="kw">labels:</span>
+    severity: critical
+  <span class="kw">annotations:</span>
+    summary: <span class="str">"Error budget sendo consumido 14x mais rápido que o normal"</span>
+
+<span class="cm"># Alerta: burn raté 3x (consome 100% em ~10 dias)</span>
+<span class="kw">- alert:</span> <span class="tp">ErrorBudgetBurnRateMedium</span>
+  <span class="kw">expr:</span>
+    slo:error_rate:6h > (<span class="num">3</span> * <span class="num">0.001</span>)
+    <span class="kw">and</span>
+    slo:error_rate:3d > (<span class="num">3</span> * <span class="num">0.001</span>)
+  <span class="kw">for:</span> <span class="num">15m</span>
+  <span class="kw">labels:</span>
+    severity: warning</code></pre>
+
+<!-- ═══ NINES TABLE ═══ -->
+<h3>Tabela dos Nines</h3>
+<p>Cada "nine" adicional de disponibilidade custa <strong>exponencialmente mais</strong> em engenharia, infraestrutura e complexidade. A tabela abaixo mostra quanto downtime cada nível permite:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Disponibilidade</th><th>Nines</th><th>Downtime/ano</th><th>Downtime/mes</th><th>Downtime/semana</th></tr>
+<tr><td>99%</td><td>2 nines</td><td>3.65 dias</td><td>7.31 horas</td><td>1.68 horas</td></tr>
+<tr><td>99.9%</td><td>3 nines</td><td>8.76 horas</td><td>43.2 minutos</td><td>10.08 minutos</td></tr>
+<tr><td>99.95%</td><td>3.5 nines</td><td>4.38 horas</td><td>21.6 minutos</td><td>5.04 minutos</td></tr>
+<tr><td>99.99%</td><td>4 nines</td><td>52.6 minutos</td><td>4.32 minutos</td><td>1.01 minutos</td></tr>
+<tr><td>99.999%</td><td>5 nines</td><td>5.26 minutos</td><td>25.9 segundos</td><td>6.05 segundos</td></tr>
+</table>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Custo exponencial:</strong> Ir de 99% para 99.9% pode custar 2x mais em infra. Ir de 99.9% para 99.99% pode custar 10x mais. E de 99.99% para 99.999% pode custar 100x mais — exigindo redundancia global, zero-downtime deploys, e equipe 24/7. Pergunte sempre: o negócio justifica esse custo?</div>
+</div>
+
+<div class="card blue">
+<div class="card-title">Perspectiva prática</div>
+<ul>
+<li><strong>99% (2 nines):</strong> Aceitável para ferramentas internas, dashboards admin. ~7 horas de downtime por mes</li>
+<li><strong>99.9% (3 nines):</strong> Padrão para SaaS B2B. ~43 min/mes. Maioria das startups começa aqui</li>
+<li><strong>99.95% (3.5 nines):</strong> Padrão para e-commerce e APIs críticas. ~22 min/mes</li>
+<li><strong>99.99% (4 nines):</strong> Exige multi-region, auto-failover, rolling deploys. ~4 min/mes. Enterprise-grade</li>
+<li><strong>99.999% (5 nines):</strong> Reservado para infra de telecom, pagamentos bancarios, DNS. ~26 seg/mes. Custa fortunas</li>
+</ul>
+</div>
+
+<!-- ═══ HEALTH CHECKS ═══ -->
+<h3>Health Checks</h3>
+<p>Health checks são a forma como o orquestrador (Kubernetes, load balancer, ECS) determina se uma instância do serviço esta saudável. Existem três tipos distintos, cada um com propósito específico:</p>
+
+<h4>Liveness, Readiness e Startup</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Probe</th><th>Pergunta</th><th>Se falhar...</th><th>Usó tipico</th></tr>
+<tr><td><strong>Liveness</strong></td><td>O processo esta vivo?</td><td>Container e reiniciado (kill + restart)</td><td>Detectar deadlocks, memory leaks, loops infinitos</td></tr>
+<tr><td><strong>Readiness</strong></td><td>Pronto para receber tráfego?</td><td>Removido do load balancer (não recebe requests)</td><td>Warm-up de cache, conexão ao DB, dependência indisponível</td></tr>
+<tr><td><strong>Startup</strong></td><td>Terminou de inicializar?</td><td>Liveness/Readiness não são executados (previne kill prematuro)</td><td>Apps que levam 30+ segundos para iniciar (JVM, migrações)</td></tr>
+</table>
+</div>
+
+<h4>Kubernetes Probe Config</h4>
+<pre data-lang="yaml"><code><span class="cm"># ── Deployment com as 3 probes configuradas ──</span>
+<span class="kw">apiVersion:</span> apps/v1
+<span class="kw">kind:</span> Deployment
+<span class="kw">metadata:</span>
+  <span class="kw">name:</span> checkout-api
+<span class="kw">spec:</span>
+  <span class="kw">replicas:</span> <span class="num">3</span>
+  <span class="kw">template:</span>
+    <span class="kw">spec:</span>
+      <span class="kw">containers:</span>
+      - <span class="kw">name:</span> checkout-api
+        <span class="kw">image:</span> <span class="str">checkout-api:v2.1.0</span>
+        <span class="kw">ports:</span>
+        - <span class="kw">containerPort:</span> <span class="num">3000</span>
+
+        <span class="cm"># Startup Probe — da 60s para o app inicializar</span>
+        <span class="cm"># Enquanto não passar, liveness/readiness não rodam</span>
+        <span class="kw">startupProbe:</span>
+          <span class="kw">httpGet:</span>
+            <span class="kw">path:</span> /health/startup
+            <span class="kw">port:</span> <span class="num">3000</span>
+          <span class="kw">failureThreshold:</span> <span class="num">30</span>      <span class="cm"># 30 tentativas</span>
+          <span class="kw">periodSeconds:</span> <span class="num">2</span>         <span class="cm"># a cada 2s = 60s max</span>
+
+        <span class="cm"># Liveness Probe — reinicia se o processo travou</span>
+        <span class="kw">livenessProbe:</span>
+          <span class="kw">httpGet:</span>
+            <span class="kw">path:</span> /health/live
+            <span class="kw">port:</span> <span class="num">3000</span>
+          <span class="kw">initialDelaySeconds:</span> <span class="num">0</span>   <span class="cm"># startup probe já cuidou disso</span>
+          <span class="kw">periodSeconds:</span> <span class="num">10</span>        <span class="cm"># verifica a cada 10s</span>
+          <span class="kw">timeoutSeconds:</span> <span class="num">3</span>        <span class="cm"># timeout de 3s</span>
+          <span class="kw">failureThreshold:</span> <span class="num">3</span>      <span class="cm"># 3 falhas seguidas = restart</span>
+
+        <span class="cm"># Readiness Probe — remove do LB se não pode receber tráfego</span>
+        <span class="kw">readinessProbe:</span>
+          <span class="kw">httpGet:</span>
+            <span class="kw">path:</span> /health/ready
+            <span class="kw">port:</span> <span class="num">3000</span>
+          <span class="kw">periodSeconds:</span> <span class="num">5</span>         <span class="cm"># verifica a cada 5s</span>
+          <span class="kw">timeoutSeconds:</span> <span class="num">3</span>
+          <span class="kw">failureThreshold:</span> <span class="num">2</span>      <span class="cm"># 2 falhas = out of LB</span>
+          <span class="kw">successThreshold:</span> <span class="num">2</span>      <span class="cm"># 2 sucessos = back in LB</span></code></pre>
+
+<h4>NestJS Health Check com Terminus</h4>
+<pre data-lang="typescript"><code><span class="cm">// ── health.controller.ts ──</span>
+<span class="kw">import</span> { <span class="tp">Controller</span>, <span class="tp">Get</span> } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+<span class="kw">import</span> {
+  <span class="tp">HealthCheck</span>, <span class="tp">HealthCheckService</span>,
+  <span class="tp">TypeOrmHealthIndicator</span>, <span class="tp">HttpHealthIndicator</span>,
+  <span class="tp">MemoryHealthIndicator</span>, <span class="tp">DiskHealthIndicator</span>,
+} <span class="kw">from</span> <span class="str">'@nestjs/terminus'</span>;
+
+<span class="ann">@Controller</span>(<span class="str">'health'</span>)
+<span class="kw">export class</span> <span class="tp">HealthController</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> health: <span class="tp">HealthCheckService</span>,
+    <span class="kw">private</span> db: <span class="tp">TypeOrmHealthIndicator</span>,
+    <span class="kw">private</span> http: <span class="tp">HttpHealthIndicator</span>,
+    <span class="kw">private</span> memory: <span class="tp">MemoryHealthIndicator</span>,
+    <span class="kw">private</span> disk: <span class="tp">DiskHealthIndicator</span>,
+  ) {}
+
+  <span class="cm">// Startup: verifica se o app inicializou corretamente</span>
+  <span class="ann">@Get</span>(<span class="str">'startup'</span>)
+  <span class="ann">@HealthCheck</span>()
+  <span class="fn">startup</span>() {
+    <span class="kw">return</span> <span class="kw">this</span>.health.<span class="fn">check</span>([
+      () => <span class="kw">this</span>.db.<span class="fn">pingCheck</span>(<span class="str">'database'</span>),
+    ]);
+  }
+
+  <span class="cm">// Liveness: o processo esta vivo? (deve ser RÁPIDO e SIMPLES)</span>
+  <span class="ann">@Get</span>(<span class="str">'live'</span>)
+  <span class="ann">@HealthCheck</span>()
+  <span class="fn">live</span>() {
+    <span class="kw">return</span> <span class="kw">this</span>.health.<span class="fn">check</span>([
+      <span class="cm">// Não verifica DB aqui! Se DB cai, readiness remove do LB.</span>
+      <span class="cm">// Liveness só verifica se o processo em si esta OK.</span>
+      () => <span class="kw">this</span>.memory.<span class="fn">checkHeap</span>(<span class="str">'memory_heap'</span>, <span class="num">300</span> * <span class="num">1024</span> * <span class="num">1024</span>), <span class="cm">// 300MB max</span>
+    ]);
+  }
+
+  <span class="cm">// Readiness: pronto para receber tráfego?</span>
+  <span class="ann">@Get</span>(<span class="str">'ready'</span>)
+  <span class="ann">@HealthCheck</span>()
+  <span class="fn">ready</span>() {
+    <span class="kw">return</span> <span class="kw">this</span>.health.<span class="fn">check</span>([
+      () => <span class="kw">this</span>.db.<span class="fn">pingCheck</span>(<span class="str">'database'</span>, { timeout: <span class="num">2000</span> }),
+      () => <span class="kw">this</span>.http.<span class="fn">pingCheck</span>(<span class="str">'redis'</span>, <span class="str">'http://redis:6379'</span>),
+      () => <span class="kw">this</span>.disk.<span class="fn">checkStorage</span>(<span class="str">'disk'</span>, {
+        thresholdPercent: <span class="num">0.9</span>, path: <span class="str">'/'</span>,
+      }),
+    ]);
+  }
+}</code></pre>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Erro comum: liveness que verifica dependências.</strong> Se você coloca check de banco de dados no liveness probe é o banco cai por 5 minutos, TODOS os pods serão reiniciados desnecessariamente — criando um efeito cascata. O liveness deve ser simples: "o processo esta vivo?". Dependências ficam no readiness.</div>
+</div>
+
+<!-- ═══ INCIDENT MANAGEMENT ═══ -->
+<h3>Incident Management</h3>
+<p>Quando o error budget e consumido rapidamente ou um SLO e violado, você precisa de um processo formal de gestão de incidentes. Sem processo, o time entra em panico, comúnica mal, e comete os mesmos erros repetidamente.</p>
+
+<h4>Severity Levels</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Nível</th><th>Descrição</th><th>Resposta</th><th>Exemplo</th></tr>
+<tr><td><strong>SEV1</strong></td><td>Serviço totalmente indisponível</td><td>All-hands. War room imediato. Comúnicação a cada 15 min</td><td>Checkout API fora do ar, 0% disponibilidade</td></tr>
+<tr><td><strong>SEV2</strong></td><td>Degradação significativa</td><td>On-call responde em 15 min. Escala se não resolver em 1h</td><td>Latência p99 em 5s (normal: 200ms). 10% de erros</td></tr>
+<tr><td><strong>SEV3</strong></td><td>Degradação parcial/menor</td><td>On-call investiga no horário comercial. Resolve em 24-48h</td><td>Um endpoint secundário com 2% de erros</td></tr>
+<tr><td><strong>SEV4</strong></td><td>Issue cosmetico/menor</td><td>Prioriza no backlog normal. Sprint seguinte</td><td>Timeout em logs de auditoria (não afeta usuário)</td></tr>
+</table>
+</div>
+
+<h4>Papeis em um incidente</h4>
+<ul>
+<li><strong>Incident Commander (IC):</strong> Coordena a resposta. Não investiga — gerência comunicação, delega tarefas, decide escalar. Geralmente um engenheiro senior ou SRE lead</li>
+<li><strong>Tech Lead / Investigator:</strong> Faz o debugging real. Analisa logs, métricas, traces. Implementa o fix</li>
+<li><strong>Commúnications Lead:</strong> Atualiza stakeholders, status page, Slack. Comúnica timeline e impacto</li>
+<li><strong>Scribe:</strong> Documenta tudo em tempo real — timeline, decisões, ações. Essencial para o postmortem</li>
+</ul>
+
+<h4>Postmortem (Blameless)</h4>
+<p>Após cada incidente SEV1/SEV2, escreva um <strong>postmortem blameless</strong> — focado em sistemas e processos, NUNCA em culpar individuos. O objetivo e aprender e prevenir recorrência.</p>
+
+<div class="card orange">
+<div class="card-title">Templaté de Postmortem</div>
+<ul>
+<li><strong>Título:</strong> [SEV1] Checkout API indisponível por 47 minutos — 2025-03-15</li>
+<li><strong>Impacto:</strong> 12.340 requests falharam. 847 usuários não completaram compras. Receita estimada perdida: R$23.500</li>
+<li><strong>Timeline:</strong>
+  <ul>
+    <li>14:23 — Deploy v2.3.1 inicia (automated CI/CD)</li>
+    <li>14:25 — Error raté sobe de 0.01% para 15%. PagerDuty alerta on-call</li>
+    <li>14:28 — IC declarado. War room aberto. Investigação inicia</li>
+    <li>14:35 — Causa identificada: migração de banco travou em lock de tabela</li>
+    <li>14:42 — Rollback para v2.3.0 iniciado</li>
+    <li>14:52 — Rollback completo. Error raté volta a 0.02%</li>
+    <li>15:10 — Serviço confirmado estável. Incidente encerrado</li>
+  </ul>
+</li>
+<li><strong>Root Cause:</strong> Migração ALTER TABLE na tabela orders (120M rows) adquiriu lock exclusivo, bloqueando todas as queries de escrita por 27 minutos</li>
+<li><strong>O que funcionou:</strong> Alertas detectaram em 2 min. Rollback automatizado funcionou. Comúnicação fluiu bem</li>
+<li><strong>O que falhou:</strong> Migração não foi testada com volume real. Não havia validação de lock duration no CI. Health check não detectou "lentidao" (só downtime)</li>
+<li><strong>Action Items:</strong>
+  <ul>
+    <li>[P0] Implementar validação de migrações em CI com pg_stat_activity mock — owner: @maria — prazo: 7 dias</li>
+    <li>[P1] Adicionar latency-based readiness probe (p99 &gt; 2s = unready) — owner: @carlos — prazo: 14 dias</li>
+    <li>[P1] Usar pt-online-schema-change para ALTER em tabelas &gt; 10M rows — owner: @joao — prazo: 14 dias</li>
+    <li>[P2] Criar runbook para rollback de migrações — owner: @ana — prazo: 30 dias</li>
+  </ul>
+</li>
+</ul>
+</div>
+
+<!-- ═══ SRE PRACTICES ═══ -->
+<h3>Práticas de SRE</h3>
+<p>SLIs, SLOs e error budgets são a base, mas SRE (Site Reliability Engineering) vai além. Estas são as práticas que sustentam a operação de serviços confiáveis em escala.</p>
+
+<h4>Toil Reduction</h4>
+<p><strong>Toil</strong> é trabalho operacional manual, repetitivo, que não agrega valor permanente e escala linearmente com o serviço. Exemplos: reiniciar pods manualmente, limpar discos, responder tickets de "reset de senha", gerar relatórios manuais. O objetivo de SRE é manter toil abaixo de <strong>50% do tempo</strong> — o resto deve ser engenharia.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// ── Antes: Toil — limpar logs manualmente todo dia ──</span>
+<span class="cm">// Engenheiro recebe alerta de disco cheio, loga via SSH, roda rm</span>
+
+<span class="cm">// ── Depois: Automação — CronJob que limpa automáticamente ──</span>
+<span class="cm">// K8s CronJob que roda diariamente, nunca mais precisa de humano</span>
+<span class="ann">@Cron</span>(<span class="str">'0 3 * * *'</span>) <span class="cm">// Todo dia as 3h da manha</span>
+<span class="kw">async</span> <span class="fn">cleanupOldLogs</span>() {
+  <span class="kw">const</span> threshold = <span class="kw">new</span> <span class="tp">Date</span>();
+  threshold.<span class="fn">setDate</span>(threshold.<span class="fn">getDate</span>() - <span class="num">30</span>);
+
+  <span class="kw">const</span> deleted = <span class="kw">await</span> <span class="kw">this</span>.logRepo
+    .<span class="fn">createQueryBuilder</span>()
+    .<span class="fn">delete</span>()
+    .<span class="fn">where</span>(<span class="str">'created_at &lt; :threshold'</span>, { threshold })
+    .<span class="fn">execute</span>();
+
+  <span class="kw">this</span>.logger.<span class="fn">log</span>(<span class="str">`Cleaned ${deleted.affected} old log entries`</span>);
+  <span class="kw">this</span>.metrics.<span class="fn">increment</span>(<span class="str">'logs.cleanup.count'</span>, deleted.affected);
+}</code></pre>
+
+<h4>Capacity Planning</h4>
+<p>Prever quanto recursó seu serviço precisa para manter os SLOs sob crescimento de tráfego. Abordagem:</p>
+<ul>
+<li><strong>Modelo de carga:</strong> Quanto CPU/memória cada request consome? Meca com load testing</li>
+<li><strong>Projeção de crescimento:</strong> Se tráfego cresce 15% ao mes, em 6 meses precisa de 2.3x a capacidade atual</li>
+<li><strong>Headroom:</strong> Mantenha 30-40% de capacidade livre para absorver picos e failover</li>
+<li><strong>Auto-scaling:</strong> Configure HPA (Horizontal Pod Autoscaler) baseado em CPU/memória/custom metrics</li>
+</ul>
+
+<h4>Chaos Engineering</h4>
+<p><strong>Injete falhas propositalmente para validar que o sistema se recupera.</strong> Se seus SLOs dizem que o serviço aguenta falha de um node, prove isso quebrando um node em produção (de forma controlada).</p>
+
+<ul>
+<li><strong>Chaos Monkey (Netflix):</strong> Mata instâncias aleatórias em produção para forçar resiliência</li>
+<li><strong>Litmus Chaos:</strong> Framework open-source para K8s — injeta falhas de rede, CPU, disco</li>
+<li><strong>Gremlin:</strong> Plataforma SaaS de chaos engineering com gamedays guiados</li>
+<li><strong>Processo:</strong> (1) Defina hipotese ("se 1 pod morrer, p99 não passa de 1s"), (2) Injete falha, (3) Observe métricas, (4) Valide ou corrija</li>
+</ul>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: SLOs para E-Commerce Checkout</h3>
+<p><strong>Cenário:</strong> Você é o SRE responsável pela API de checkout de um e-commerce com 50.000 pedidos/dia. Defina SLOs completos com error budget, alertas e dashboard.</p>
+
+<h4>Passó 1: Definir SLIs</h4>
+<div class="diagram">
+<div class="diagram-box green">SLI: Availability<br><small>99.95% success rate</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">SLI: Latency p99<br><small>&lt; 500ms</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">SLI: Error Rate<br><small>&lt; 0.1% 5xx</small></div>
+</div>
+
+<h4>Passó 2: Calcular Error Budgets</h4>
+<pre data-lang="text"><code><span class="cm"># ── Error Budget: Availability ──</span>
+SLO: 99.95% = 0.05% error budget
+Requests/mes: ~1.500.000 (50k/dia * 30)
+Budget em requests: 1.500.000 * 0.0005 = <span class="num">750 erros/mes</span>
+Budget em downtime: 43.200 min * 0.0005 = <span class="num">21.6 minutos/mes</span>
+
+<span class="cm"># ── Error Budget: Latency ──</span>
+SLO: 99% das requests com p99 &lt; 500ms
+Budget: 1% das requests podem exceder 500ms
+Em requests: 1.500.000 * 0.01 = <span class="num">15.000 requests lentas/mes</span>
+
+<span class="cm"># ── Burn Raté Thresholds ──</span>
+Normal burn: 750 erros / 30 dias = 25 erros/dia
+Burn raté 3x: 75 erros/dia (budget acaba em 10 dias) → WARNING
+Burn raté 10x: 250 erros/dia (budget acaba em 3 dias) → CRITICAL
+Burn raté 36x: 900 erros/dia (budget acaba em &lt; 1 dia) → PAGE IMMEDIATELY</code></pre>
+
+<h4>Passó 3: Alert Rules</h4>
+<pre data-lang="yaml"><code><span class="cm"># ── Prometheus Alert Rules ──</span>
+<span class="kw">groups:</span>
+- <span class="kw">name:</span> checkout-slo-alerts
+  <span class="kw">rules:</span>
+
+  <span class="cm"># SEV1: Burn raté 36x — budget acaba em horas</span>
+  - <span class="kw">alert:</span> <span class="tp">CheckoutSLO_BurnRate_Critical</span>
+    <span class="kw">expr:</span> |
+      (
+        <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">checkout_requests_total</span>{status=~<span class="str">"5.."</span>}[<span class="num">5m</span>]))
+        /
+        <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">checkout_requests_total</span>[<span class="num">5m</span>]))
+      ) > <span class="num">0.018</span>
+    <span class="kw">for:</span> <span class="num">2m</span>
+    <span class="kw">labels:</span>
+      severity: <span class="str">critical</span>
+      team: <span class="str">checkout</span>
+    <span class="kw">annotations:</span>
+      summary: <span class="str">"Checkout error budget queimando 36x. Investigar imediatamente."</span>
+      runbook: <span class="str">"https://wiki.internal/runbooks/checkout-sev1"</span>
+
+  <span class="cm"># SEV3: Latency p99 acima do SLO</span>
+  - <span class="kw">alert:</span> <span class="tp">CheckoutSLO_Latency_Warning</span>
+    <span class="kw">expr:</span> |
+      <span class="fn">histogram_quantile</span>(<span class="num">0.99</span>,
+        <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">checkout_duration_seconds_bucket</span>[<span class="num">10m</span>])) by (le)
+      ) > <span class="num">0.5</span>
+    <span class="kw">for:</span> <span class="num">10m</span>
+    <span class="kw">labels:</span>
+      severity: <span class="str">warning</span>
+    <span class="kw">annotations:</span>
+      summary: <span class="str">"Checkout p99 latência acima de 500ms por 10+ minutos"</span></code></pre>
+
+<h4>Passó 4: Dashboard (Grafana Panels)</h4>
+<div class="card purple">
+<div class="card-title">Dashboard: Checkout SLO</div>
+<ul>
+<li><strong>Painel 1 — Availability Gauge:</strong> SLI atual vs SLO (99.95%). Verde se acima, vermelho se abaixo</li>
+<li><strong>Painel 2 — Error Budget Remaining:</strong> Barra de progressó mostrando % do budget restante. Cores: verde (&gt;50%), amarelo (20-50%), vermelho (&lt;20%)</li>
+<li><strong>Painel 3 — Burn Raté (time series):</strong> Gráfico de linha com burn raté atual. Linhas horizontais em 1x, 3x, 10x, 36x</li>
+<li><strong>Painel 4 — Latency Heatmap:</strong> Distribuição de latência p50/p95/p99 nas últimas 24h</li>
+<li><strong>Painel 5 — Error Raté Timeline:</strong> % de 5xx ao longo do tempo com anotações de deploys</li>
+<li><strong>Painel 6 — Budget Forecast:</strong> Projeção: "nesse ritmo, o budget será consumido em X dias"</li>
+</ul>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Definir SLO de 100%:</strong> Nenhum sistema distribuído alcança 100%. Definir isso paralisa deploys (qualquer erro e violação) e torna o error budget inútil (budget = 0). Até o Google não promete 100% para nenhum serviço.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Não ter error budget policy:</strong> Sem uma politica formal escrita, o error budget vira debaté subjetivo. "O budget acabou, mas essa feature é importante..." — sem politica, sempre ganha quem grita mais alto.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Alertar em cada blip:</strong> Se você alerta toda vez que a taxa de erro sobe 0.01% por 30 segundos, o on-call vai ignorar alertas (alert fatigue). Use burn raté com multi-window para alertas significativos que indicam tendência, não ruido.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>SLA mais rigorosó que SLO:</strong> Se seu SLA público e 99.99% mas seu SLO interno e 99.9%, você está constantemente em violação de contrato sem perceber. O SLO SEMPRE deve ser mais rigorosó que o SLA — o SLO e sua rede de segurança.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>SLO sem dono:</strong> "Todo mundo é responsável" = ninguém é responsável. Cada SLO precisa ter um time dono que monitora, responde a violações e propoe melhorias. Sem ownership, SLOs viram posters na parede.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Comece com poucos SLOs (2-3 por serviço crítico). Meca por 3 meses antes de definir metas. Use dados reais, não aspirações. E revise trimestralmente — SLOs não são eternos.</div>
+</div>
+
+<!-- ═══ EXERCICIOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Seu serviço teve 99.93% de disponibilidade no mes passado (com SLO de 99.9%). O time quer fazer um deploy arriscado de refatoração. Você aprova ou bloqueia?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Você <strong>aprova</strong>. O SLO é 99.9%, e o serviço entregou 99.93% — o que significa que ainda resta error budget. Budget restante = 99.93% - 99.9% = 0.03% do mes não útilizado. Porém, considere: (1) qual o risco do deploy? Se pode causar downtime significativo, faca em horário de menor tráfego; (2) implemente feature flags e canary deploy para limitar blast radius; (3) tenha rollback automático pronto. O error budget existe justamente para permitir inovação com risco calculado.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu liveness probe verifica conexão com o banco de dados. O banco fica indisponível por 3 minutos durante uma manutenção. O que acontece é como corrigir?</div>
+<div class="qa-a">
+<p><strong>O que acontece:</strong> Todos os pods falham o liveness check. Kubernetes reinicia TODOS os pods simultaneamente. Quando os pods reiniciam, tentam reconectar ao banco (que ainda está em manutenção) e falham novamente — criando um loop de restart. Resultado: cascading failure total, downtime muito maior que os 3 minutos originais.</p>
+<p><strong>Correção:</strong> Mova o check de banco para o <strong>readiness probe</strong> (remove do LB, não reinicia). O liveness deve verificar apenas se o processo esta vivo (heap memory, thread health). Assim, durante a manutenção do banco, os pods continuam vivos mas não recebem tráfego — e voltam automáticamente quando o banco retorna.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Seu SLA e 99.95% mas historicamente seu serviço entrega 99.99%. O time de vendas quer oferecer SLA de 99.99% para fechar um cliente enterprise. Qual seu conselho?</div>
+<div class="qa-a">
+<p><strong>Conselho:</strong> <strong>Recuse</strong> ou solicite investimento significativo antes de aceitar. Razoes: (1) Histórico de 99.99% não garante futuro — um único incidente de 5 minutos viola 99.99% num mes (budget de 4.3 min); (2) O custo de garantir 99.99% inclui multi-region redundancy, zero-downtime deploys, 24/7 on-call, chaos engineering continuo — pode custar 5-10x mais que o contrato vale; (3) A penalidade financeira de violar SLA de 99.99% pode ser devastadora. Alternativa: oferecer SLA de 99.95% com SLO interno de 99.99%, e cobrar premium se o cliente realmente precisa de SLA de 99.99%.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — SLI, SLO, SLA & Error Budgets</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="36-logs-metricas-tracing.html">&#8592; Anterior</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="38-tdd-bdd-piramide-testes.html" class="primary">Próximo: TDD, BDD & Pirâmide de Testes &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 37: SLI, SLO, SLA & Error Budgets
+// ══════════════════════════════════════════
+const SECTION_NUM = 37;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a definição correta de SLI (Service Level Indicator)?",
+    options: [
+      "Um contrato formal com penalidades financeiras entre provedor e cliente",
+      "Uma métrica quantitativa que mede um aspecto da qualidade do serviço",
+      "A meta interna de confiabilidade definida pela equipe de engenharia",
+      "A quantidade máxima de indisponibilidade permitida num período"
+    ],
+    correct: 1,
+    explanation: "SLI é a métrica bruta (ex: % de requests com sucesso, latência p99). E o dado que você mede. SLO é a meta para esse dado, SLA é o contrato externo, e error budget é o quanto de falha é aceitável."
+  },
+  {
+    question: "Se o SLO de um serviço e 99.9% de disponibilidade mensal, qual é o error budget em minutos? (considere 30 dias)",
+    options: [
+      "4.32 minutos",
+      "21.6 minutos",
+      "43.2 minutos",
+      "8.76 horas"
+    ],
+    correct: 2,
+    explanation: "Error budget = 1 - SLO = 0.1%. Minutos no mes = 30 * 24 * 60 = 43.200. Budget = 43.200 * 0.001 = 43.2 minutos de downtime permitido por mes."
+  },
+  {
+    question: "Qual a relação correta entre SLO e SLA?",
+    options: [
+      "SLO e SLA devem ser identicos para evitar confusao",
+      "SLA deve ser mais rigorosó que o SLO para impressionar clientes",
+      "SLO deve ser mais rigorosó que o SLA, criando um buffer de segurança",
+      "SLO e SLA são termos intercambiáveis para a mesma coisa"
+    ],
+    correct: 2,
+    explanation: "O SLO (meta interna) deve ser mais rigorosó que o SLA (contrato externo). Ex: SLO de 99.95% com SLA de 99.9%. A diferença (0.05%) é o buffer que permite resolver problemas antes que virem penalidades financeiras."
+  },
+  {
+    question: "Qual probe do Kubernetes você deve usar para verificar se o banco de dados esta acessível?",
+    options: [
+      "Liveness probe — para reiniciar o pod se o banco cair",
+      "Readiness probe — para remover do load balancer se o banco estiver indisponível",
+      "Startup probe — para verificar conexão inicial e nunca mais",
+      "Nenhuma probe — o framework cuida disso automáticamente"
+    ],
+    correct: 1,
+    explanation: "Dependências externas (banco, Redis, APIs) devem ser verificadas no readiness probe. Se falhar, o pod é removido do LB (não recebe tráfego) mas não é reiniciado. Colocar no liveness causaria reinício de todos os pods quando o banco cair — efeito cascata."
+  },
+  {
+    question: "O que significa um burn raté de 10x no contexto de error budgets?",
+    options: [
+      "O serviço esta 10 vezes mais rápido que o normal",
+      "O error budget está sendo consumido 10x mais rápido que o sustentável, acabando em 3 dias ao invés de 30",
+      "10% do error budget já foi consumido",
+      "O serviço esta atendendo 10x mais requests que o normal"
+    ],
+    correct: 1,
+    explanation: "Burn raté mede a velocidade de consumo do budget. 1x = consumo normal (acaba no fim do período). 10x = 10 vezes mais rápido, o budget de 30 dias será consumido em 3 dias. Isso requer alerta e investigação imediata."
+  },
+  {
+    question: "Qual é o principal problema de definir um SLO de 100%?",
+    options: [
+      "E técnicamente impossível medir 100% com precisão",
+      "Qualquer erro viola o SLO, paralisando deploys e tornando o error budget zero",
+      "Os custos de infraestrutura seriam infinitos",
+      "Os clientes não acreditariam em 100% de disponibilidade"
+    ],
+    correct: 1,
+    explanation: "Com SLO de 100%, error budget = 0. Qualquer request com erro já viola a meta. Isso paralisa a inovação — ninguém faz deploy com medo de causar 1 único erro. O Google explicitamente diz: '100% não é o alvo certo'."
+  },
+  {
+    question: "Num postmortem blameless, qual afirmação esta CORRETA?",
+    options: [
+      "O objetivo e identificar e punir o responsável pelo incidente",
+      "O foco e em sistemas e processos, não em culpar individuos",
+      "Postmortems só devem ser escritos para incidentes SEV1",
+      "O postmortem deve ser escrito apenas pelo engenheiro que causou o incidente"
+    ],
+    correct: 1,
+    explanation: "Postmortems blameless focam em falhas de SISTEMA (processos, automação, monitoramento) — não em individuos. O objetivo e aprender e prevenir recorrência. Culpar pessoas cria cultura de medo onde engenheiros escondem erros ao invés de reporta-los."
+  },
+  {
+    question: "Seu serviço tem SLO de 99.95% e no mes atual está em 99.97%. O error budget restante e:",
+    options: [
+      "0.02% — a diferença entre SLO e performance atual",
+      "0.03% — a performance menós o SLO",
+      "0.05% — o budget total menós o consumido (0.03%)",
+      "0.02% — o budget total (0.05%) menós o consumido (0.03%)"
+    ],
+    correct: 3,
+    explanation: "Budget total = 100% - 99.95% = 0.05%. Performance atual = 99.97%, ou seja, 0.03% de erros (já consumido). Budget restante = 0.05% - 0.03% = 0.02%. Ainda ha margem, mas 60% do budget já foi útilizado."
+  },
+  {
+    question: "O que é 'toil' no contexto de SRE?",
+    options: [
+      "Código complexo é difícil de manter",
+      "Trabalho manual, repetitivo e sem valor permanente que escala com o serviço",
+      "O processo de definir SLOs e error budgets",
+      "Incidentes de alta severidade que consomem muito tempo"
+    ],
+    correct: 1,
+    explanation: "Toil e trabalho operacional manual, repetitivo, automatizável, que não agrega valor duradouro e escala linearmente com o tamanho do serviço. Exemplos: reiniciar pods manualmente, limpar discos, responder tickets repetitivos. O objetivo de SRE é manter toil abaixo de 50%."
+  },
+  {
+    question: "Qual PromQL query mede corretamente o SLI de disponibilidade (proporcao de requests com sucesso)?",
+    options: [
+      "sum(rate(http_requests_total[5m]))",
+      "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m]))",
+      "sum(rate(http_requests_total{status!~\"5..\"}[5m])) / sum(rate(http_requests_total[5m]))",
+      "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+    ],
+    correct: 2,
+    explanation: "Disponibilidade = requests com sucessó (não-5xx) / total de requests. A opção C calcula essa proporcao corretamente: filtra requests onde status NÃO e 5xx e divide pelo total. A opção B calcula a TAXA DE ERRO (inverso). A opção D mede latência p99, não disponibilidade."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina SLI, SLO, SLA e Error Budgets.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>40 — SSR, SSG, ISR & Micro Frontends | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="39-testes-especializados.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>40</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="41-state-management-web-vitals.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:60.6%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 40</span>
+<h2>SSR, SSG, ISR & Micro Frontends</h2>
+<div class="section-line"></div>
+
+<p>A forma como uma aplicação web renderiza seu conteúdo impacta diretamente a <strong>performance percebida pelo usuário</strong>, o <strong>SEO</strong>, os <strong>custos de infraestrutura</strong> é a <strong>experiência do desenvolvedor</strong>. Não existe estratégia universal — cada uma tem tradeoffs claros, é a escolha certa depende do contexto: tipo de conteúdo, frequência de atualização, requisitos de SEO e escala da equipe.</p>
+
+<p>Nesta seção, vamos entender profundamente cada estratégia de renderização, comparar frameworks modernos, mergulhar em Micro Frontends e Design Systems, e fechar com um exercício de System Design onde você escolhe a estratégia certa para cada página de um e-commerce.</p>
+
+<!-- ═══ 1. RENDERING STRATEGIES ═══ -->
+<h3>1. Estratégias de Renderização</h3>
+
+<p>Antes de escolher um framework, você precisa entender <strong>onde</strong> é <strong>quando</strong> o HTML é gerado. Essa decisão fundamental define a arquitetura inteira do frontend.</p>
+
+<!-- CSR -->
+<h4>CSR — Client-Side Rendering</h4>
+<p>O servidor envia um HTML quase vazio com um bundle JavaScript. O browser faz o download, parseia e executa o JS para montar o DOM. E o modelo clássico do React SPA com <code>create-react-app</code>.</p>
+
+<pre data-lang="html"><code><span class="cm">&lt;!-- O que o servidor envia (CSR) --&gt;</span>
+<span class="kw">&lt;html&gt;</span>
+<span class="kw">&lt;body&gt;</span>
+  <span class="kw">&lt;div</span> <span class="fn">id</span>=<span class="str">"root"</span><span class="kw">&gt;&lt;/div&gt;</span>
+  <span class="kw">&lt;script</span> <span class="fn">src</span>=<span class="str">"/static/js/bundle.js"</span><span class="kw">&gt;&lt;/script&gt;</span>  <span class="cm">&lt;!-- 300KB+ --&gt;</span>
+<span class="kw">&lt;/body&gt;</span>
+<span class="kw">&lt;/html&gt;</span>
+
+<span class="cm">&lt;!-- O browser recebe isso é ve uma tela branca até o JS executar --&gt;</span></code></pre>
+
+<ul>
+<li><strong>Pros:</strong> Interátividade rica, navegação instantanea após carregamento, desacopla frontend/backend, simples de hospedar (CDN estática)</li>
+<li><strong>Contras:</strong> Tela branca no primeiro load (Time to Interáctive alto), SEO ruim (crawlers podem não executar JS), bundle grande, First Contentful Paint lento</li>
+<li><strong>Quando usar:</strong> Dashboards, paineis administrativos, aplicações autenticadas onde SEO não importa</li>
+</ul>
+
+<!-- SSR -->
+<h4>SSR — Server-Side Rendering</h4>
+<p>O servidor executa o React (ou Vue, Svelte) a cada requisição, gera o HTML completo e envia ao browser. O usuário ve conteúdo imediatamente. Depois, o JS e carregado e faz a <strong>hidratação</strong> (hydration) — conectando event listeners ao HTML já renderizado.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Next.js — Pages Router (getServerSideProps)</span>
+<span class="cm">// Executado NO SERVIDOR a cada requisição</span>
+<span class="kw">export async function</span> <span class="fn">getServerSideProps</span>(context: <span class="tp">GetServerSidePropsContext</span>) {
+  <span class="kw">const</span> { slug } = context.params!;
+
+  <span class="cm">// Busca dados diretamente do banco ou API interna</span>
+  <span class="kw">const</span> product = <span class="kw">await</span> <span class="fn">fetchProduct</span>(slug);
+
+  <span class="kw">if</span> (!product) {
+    <span class="kw">return</span> { notFound: <span class="num">true</span> }; <span class="cm">// Retorna 404</span>
+  }
+
+  <span class="kw">return</span> {
+    props: { product }, <span class="cm">// Serializado como JSON é enviado ao componente</span>
+  };
+}
+
+<span class="kw">export default function</span> <span class="fn">ProductPage</span>({ product }: <span class="tp">Props</span>) {
+  <span class="kw">return</span> (
+    &lt;<span class="tp">div</span>&gt;
+      &lt;<span class="tp">h1</span>&gt;{product.name}&lt;/<span class="tp">h1</span>&gt;
+      &lt;<span class="tp">p</span>&gt;R$ {product.price.toFixed(<span class="num">2</span>)}&lt;/<span class="tp">p</span>&gt;
+      &lt;<span class="tp">AddToCartButton</span> productId={product.id} /&gt;
+    &lt;/<span class="tp">div</span>&gt;
+  );
+}</code></pre>
+
+<ul>
+<li><strong>Pros:</strong> SEO excelente (HTML completo para crawlers), First Contentful Paint rápido, conteúdo visível antes do JS carregar</li>
+<li><strong>Contras:</strong> TTFB (Time to First Byte) mais alto (servidor precisa processar), carga no servidor a cada request, não cacheável em CDN por padrão, custo de infraestrutura</li>
+<li><strong>Quando usar:</strong> Páginas com dados dinâmicos que mudam a cada request, conteúdo personalizado por usuário, busca/search com filtros</li>
+</ul>
+
+<!-- SSG -->
+<h4>SSG — Static Site Generation</h4>
+<p>O HTML é gerado no <strong>momento do build</strong> (deploy). O resultado são arquivos <code>.html</code> estáticos que podem ser servidos por qualquer CDN. E a estratégia mais rápida possível — não ha processamento no servidor em runtime.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Next.js — Pages Router (getStaticProps + getStaticPaths)</span>
+<span class="cm">// Executado APENAS no build time</span>
+<span class="kw">export async function</span> <span class="fn">getStaticPaths</span>() {
+  <span class="kw">const</span> posts = <span class="kw">await</span> <span class="fn">getAllPosts</span>();
+
+  <span class="kw">return</span> {
+    paths: posts.<span class="fn">map</span>(p => ({ params: { slug: p.slug } })),
+    fallback: <span class="str">'blocking'</span>, <span class="cm">// Gera páginas novas sob demanda</span>
+  };
+}
+
+<span class="kw">export async function</span> <span class="fn">getStaticProps</span>({ params }: <span class="tp">GetStaticPropsContext</span>) {
+  <span class="kw">const</span> post = <span class="kw">await</span> <span class="fn">getPostBySlug</span>(params!.slug <span class="kw">as</span> <span class="tp">string</span>);
+
+  <span class="kw">return</span> {
+    props: { post },
+    <span class="cm">// Sem reválidaté = HTML 100% estático até próximo build</span>
+  };
+}
+
+<span class="kw">export default function</span> <span class="fn">BlogPost</span>({ post }: <span class="tp">Props</span>) {
+  <span class="kw">return</span> (
+    &lt;<span class="tp">article</span>&gt;
+      &lt;<span class="tp">h1</span>&gt;{post.title}&lt;/<span class="tp">h1</span>&gt;
+      &lt;<span class="tp">div</span> dangerouslySetInnerHTML={{ __html: post.content }} /&gt;
+    &lt;/<span class="tp">article</span>&gt;
+  );
+}</code></pre>
+
+<ul>
+<li><strong>Pros:</strong> Performance máxima (CDN edge), custo mínimo de hosting, segurança (sem servidor para atacar), SEO perfeito</li>
+<li><strong>Contras:</strong> Dados ficam stale até próximo build, tempo de build cresce com número de páginas (10.000 posts = build longo), não serve para conteúdo personalizado</li>
+<li><strong>Quando usar:</strong> Blogs, documentação, landing pages, sites institucionais, marketing pages</li>
+</ul>
+
+<!-- ISR -->
+<h4>ISR — Incremental Static Regeneration</h4>
+<p>O melhor dos dois mundos: combina a velocidade do SSG com a frescura do SSR. Páginas são geradas estáticamente, mas são <strong>reválidadas em segundo plano</strong> após um período configurável. O usuário sempre recebe a versão cached (rápida), enquanto o servidor regenera a página para o próximo visitante.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Next.js — ISR com reválidate</span>
+<span class="kw">export async function</span> <span class="fn">getStaticProps</span>({ params }: <span class="tp">GetStaticPropsContext</span>) {
+  <span class="kw">const</span> product = <span class="kw">await</span> <span class="fn">fetchProduct</span>(params!.slug <span class="kw">as</span> <span class="tp">string</span>);
+
+  <span class="kw">return</span> {
+    props: { product },
+    reválidate: <span class="num">60</span>, <span class="cm">// Regenera a cada 60 segundos</span>
+  };
+}
+
+<span class="cm">// Fluxo ISR:</span>
+<span class="cm">// 1. Build: gera HTML estático para /products/camiseta-azul</span>
+<span class="cm">// 2. Request 1 (t=0s): serve HTML estático (instantaneo)</span>
+<span class="cm">// 3. Request 2 (t=45s): serve mesmo HTML (ainda válido)</span>
+<span class="cm">// 4. Request 3 (t=65s): serve HTML antigo, MAS dispara regeneração em background</span>
+<span class="cm">// 5. Request 4 (t=66s): serve HTML NOVO (regenerado)</span>
+
+<span class="cm">// Next.js 13+ — On-Demand Reválidation (API Route)</span>
+<span class="kw">export async function</span> <span class="fn">POST</span>(request: <span class="tp">NextRequest</span>) {
+  <span class="kw">const</span> { slug } = <span class="kw">await</span> request.<span class="fn">json</span>();
+  <span class="fn">reválidatePath</span>(<span class="str">`/products/${slug}`</span>);
+  <span class="kw">return</span> Response.<span class="fn">json</span>({ reválidated: <span class="num">true</span> });
+}
+<span class="cm">// Chamado via webhook quando produto atualiza no CMS/admin</span></code></pre>
+
+<ul>
+<li><strong>Pros:</strong> Velocidade de SSG + dados frescos, build incremental (não precisa rebuildar tudo), suporte a on-demand reválidation via webhook</li>
+<li><strong>Contras:</strong> Complexidade de cache inválidation, primeira request após reválidation pode ser lenta, requer infraestrutura que suporte ISR (Vercel, AWS)</li>
+<li><strong>Quando usar:</strong> E-commerce (páginas de produto), catálogo com atualizações frequentes, conteúdo editorial com deadline</li>
+</ul>
+
+<!-- Streaming SSR -->
+<h4>Streaming SSR</h4>
+<p>Em vez de esperar TODOS os dados para enviar o HTML, o servidor envia o HTML <strong>em chunks</strong> conforme fica pronto. O browser começa a renderizar o header enquanto o corpo ainda está sendo gerado. Usa <code>React.Suspense</code> com streaming.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Next.js App Router — Streaming com Suspense</span>
+<span class="kw">import</span> { Suspense } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">async function</span> <span class="fn">SlowReviews</span>({ productId }: { productId: <span class="tp">string</span> }) {
+  <span class="cm">// Esta query demora 3 segundos</span>
+  <span class="kw">const</span> reviews = <span class="kw">await</span> <span class="fn">fetchReviews</span>(productId);
+  <span class="kw">return</span> &lt;<span class="tp">ReviewList</span> reviews={reviews} /&gt;;
+}
+
+<span class="kw">export default async function</span> <span class="fn">ProductPage</span>({ params }: <span class="tp">Props</span>) {
+  <span class="kw">const</span> product = <span class="kw">await</span> <span class="fn">fetchProduct</span>(params.slug); <span class="cm">// 200ms</span>
+
+  <span class="kw">return</span> (
+    &lt;<span class="tp">div</span>&gt;
+      <span class="cm">{/* Enviado imediatamente */}</span>
+      &lt;<span class="tp">h1</span>&gt;{product.name}&lt;/<span class="tp">h1</span>&gt;
+      &lt;<span class="tp">p</span>&gt;{product.description}&lt;/<span class="tp">p</span>&gt;
+
+      <span class="cm">{/* Skeleton enviado primeiro, reviews chegam depois via streaming */}</span>
+      &lt;<span class="tp">Suspense</span> fallback={&lt;<span class="tp">ReviewsSkeleton</span> /&gt;}&gt;
+        &lt;<span class="tp">SlowReviews</span> productId={product.id} /&gt;
+      &lt;/<span class="tp">Suspense</span>&gt;
+    &lt;/<span class="tp">div</span>&gt;
+  );
+}
+<span class="cm">// Browser ve o produto em 200ms, reviews aparecem em 3s</span>
+<span class="cm">// Sem streaming: usuário esperaria 3s para ver qualquer coisa</span></code></pre>
+
+<ul>
+<li><strong>Pros:</strong> TTFB drasticamente menor para páginas com dados lentos, UX progressiva (conteúdo aparece gradualmente)</li>
+<li><strong>Contras:</strong> Complexidade de implementação, requer suporte do framework e runtime (Node.js streams)</li>
+<li><strong>Quando usar:</strong> Páginas SSR com múltiplas fontes de dados com latências diferentes</li>
+</ul>
+
+<!-- RSC -->
+<h4>RSC — React Server Components</h4>
+<p>Componentes que executam <strong>exclusivamente no servidor</strong>, sem enviar NENHUM JavaScript ao browser. Podem acessar banco de dados, file system e APIs internas diretamente. O resultado é enviado como HTML puro. Componentes que precisam de interátividade são marcados com <code>'use client'</code>.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Server Component (default no App Router) — ZERO JS no browser</span>
+<span class="kw">import</span> { db } <span class="kw">from</span> <span class="str">'@/lib/database'</span>;
+
+<span class="kw">export default async function</span> <span class="fn">ProductList</span>() {
+  <span class="cm">// Acessa banco diretamente — SEM API, SEM fetch</span>
+  <span class="kw">const</span> products = <span class="kw">await</span> db.product.<span class="fn">findMany</span>({
+    orderBy: { createdAt: <span class="str">'desc'</span> },
+    take: <span class="num">20</span>,
+  });
+
+  <span class="kw">return</span> (
+    &lt;<span class="tp">div</span>&gt;
+      {products.<span class="fn">map</span>(p => (
+        &lt;<span class="tp">ProductCard</span> key={p.id} product={p} /&gt;
+      ))}
+      <span class="cm">{/* Apenas este componente envia JS ao browser */}</span>
+      &lt;<span class="tp">AddToCartButton</span> /&gt;
+    &lt;/<span class="tp">div</span>&gt;
+  );
+}
+
+<span class="cm">// Client Component — marcado explicitamente</span>
+<span class="str">'use client'</span>;
+
+<span class="kw">export function</span> <span class="fn">AddToCartButton</span>() {
+  <span class="kw">const</span> [count, setCount] = <span class="fn">useState</span>(<span class="num">0</span>);
+  <span class="kw">return</span> &lt;<span class="tp">button</span> onClick={() => <span class="fn">setCount</span>(c => c + <span class="num">1</span>)}&gt;Add ({count})&lt;/<span class="tp">button</span>&gt;;
+}</code></pre>
+
+<ul>
+<li><strong>Pros:</strong> Bundle size drasticamente menor (componentes estáticos não enviam JS), acesso direto a dados (sem API layer para UI), composicao servidor+cliente granular</li>
+<li><strong>Contras:</strong> Modelo mental novo (server vs client boundary), não pode usar hooks ou browser APIs em server components, debugging mais complexo</li>
+<li><strong>Quando usar:</strong> Qualquer componente que não precise de interátividade — headers, footers, listas, cards estáticos, layouts</li>
+</ul>
+
+<!-- Comparison Table -->
+<h4>Tabela Comparativa de Estratégias</h4>
+
+<div class="table-wrap">
+<table>
+<tr>
+<th>Estratégia</th>
+<th>Quando gera HTML</th>
+<th>SEO</th>
+<th>TTFB</th>
+<th>Frescura dos dados</th>
+<th>Custo servidor</th>
+</tr>
+<tr>
+<td><strong>CSR</strong></td>
+<td>Browser (runtime)</td>
+<td>Ruim</td>
+<td>Rápido (HTML vazio)</td>
+<td>Tempo real</td>
+<td>Zero</td>
+</tr>
+<tr>
+<td><strong>SSR</strong></td>
+<td>Servidor (por request)</td>
+<td>Excelente</td>
+<td>Medio-alto</td>
+<td>Tempo real</td>
+<td>Alto</td>
+</tr>
+<tr>
+<td><strong>SSG</strong></td>
+<td>Build time</td>
+<td>Excelente</td>
+<td>Muito rápido (CDN)</td>
+<td>Stale até rebuild</td>
+<td>Zero</td>
+</tr>
+<tr>
+<td><strong>ISR</strong></td>
+<td>Build + background regen</td>
+<td>Excelente</td>
+<td>Muito rápido (CDN)</td>
+<td>Configural (reválidate)</td>
+<td>Baixo</td>
+</tr>
+<tr>
+<td><strong>Streaming SSR</strong></td>
+<td>Servidor (chunks)</td>
+<td>Excelente</td>
+<td>Rápido (progressivo)</td>
+<td>Tempo real</td>
+<td>Alto</td>
+</tr>
+<tr>
+<td><strong>RSC</strong></td>
+<td>Servidor (componente)</td>
+<td>Excelente</td>
+<td>Rápido</td>
+<td>Por componente</td>
+<td>Medio</td>
+</tr>
+</table>
+</div>
+
+<!-- Decision Tree Diagram -->
+<h4>Árvore de Decisão: Qual Estratégia Usar?</h4>
+
+<div class="diagram">
+<div class="diagram-box green">Precisa de SEO?</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">NÃO &rarr; CSR<br><small>Dashboard, Admin</small></div>
+</div>
+<div class="diagram">
+<div class="diagram-box green">Dados mudam por request?</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">SIM &rarr; SSR<br><small>Search, Perfil</small></div>
+<div class="diagram-arrow">|</div>
+<div class="diagram-box purple">NÃO &rarr; Dados mudam?</div>
+</div>
+<div class="diagram">
+<div class="diagram-box purple">Dados mudam com frequência?</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">SIM &rarr; ISR<br><small>Produtos, Catalogo</small></div>
+<div class="diagram-arrow">|</div>
+<div class="diagram-box green">NÃO &rarr; SSG<br><small>Blog, Docs, Landing</small></div>
+</div>
+
+<!-- ═══ 2. FRAMEWORKS ═══ -->
+<h3>2. Frameworks de Renderização</h3>
+
+<p>Cada framework implementa as estratégias acima de forma diferente. A escolha do framework define o DX (Developer Experience), o ecossistema disponível e as capacidades de otimização.</p>
+
+<div class="table-wrap">
+<table>
+<tr>
+<th>Framework</th>
+<th>Base</th>
+<th>Estratégias</th>
+<th>Diferencial</th>
+<th>Ideal para</th>
+</tr>
+<tr>
+<td><strong>Next.js</strong></td>
+<td>React</td>
+<td>CSR, SSR, SSG, ISR, RSC, Streaming</td>
+<td>App Router + RSC, middleware Edge, todas estratégias</td>
+<td>Aplicações full-stack React de qualquer tamanho</td>
+</tr>
+<tr>
+<td><strong>Remix</strong></td>
+<td>React</td>
+<td>SSR, Streaming</td>
+<td>Nested routes com loaders/actions, progressive enhancement, Web Standards</td>
+<td>Apps data-driven com forms complexos</td>
+</tr>
+<tr>
+<td><strong>Astro</strong></td>
+<td>Agnostico</td>
+<td>SSG, SSR (opt-in), Islands</td>
+<td>Zero JS por padrão, Islands Architecture, usa React/Vue/Svelte como ilhas</td>
+<td>Sites de conteúdo, blogs, docs, marketing</td>
+</tr>
+<tr>
+<td><strong>Nuxt</strong></td>
+<td>Vue</td>
+<td>CSR, SSR, SSG, ISR</td>
+<td>Auto-imports, módulos (Auth, Content, Image), Nitro server</td>
+<td>Aplicações Vue full-stack</td>
+</tr>
+<tr>
+<td><strong>SvelteKit</strong></td>
+<td>Svelte</td>
+<td>CSR, SSR, SSG</td>
+<td>Compilador (zero runtime), load functions, form actions</td>
+<td>Apps que precisam de performance máxima com DX simples</td>
+</tr>
+</table>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// Remix — Loader Pattern (dados no servidor)</span>
+<span class="kw">import</span> { json } <span class="kw">from</span> <span class="str">'@remix-run/node'</span>;
+<span class="kw">import</span> { useLoaderData } <span class="kw">from</span> <span class="str">'@remix-run/react'</span>;
+
+<span class="cm">// Executado no servidor antes de renderizar</span>
+<span class="kw">export async function</span> <span class="fn">loader</span>({ params }: <span class="tp">LoaderFunctionArgs</span>) {
+  <span class="kw">const</span> product = <span class="kw">await</span> db.product.<span class="fn">findUnique</span>({
+    where: { slug: params.slug },
+  });
+  <span class="kw">if</span> (!product) <span class="kw">throw new</span> Response(<span class="str">'Not Found'</span>, { status: <span class="num">404</span> });
+  <span class="kw">return</span> <span class="fn">json</span>({ product });
+}
+
+<span class="cm">// Ação de form (também no servidor)</span>
+<span class="kw">export async function</span> <span class="fn">action</span>({ request }: <span class="tp">ActionFunctionArgs</span>) {
+  <span class="kw">const</span> form = <span class="kw">await</span> request.<span class="fn">formData</span>();
+  <span class="kw">await</span> db.cart.<span class="fn">add</span>(form.<span class="fn">get</span>(<span class="str">'productId'</span>));
+  <span class="kw">return</span> <span class="fn">json</span>({ ok: <span class="num">true</span> });
+}
+
+<span class="kw">export default function</span> <span class="fn">ProductPage</span>() {
+  <span class="kw">const</span> { product } = <span class="fn">useLoaderData</span>&lt;<span class="kw">typeof</span> loader&gt;();
+  <span class="kw">return</span> (
+    &lt;<span class="tp">div</span>&gt;
+      &lt;<span class="tp">h1</span>&gt;{product.name}&lt;/<span class="tp">h1</span>&gt;
+      <span class="cm">{/* Form funciona sem JS (progressive enhancement) */}</span>
+      &lt;<span class="tp">Form</span> method=<span class="str">"post"</span>&gt;
+        &lt;<span class="tp">input</span> type=<span class="str">"hidden"</span> name=<span class="str">"productId"</span> value={product.id} /&gt;
+        &lt;<span class="tp">button</span>&gt;Adicionar ao Carrinho&lt;/<span class="tp">button</span>&gt;
+      &lt;/<span class="tp">Form</span>&gt;
+    &lt;/<span class="tp">div</span>&gt;
+  );
+}</code></pre>
+
+<pre data-lang="astro"><code><span class="cm">---</span>
+<span class="cm">// Astro — Islands Architecture</span>
+<span class="cm">// Componente .astro = HTML puro (zero JS)</span>
+<span class="kw">import</span> <span class="tp">ProductCard</span> <span class="kw">from</span> <span class="str">'../components/ProductCard.astro'</span>;
+<span class="kw">import</span> <span class="tp">CartWidget</span> <span class="kw">from</span> <span class="str">'../components/CartWidget.tsx'</span>;  <span class="cm">// React component</span>
+
+<span class="kw">const</span> products = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'https://api.example.com/products'</span>)
+  .<span class="fn">then</span>(r => r.<span class="fn">json</span>());
+<span class="cm">---</span>
+
+<span class="kw">&lt;html&gt;</span>
+  <span class="kw">&lt;body&gt;</span>
+    <span class="cm">&lt;!-- HTML puro, zero JS --&gt;</span>
+    {products.<span class="fn">map</span>(p => &lt;<span class="tp">ProductCard</span> product={p} /&gt;)}
+
+    <span class="cm">&lt;!-- "Ilha" interátiva — só ESTE componente envia JS --&gt;</span>
+    &lt;<span class="tp">CartWidget</span> <span class="fn">client:visible</span> /&gt;
+  <span class="kw">&lt;/body&gt;</span>
+<span class="kw">&lt;/html&gt;</span>
+<span class="cm">&lt;!-- client:visible = carrega JS apenas quando componente fica visível (IntersectionObserver) --&gt;</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Astro Islands:</strong> A estratégia "Islands Architecture" significa que a página e 95% HTML estático e apenas pequenas "ilhas" de interátividade recebem JavaScript. Ideal para sites onde a maioria do conteúdo e estático (blogs, docs) mas com alguns componentes interátivos (search, cart, comentários).</div>
+</div>
+
+<!-- ═══ 3. MICRO FRONTENDS ═══ -->
+<h3>3. Micro Frontends</h3>
+
+<p>Micro Frontends aplicam os princípios de microservices ao frontend: <strong>equipes independentes</strong> desenvolvem, testam e fazem deploy de features de forma autônoma, cada uma sendo dona de uma vertical inteira (frontend + backend + dados). Cada micro frontend é uma aplicação independente que é composta no browser ou em um shell application.</p>
+
+<h4>Abordagens de Composicao</h4>
+
+<div class="table-wrap">
+<table>
+<tr>
+<th>Abordagem</th>
+<th>Como funciona</th>
+<th>Pros</th>
+<th>Contras</th>
+</tr>
+<tr>
+<td><strong>Module Federation</strong></td>
+<td>Webpack 5 compartilha módulos entre builds independentes em runtime</td>
+<td>Compartilhamento de dependências, lazy loading, tipagem compartilhada</td>
+<td>Acoplado ao Webpack, complexidade de configuração</td>
+</tr>
+<tr>
+<td><strong>Web Components</strong></td>
+<td>Custom Elements + Shadow DOM encapsulam framework-agnostic</td>
+<td>Framework agnóstico, encapsulamento real, padrão nativo</td>
+<td>SSR complexo, styling limitado, comunicação entre componentes</td>
+</tr>
+<tr>
+<td><strong>Single-SPA</strong></td>
+<td>Orquestrador que monta/desmonta apps de diferentes frameworks</td>
+<td>Multi-framework (React + Vue + Angular), roteamento centralizado</td>
+<td>Bundle duplicado (cada app traz seu React), performance</td>
+</tr>
+<tr>
+<td><strong>iframe</strong></td>
+<td>Cada micro frontend em um iframe separado</td>
+<td>Isolamento total, simples de implementar</td>
+<td>UX ruim (scroll, resize), comunicação via postMessage, SEO impossível</td>
+</tr>
+</table>
+</div>
+
+<h4>Module Federation — Webpack 5 (Exemplo Detalhado)</h4>
+
+<pre data-lang="javascript"><code><span class="cm">// webpack.config.js — APP SHELL (Host)</span>
+<span class="kw">const</span> { ModuleFederationPlugin } = require(<span class="str">'webpack'</span>).container;
+
+module.exports = {
+  plugins: [
+    <span class="kw">new</span> <span class="fn">ModuleFederationPlugin</span>({
+      name: <span class="str">'shell'</span>,
+      remotes: {
+        <span class="cm">// Aponta para os micro frontends remotos</span>
+        catalog: <span class="str">'catalog@https://catalog.example.com/remoteEntry.js'</span>,
+        checkout: <span class="str">'checkout@https://checkout.example.com/remoteEntry.js'</span>,
+        account: <span class="str">'account@https://account.example.com/remoteEntry.js'</span>,
+      },
+      shared: {
+        react: { singleton: <span class="num">true</span>, requiredVersion: <span class="str">'^18.0.0'</span> },
+        <span class="str">'react-dom'</span>: { singleton: <span class="num">true</span>, requiredVersion: <span class="str">'^18.0.0'</span> },
+      },
+    }),
+  ],
+};</code></pre>
+
+<pre data-lang="javascript"><code><span class="cm">// webpack.config.js — MICRO FRONTEND (Remote: Catalog)</span>
+<span class="kw">const</span> { ModuleFederationPlugin } = require(<span class="str">'webpack'</span>).container;
+
+module.exports = {
+  plugins: [
+    <span class="kw">new</span> <span class="fn">ModuleFederationPlugin</span>({
+      name: <span class="str">'catalog'</span>,
+      filename: <span class="str">'remoteEntry.js'</span>,
+      exposes: {
+        <span class="cm">// Componentes que esse micro frontend exporta</span>
+        <span class="str">'./ProductList'</span>: <span class="str">'./src/components/ProductList'</span>,
+        <span class="str">'./ProductDetail'</span>: <span class="str">'./src/components/ProductDetail'</span>,
+        <span class="str">'./SearchBar'</span>: <span class="str">'./src/components/SearchBar'</span>,
+      },
+      shared: {
+        react: { singleton: <span class="num">true</span>, requiredVersion: <span class="str">'^18.0.0'</span> },
+        <span class="str">'react-dom'</span>: { singleton: <span class="num">true</span>, requiredVersion: <span class="str">'^18.0.0'</span> },
+      },
+    }),
+  ],
+};</code></pre>
+
+<pre data-lang="typescript"><code><span class="cm">// Shell App — Consumindo o micro frontend</span>
+<span class="kw">import</span> React, { Suspense, lazy } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="cm">// Carrega componente do micro frontend remoto (dynamic import)</span>
+<span class="kw">const</span> <span class="tp">ProductList</span> = <span class="fn">lazy</span>(() => <span class="kw">import</span>(<span class="str">'catalog/ProductList'</span>));
+<span class="kw">const</span> <span class="tp">CheckoutForm</span> = <span class="fn">lazy</span>(() => <span class="kw">import</span>(<span class="str">'checkout/CheckoutForm'</span>));
+
+<span class="kw">function</span> <span class="fn">App</span>() {
+  <span class="kw">return</span> (
+    &lt;<span class="tp">div</span>&gt;
+      &lt;<span class="tp">Header</span> /&gt; <span class="cm">{/* Componente do shell */}</span>
+      &lt;<span class="tp">Suspense</span> fallback={&lt;<span class="tp">Loading</span> /&gt;}&gt;
+        &lt;<span class="tp">Routes</span>&gt;
+          &lt;<span class="tp">Route</span> path=<span class="str">"/products"</span> element={&lt;<span class="tp">ProductList</span> /&gt;} /&gt;
+          &lt;<span class="tp">Route</span> path=<span class="str">"/checkout"</span> element={&lt;<span class="tp">CheckoutForm</span> /&gt;} /&gt;
+        &lt;/<span class="tp">Routes</span>&gt;
+      &lt;/<span class="tp">Suspense</span>&gt;
+    &lt;/<span class="tp">div</span>&gt;
+  );
+}</code></pre>
+
+<h4>Quando Micro Frontends Fazem Sentido</h4>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>USE micro frontends quando:</strong> Organização com 3+ equipes independentes trabalhando em domínios distintos (catálogo, checkout, conta). Cada equipe precisa de deploy independente e autonomia tecnológica. Escala &gt; 50 desenvolvedores.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>NÃO USE micro frontends quando:</strong> Equipe pequena (menós de 10 devs), produto único com domínio coeso, startup buscando velocidade. A complexidade de orquestração, versionamento de contratos e duplicação de dependências NÃO compensa para times pequenos.</div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box green">Shell App<br><small>(Router, Auth, Layout)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">MF: Catalogo<br><small>Team A (React)</small></div>
+<div class="diagram-arrow">|</div>
+<div class="diagram-box purple">MF: Checkout<br><small>Team B (React)</small></div>
+<div class="diagram-arrow">|</div>
+<div class="diagram-box orange">MF: Conta<br><small>Team C (Vue)</small></div>
+</div>
+
+<!-- ═══ 4. DESIGN SYSTEMS & ATOMIC DESIGN ═══ -->
+<h3>4. Design Systems & Atomic Design</h3>
+
+<p>Um Design System é a <strong>fonte única de verdade</strong> para a UI de uma organização: componentes reútilizáveis, tokens de design (cores, espacamento, tipografia), padrões de interáção e documentação. E especialmente crítico em arquiteturas de micro frontends, onde múltiplas equipes precisam manter consistência visual.</p>
+
+<h4>Atomic Design — Brad Frost</h4>
+<p>Métodologia para criar Design Systems de forma hierárquica, indo do mais simples ao mais complexo:</p>
+
+<div class="diagram">
+<div class="diagram-box green">Atoms<br><small>Button, Input, Label, Icon</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Molecules<br><small>SearchBar, FormField, Card</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Organisms<br><small>Header, ProductGrid, Form</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Templates<br><small>PageLayout, DashboardGrid</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Pages<br><small>HomePage, ProductPage</small></div>
+</div>
+
+<ul>
+<li><strong>Atoms:</strong> Componentes indivisíveis — <code>Button</code>, <code>Input</code>, <code>Badge</code>, <code>Avatar</code>, <code>Spinner</code>. Não contém outros componentes.</li>
+<li><strong>Molecules:</strong> Combinação de atoms — <code>SearchBar</code> (Input + Button), <code>FormField</code> (Label + Input + ErrorMessage)</li>
+<li><strong>Organisms:</strong> Seções completas — <code>Header</code> (Logo + Nav + SearchBar + UserMenu), <code>ProductCard</code> (Image + Title + Price + AddToCart)</li>
+<li><strong>Templates:</strong> Layouts que definem a estrutura da página sem dados reais (wireframes com componentes)</li>
+<li><strong>Pages:</strong> Templates preenchidos com dados reais — a instância final que o usuário ve</li>
+</ul>
+
+<h4>Design Tokens</h4>
+<p>Valores de design abstraidos em variáveis reútilizáveis. Permitem trocar o tema inteiro mudando apenas os tokens.</p>
+
+<pre data-lang="css"><code><span class="cm">/* Design Tokens como CSS Custom Properties */</span>
+<span class="kw">:root</span> {
+  <span class="cm">/* Primitive Tokens (valores base) */</span>
+  <span class="fn">--color-green-500</span>: <span class="str">#3dd68c</span>;
+  <span class="fn">--color-green-600</span>: <span class="str">#2bb87a</span>;
+  <span class="fn">--color-gray-900</span>: <span class="str">#0c0e12</span>;
+  <span class="fn">--font-size-sm</span>: <span class="str">0.875rem</span>;
+  <span class="fn">--font-size-base</span>: <span class="str">1rem</span>;
+  <span class="fn">--spacing-4</span>: <span class="str">16px</span>;
+  <span class="fn">--spacing-6</span>: <span class="str">24px</span>;
+  <span class="fn">--radius-md</span>: <span class="str">8px</span>;
+
+  <span class="cm">/* Semantic Tokens (significado contextual) */</span>
+  <span class="fn">--color-primary</span>: <span class="kw">var</span>(<span class="fn">--color-green-500</span>);
+  <span class="fn">--color-primary-hover</span>: <span class="kw">var</span>(<span class="fn">--color-green-600</span>);
+  <span class="fn">--color-bg</span>: <span class="kw">var</span>(<span class="fn">--color-gray-900</span>);
+  <span class="fn">--button-padding</span>: <span class="kw">var</span>(<span class="fn">--spacing-4</span>) <span class="kw">var</span>(<span class="fn">--spacing-6</span>);
+  <span class="fn">--button-radius</span>: <span class="kw">var</span>(<span class="fn">--radius-md</span>);
+}
+
+<span class="cm">/* Dark/Light theme = trocar semantic tokens */</span>
+<span class="kw">[data-theme="light"]</span> {
+  <span class="fn">--color-bg</span>: <span class="str">#ffffff</span>;
+  <span class="fn">--color-text</span>: <span class="str">#1a1a1a</span>;
+}</code></pre>
+
+<h4>Storybook & Monorepo</h4>
+<p><strong>Storybook</strong> é a ferramenta padrão para documentar e testar componentes isoladamente. Cada componente tem "stories" que mostram seus diferentes estados (default, hover, disabled, loading, error).</p>
+
+<p><strong>Monorepo</strong> com Nx ou Turborepo é a melhor forma de compartilhar o Design System entre micro frontends:</p>
+
+<pre data-lang="bash"><code><span class="cm"># Estrutura Monorepo com Turborepo</span>
+monorepo/
+  packages/
+    design-system/          <span class="cm"># Tokens + Componentes base</span>
+      src/
+        tokens/             <span class="cm"># CSS vars, spacing, colors</span>
+        atoms/              <span class="cm"># Button, Input, Badge</span>
+        molecules/          <span class="cm"># SearchBar, FormField</span>
+        organisms/          <span class="cm"># Header, Footer, Sidebar</span>
+      package.json
+    eslint-config/          <span class="cm"># Regras ESLint compartilhadas</span>
+    tsconfig/               <span class="cm"># TSConfig base compartilhado</span>
+  apps/
+    shell/                  <span class="cm"># App principal</span>
+    catalog/                <span class="cm"># Micro frontend Catalogo</span>
+    checkout/               <span class="cm"># Micro frontend Checkout</span>
+    storybook/              <span class="cm"># Documentação visual</span>
+  turbo.json                <span class="cm"># Pipeline de build</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Turborepo vs Nx:</strong> Turborepo é mais simples (zero config, caching inteligente). Nx é mais poderosó (geradores de código, grafos de dependência, plugins para Angular/React/Node). Para a maioria dos projetos, Turborepo é suficiente.</div>
+</div>
+
+<!-- ═══ 5. MINI SYSTEM DESIGN ═══ -->
+<h3>5. Mini System Design: E-Commerce Rendering Strategy</h3>
+
+<p><strong>Cenário:</strong> Você está arquitetando o frontend de um e-commerce grande (100.000+ produtos, 50.000 visitantes/dia). Precisa definir a estratégia de renderização para cada página. Budget de infraestrutura e limitado.</p>
+
+<div class="card">
+<div class="card-title">Decisão de Arquitetura por Página</div>
+<ul>
+<li><strong>Home Page</strong> &rarr; <strong>SSG</strong> — Conteúdo muda poucas vezes ao dia (banners, destaques). Build rápido, serve de CDN. Se precisar de personalização ("Recomendados para você"), use CSR parcial para essa seção.</li>
+<li><strong>Páginas de Produto (/products/[slug])</strong> &rarr; <strong>ISR</strong> com <code>reválidate: 60</code> — 100K produtos inviabiliza rebuild completo. ISR gera sob demanda e reválida. Webhook do admin dispara <code>reválidatePath</code> quando preço muda.</li>
+<li><strong>Página de Busca (/search?q=...)</strong> &rarr; <strong>SSR</strong> — Cada query e única, impossível pre-gerar. Server busca no Elasticsearch e retorna HTML. Use Streaming SSR para enviar header + filters primeiro enquanto resultados carregam.</li>
+<li><strong>Carrinho (/cart)</strong> &rarr; <strong>CSR</strong> — Dados 100% do usuário logado, SEO irrelevante. Estado local + API calls. Performance depende do browser, não do servidor.</li>
+<li><strong>Checkout (/checkout)</strong> &rarr; <strong>CSR</strong> — Fluxo autenticado, multi-step form, integração com gateway de pagamento. SEO não importa. Nenhuma razão para SSR.</li>
+<li><strong>Blog (/blog/[slug])</strong> &rarr; <strong>SSG</strong> — Conteúdo estático, atualiza raramente. Performance máxima, SEO perfeito.</li>
+<li><strong>Página de Categorias (/categories/[slug])</strong> &rarr; <strong>ISR</strong> com <code>reválidate: 300</code> — Categorias mudam menós que produtos. 5 minutos de cache é suficiente.</li>
+</ul>
+</div>
+
+<div class="diagram">
+<div class="diagram-box green">Home<br><small>SSG</small></div>
+<div class="diagram-arrow">|</div>
+<div class="diagram-box cyan">Produtos<br><small>ISR (60s)</small></div>
+<div class="diagram-arrow">|</div>
+<div class="diagram-box blue">Busca<br><small>SSR + Streaming</small></div>
+<div class="diagram-arrow">|</div>
+<div class="diagram-box orange">Carrinho<br><small>CSR</small></div>
+<div class="diagram-arrow">|</div>
+<div class="diagram-box orange">Checkout<br><small>CSR</small></div>
+<div class="diagram-arrow">|</div>
+<div class="diagram-box green">Blog<br><small>SSG</small></div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Estratégia híbrida:</strong> A força do Next.js e permitir <strong>misturar estratégias na mesma aplicação</strong>. Cada rota pode ter sua própria estratégia. Não precisa escolher uma única abordagem para todo o site.</div>
+</div>
+
+<!-- ═══ 6. ARMADILHAS ═══ -->
+<h3>6. Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>SSR para TUDO:</strong> Usar SSR em páginas que não precisam (dashboard, configurações) desperdiça recursos do servidor e aumenta TTFB sem benefício. Se a página e autenticada e não precisa de SEO, use CSR.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>CSR para landing pages:</strong> Landing pages com CSR (SPA puro) tem SEO terrível. Google até executa JS, mas com delay e inconsistência. O primeiro resultado organico que aparece com HTML vazio perde posições para quem serve HTML completo.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Micro frontends para equipe de 3:</strong> A complexidade de Module Federation, contratos entre times, CI/CD independente e shared dependencies e enorme. Se você tem 3 devs, um monolito bem organizado com feature folders e 10x mais produtivo.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Hydration mismatch:</strong> Quando o HTML gerado no servidor não baté com o que o React gera no client, você tem um "hydration error". Causas comuns: usar <code>Date.now()</code> ou <code>Math.random()</code> no render, acessar <code>window</code> ou <code>localStorage</code> sem verificar se está no browser. Solução: use <code>useEffect</code> para valores que diferem entre server e client.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>ISR sem estratégia de invalidação:</strong> Definir <code>reválidate: 3600</code> (1 hora) e depois reclamar que o preço não atualizou. Use on-demand reválidation via webhook do CMS/admin para invalidar cache quando dados mudam. O <code>reválidate</code> é o fallback, não a estratégia principal.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Duplicar React em micro frontends:</strong> Sem <code>shared: { react: { singleton: true } }</code> no Module Federation, cada micro frontend carrega sua própria copia do React. Resultado: bundle de 5MB, hooks quebrados (dois React contexts diferentes), memória explodindo.</div>
+</div>
+
+<!-- ═══ 7. EXERCICIOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Um site de noticias tem 10.000 artigos. Artigos novos são publicados a cada 30 minutos. Qual estratégia de renderização você usaria e por que?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> <strong>ISR</strong> com <code>reválidate: 60</code> é <code>fallback: 'blocking'</code>. SSG puro seria inviável — rebuild de 10.000 páginas a cada 30 minutos é lento é custoso. SSR seria desperdicar servidor para artigos que não mudam. ISR gera artigos antigos no build, gera novos sob demanda (fallback: blocking), e reválida automáticamente. Artigos muito lidos ficam cacheados na CDN. Artigos raros são gerados no primeiro acesso. Adicione on-demand reválidation para correcoes urgentes via webhook do CMS.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Sua empresa tem 4 equipes (Catalogo, Checkout, Conta, Marketing). Cada equipe quer deploy independente. Qual abordagem de micro frontend você recomenda é como organizaria o projeto?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> <strong>Module Federation com Webpack 5</strong> em um monorepo (Turborepo). O Shell App (equipe Platform) controla roteamento, autenticação e layout. Cada equipe tem seu micro frontend expondo componentes via <code>exposes</code>. Compartilhe React é o Design System como <code>shared</code> singletons. Use Turborepo para build pipeline (build design-system primeiro, depois apps em paralelo). CI/CD independente por app — catálogo faz deploy sem afetar checkout. Contract testing entre micro frontends (TypeScript shared types no monorepo). Storybook no design-system para documentar componentes compartilhados.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você está migrando um SPA React (CSR puro) para Next.js. A página de produto tem SEO ruim. Qual é o plano de migração e quais armadilhas evitar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Migração incremental: 1) Mover para Next.js Pages Router (manter CSR por padrão). 2) Converter páginas de produto para <code>getStaticProps</code> + <code>getStaticPaths</code> com ISR (<code>reválidate: 120</code>). 3) Converter páginas de busca para <code>getServerSideProps</code> (SSR). 4) Manter dashboard/cart como CSR (sem SSR). <strong>Armadilhas:</strong> Hydration mismatch (verificar se componentes não acessam <code>window</code> durante SSR). Shared state — se usava Context/Redux com dados do <code>localStorage</code>, agora precisa hidratar no client via <code>useEffect</code>. Rotas de API — mover lógica BFF para <code>pages/api/</code>. Third-party scripts (analytics, pixel) devem carregar com <code>next/script</code> é strategy <code>afterInteráctive</code>.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — SSR, SSG, ISR & Micro Frontends</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="39-testes-especializados.html">&#8592; Testes Especializados</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="41-state-management-web-vitals.html" class="primary">Próximo: Staté Management & Web Vitals &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 40: SSR, SSG, ISR & Micro Frontends
+// ══════════════════════════════════════════
+const SECTION_NUM = 40;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual estratégia de renderização gera o HTML no browser após download do JavaScript?",
+    options: [
+      "SSR (Server-Side Rendering)",
+      "SSG (Static Site Generation)",
+      "CSR (Client-Side Rendering)",
+      "ISR (Incremental Static Regeneration)"
+    ],
+    correct: 2,
+    explanation: "No CSR, o servidor envia um HTML quase vazio com um bundle JS. O browser faz download, parseia e executa o JavaScript para montar o DOM. E o modelo clássico do React SPA."
+  },
+  {
+    question: "No Next.js, qual função gera HTML no momento do build (SSG) com possibilidade de revalidação em background (ISR)?",
+    options: [
+      "getServerSideProps com cache: true",
+      "getStaticProps com reválidate",
+      "generateStaticParams com reválidate",
+      "useStaticGeneration com ttl"
+    ],
+    correct: 1,
+    explanation: "getStaticProps gera HTML no build time (SSG). Adicionando a propriedade 'reválidate' com um número em segundos, o Next.js faz ISR — regenerando a página em background após o período configurado."
+  },
+  {
+    question: "Qual é o principal problema do CSR para páginas que precisam de SEO?",
+    options: [
+      "O CSS não carrega corretamente",
+      "O servidor gasta muitos recursos",
+      "Os crawlers recebem HTML vazio e podem não executar o JavaScript",
+      "O build time é muito longo"
+    ],
+    correct: 2,
+    explanation: "Com CSR, os crawlers (como o Googlebot) recebem um HTML com apenas uma div vazia é um script. Embora o Google execute JS, isso é lento, inconsistente e não garante indexação completa. SSR e SSG enviam HTML completo."
+  },
+  {
+    question: "Qual é a função da hidratação (hydration) no SSR?",
+    options: [
+      "Comprimir o HTML para reduzir o tamanho do bundle",
+      "Conectar event listeners ao HTML já renderizado pelo servidor",
+      "Converter CSS em variáveis JavaScript",
+      "Fazer cache do HTML na CDN"
+    ],
+    correct: 1,
+    explanation: "Hydration é o processo onde o React no browser 'adota' o HTML gerado pelo servidor, conectando event listeners e tornando a página interátiva. O HTML já está visível — a hidratação apenas adiciona a interátividade."
+  },
+  {
+    question: "O que diferencia Streaming SSR do SSR tradicional?",
+    options: [
+      "Streaming SSR usa WebSockets ao invés de HTTP",
+      "Streaming SSR envia HTML em chunks conforme fica pronto, ao invés de esperar tudo",
+      "Streaming SSR gera HTML no build time em vez de runtime",
+      "Streaming SSR não precisa de hidratação no client"
+    ],
+    correct: 1,
+    explanation: "No SSR tradicional, o servidor espera TODOS os dados para gerar o HTML completo e enviar. No Streaming SSR, o HTML é enviado em chunks — o header aparece enquanto os dados lentos ainda estão sendo buscados. Usa React Suspense boundaries."
+  },
+  {
+    question: "React Server Components (RSC) se diferenciam do SSR tradicional porque:",
+    options: [
+      "RSC não precisa de Node.js no servidor",
+      "RSC envia zero JavaScript ao browser para componentes de servidor",
+      "RSC funciona apenas com Vue e Svelte",
+      "RSC substitui completamente o SSR e SSG"
+    ],
+    correct: 1,
+    explanation: "Server Components executam exclusivamente no servidor e enviam apenas HTML ao browser — ZERO JavaScript. Diferente do SSR tradicional, onde o JS é enviado para hidratação. Componentes que precisam de interátividade são marcados com 'use client'."
+  },
+  {
+    question: "No Module Federation (Webpack 5), qual é o papel do campo 'shared' na configuração?",
+    options: [
+      "Definir quais componentes são exportados para outros micro frontends",
+      "Configurar as URLs dos micro frontends remotos",
+      "Compartilhar dependências como singleton para evitar duplicação entre micro frontends",
+      "Definir variáveis de ambiente compartilhadas"
+    ],
+    correct: 2,
+    explanation: "O campo 'shared' define dependências que devem ser compartilhadas como singleton entre host e remotes. Sem isso, cada micro frontend carregaria sua própria copia do React, causando conflitos de hooks e bundles enormes."
+  },
+  {
+    question: "Em Astro, o que significa a diretiva client:visible em um componente React?",
+    options: [
+      "O componente será renderizado apenas no servidor",
+      "O componente será pré-renderizado durante o build",
+      "O JavaScript do componente será carregado apenas quando ele ficar visível na viewport",
+      "O componente será escondido via CSS até receber dados"
+    ],
+    correct: 2,
+    explanation: "Astro usa 'Islands Architecture' — a página e HTML estático por padrão. A diretiva client:visible faz o JS do componente carregar via IntersectionObserver apenas quando o usuário scrolla até ele. Outras opções: client:load (imediato), client:idle (quando browser esta ocioso)."
+  },
+  {
+    question: "Qual das alternativas NÃO é uma abordagem válida para implementar micro frontends?",
+    options: [
+      "Module Federation com Webpack 5",
+      "Web Components com Shadow DOM",
+      "Server-Side Includes (SSI) com Nginx",
+      "React Context API com useReducer"
+    ],
+    correct: 3,
+    explanation: "React Context API e useReducer são ferramentas de state management dentro de uma única aplicação React, não uma abordagem de composicao de micro frontends. Module Federation, Web Components e SSI são abordagens válidas de composicao."
+  },
+  {
+    question: "Para um e-commerce com 100K produtos, qual combinação de estratégias e MAIS adequada?",
+    options: [
+      "CSR para tudo — simplifica a arquitetura",
+      "SSR para tudo — garante dados frescos",
+      "SSG para home/blog, ISR para produtos/categorias, SSR para busca, CSR para carrinho/checkout",
+      "SSG para tudo com rebuild a cada 5 minutos"
+    ],
+    correct: 2,
+    explanation: "Estratégia híbrida: SSG para páginas estáticas (home, blog), ISR para páginas de produto (dados mudam mas são cacheáveis), SSR para busca (queries únicas), CSR para áreas autenticadas (carrinho, checkout). Cada página usa a estratégia ótima para seu caso de uso."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina SSR, SSG, ISR e Micro Frontends.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

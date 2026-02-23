@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>38 — TDD, BDD & Pirâmide de Testes | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+
+/* ── PYRAMID DIAGRAM ── */
+.pyramid{display:flex;flex-direction:column;align-items:center;gap:0;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.pyramid-level{text-align:center;padding:12px 0;font-size:.8rem;font-weight:600;border-radius:var(--radius-sm);position:relative}
+.pyramid-level.top{width:30%;background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.pyramid-level.mid{width:55%;background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange);margin-top:4px}
+.pyramid-level.bottom{width:80%;background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent);margin-top:4px}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="37-sli-slo-sla-error-budgets.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>38</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="39-testes-especializados.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:57.6%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 38</span>
+<h2>TDD, BDD & Pirâmide de Testes</h2>
+<div class="section-line"></div>
+
+<p>Testes são a rede de segurança do desenvolvedor. Sem eles, cada deploy é um salto de fe. Mas testes mal feitos são piores do que nenhum teste — criam falsa confiança, são lentos, frágeis e caros de manter. Nesta seção, vamos dominar as <strong>métodologias de teste</strong> (TDD, BDD), as <strong>estratégias de distribuição</strong> (pirâmide, trophy) e as <strong>técnicas práticas</strong> (doubles, patterns, ferramentas) que separam times amadores de times profissionais.</p>
+
+<p>A pergunta central não é "devo testar?" — e <strong>"o que testar, como testar, e quanto testar?"</strong>. A resposta errada gera suites que levam 40 minutos, quebram com qualquer refatoração, e testam getters/setters ao invés de comportamento.</p>
+
+<!-- ═══ TDD ═══ -->
+<h3>TDD — Test-Driven Development</h3>
+<p>TDD e uma disciplina de design, não apenas uma técnica de teste. Criado por Kent Beck, o ciclo é simples: <strong>Red → Green → Refactor</strong>. Você escreve o teste ANTES do código de produção. O teste falha (Red), você implementa o mínimo para passa-lo (Green), e depois melhora o código sem alterár o comportamento (Refactor).</p>
+
+<div class="diagram">
+<div class="diagram-box red">RED<br><small>Escreva um teste que falha</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">GREEN<br><small>Implemente o mínimo</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">REFACTOR<br><small>Melhore sem quebrar</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">REPITA<br><small>Próximo requisito</small></div>
+</div>
+
+<h4>Por que TDD funciona?</h4>
+<ul>
+<li><strong>Pressão de design</strong> — Código difícil de testar e código mal projetado. TDD força você a pensar em interfaces, dependências e responsabilidades ANTES de implementar</li>
+<li><strong>Rede de segurança</strong> — Cada linha de produção tem um teste correspondente. Refatorações são seguras porque qualquer regressão e detectada imediatamente</li>
+<li><strong>Documentação viva</strong> — Os testes descrevem o comportamento esperado. Novos devs leem os testes para entender o que o sistema faz</li>
+<li><strong>Baby steps</strong> — Forca incrementos pequenos. Ao invés de escrever 200 linhas e depois debugar, você avança 5 linhas por vez com feedback constante</li>
+<li><strong>Elimina gold plating</strong> — Você só implementa o que o teste exige. Sem features fantasmas</li>
+</ul>
+
+<h4>TDD Workflow — Passó a Passo</h4>
+<ol>
+<li><strong>Entenda o requisito</strong> — Ex: "Senha deve ter mínimo 8 caracteres, 1 maiuscula, 1 número"</li>
+<li><strong>Escreva o teste mais simples que falha</strong> — Comece pelo caso mais básico</li>
+<li><strong>Rode o teste — confirme que falha (RED)</strong> — Se já passa, o teste e inútil</li>
+<li><strong>Escreva o MÍNIMO de código para passar</strong> — Sem otimizar, sem generalizar</li>
+<li><strong>Rode o teste — confirme que passa (GREEN)</strong></li>
+<li><strong>Refatore</strong> — Elimine duplicação, melhore nomes, extraia funções</li>
+<li><strong>Rode TODOS os testes — confirme que nada quebrou</strong></li>
+<li><strong>Repita</strong> — Próximo caso de teste</li>
+</ol>
+
+<h4>Exemplo Completo: TDD de um Password Validator</h4>
+<pre data-lang="typescript"><code><span class="cm">// ── PASSO 1: Primeiro teste (RED) ──</span>
+<span class="cm">// password-válidator.spec.ts</span>
+<span class="kw">import</span> { <span class="fn">válidatePassword</span> } <span class="kw">from</span> <span class="str">'./password-válidator'</span>;
+
+<span class="fn">describe</span>(<span class="str">'válidatePassword'</span>, () => {
+  <span class="fn">it</span>(<span class="str">'deve rejeitar senha com menós de 8 caracteres'</span>, () => {
+    <span class="kw">const</span> result = <span class="fn">válidatePassword</span>(<span class="str">'Ab1'</span>);
+    <span class="fn">expect</span>(result.valid).<span class="fn">toBe</span>(<span class="kw">false</span>);
+    <span class="fn">expect</span>(result.errors).<span class="fn">toContain</span>(<span class="str">'Mínimo 8 caracteres'</span>);
+  });
+});
+
+<span class="cm">// ── PASSO 2: Implementação mínima (GREEN) ──</span>
+<span class="cm">// password-válidator.ts</span>
+<span class="kw">interface</span> <span class="tp">ValidationResult</span> {
+  valid: <span class="tp">boolean</span>;
+  errors: <span class="tp">string</span>[];
+}
+
+<span class="kw">export function</span> <span class="fn">válidatePassword</span>(password: <span class="tp">string</span>): <span class="tp">ValidationResult</span> {
+  <span class="kw">const</span> errors: <span class="tp">string</span>[] = [];
+  <span class="kw">if</span> (password.length < <span class="num">8</span>) errors.<span class="fn">push</span>(<span class="str">'Mínimo 8 caracteres'</span>);
+  <span class="kw">return</span> { valid: errors.length === <span class="num">0</span>, errors };
+}
+
+<span class="cm">// ── PASSO 3: Segundo teste (RED) — maiuscula ──</span>
+<span class="fn">it</span>(<span class="str">'deve rejeitar senha sem letra maiuscula'</span>, () => {
+  <span class="kw">const</span> result = <span class="fn">válidatePassword</span>(<span class="str">'abcdefgh1'</span>);
+  <span class="fn">expect</span>(result.valid).<span class="fn">toBe</span>(<span class="kw">false</span>);
+  <span class="fn">expect</span>(result.errors).<span class="fn">toContain</span>(<span class="str">'Deve conter letra maiuscula'</span>);
+});
+
+<span class="cm">// ── PASSO 4: Implementa maiuscula (GREEN) ──</span>
+<span class="kw">export function</span> <span class="fn">válidatePassword</span>(password: <span class="tp">string</span>): <span class="tp">ValidationResult</span> {
+  <span class="kw">const</span> errors: <span class="tp">string</span>[] = [];
+  <span class="kw">if</span> (password.length < <span class="num">8</span>) errors.<span class="fn">push</span>(<span class="str">'Mínimo 8 caracteres'</span>);
+  <span class="kw">if</span> (!/[A-Z]/.<span class="fn">test</span>(password)) errors.<span class="fn">push</span>(<span class="str">'Deve conter letra maiuscula'</span>);
+  <span class="kw">return</span> { valid: errors.length === <span class="num">0</span>, errors };
+}
+
+<span class="cm">// ── PASSO 5: Terceiro teste — número ──</span>
+<span class="fn">it</span>(<span class="str">'deve rejeitar senha sem número'</span>, () => {
+  <span class="kw">const</span> result = <span class="fn">válidatePassword</span>(<span class="str">'Abcdefgh'</span>);
+  <span class="fn">expect</span>(result.valid).<span class="fn">toBe</span>(<span class="kw">false</span>);
+  <span class="fn">expect</span>(result.errors).<span class="fn">toContain</span>(<span class="str">'Deve conter número'</span>);
+});
+
+<span class="cm">// ── PASSO 6: Implementa número (GREEN) ──</span>
+<span class="kw">if</span> (!/[0-9]/.<span class="fn">test</span>(password)) errors.<span class="fn">push</span>(<span class="str">'Deve conter número'</span>);
+
+<span class="cm">// ── PASSO 7: Teste do caso feliz ──</span>
+<span class="fn">it</span>(<span class="str">'deve aceitar senha válida'</span>, () => {
+  <span class="kw">const</span> result = <span class="fn">válidatePassword</span>(<span class="str">'SenhaForte1'</span>);
+  <span class="fn">expect</span>(result.valid).<span class="fn">toBe</span>(<span class="kw">true</span>);
+  <span class="fn">expect</span>(result.errors).<span class="fn">toHaveLength</span>(<span class="num">0</span>);
+});
+
+<span class="cm">// ── PASSO 8: REFACTOR — extrair regras (sem alterár comportamento) ──</span>
+<span class="kw">type</span> <span class="tp">Rule</span> = { test: (pw: <span class="tp">string</span>) => <span class="tp">boolean</span>; message: <span class="tp">string</span> };
+
+<span class="kw">const</span> RULES: <span class="tp">Rule</span>[] = [
+  { test: pw => pw.length >= <span class="num">8</span>,    message: <span class="str">'Mínimo 8 caracteres'</span> },
+  { test: pw => /[A-Z]/.<span class="fn">test</span>(pw), message: <span class="str">'Deve conter letra maiuscula'</span> },
+  { test: pw => /[0-9]/.<span class="fn">test</span>(pw), message: <span class="str">'Deve conter número'</span> },
+];
+
+<span class="kw">export function</span> <span class="fn">válidatePassword</span>(password: <span class="tp">string</span>): <span class="tp">ValidationResult</span> {
+  <span class="kw">const</span> errors = RULES
+    .<span class="fn">filter</span>(rule => !rule.<span class="fn">test</span>(password))
+    .<span class="fn">map</span>(rule => rule.message);
+  <span class="kw">return</span> { valid: errors.length === <span class="num">0</span>, errors };
+}
+<span class="cm">// Todos os testes continuam passando. Código limpo e extensível.</span></code></pre>
+
+<h4>Quando TDD vale a pena vs quando é overhead</h4>
+<div class="table-wrap">
+<table>
+<tr><th>TDD vale a pena</th><th>TDD pode ser overhead</th></tr>
+<tr><td>Lógica de negócio complexa (cálculos, válidações, workflows)</td><td>Prototipo rápido / proof of concept</td></tr>
+<tr><td>Código que será mantido por meses/anos</td><td>Scripts descartáveis (one-off migrations)</td></tr>
+<tr><td>Bibliotecas e APIs públicas</td><td>Templates visuais (CSS puro, layouts)</td></tr>
+<tr><td>Regras financeiras, fiscais, compliance</td><td>Integração com APIs externas instaves (melhor integration test)</td></tr>
+<tr><td>Refatoração de código legado (primeiro escreva testes)</td><td>Exploração de tecnologia nova (spike)</td></tr>
+</table>
+</div>
+
+<!-- ═══ BDD ═══ -->
+<h3>BDD — Behavior-Driven Development</h3>
+<p>BDD e uma evolução do TDD que foca no <strong>comportamento de negócio</strong> ao invés de detalhes técnicos. Criado por Dan North, BDD usa uma linguagem natural estruturada (<strong>Gherkin</strong>) para descrever cenários que qualquer stakeholder consegue ler — PO, QA, dev, designer.</p>
+
+<p>A grande sacada do BDD: o <strong>mesmo documento</strong> serve como específicação, documentação e teste automatizado. Não existe "o que foi específicado" vs "o que foi implementado" — são a mesma coisa.</p>
+
+<h4>Gherkin: Given-When-Then</h4>
+<pre data-lang="gherkin"><code><span class="cm"># login.feature</span>
+<span class="kw">Feature</span>: Login de usuário
+
+  <span class="kw">Scenário</span>: Login com credenciais válidas
+    <span class="kw">Given</span> um usuário registrado com email <span class="str">"joao@email.com"</span> e senha <span class="str">"SenhaForte1"</span>
+    <span class="kw">When</span> ele submete o formulário de login com essas credenciais
+    <span class="kw">Then</span> ele deve ser redirecionado para o dashboard
+    <span class="kw">And</span> deve ver a mensagem <span class="str">"Bem-vindo, Joao"</span>
+
+  <span class="kw">Scenário</span>: Login com senha incorreta
+    <span class="kw">Given</span> um usuário registrado com email <span class="str">"joao@email.com"</span>
+    <span class="kw">When</span> ele submete o formulário com senha <span class="str">"errada123"</span>
+    <span class="kw">Then</span> deve ver a mensagem de erro <span class="str">"Credenciais inválidas"</span>
+    <span class="kw">And</span> deve permanecer na página de login
+
+  <span class="kw">Scenário Outline</span>: Válidação de senha
+    <span class="kw">Given</span> um formulário de cadastro
+    <span class="kw">When</span> o usuário digita a senha <span class="str">"&lt;senha&gt;"</span>
+    <span class="kw">Then</span> a validação deve retornar <span class="str">"&lt;resultado&gt;"</span>
+
+    <span class="kw">Examples</span>:
+      | senha        | resultado |
+      | abc          | inválida  |
+      | Abcdefgh1    | válida    |
+      | semMaiusc1   | inválida  |</code></pre>
+
+<h4>Step Definitions com Jest-Cucumber</h4>
+<pre data-lang="typescript"><code><span class="cm">// login.steps.ts</span>
+<span class="kw">import</span> { defineFeature, loadFeature } <span class="kw">from</span> <span class="str">'jest-cucumber'</span>;
+<span class="kw">import</span> { <span class="tp">AuthService</span> } <span class="kw">from</span> <span class="str">'./auth.service'</span>;
+<span class="kw">import</span> { <span class="tp">UserRepository</span> } <span class="kw">from</span> <span class="str">'./user.repository'</span>;
+
+<span class="kw">const</span> feature = <span class="fn">loadFeature</span>(<span class="str">'./login.feature'</span>);
+
+<span class="fn">defineFeature</span>(feature, (test) => {
+  <span class="kw">let</span> authService: <span class="tp">AuthService</span>;
+  <span class="kw">let</span> result: { success: <span class="tp">boolean</span>; redirect?: <span class="tp">string</span>; error?: <span class="tp">string</span> };
+
+  <span class="fn">beforeEach</span>(() => {
+    authService = <span class="kw">new</span> <span class="tp">AuthService</span>(<span class="kw">new</span> <span class="tp">UserRepository</span>());
+  });
+
+  <span class="fn">test</span>(<span class="str">'Login com credenciais válidas'</span>, ({ given, when, then, and }) => {
+    <span class="fn">given</span>(<span class="str">'um usuário registrado com email "joao@email.com" e senha "SenhaForte1"'</span>,
+      <span class="kw">async</span> () => {
+        <span class="kw">await</span> authService.<span class="fn">register</span>({
+          email: <span class="str">'joao@email.com'</span>,
+          password: <span class="str">'SenhaForte1'</span>,
+          name: <span class="str">'Joao'</span>
+        });
+      }
+    );
+
+    <span class="fn">when</span>(<span class="str">'ele submete o formulário de login com essas credenciais'</span>,
+      <span class="kw">async</span> () => {
+        result = <span class="kw">await</span> authService.<span class="fn">login</span>(<span class="str">'joao@email.com'</span>, <span class="str">'SenhaForte1'</span>);
+      }
+    );
+
+    <span class="fn">then</span>(<span class="str">'ele deve ser redirecionado para o dashboard'</span>, () => {
+      <span class="fn">expect</span>(result.success).<span class="fn">toBe</span>(<span class="kw">true</span>);
+      <span class="fn">expect</span>(result.redirect).<span class="fn">toBe</span>(<span class="str">'/dashboard'</span>);
+    });
+
+    <span class="fn">and</span>(<span class="str">'deve ver a mensagem "Bem-vindo, Joao"'</span>, () => {
+      <span class="fn">expect</span>(result.message).<span class="fn">toBe</span>(<span class="str">'Bem-vindo, Joao'</span>);
+    });
+  });
+});</code></pre>
+
+<h4>Quando BDD agrega valor</h4>
+<ul>
+<li><strong>Times multidisciplinares</strong> — QA, PO e devs precisam de linguagem comum</li>
+<li><strong>Requisitos ambiguos</strong> — Gherkin força clareza: o cenário funciona ou não</li>
+<li><strong>Domínio complexo</strong> — Financeiro, saúde, compliance — onde o "o que" importa mais que o "como"</li>
+<li><strong>Documentação viva</strong> — Features sempre sincronizadas com o código real</li>
+</ul>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>BDD não substitui unit tests.</strong> Cenários Gherkin são testes de alto nível (comportamento). Você ainda precisa de unit tests para lógica interna, edge cases e performance. BDD complementa, não substitui.</div>
+</div>
+
+<!-- ═══ PIRAMIDE DE TESTES ═══ -->
+<h3>Pirâmide de Testes</h3>
+<p>Proposta por Mike Cohn, a pirâmide de testes é o modelo clássico de distribuição. A ideia: <strong>muitos testes rápidos na base, poucos testes lentos no topo</strong>. Cada camada tem um propósito diferente é um custo diferente.</p>
+
+<div class="pyramid">
+<div class="pyramid-level top">E2E (poucos, lentos, reais)<br><small>~10% — Simula usuário real no browser</small></div>
+<div class="pyramid-level mid">Integration (moderados, fronteiras)<br><small>~20% — Testa comunicação entre módulos</small></div>
+<div class="pyramid-level bottom">Unit (muitos, rápidos, isolados)<br><small>~70% — Testa funções e classes isoladamente</small></div>
+</div>
+
+<h4>Por que essa distribuição?</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Camada</th><th>Velocidade</th><th>Custo de manutenção</th><th>Confiança</th><th>Quantidade ideal</th></tr>
+<tr><td><strong>Unit</strong></td><td>Milissegundos</td><td>Baixo</td><td>Alta (para lógica isolada)</td><td>~70%</td></tr>
+<tr><td><strong>Integration</strong></td><td>Segundos</td><td>Medio</td><td>Alta (para fronteiras)</td><td>~20%</td></tr>
+<tr><td><strong>E2E</strong></td><td>Minutos</td><td>Alto</td><td>Muito alta (fluxo real)</td><td>~10%</td></tr>
+</table>
+</div>
+
+<p>A regra 70/20/10 é uma <strong>heuristica</strong>, não uma lei. O ponto central e: não inverta a pirâmide. Um projeto com 200 testes E2E e 5 unit tests é um pesadelo — lento, frágil é caro de manter.</p>
+
+<!-- ═══ TESTING TROPHY ═══ -->
+<h3>Testing Trophy (Kent C. Dodds)</h3>
+<p>Kent C. Dodds propoe uma alternativa a pirâmide: o <strong>Testing Trophy</strong>, que enfatiza testes de integração como a camada com melhor ROI. A famosa frase:</p>
+
+<div class="card blue">
+<div class="card-title">Filosofia do Testing Trophy</div>
+<p style="color:var(--text);font-size:1rem;font-weight:600;font-style:italic;margin-bottom:8px">"Write tests. Not too many. Mostly integration."</p>
+<p>Escreva testes. Não muitos demais. Principalmente de integração.</p>
+</div>
+
+<div class="diagram">
+<div class="diagram-box red">E2E<br><small>Poucos</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box orange">Integration<br><small>MAIORIA (maior ROI)</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box green">Unit<br><small>Lógica pura apenas</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box cyan">Static Analysis<br><small>TypeScript + ESLint</small></div>
+</div>
+
+<h4>Por que integração tem o melhor ROI?</h4>
+<ul>
+<li><strong>Testa o que o usuário realmente faz</strong> — Uma requisição HTTP que passa por middleware, controller, service e banco</li>
+<li><strong>Pega bugs que unit tests não pegam</strong> — Configuração errada, query SQL com bug, serialization issue</li>
+<li><strong>Mais resistente a refatoração</strong> — Se você mudar a implementação interna mas o endpoint continuar funcionando, o teste continua passando</li>
+<li><strong>Custo-benefício ideal</strong> — Mais rápido que E2E, mais realista que unit</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Na prática, use ambos.</strong> A pirâmide é o trophy não são mutuamente exclusivos. A maioria dos projetos profissionais usa uma combinação: unit tests para lógica complexa pura, integration tests para APIs e fronteiras, E2E para fluxos críticos do negócio.</div>
+</div>
+
+<!-- ═══ UNIT TESTS ═══ -->
+<h3>Unit Tests — Em Profundidade</h3>
+<p>Testes unitários verificam uma <strong>única unidade de código</strong> (função, classe, método) de forma <strong>isolada</strong>. Todas as dependências externas são substituidas por test doubles.</p>
+
+<h4>O que testar (e o que NÃO testar)</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Teste</th><th>Não teste</th></tr>
+<tr><td>Funções puras (cálculos, transformações, válidações)</td><td>Detalhes de implementação (ordem de chamadas internas)</td></tr>
+<tr><td>Lógica de negócio (regras, workflows, state machines)</td><td>Getters/setters triviais</td></tr>
+<tr><td>Edge cases (null, undefined, arrays vazios, limites)</td><td>Construtores que apenas atribuem valores</td></tr>
+<tr><td>Error handling (exceções esperadas)</td><td>Código de terceiros (confie na lib, teste SEU usó dela)</td></tr>
+<tr><td>Condições de contorno (0, 1, max, overflow)</td><td>Logs e side effects visuais</td></tr>
+</table>
+</div>
+
+<h4>Padrão AAA — Arrange, Act, Assert</h4>
+<pre data-lang="typescript"><code><span class="cm">// Padrão AAA — a estrutura universal de um bom teste</span>
+<span class="fn">describe</span>(<span class="str">'PricingService'</span>, () => {
+  <span class="fn">describe</span>(<span class="str">'calculateDiscount'</span>, () => {
+
+    <span class="fn">it</span>(<span class="str">'deve aplicar 10% de desconto para compras acima de R$100'</span>, () => {
+      <span class="cm">// ARRANGE — configura o cenário</span>
+      <span class="kw">const</span> service = <span class="kw">new</span> <span class="tp">PricingService</span>();
+      <span class="kw">const</span> order = { items: [{ price: <span class="num">150</span>, qty: <span class="num">1</span> }] };
+
+      <span class="cm">// ACT — executa a ação</span>
+      <span class="kw">const</span> result = service.<span class="fn">calculateDiscount</span>(order);
+
+      <span class="cm">// ASSERT — verifica o resultado</span>
+      <span class="fn">expect</span>(result.discount).<span class="fn">toBe</span>(<span class="num">15</span>);
+      <span class="fn">expect</span>(result.finalPrice).<span class="fn">toBe</span>(<span class="num">135</span>);
+    });
+
+    <span class="fn">it</span>(<span class="str">'não deve aplicar desconto para compras abaixo de R$100'</span>, () => {
+      <span class="kw">const</span> service = <span class="kw">new</span> <span class="tp">PricingService</span>();
+      <span class="kw">const</span> order = { items: [{ price: <span class="num">50</span>, qty: <span class="num">1</span> }] };
+
+      <span class="kw">const</span> result = service.<span class="fn">calculateDiscount</span>(order);
+
+      <span class="fn">expect</span>(result.discount).<span class="fn">toBe</span>(<span class="num">0</span>);
+      <span class="fn">expect</span>(result.finalPrice).<span class="fn">toBe</span>(<span class="num">50</span>);
+    });
+
+    <span class="fn">it</span>(<span class="str">'deve lancar erro para pedido sem itens'</span>, () => {
+      <span class="kw">const</span> service = <span class="kw">new</span> <span class="tp">PricingService</span>();
+
+      <span class="fn">expect</span>(() => service.<span class="fn">calculateDiscount</span>({ items: [] }))
+        .<span class="fn">toThrow</span>(<span class="str">'Pedido deve ter ao menós 1 item'</span>);
+    });
+  });
+});</code></pre>
+
+<h4>Testando Service com Dependências Mockadas</h4>
+<pre data-lang="typescript"><code><span class="cm">// user.service.spec.ts — testando UserService com mock do repositório</span>
+<span class="kw">import</span> { <span class="tp">UserService</span> } <span class="kw">from</span> <span class="str">'./user.service'</span>;
+<span class="kw">import</span> { <span class="tp">IUserRepository</span> } <span class="kw">from</span> <span class="str">'./user.repository.interface'</span>;
+<span class="kw">import</span> { <span class="tp">IHashProvider</span> } <span class="kw">from</span> <span class="str">'./hash.provider.interface'</span>;
+
+<span class="fn">describe</span>(<span class="str">'UserService'</span>, () => {
+  <span class="kw">let</span> service: <span class="tp">UserService</span>;
+  <span class="kw">let</span> mockRepo: jest.<span class="tp">Mocked</span>&lt;<span class="tp">IUserRepository</span>&gt;;
+  <span class="kw">let</span> mockHash: jest.<span class="tp">Mocked</span>&lt;<span class="tp">IHashProvider</span>&gt;;
+
+  <span class="fn">beforeEach</span>(() => {
+    mockRepo = {
+      findByEmail: jest.<span class="fn">fn</span>(),
+      save: jest.<span class="fn">fn</span>(),
+    };
+    mockHash = {
+      hash: jest.<span class="fn">fn</span>().<span class="fn">mockResolvedValue</span>(<span class="str">'hashed_password'</span>),
+      compare: jest.<span class="fn">fn</span>(),
+    };
+    service = <span class="kw">new</span> <span class="tp">UserService</span>(mockRepo, mockHash);
+  });
+
+  <span class="fn">it</span>(<span class="str">'deve criar usuário quando email não existe'</span>, <span class="kw">async</span> () => {
+    <span class="cm">// Arrange</span>
+    mockRepo.findByEmail.<span class="fn">mockResolvedValue</span>(<span class="kw">null</span>);
+    mockRepo.save.<span class="fn">mockResolvedValue</span>({ id: <span class="str">'1'</span>, email: <span class="str">'a@b.com'</span>, password: <span class="str">'hashed_password'</span> });
+
+    <span class="cm">// Act</span>
+    <span class="kw">const</span> user = <span class="kw">await</span> service.<span class="fn">register</span>({ email: <span class="str">'a@b.com'</span>, password: <span class="str">'Senha123'</span> });
+
+    <span class="cm">// Assert</span>
+    <span class="fn">expect</span>(user.id).<span class="fn">toBe</span>(<span class="str">'1'</span>);
+    <span class="fn">expect</span>(mockHash.hash).<span class="fn">toHaveBeenCalledWith</span>(<span class="str">'Senha123'</span>);
+    <span class="fn">expect</span>(mockRepo.save).<span class="fn">toHaveBeenCalledWith</span>(
+      <span class="fn">expect</span>.<span class="fn">objectContaining</span>({ email: <span class="str">'a@b.com'</span>, password: <span class="str">'hashed_password'</span> })
+    );
+  });
+
+  <span class="fn">it</span>(<span class="str">'deve rejeitar email duplicado'</span>, <span class="kw">async</span> () => {
+    mockRepo.findByEmail.<span class="fn">mockResolvedValue</span>({ id: <span class="str">'1'</span>, email: <span class="str">'a@b.com'</span> });
+
+    <span class="kw">await</span> <span class="fn">expect</span>(
+      service.<span class="fn">register</span>({ email: <span class="str">'a@b.com'</span>, password: <span class="str">'Senha123'</span> })
+    ).<span class="fn">rejects</span>.<span class="fn">toThrow</span>(<span class="str">'Email já cadastrado'</span>);
+
+    <span class="fn">expect</span>(mockRepo.save).<span class="fn">not</span>.<span class="fn">toHaveBeenCalled</span>();
+  });
+});</code></pre>
+
+<!-- ═══ INTEGRATION TESTS ═══ -->
+<h3>Integration Tests — Testando Fronteiras Reais</h3>
+<p>Testes de integração verificam que <strong>múltiplos componentes funcionam juntos</strong> corretamente. Ao contrário de unit tests, eles usam dependências reais (ou quase reais): banco de dados, HTTP, filas, cache.</p>
+
+<h4>Testcontainers — Banco de Dados Real nós Testes</h4>
+<pre data-lang="typescript"><code><span class="cm">// Testcontainers sobe um PostgreSQL real em Docker durante os testes</span>
+<span class="kw">import</span> { <span class="tp">PostgreSqlContainer</span> } <span class="kw">from</span> <span class="str">'@testcontainers/postgresql'</span>;
+<span class="kw">import</span> { <span class="tp">DataSource</span> } <span class="kw">from</span> <span class="str">'typeorm'</span>;
+
+<span class="kw">let</span> container: <span class="tp">StartedPostgreSqlContainer</span>;
+<span class="kw">let</span> dataSource: <span class="tp">DataSource</span>;
+
+<span class="fn">beforeAll</span>(<span class="kw">async</span> () => {
+  <span class="cm">// Sobe container PostgreSQL real</span>
+  container = <span class="kw">await new</span> <span class="tp">PostgreSqlContainer</span>()
+    .<span class="fn">withDatabase</span>(<span class="str">'testdb'</span>)
+    .<span class="fn">start</span>();
+
+  dataSource = <span class="kw">new</span> <span class="tp">DataSource</span>({
+    type: <span class="str">'postgres'</span>,
+    host: container.<span class="fn">getHost</span>(),
+    port: container.<span class="fn">getPort</span>(),
+    username: container.<span class="fn">getUsername</span>(),
+    password: container.<span class="fn">getPassword</span>(),
+    database: container.<span class="fn">getDatabase</span>(),
+    entities: [<span class="tp">User</span>, <span class="tp">Order</span>],
+    synchronize: <span class="kw">true</span>,
+  });
+  <span class="kw">await</span> dataSource.<span class="fn">initialize</span>();
+}, <span class="num">30000</span>); <span class="cm">// timeout maior para subir container</span>
+
+<span class="fn">afterAll</span>(<span class="kw">async</span> () => {
+  <span class="kw">await</span> dataSource.<span class="fn">destroy</span>();
+  <span class="kw">await</span> container.<span class="fn">stop</span>();
+});</code></pre>
+
+<h4>NestJS Integration Test com Supertest</h4>
+<pre data-lang="typescript"><code><span class="cm">// orders.integration.spec.ts — teste de integração completo com NestJS</span>
+<span class="kw">import</span> { <span class="tp">Test</span>, <span class="tp">TestingModule</span> } <span class="kw">from</span> <span class="str">'@nestjs/testing'</span>;
+<span class="kw">import</span> { <span class="tp">INestApplication</span>, <span class="tp">ValidationPipe</span> } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+<span class="kw">import</span> * <span class="kw">as</span> request <span class="kw">from</span> <span class="str">'supertest'</span>;
+<span class="kw">import</span> { <span class="tp">AppModule</span> } <span class="kw">from</span> <span class="str">'./app.module'</span>;
+
+<span class="fn">describe</span>(<span class="str">'Orders API (Integration)'</span>, () => {
+  <span class="kw">let</span> app: <span class="tp">INestApplication</span>;
+  <span class="kw">let</span> authToken: <span class="tp">string</span>;
+
+  <span class="fn">beforeAll</span>(<span class="kw">async</span> () => {
+    <span class="kw">const</span> module: <span class="tp">TestingModule</span> = <span class="kw">await</span> <span class="tp">Test</span>.<span class="fn">createTestingModule</span>({
+      imports: [<span class="tp">AppModule</span>],
+    }).<span class="fn">compile</span>();
+
+    app = module.<span class="fn">createNestApplication</span>();
+    app.<span class="fn">useGlobalPipes</span>(<span class="kw">new</span> <span class="tp">ValidationPipe</span>({
+      whitelist: <span class="kw">true</span>,
+      forbidNonWhitelisted: <span class="kw">true</span>,
+    }));
+    <span class="kw">await</span> app.<span class="fn">init</span>();
+
+    <span class="cm">// Autentica para obter token</span>
+    <span class="kw">const</span> loginRes = <span class="kw">await</span> <span class="fn">request</span>(app.<span class="fn">getHttpServer</span>())
+      .<span class="fn">post</span>(<span class="str">'/auth/login'</span>)
+      .<span class="fn">send</span>({ email: <span class="str">'test@test.com'</span>, password: <span class="str">'Test1234'</span> });
+    authToken = loginRes.body.accessToken;
+  });
+
+  <span class="fn">afterAll</span>(<span class="kw">async</span> () => {
+    <span class="kw">await</span> app.<span class="fn">close</span>();
+  });
+
+  <span class="fn">describe</span>(<span class="str">'POST /orders'</span>, () => {
+    <span class="fn">it</span>(<span class="str">'deve criar pedido e retornar 201'</span>, <span class="kw">async</span> () => {
+      <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">request</span>(app.<span class="fn">getHttpServer</span>())
+        .<span class="fn">post</span>(<span class="str">'/orders'</span>)
+        .<span class="fn">set</span>(<span class="str">'Authorization'</span>, <span class="str">`Bearer ${authToken}`</span>)
+        .<span class="fn">send</span>({
+          items: [{ productId: <span class="str">'prod-1'</span>, quantity: <span class="num">2</span> }],
+        })
+        .<span class="fn">expect</span>(<span class="num">201</span>);
+
+      <span class="fn">expect</span>(res.body).<span class="fn">toMatchObject</span>({
+        id: <span class="fn">expect</span>.<span class="fn">any</span>(<span class="tp">String</span>),
+        status: <span class="str">'pending'</span>,
+        items: <span class="fn">expect</span>.<span class="fn">arrayContaining</span>([
+          <span class="fn">expect</span>.<span class="fn">objectContaining</span>({ productId: <span class="str">'prod-1'</span>, quantity: <span class="num">2</span> }),
+        ]),
+      });
+    });
+
+    <span class="fn">it</span>(<span class="str">'deve retornar 400 para payload inválido'</span>, <span class="kw">async</span> () => {
+      <span class="kw">await</span> <span class="fn">request</span>(app.<span class="fn">getHttpServer</span>())
+        .<span class="fn">post</span>(<span class="str">'/orders'</span>)
+        .<span class="fn">set</span>(<span class="str">'Authorization'</span>, <span class="str">`Bearer ${authToken}`</span>)
+        .<span class="fn">send</span>({ items: [] }) <span class="cm">// vazio</span>
+        .<span class="fn">expect</span>(<span class="num">400</span>);
+    });
+
+    <span class="fn">it</span>(<span class="str">'deve retornar 401 sem autenticação'</span>, <span class="kw">async</span> () => {
+      <span class="kw">await</span> <span class="fn">request</span>(app.<span class="fn">getHttpServer</span>())
+        .<span class="fn">post</span>(<span class="str">'/orders'</span>)
+        .<span class="fn">send</span>({ items: [{ productId: <span class="str">'prod-1'</span>, quantity: <span class="num">1</span> }] })
+        .<span class="fn">expect</span>(<span class="num">401</span>);
+    });
+  });
+
+  <span class="fn">describe</span>(<span class="str">'GET /orders/:id'</span>, () => {
+    <span class="fn">it</span>(<span class="str">'deve retornar 404 para pedido inexistente'</span>, <span class="kw">async</span> () => {
+      <span class="kw">await</span> <span class="fn">request</span>(app.<span class="fn">getHttpServer</span>())
+        .<span class="fn">get</span>(<span class="str">'/orders/uuid-inexistente'</span>)
+        .<span class="fn">set</span>(<span class="str">'Authorization'</span>, <span class="str">`Bearer ${authToken}`</span>)
+        .<span class="fn">expect</span>(<span class="num">404</span>);
+    });
+  });
+});</code></pre>
+
+<!-- ═══ E2E TESTS ═══ -->
+<h3>E2E Tests — Simulando o Usuário Real</h3>
+<p>Testes E2E (End-to-End) executam o sistema <strong>como um usuário real faria</strong>: abrindo um browser, clicando em botoes, preenchendo formulários, verificando o que aparece na tela. São os mais lentos, mais frágeis é mais caros — mas também os que dão mais confiança para fluxos críticos.</p>
+
+<h4>Cypress vs Playwright</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Cypress</th><th>Playwright</th></tr>
+<tr><td><strong>Browsers</strong></td><td>Chrome, Firefox, Edge</td><td>Chrome, Firefox, Safari, Edge</td></tr>
+<tr><td><strong>Linguagem</strong></td><td>JavaScript/TypeScript</td><td>JS/TS, Python, .NET, Java</td></tr>
+<tr><td><strong>Multi-tab</strong></td><td>Não suporta</td><td>Suporta nativamente</td></tr>
+<tr><td><strong>Velocidade</strong></td><td>Rápido (in-browser)</td><td>Mais rápido (CDP/native)</td></tr>
+<tr><td><strong>DX (Developer Experience)</strong></td><td>Excelente (time travel, GUI)</td><td>Excelente (codegen, trace viewer)</td></tr>
+<tr><td><strong>Paralelismo</strong></td><td>Pago (Cypress Cloud)</td><td>Gratuito (sharding nativo)</td></tr>
+<tr><td><strong>Tendência 2024+</strong></td><td>Estável</td><td>Crescente (recomendado para novos projetos)</td></tr>
+</table>
+</div>
+
+<h4>Page Object Model</h4>
+<p>O Page Object Model (POM) encapsula a estrutura da página em classes, separando "como interágir" de "o que verificar". Isso evita que seletores CSS vazem para os testes é fácilita manutenção quando a UI muda.</p>
+
+<h4>Exemplo: Playwright E2E — Fluxo de Login</h4>
+<pre data-lang="typescript"><code><span class="cm">// pages/login.page.ts — Page Object</span>
+<span class="kw">import</span> { <span class="tp">Page</span>, <span class="tp">Locator</span> } <span class="kw">from</span> <span class="str">'@playwright/test'</span>;
+
+<span class="kw">export class</span> <span class="tp">LoginPage</span> {
+  <span class="kw">readonly</span> emailInput: <span class="tp">Locator</span>;
+  <span class="kw">readonly</span> passwordInput: <span class="tp">Locator</span>;
+  <span class="kw">readonly</span> submitButton: <span class="tp">Locator</span>;
+  <span class="kw">readonly</span> errorMessage: <span class="tp">Locator</span>;
+
+  <span class="kw">constructor</span>(<span class="kw">private</span> page: <span class="tp">Page</span>) {
+    <span class="kw">this</span>.emailInput = page.<span class="fn">getByLabel</span>(<span class="str">'Email'</span>);
+    <span class="kw">this</span>.passwordInput = page.<span class="fn">getByLabel</span>(<span class="str">'Senha'</span>);
+    <span class="kw">this</span>.submitButton = page.<span class="fn">getByRole</span>(<span class="str">'button'</span>, { name: <span class="str">'Entrar'</span> });
+    <span class="kw">this</span>.errorMessage = page.<span class="fn">getByTestId</span>(<span class="str">'login-error'</span>);
+  }
+
+  <span class="kw">async</span> <span class="fn">goto</span>() {
+    <span class="kw">await</span> <span class="kw">this</span>.page.<span class="fn">goto</span>(<span class="str">'/login'</span>);
+  }
+
+  <span class="kw">async</span> <span class="fn">login</span>(email: <span class="tp">string</span>, password: <span class="tp">string</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.emailInput.<span class="fn">fill</span>(email);
+    <span class="kw">await</span> <span class="kw">this</span>.passwordInput.<span class="fn">fill</span>(password);
+    <span class="kw">await</span> <span class="kw">this</span>.submitButton.<span class="fn">click</span>();
+  }
+}
+
+<span class="cm">// tests/login.spec.ts — Teste E2E</span>
+<span class="kw">import</span> { test, expect } <span class="kw">from</span> <span class="str">'@playwright/test'</span>;
+<span class="kw">import</span> { <span class="tp">LoginPage</span> } <span class="kw">from</span> <span class="str">'../pages/login.page'</span>;
+
+<span class="fn">test</span>.<span class="fn">describe</span>(<span class="str">'Login Flow'</span>, () => {
+  <span class="fn">test</span>(<span class="str">'deve fazer login com sucessó e redirecionar ao dashboard'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">const</span> loginPage = <span class="kw">new</span> <span class="tp">LoginPage</span>(page);
+    <span class="kw">await</span> loginPage.<span class="fn">goto</span>();
+    <span class="kw">await</span> loginPage.<span class="fn">login</span>(<span class="str">'joao@empresa.com'</span>, <span class="str">'SenhaForte1'</span>);
+
+    <span class="cm">// Verifica redirecionamento</span>
+    <span class="kw">await</span> <span class="fn">expect</span>(page).<span class="fn">toHaveURL</span>(<span class="str">'/dashboard'</span>);
+    <span class="kw">await</span> <span class="fn">expect</span>(page.<span class="fn">getByText</span>(<span class="str">'Bem-vindo, Joao'</span>)).<span class="fn">toBeVisible</span>();
+  });
+
+  <span class="fn">test</span>(<span class="str">'deve exibir erro com credenciais inválidas'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">const</span> loginPage = <span class="kw">new</span> <span class="tp">LoginPage</span>(page);
+    <span class="kw">await</span> loginPage.<span class="fn">goto</span>();
+    <span class="kw">await</span> loginPage.<span class="fn">login</span>(<span class="str">'joao@empresa.com'</span>, <span class="str">'senhaerrada'</span>);
+
+    <span class="kw">await</span> <span class="fn">expect</span>(loginPage.errorMessage).<span class="fn">toBeVisible</span>();
+    <span class="kw">await</span> <span class="fn">expect</span>(loginPage.errorMessage).<span class="fn">toHaveText</span>(<span class="str">'Credenciais inválidas'</span>);
+    <span class="kw">await</span> <span class="fn">expect</span>(page).<span class="fn">toHaveURL</span>(<span class="str">'/login'</span>); <span class="cm">// permanece na página</span>
+  });
+
+  <span class="fn">test</span>(<span class="str">'deve bloquear acesso ao dashboard sem autenticação'</span>, <span class="kw">async</span> ({ page }) => {
+    <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'/dashboard'</span>);
+    <span class="kw">await</span> <span class="fn">expect</span>(page).<span class="fn">toHaveURL</span>(<span class="str">'/login'</span>); <span class="cm">// redirecionado</span>
+  });
+});</code></pre>
+
+<!-- ═══ TEST DOUBLES ═══ -->
+<h3>Test Doubles — Mock, Stub, Spy, Fake, Dummy</h3>
+<p>Test doubles são objetos que substituem dependências reais durante testes. O termo genérico "mock" é frequentemente usado de forma errada para todos os tipos. Cada um tem um propósito específico:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Tipo</th><th>Propósito</th><th>Verifica chamadas?</th><th>Retorna dados?</th></tr>
+<tr><td><strong>Dummy</strong></td><td>Preenche parametros obrigatórios (não é usado)</td><td>Não</td><td>Não</td></tr>
+<tr><td><strong>Stub</strong></td><td>Retorna valores predefinidos</td><td>Não</td><td>Sim</td></tr>
+<tr><td><strong>Spy</strong></td><td>Observa chamadas sem alterár comportamento</td><td>Sim</td><td>Original</td></tr>
+<tr><td><strong>Mock</strong></td><td>Verifica que métodos foram chamados corretamente</td><td>Sim</td><td>Sim (predefinido)</td></tr>
+<tr><td><strong>Fake</strong></td><td>Implementação simplificada funcional (ex: in-memory DB)</td><td>Não</td><td>Sim (real)</td></tr>
+</table>
+</div>
+
+<h4>Exemplos Práticos com Jest</h4>
+<pre data-lang="typescript"><code><span class="cm">// ── DUMMY: preenche parametro, nunca usado ──</span>
+<span class="kw">const</span> dummyLogger = {} <span class="kw">as</span> <span class="tp">ILogger</span>;
+<span class="kw">const</span> service = <span class="kw">new</span> <span class="tp">UserService</span>(repo, dummyLogger); <span class="cm">// logger não é usado neste teste</span>
+
+<span class="cm">// ── STUB: retorna valor predefinido ──</span>
+<span class="kw">const</span> stubRepo = {
+  findById: jest.<span class="fn">fn</span>().<span class="fn">mockResolvedValue</span>({
+    id: <span class="str">'1'</span>, name: <span class="str">'Joao'</span>, email: <span class="str">'joao@test.com'</span>
+  }),
+};
+<span class="cm">// Não nós importa quantas vezes findById foi chamado — só o retorno</span>
+
+<span class="cm">// ── SPY: observa sem alterár ──</span>
+<span class="kw">const</span> consoleSpy = jest.<span class="fn">spyOn</span>(console, <span class="str">'log'</span>);
+service.<span class="fn">process</span>();
+<span class="fn">expect</span>(consoleSpy).<span class="fn">toHaveBeenCalledWith</span>(<span class="str">'Processing started'</span>);
+consoleSpy.<span class="fn">mockRestore</span>(); <span class="cm">// restaura o original</span>
+
+<span class="cm">// ── MOCK: verifica comportamento de chamada ──</span>
+<span class="kw">const</span> mockEmailService = {
+  send: jest.<span class="fn">fn</span>().<span class="fn">mockResolvedValue</span>(<span class="kw">undefined</span>),
+};
+<span class="kw">await</span> orderService.<span class="fn">create</span>(orderDto);
+<span class="fn">expect</span>(mockEmailService.send).<span class="fn">toHaveBeenCalledTimes</span>(<span class="num">1</span>);
+<span class="fn">expect</span>(mockEmailService.send).<span class="fn">toHaveBeenCalledWith</span>(
+  <span class="fn">expect</span>.<span class="fn">objectContaining</span>({ to: <span class="str">'customer@email.com'</span>, subject: <span class="str">'Pedido confirmado'</span> })
+);
+
+<span class="cm">// ── FAKE: implementação simplificada funcional ──</span>
+<span class="kw">class</span> <span class="tp">InMemoryUserRepository</span> <span class="kw">implements</span> <span class="tp">IUserRepository</span> {
+  <span class="kw">private</span> users: <span class="tp">Map</span>&lt;<span class="tp">string</span>, <span class="tp">User</span>&gt; = <span class="kw">new</span> <span class="tp">Map</span>();
+
+  <span class="kw">async</span> <span class="fn">save</span>(user: <span class="tp">User</span>): <span class="tp">Promise</span>&lt;<span class="tp">User</span>&gt; {
+    user.id = user.id || <span class="fn">crypto</span>.<span class="fn">randomUUID</span>();
+    <span class="kw">this</span>.users.<span class="fn">set</span>(user.id, user);
+    <span class="kw">return</span> user;
+  }
+
+  <span class="kw">async</span> <span class="fn">findById</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">User</span> | <span class="kw">null</span>&gt; {
+    <span class="kw">return</span> <span class="kw">this</span>.users.<span class="fn">get</span>(id) ?? <span class="kw">null</span>;
+  }
+
+  <span class="kw">async</span> <span class="fn">findByEmail</span>(email: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">User</span> | <span class="kw">null</span>&gt; {
+    <span class="kw">return</span> [...<span class="kw">this</span>.users.<span class="fn">values</span>()].<span class="fn">find</span>(u => u.email === email) ?? <span class="kw">null</span>;
+  }
+}
+<span class="cm">// Fake funciona como um banco real, mas em memória — rápido e deterministico</span></code></pre>
+
+<!-- ═══ BEST PRACTICES ═══ -->
+<h3>Boas Práticas de Testes</h3>
+
+<div class="card">
+<div class="card-title">Propriedades de um Bom Teste</div>
+<ul>
+<li><strong>Deterministico</strong> — Mesmo resultado toda vez. Sem dependência de hora, rede, ordem de execução, ou estado global. Zero flaky tests</li>
+<li><strong>Isolado</strong> — Cada teste é independente. Nenhum teste depende de outro. Setup e teardown garantem estado limpo</li>
+<li><strong>Legível</strong> — O nome do teste descreve o comportamento: <code>"deve rejeitar pedido sem itens"</code>, não <code>"test1"</code> ou <code>"testCreateOrder"</code></li>
+<li><strong>Rápido</strong> — Suite de unit tests: &lt; 10 segundos. Se leva minutos, devs param de rodar. Testes lentos = testes ignorados</li>
+<li><strong>Integrado ao CI</strong> — Testes rodam em todo PR. Merge bloqueado se falhar. Não existe "roda testes quando lembrar"</li>
+<li><strong>Focado</strong> — Um teste verifica UMA coisa. Se falhar, você sabe exatamente o que quebrou. Evite testes que verificam 15 coisas</li>
+</ul>
+</div>
+
+<h4>Naming Convention para Testes</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Nomes ruins — não descrevem comportamento</span>
+<span class="fn">it</span>(<span class="str">'test1'</span>, ...)
+<span class="fn">it</span>(<span class="str">'should work'</span>, ...)
+<span class="fn">it</span>(<span class="str">'createOrder'</span>, ...)
+
+<span class="cm">// &#9989; Nomes bons — descrevem cenário e expectativa</span>
+<span class="fn">it</span>(<span class="str">'deve aplicar 10% de desconto para compras acima de R$100'</span>, ...)
+<span class="fn">it</span>(<span class="str">'deve rejeitar pedido quando estoque e insuficiente'</span>, ...)
+<span class="fn">it</span>(<span class="str">'deve retornar 404 quando produto não existe'</span>, ...)
+<span class="fn">it</span>(<span class="str">'deve enviar email de confirmação após criar pedido'</span>, ...)
+
+<span class="cm">// Padrão recomendado: "deve [ação esperada] quando [condição]"</span></code></pre>
+
+<h4>Estrutura de Pastas para Testes</h4>
+<pre data-lang="bash"><code><span class="cm"># Co-localização (recomendado para unit tests)</span>
+src/
+  orders/
+    orders.service.ts
+    orders.service.spec.ts     <span class="cm"># junto do arquivo que testa</span>
+    orders.controller.ts
+    orders.controller.spec.ts
+
+<span class="cm"># Pasta separada (recomendado para integration/E2E)</span>
+test/
+  integration/
+    orders.integration.spec.ts
+  e2e/
+    login.e2e.spec.ts
+    checkout.e2e.spec.ts
+  fixtures/
+    users.fixture.ts
+    orders.fixture.ts</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Estratégia de Testes para Microservice NestJS</h3>
+<p><strong>Cenário:</strong> Você está projetando a estratégia de testes para um microservice NestJS que gerência pedidos. Ele se comúnica com um serviço de pagamento via HTTP e um serviço de notificação via fila (RabbitMQ). Banco: PostgreSQL.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Unit Tests<br><small>Services, Validators, Mappers</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Integration Tests<br><small>API Endpoints, Repository + DB</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">E2E Tests<br><small>Fluxo crítico: criar pedido → pagar → notificar</small></div>
+</div>
+
+<h4>Distribuição Proposta</h4>
+<div class="card">
+<div class="card-title">Unit Tests (~80% coverage target)</div>
+<ul>
+<li><strong>OrderService</strong> — Lógica de cálculos, válidações, state transitions (pending → paid → shipped)</li>
+<li><strong>OrderValidator</strong> — Edge cases de validação (items vazio, quantidade negativa, preço zero)</li>
+<li><strong>PriceCalculator</strong> — Descontos, impostos, frete (funções puras)</li>
+<li><strong>DTOs/Mappers</strong> — Transformação entity → response, request → entity</li>
+<li>Ferramentas: Jest, mocks para dependências externas</li>
+</ul>
+</div>
+
+<div class="card blue">
+<div class="card-title">Integration Tests (~60% coverage target)</div>
+<ul>
+<li><strong>OrdersController</strong> — Supertest: POST /orders (201, 400, 401), GET /orders/:id (200, 404)</li>
+<li><strong>OrderRepository</strong> — Testcontainers com PostgreSQL real: save, findById, findByStatus, págination</li>
+<li><strong>PaymentClient</strong> — WireMock/MSW para simular respostas do serviço de pagamento (success, timeout, error)</li>
+<li><strong>NotificationPublisher</strong> — Verifica que mensagem e publicada na fila com formato correto</li>
+<li>Ferramentas: Supertest, Testcontainers, MSW (Mock Service Worker)</li>
+</ul>
+</div>
+
+<div class="card orange">
+<div class="card-title">E2E Tests (fluxos críticos apenas)</div>
+<ul>
+<li><strong>Happy path</strong> — Criar pedido → processar pagamento → receber notificação → verificar status</li>
+<li><strong>Failure path</strong> — Pagamento rejeitado → pedido cancelado → usuário notificado</li>
+<li><strong>Idempotência</strong> — Retry de pagamento não duplica cobranca</li>
+<li>Ferramentas: Docker Compose com todos os serviços, Playwright ou scripts HTTP</li>
+</ul>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Testar detalhes de implementação:</strong> Se seu teste verifica que <code>calculateTotal()</code> chamou <code>map()</code> é depois <code>reduce()</code>, qualquer refatoração quebra o teste mesmo que o resultado sejá correto. Teste COMPORTAMENTO (output), não COMO o código chega lá.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Obsessão por 100% de coverage:</strong> Coverage mede linhas executadas, não qualidade. Um teste que chama a função sem nenhum assert tem 100% de coverage e 0% de útilidade. Mire em 80% de coverage com asserts significativos, não 100% com testes vazios.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Flaky tests:</strong> Testes que falham aleatóriamente destroem a confiança na suite. Causas comuns: dependência de timing (<code>setTimeout</code>), ordem de execução, estado global compartilhado, rede real. Traté flaky test como bug P1 — corrijá ou remova.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Suite de testes lenta:</strong> Se unit tests levam 5 minutos, devs param de rodar antes do commit. Se CI leva 30 minutos, PRs acumulam. Métricas saudáveis: unit &lt; 30s, integration &lt; 2min, E2E &lt; 10min. Paralelismo e test sharding são essenciais.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Mockar tudo (zero integration tests):</strong> Uma suite com 500 unit tests e zero integration tests pode passar com tudo verde — é o sistema cair em produção porque o SQL do TypeORM gera query errada, a serialization do DTO perde um campo, ou o middleware de auth não está configurado. Mocks escondem bugs de fronteira.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Se você pode refatorar a implementação interna sem alterár o comportamento é o teste continua passando, o teste esta bom. Se qualquer mudança interna quebra o teste, você está testando implementação, não comportamento.</div>
+</div>
+
+<!-- ═══ EXERCICIOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você recebe uma função calculateShipping(weight, distance, express) que calcula o frete. Descreva os test cases que você escreveria usando TDD. Liste pelo menós 6 casos.</div>
+<div class="qa-a">
+<p><strong>Test cases em ordem TDD (do mais simples ao mais complexo):</strong></p>
+<ol>
+<li><strong>Casó básico:</strong> pesó 1kg, distância 10km, normal → retorna valor base (ex: R$5.00)</li>
+<li><strong>Pesó zero ou negativo:</strong> deve lancar erro "Pesó inválido"</li>
+<li><strong>Distância zero ou negativa:</strong> deve lancar erro "Distância inválida"</li>
+<li><strong>Frete expresso:</strong> pesó 1kg, distância 10km, express=true → deve ser 2x o valor normal</li>
+<li><strong>Pesó alto:</strong> acima de 30kg → deve ter adicional de R$2 por kg excedente</li>
+<li><strong>Distância longa:</strong> acima de 500km → deve ter adicional de distância</li>
+<li><strong>Combinação:</strong> pesó alto + distância longa + expressó → todos os adicionais se acumulam</li>
+<li><strong>Frete gratis:</strong> compra acima de R$200 → frete zero (se aplicável a regra)</li>
+</ol>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Explique a diferença prática entre Mock e Stub usando um cenário real de envio de email após criar um pedido.</div>
+<div class="qa-a">
+<p><strong>Cenário:</strong> <code>OrderService.create()</code> chama <code>EmailService.send()</code> após salvar o pedido.</p>
+<p><strong>Stub:</strong> Você cria um <code>emailService.send = jest.fn().mockResolvedValue(undefined)</code>. O teste foca em verificar que o pedido foi criado corretamente (retorno do create). O stub existe apenas para que o <code>send()</code> não falhe — você não verifica SE ele foi chamado.</p>
+<p><strong>Mock:</strong> Você cria o mesmo <code>jest.fn()</code>, mas além de verificar o pedido, você também verifica: <code>expect(emailService.send).toHaveBeenCalledWith({ to: 'cliente@email.com', subject: 'Pedido #123 confirmado' })</code>. O mock verifica o comportamento de interáção entre os componentes.</p>
+<p><strong>Regra prática:</strong> Use stub quando a dependência é um "efeito colateral" que não é o foco do teste. Use mock quando a interáção COM a dependência é o que você está testando.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Seu time tem uma suite de 400 testes que leva 15 minutos no CI. 30 deles são flaky (falham aleatóriamente ~10% das vezes). Qual sua estratégia para resolver?</div>
+<div class="qa-a">
+<p><strong>Estratégia em 4 fases:</strong></p>
+<p><strong>Fase 1 — Quarentena (imediato):</strong> Mova os 30 flaky tests para uma pasta/tag separada (<code>@flaky</code>). Execute-os em um pipeline separado que não bloqueia merge. Isso restaura a confiança na suite principal imediatamente.</p>
+<p><strong>Fase 2 — Diagnóstico:</strong> Para cada flaky test, identifique a causa: timing (use <code>waitFor</code>/retry ao invés de <code>setTimeout</code>), estado global (isole com <code>beforeEach</code>), dependência de rede (use mocks/stubs), ordem de execução (use <code>--randomize</code>).</p>
+<p><strong>Fase 3 — Performance:</strong> Paralelismo: rode testes em workers separados (<code>jest --maxWorkers=4</code>). Sharding no CI: divida em 3-4 jobs paralelos. Test selection: rode apenas testes afetados pelo PR (Jest <code>--changedSince</code>).</p>
+<p><strong>Fase 4 — Prevenção:</strong> Adicione lint rule que bloqueia <code>setTimeout</code> em testes. Monitore tempo de execução no CI — alerte quando ultrapassar threshold. Code review deve incluir review dos testes.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — TDD, BDD & Pirâmide de Testes</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="37-sli-slo-sla-error-budgets.html">&#8592; SLI, SLO, SLA & Error Budgets</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="39-testes-especializados.html" class="primary">Próximo: Testes Especializados &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 38: TDD, BDD & Pirâmide de Testes
+// ══════════════════════════════════════════
+const SECTION_NUM = 38;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a ordem correta do ciclo TDD?",
+    options: [
+      "Green → Red → Refactor",
+      "Refactor → Red → Green",
+      "Red → Green → Refactor",
+      "Red → Refactor → Green"
+    ],
+    correct: 2,
+    explanation: "O ciclo TDD e Red (escreva teste que falha) → Green (implemente o mínimo para passar) → Refactor (melhore sem alterár comportamento). Sempre nesta ordem."
+  },
+  {
+    question: "Na pirâmide de testes clássica, qual camada deve ter MAIS testes?",
+    options: [
+      "E2E (End-to-End)",
+      "Integration",
+      "Unit",
+      "Manual"
+    ],
+    correct: 2,
+    explanation: "A pirâmide de testes tem unit tests na base (mais testes, mais rápidos, mais baratos), integration no meio, e E2E no topo (menós testes, mais lentos, mais caros). A regra de ouro e ~70% unit, ~20% integration, ~10% E2E."
+  },
+  {
+    question: "O que a frase de Kent C. Dodds 'Write tests. Not too many. Mostly integration.' defende?",
+    options: [
+      "Que só devemos escrever testes de integração",
+      "Que testes de integração oferecem o melhor ROI (retorno sobre investimento)",
+      "Que unit tests são inúteis",
+      "Que devemos ter 100% de coverage com integration tests"
+    ],
+    correct: 1,
+    explanation: "O Testing Trophy de Dodds argumenta que integration tests oferecem o melhor custo-benefício: mais realistas que unit tests é mais rápidos/estáveis que E2E. Isso não elimina os outros tipos — apenas prioriza integração."
+  },
+  {
+    question: "Em BDD, qual é a estrutura padrão do Gherkin para descrever cenários?",
+    options: [
+      "Arrange → Act → Assert",
+      "Given → When → Then",
+      "Setup → Execute → Verify",
+      "Input → Process → Output"
+    ],
+    correct: 1,
+    explanation: "Gherkin usa Given (contexto/preçondition), When (ação executada), Then (resultado esperado). Essa sintaxe permite que stakeholders não-técnicos entendam e validem os cenários."
+  },
+  {
+    question: "Qual é a diferença entre Mock e Stub?",
+    options: [
+      "Mock e Stub são a mesma coisa — nomes diferentes para o mesmo conceito",
+      "Mock retorna valores predefinidos; Stub verifica chamadas",
+      "Stub retorna valores predefinidos; Mock verifica que métodos foram chamados corretamente",
+      "Mock e para unit tests; Stub e para integration tests"
+    ],
+    correct: 2,
+    explanation: "Stub fornece respostas prontas (retorna valor X quando chamado). Mock vai além: verifica comportamento — se o método foi chamado, quantas vezes, com quais argumentos. Mock testa interáção, Stub testa resultado."
+  },
+  {
+    question: "O que é um Fake no contexto de test doubles?",
+    options: [
+      "Uma função que retorna null",
+      "Uma implementação simplificada mas funcional (ex: repositório in-memory)",
+      "Um objeto que lanca exceção quando chamado",
+      "Um aliás para Mock"
+    ],
+    correct: 1,
+    explanation: "Fake é uma implementação real, porém simplificada. Exemplo clássico: InMemoryRepository que usa um Map ao invés de banco de dados. Funciona como o real, mas é rápido e deterministico."
+  },
+  {
+    question: "Por que flaky tests são considerados um problema grave?",
+    options: [
+      "Porque consomem muita memória",
+      "Porque destroem a confiança na suite de testes — devs passam a ignorar falhas",
+      "Porque são dificeis de escrever",
+      "Porque só funcionam em ambiente local"
+    ],
+    correct: 1,
+    explanation: "Flaky tests (que falham aleatóriamente) são toxicos porque treinam o time a ignorar falhas. 'Ah, falhou? Re-roda que passa.' Isso mascara bugs reais. Flaky test deve ser tratado como bug P1."
+  },
+  {
+    question: "Qual padrão é usado em testes E2E para encapsular a interáção com páginas do browser?",
+    options: [
+      "Repository Pattern",
+      "Page Object Model",
+      "Factory Pattern",
+      "Observer Pattern"
+    ],
+    correct: 1,
+    explanation: "Page Object Model (POM) encapsula seletores e ações de uma página em uma classe. Se o seletor de um botao mudar, você atualiza em um único lugar (o Page Object), não em 50 testes."
+  },
+  {
+    question: "Qual é a principal vantagem do TDD como técnica de DESIGN (não apenas de teste)?",
+    options: [
+      "Gera código com 100% de coverage automáticamente",
+      "Forca o desenvolvedor a pensar em interfaces e dependências antes de implementar",
+      "Elimina a necessidade de code review",
+      "Torna todos os testes rápidos"
+    ],
+    correct: 1,
+    explanation: "TDD é uma técnica de design disfarácada de teste. Ao escrever o teste primeiro, você é forçado a definir a interface (como o código será chamado), as dependências (o que precisa ser injetado) e os contratos (o que retorna). Código difícil de testar = código mal projetado."
+  },
+  {
+    question: "Seu projeto tem 200 testes E2E e 10 unit tests. A suite leva 40 minutos e é muito frágil. Qual é o principal problema?",
+    options: [
+      "Faltam testes E2E — precisa de mais",
+      "A pirâmide de testes esta invertida — excessó de E2E e falta de unit/integration",
+      "Unit tests não agregam valor — E2E são suficientes",
+      "O problema é a infraestrutura do CI, não a distribuição"
+    ],
+    correct: 1,
+    explanation: "Pirâmide invertida (ice cream cone anti-pattern): muitos E2E (lentos, frágeis, caros) e poucos unit tests (rápidos, estáveis, baratos). A solução e reescrever a maioria dos cenários E2E como integration/unit tests é manter E2E apenas para fluxos críticos."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina TDD, BDD e estratégias de teste.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

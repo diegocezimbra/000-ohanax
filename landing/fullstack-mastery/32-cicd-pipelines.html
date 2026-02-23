@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>32 — CI/CD - Pipelines & Automação | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="31-lgpd-gdpr-privacy.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>32</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="33-gitflow-trunk-based.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:48.5%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 32</span>
+<h2>CI/CD — Pipelines & Automação</h2>
+<div class="section-line"></div>
+
+<p>Antes de CI/CD, o deploy era um ritual de terror. Alguém fazia merge na sexta-feira, rodava os testes na máquina local ("na minha máquina funciona"), buildava manualmente, fazia upload via FTP e rezava. CI/CD transforma esse caos em um <strong>processo previsível, automatizado e repetível</strong>. Cada commit dispara uma cadeia de verificações que garante qualidade antes de qualquer código chegar em produção.</p>
+
+<p>A ideia central é simples: <strong>quanto mais cedo você detecta um problema, mais barato e corrigi-lo</strong>. Um bug encontrado no lint custa segundos. Encontrado em staging, custa horas. Encontrado em produção, custa dinheiro, reputação e sono.</p>
+
+<!-- ═══ CI — CONTINUOUS INTEGRATION ═══ -->
+<h3>CI — Continuous Integration</h3>
+
+<p><strong>Continuous Integration é a prática de integrar código ao repositório principal frequentemente</strong> — idealmente várias vezes ao dia — com cada integração sendo verificada por um build automatizado. O objetivo não é apenas "rodar testes", é garantir que o código de múltiplos desenvolvedores funciona <strong>junto</strong>, o tempo todo.</p>
+
+<h4>Princípios Fundamentais do CI</h4>
+<ul>
+<li><strong>Commits frequentes</strong> — no mínimo 1x por dia, idealmente a cada feature/fix concluído</li>
+<li><strong>Build automatizado</strong> — cada push dispara a pipeline sem intervencao humana</li>
+<li><strong>Testes automatizados</strong> — se não tem teste, não tem CI de verdade (apenas "continuous build")</li>
+<li><strong>Feedback rápido</strong> — o dev deve saber em menós de 10 minutos se quebrou algo</li>
+<li><strong>Trunk-based ou short-lived branches</strong> — branches longas (semanas) anulam o benefício do CI</li>
+</ul>
+
+<h4>Stages Tipicos de uma Pipeline CI</h4>
+<div class="diagram">
+<div class="diagram-box green">Lint</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Type-check</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Unit Tests</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Integration Tests</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Build</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Security Scan</div>
+</div>
+
+<p>A ordem importa: <strong>fail fast</strong>. Lint roda em segundos e pega erros triviais. Não faz sentido esperar 5 minutos de testes para descobrir que faltou um ponto-e-virgula. Cada stage só roda se o anterior passou.</p>
+
+<div class="card">
+<div class="card-title">Beneficios Concretos do CI</div>
+<ul>
+<li><strong>Detecção preçoce de bugs</strong> — erros de integração aparecem em minutos, não em semanas</li>
+<li><strong>Builds consistentes</strong> — o mesmo ambiente roda para todos (não depende da máquina do dev)</li>
+<li><strong>Confiança da equipe</strong> — todo mundo sabe que o main/master esta sempre funcionando</li>
+<li><strong>Code review mais eficaz</strong> — o reviewer sabe que a pipeline passou antes de olhar o código</li>
+<li><strong>Documentação viva</strong> — a pipeline define exatamente o que é necessário para o código ser aceito</li>
+</ul>
+</div>
+
+<!-- ═══ CD — CONTINUOUS DELIVERY vs DEPLOYMENT ═══ -->
+<h3>CD — Continuous Delivery vs Continuous Deployment</h3>
+
+<p>Aqui mora uma confusao clássica. Os dois começam com "CD" mas são estratégias diferentes com implicações de risco distintas.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Continuous Delivery</th><th>Continuous Deployment</th></tr>
+<tr><td><strong>Definição</strong></td><td>Cada commit que passa na pipeline <strong>pode</strong> ir para produção</td><td>Cada commit que passa na pipeline <strong>vai automáticamente</strong> para produção</td></tr>
+<tr><td><strong>Gaté para produção</strong></td><td>Aprovação manual (botao de deploy)</td><td>Nenhum — 100% automático</td></tr>
+<tr><td><strong>Staging</strong></td><td>Deploy automático para staging, manual para prod</td><td>Deploy automático direto para prod</td></tr>
+<tr><td><strong>Risco</strong></td><td>Menor — humano válida antes</td><td>Maior — exige testes extremamente robustos</td></tr>
+<tr><td><strong>Velocidade</strong></td><td>Alta</td><td>Máxima</td></tr>
+<tr><td><strong>Ideal para</strong></td><td>Maioria das empresas, apps com compliance</td><td>Startups ágeis, SaaS com feature flags</td></tr>
+</table>
+</div>
+
+<div class="diagram">
+<div class="diagram-box green">CI Pipeline<br><small>(lint, test, build)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Deploy Staging<br><small>(automático)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Aprovação Manual<br><small>(Delivery)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Deploy Produção</div>
+</div>
+
+<p>Na prática, a maioria das empresas usa <strong>Continuous Delivery</strong>. Continuous Deployment total exige feature flags, canary deployments, rollback automático é uma suite de testes que você confia com sua vida. Se você está começando, comece com Delivery.</p>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Regra prática:</strong> Se um bug em produção custa caro (fintech, saúde, e-commerce grande), use Continuous Delivery com gaté manual. Se você pode reverter rapidamente é o custo de um bug é baixo (blog, ferramenta interna), Continuous Deployment e viável.</div>
+</div>
+
+<!-- ═══ GITHUB ACTIONS ═══ -->
+<h3>GitHub Actions — Deep Dive</h3>
+
+<p>GitHub Actions é o sistema de CI/CD nativo do GitHub. Workflows são definidos em arquivos YAML dentro de <code>.github/workflows/</code>. Cada workflow é composto por <strong>triggers</strong>, <strong>jobs</strong> é <strong>steps</strong>.</p>
+
+<h4>Estrutura de um Workflow YAML</h4>
+<pre data-lang="yaml"><code><span class="cm"># .github/workflows/ci.yml</span>
+<span class="tp">name</span>: <span class="str">CI Pipeline</span>
+
+<span class="cm"># ── Triggers: quando o workflow roda ──</span>
+<span class="tp">on</span>:
+  <span class="tp">push</span>:
+    <span class="tp">branches</span>: [<span class="str">main</span>, <span class="str">develop</span>]
+  <span class="tp">pull_request</span>:
+    <span class="tp">branches</span>: [<span class="str">main</span>]
+  <span class="tp">schedule</span>:
+    - <span class="tp">cron</span>: <span class="str">'0 6 * * 1'</span>  <span class="cm"># Toda segunda 6h UTC</span>
+  <span class="tp">workflow_dispatch</span>:  <span class="cm"># Botao manual no GitHub UI</span>
+
+<span class="cm"># ── Variáveis de ambiente globais ──</span>
+<span class="tp">env</span>:
+  <span class="tp">NODE_VERSION</span>: <span class="str">'20'</span>
+  <span class="tp">CI</span>: <span class="str">true</span>
+
+<span class="cm"># ── Jobs: unidades de execução paralelas ──</span>
+<span class="tp">jobs</span>:
+  <span class="tp">lint-and-typecheck</span>:
+    <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="tp">steps</span>:
+      - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="tp">uses</span>: <span class="str">actions/setup-node@v4</span>
+        <span class="tp">with</span>:
+          <span class="tp">node-version</span>: <span class="str">${{ env.NODE_VERSION }}</span>
+          <span class="tp">cache</span>: <span class="str">'npm'</span>
+      - <span class="tp">run</span>: <span class="str">npm ci</span>
+      - <span class="tp">run</span>: <span class="str">npm run lint</span>
+      - <span class="tp">run</span>: <span class="str">npm run typecheck</span></code></pre>
+
+<h4>Anatomia dos Componentes</h4>
+<ul>
+<li><strong><code>on</code></strong> — define os triggers (push, pull_request, schedule, workflow_dispatch, release)</li>
+<li><strong><code>jobs</code></strong> — unidades de trabalho que rodam em paralelo (por padrão) em runners separados</li>
+<li><strong><code>steps</code></strong> — ações sequênciais dentro de um job</li>
+<li><strong><code>uses</code></strong> — referência uma action reútilizável (ex: <code>actions/checkout@v4</code>)</li>
+<li><strong><code>with</code></strong> — parametros passados para uma action</li>
+<li><strong><code>run</code></strong> — executa um comando shell diretamente</li>
+<li><strong><code>needs</code></strong> — define dependência entre jobs (força execução sequêncial)</li>
+<li><strong><code>secrets</code></strong> — variáveis sensíveis configuradas no repositório (nunca em YAML)</li>
+<li><strong><code>env</code></strong> — variáveis de ambiente (podem ser globais, por job ou por step)</li>
+</ul>
+
+<h4>Matrix Builds</h4>
+<p>Matrix builds permitem rodar o mesmo job com combinações diferentes de parametros. Útil para testar em múltiplas versões de Node, Python, ou diferentes sistemas operacionais.</p>
+
+<pre data-lang="yaml"><code><span class="tp">jobs</span>:
+  <span class="tp">test</span>:
+    <span class="tp">runs-on</span>: <span class="str">${{ matrix.os }}</span>
+    <span class="tp">strategy</span>:
+      <span class="tp">matrix</span>:
+        <span class="tp">os</span>: [<span class="str">ubuntu-latest</span>, <span class="str">macos-latest</span>]
+        <span class="tp">node-version</span>: [<span class="num">18</span>, <span class="num">20</span>, <span class="num">22</span>]
+      <span class="tp">fail-fast</span>: <span class="kw">false</span>  <span class="cm"># Não cancela outros se um falhar</span>
+    <span class="tp">steps</span>:
+      - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="tp">uses</span>: <span class="str">actions/setup-node@v4</span>
+        <span class="tp">with</span>:
+          <span class="tp">node-version</span>: <span class="str">${{ matrix.node-version }}</span>
+      - <span class="tp">run</span>: <span class="str">npm ci</span>
+      - <span class="tp">run</span>: <span class="str">npm test</span></code></pre>
+
+<h4>Caching de Dependências</h4>
+<p>Sem cache, <code>npm ci</code> baixa todas as dependências em cada run. Com cache, apenas instala se o lockfile mudou. Diferença: de 2-3 minutos para 10-15 segundos.</p>
+
+<pre data-lang="yaml"><code><span class="tp">steps</span>:
+  - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+  - <span class="tp">uses</span>: <span class="str">actions/setup-node@v4</span>
+    <span class="tp">with</span>:
+      <span class="tp">node-version</span>: <span class="str">'20'</span>
+      <span class="tp">cache</span>: <span class="str">'npm'</span>  <span class="cm"># Cache automático baseado em package-lock.json</span>
+
+  <span class="cm"># OU cache manual para mais controle:</span>
+  - <span class="tp">uses</span>: <span class="str">actions/cache@v4</span>
+    <span class="tp">with</span>:
+      <span class="tp">path</span>: <span class="str">~/.npm</span>
+      <span class="tp">key</span>: <span class="str">${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}</span>
+      <span class="tp">restore-keys</span>: |
+        <span class="str">${{ runner.os }}-node-</span></code></pre>
+
+<h4>Exemplo Completo: NestJS CI/CD Pipeline</h4>
+<p>Pipeline real que faz lint, testa, builda Docker image, pusha para ECR e deploya no App Runner.</p>
+
+<pre data-lang="yaml"><code><span class="cm"># .github/workflows/deploy.yml</span>
+<span class="tp">name</span>: <span class="str">CI/CD Pipeline</span>
+
+<span class="tp">on</span>:
+  <span class="tp">push</span>:
+    <span class="tp">branches</span>: [<span class="str">main</span>]
+  <span class="tp">pull_request</span>:
+    <span class="tp">branches</span>: [<span class="str">main</span>]
+
+<span class="tp">env</span>:
+  <span class="tp">AWS_REGION</span>: <span class="str">us-east-1</span>
+  <span class="tp">ECR_REPOSITORY</span>: <span class="str">my-api</span>
+  <span class="tp">NODE_VERSION</span>: <span class="str">'20'</span>
+
+<span class="tp">jobs</span>:
+  <span class="cm"># ── Job 1: Qualidade do código ──</span>
+  <span class="tp">quality</span>:
+    <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="tp">steps</span>:
+      - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="tp">uses</span>: <span class="str">actions/setup-node@v4</span>
+        <span class="tp">with</span>:
+          <span class="tp">node-version</span>: <span class="str">${{ env.NODE_VERSION }}</span>
+          <span class="tp">cache</span>: <span class="str">'npm'</span>
+      - <span class="tp">run</span>: <span class="str">npm ci</span>
+      - <span class="tp">run</span>: <span class="str">npm run lint</span>
+      - <span class="tp">run</span>: <span class="str">npm run typecheck</span>
+
+  <span class="cm"># ── Job 2: Testes (roda em paralelo com quality) ──</span>
+  <span class="tp">test</span>:
+    <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="tp">services</span>:
+      <span class="tp">postgres</span>:
+        <span class="tp">image</span>: <span class="str">postgres:16</span>
+        <span class="tp">env</span>:
+          <span class="tp">POSTGRES_DB</span>: <span class="str">test_db</span>
+          <span class="tp">POSTGRES_USER</span>: <span class="str">test</span>
+          <span class="tp">POSTGRES_PASSWORD</span>: <span class="str">test</span>
+        <span class="tp">ports</span>: [<span class="str">'5432:5432'</span>]
+        <span class="tp">options</span>: <span class="str">--health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5</span>
+    <span class="tp">steps</span>:
+      - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="tp">uses</span>: <span class="str">actions/setup-node@v4</span>
+        <span class="tp">with</span>:
+          <span class="tp">node-version</span>: <span class="str">${{ env.NODE_VERSION }}</span>
+          <span class="tp">cache</span>: <span class="str">'npm'</span>
+      - <span class="tp">run</span>: <span class="str">npm ci</span>
+      - <span class="tp">run</span>: <span class="str">npm run test</span>
+        <span class="tp">env</span>:
+          <span class="tp">DATABASE_URL</span>: <span class="str">postgresql://test:test@localhost:5432/test_db</span>
+      - <span class="tp">run</span>: <span class="str">npm run test:e2e</span>
+        <span class="tp">env</span>:
+          <span class="tp">DATABASE_URL</span>: <span class="str">postgresql://test:test@localhost:5432/test_db</span>
+
+  <span class="cm"># ── Job 3: Build & Push Docker (só após quality + test) ──</span>
+  <span class="tp">build-and-push</span>:
+    <span class="tp">needs</span>: [<span class="str">quality</span>, <span class="str">test</span>]
+    <span class="tp">if</span>: <span class="str">github.ref == 'refs/heads/main' && github.event_name == 'push'</span>
+    <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="tp">permissions</span>:
+      <span class="tp">id-token</span>: <span class="str">write</span>
+      <span class="tp">contents</span>: <span class="str">read</span>
+    <span class="tp">steps</span>:
+      - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+
+      - <span class="tp">name</span>: <span class="str">Configure AWS Credentials</span>
+        <span class="tp">uses</span>: <span class="str">aws-actions/configure-aws-credentials@v4</span>
+        <span class="tp">with</span>:
+          <span class="tp">role-to-assume</span>: <span class="str">${{ secrets.AWS_ROLE_ARN }}</span>
+          <span class="tp">aws-region</span>: <span class="str">${{ env.AWS_REGION }}</span>
+
+      - <span class="tp">name</span>: <span class="str">Login to ECR</span>
+        <span class="tp">id</span>: <span class="str">ecr-login</span>
+        <span class="tp">uses</span>: <span class="str">aws-actions/amazon-ecr-login@v2</span>
+
+      - <span class="tp">name</span>: <span class="str">Build, Tag & Push Docker Image</span>
+        <span class="tp">env</span>:
+          <span class="tp">REGISTRY</span>: <span class="str">${{ steps.ecr-login.outputs.registry }}</span>
+          <span class="tp">IMAGE_TAG</span>: <span class="str">${{ github.sha }}</span>
+        <span class="tp">run</span>: |
+          docker build -t $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -t $REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$ECR_REPOSITORY:latest
+
+  <span class="cm"># ── Job 4: Deploy (só após build-and-push) ──</span>
+  <span class="tp">deploy</span>:
+    <span class="tp">needs</span>: [<span class="str">build-and-push</span>]
+    <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="tp">environment</span>: <span class="str">production</span>  <span class="cm"># Requer aprovação manual se configurado</span>
+    <span class="tp">steps</span>:
+      - <span class="tp">name</span>: <span class="str">Configure AWS Credentials</span>
+        <span class="tp">uses</span>: <span class="str">aws-actions/configure-aws-credentials@v4</span>
+        <span class="tp">with</span>:
+          <span class="tp">role-to-assume</span>: <span class="str">${{ secrets.AWS_ROLE_ARN }}</span>
+          <span class="tp">aws-region</span>: <span class="str">${{ env.AWS_REGION }}</span>
+
+      - <span class="tp">name</span>: <span class="str">Deploy to App Runner</span>
+        <span class="tp">run</span>: |
+          aws apprunner start-deployment \
+            --service-arn ${{ secrets.APPRUNNER_SERVICE_ARN }}</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Detalhe importante:</strong> O job <code>build-and-push</code> usa <code>needs: [quality, test]</code> — só roda se ambos passarem. E a condicional <code>if: github.ref == 'refs/heads/main'</code> garante que Docker build/push só acontece na branch main, não em PRs.</div>
+</div>
+
+<!-- ═══ GITLAB CI/CD ═══ -->
+<h3>GitLab CI/CD</h3>
+
+<p>GitLab usa um único arquivo <code>.gitlab-ci.yml</code> na raiz do repositório. A filosofia é similar ao GitHub Actions, mas com terminologia e features próprias.</p>
+
+<h4>Estrutura do .gitlab-ci.yml</h4>
+<pre data-lang="yaml"><code><span class="cm"># .gitlab-ci.yml</span>
+<span class="tp">stages</span>:
+  - <span class="str">quality</span>
+  - <span class="str">test</span>
+  - <span class="str">build</span>
+  - <span class="str">deploy</span>
+
+<span class="cm"># Templaté reútilizável</span>
+<span class="tp">.node-setup</span>: <span class="str">&node-setup</span>
+  <span class="tp">image</span>: <span class="str">node:20-alpine</span>
+  <span class="tp">cache</span>:
+    <span class="tp">key</span>: <span class="str">${CI_COMMIT_REF_SLUG}</span>
+    <span class="tp">paths</span>:
+      - <span class="str">node_modules/</span>
+  <span class="tp">before_script</span>:
+    - <span class="str">npm ci</span>
+
+<span class="tp">lint</span>:
+  <span class="str"><<: *node-setup</span>
+  <span class="tp">stage</span>: <span class="str">quality</span>
+  <span class="tp">script</span>:
+    - <span class="str">npm run lint</span>
+    - <span class="str">npm run typecheck</span>
+
+<span class="tp">unit-tests</span>:
+  <span class="str"><<: *node-setup</span>
+  <span class="tp">stage</span>: <span class="str">test</span>
+  <span class="tp">script</span>:
+    - <span class="str">npm run test -- --coverage</span>
+  <span class="tp">coverage</span>: <span class="str">'/All files[^|]*\|[^|]*\s+([\d\.]+)/'</span>
+  <span class="tp">artifacts</span>:
+    <span class="tp">reports</span>:
+      <span class="tp">junit</span>: <span class="str">junit.xml</span>
+      <span class="tp">coverage_report</span>:
+        <span class="tp">coverage_format</span>: <span class="str">cobertura</span>
+        <span class="tp">path</span>: <span class="str">coverage/cobertura-coverage.xml</span>
+
+<span class="tp">build-docker</span>:
+  <span class="tp">stage</span>: <span class="str">build</span>
+  <span class="tp">image</span>: <span class="str">docker:24</span>
+  <span class="tp">services</span>:
+    - <span class="str">docker:24-dind</span>
+  <span class="tp">script</span>:
+    - <span class="str">docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA .</span>
+    - <span class="str">docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA</span>
+  <span class="tp">only</span>:
+    - <span class="str">main</span>
+
+<span class="tp">deploy-production</span>:
+  <span class="tp">stage</span>: <span class="str">deploy</span>
+  <span class="tp">script</span>:
+    - <span class="str">./scripts/deploy.sh</span>
+  <span class="tp">environment</span>:
+    <span class="tp">name</span>: <span class="str">production</span>
+    <span class="tp">url</span>: <span class="str">https://api.example.com</span>
+  <span class="tp">when</span>: <span class="str">manual</span>  <span class="cm"># Gaté manual para produção</span>
+  <span class="tp">only</span>:
+    - <span class="str">main</span></code></pre>
+
+<h4>GitHub Actions vs GitLab CI/CD</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>GitHub Actions</th><th>GitLab CI/CD</th></tr>
+<tr><td><strong>Config</strong></td><td><code>.github/workflows/*.yml</code> (múltiplos arquivos)</td><td><code>.gitlab-ci.yml</code> (arquivo único)</td></tr>
+<tr><td><strong>Runners</strong></td><td>GitHub-hosted ou self-hosted</td><td>GitLab.com shared ou self-hosted</td></tr>
+<tr><td><strong>Cache</strong></td><td><code>actions/cache@v4</code></td><td>Nativo com <code>cache:</code></td></tr>
+<tr><td><strong>Artefatos</strong></td><td><code>actions/upload-artifact</code></td><td>Nativo com <code>artifacts:</code></td></tr>
+<tr><td><strong>Marketplace</strong></td><td>Enorme (actions de terceiros)</td><td>Menor, mas templates prontos</td></tr>
+<tr><td><strong>Container Registry</strong></td><td>GHCR (GitHub Container Registry)</td><td>Registry integrado por projeto</td></tr>
+<tr><td><strong>Ambientes</strong></td><td><code>environment:</code> com approval rules</td><td><code>environment:</code> com <code>when: manual</code></td></tr>
+</table>
+</div>
+
+<!-- ═══ PIPELINE BEST PRACTICES ═══ -->
+<h3>Pipeline Best Practices</h3>
+
+<div class="card">
+<div class="card-title">Regras de Ouro para Pipelines</div>
+<ol>
+<li><strong>Feedback rápido (&lt; 10 min para CI)</strong> — se a pipeline demora 30 minutos, devs param de esperar e fazem push sem verificar. Pipeline lenta = pipeline ignorada</li>
+<li><strong>Jobs paralelos</strong> — lint, typecheck e testes unitários podem rodar em paralelo. Não coloque tudo sequêncial</li>
+<li><strong>Cache de dependências</strong> — <code>npm ci</code> sem cache = 2-3 minutos. Com cache = 10 segundos. Sempre configure</li>
+<li><strong>Fail fast</strong> — coloque lint e typecheck ANTES dos testes. Se o código nem compila, não perca tempo testando</li>
+<li><strong>Security scanning</strong> — rode Snyk, Trivy ou npm audit na pipeline. Não espere a auditoria trimestral</li>
+<li><strong>Versionamento de artefatos</strong> — tagueie Docker images com SHA do commit, não apenas <code>latest</code></li>
+<li><strong>Environment promotion</strong> — dev &rarr; staging &rarr; production. Nunca pule staging</li>
+<li><strong>Idempotência</strong> — rodar a mesma pipeline 2x com o mesmo commit deve produzir o mesmo resultado</li>
+</ol>
+</div>
+
+<h4>Paralelismo: Antes vs Depois</h4>
+<pre data-lang="text"><code><span class="cm"># &#10060; Sequencial — 12 minutos total</span>
+Lint (1min) → Typecheck (1min) → Unit Tests (4min) → E2E Tests (4min) → Build (2min)
+
+<span class="cm"># &#9989; Paralelo — 6 minutos total</span>
+┌── Lint (1min) ──────────────┐
+├── Typecheck (1min) ─────────┤
+├── Unit Tests (4min) ────────┤──→ Build (2min)
+└── E2E Tests (4min) ─────────┘</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Meta de tempo:</strong> CI completo em &lt; 10 minutos. Se possível, &lt; 5 minutos. Empresas como Google e Shopify investem pesado em infra de CI justamente para manter esse tempo baixo. Pipeline rápida = mais commits = mais confiança.</div>
+</div>
+
+<!-- ═══ DOCKER IN CI/CD ═══ -->
+<h3>Docker em CI/CD</h3>
+
+<p>Docker resolve o problema de "na minha máquina funciona" ao empacotar a aplicação com todas as dependências. No contexto de CI/CD, Docker é usado para <strong>criar imagens reproduzíveis</strong> que rodam identicamente em staging e produção.</p>
+
+<h4>Multi-stage Build (Imagem Otimizada)</h4>
+<pre data-lang="dockerfile"><code><span class="cm"># ── Stage 1: Build ──</span>
+<span class="kw">FROM</span> node:<span class="num">20</span>-alpine <span class="kw">AS</span> builder
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> package*.json ./
+<span class="kw">RUN</span> npm ci
+<span class="kw">COPY</span> . .
+<span class="kw">RUN</span> npm run build
+
+<span class="cm"># ── Stage 2: Production ──</span>
+<span class="kw">FROM</span> node:<span class="num">20</span>-alpine <span class="kw">AS</span> production
+<span class="kw">WORKDIR</span> /app
+
+<span class="cm"># Apenas dependências de produção</span>
+<span class="kw">COPY</span> package*.json ./
+<span class="kw">RUN</span> npm ci --only=production
+
+<span class="cm"># Apenas o build, não o source code</span>
+<span class="kw">COPY</span> --from=builder /app/dist ./dist
+
+<span class="cm"># Usuário não-root (segurança)</span>
+<span class="kw">RUN</span> addgroup -g <span class="num">1001</span> appgroup && adduser -u <span class="num">1001</span> -G appgroup -s /bin/sh -D appuser
+<span class="kw">USER</span> appuser
+
+<span class="kw">EXPOSE</span> <span class="num">3000</span>
+<span class="kw">CMD</span> [<span class="str">"node"</span>, <span class="str">"dist/main.js"</span>]</code></pre>
+
+<p>Com multi-stage, a imagem final não contém <code>node_modules</code> de desenvolvimento, source code TypeScript, nem ferramentas de build. Resultado: <strong>imagem de ~150MB ao invés de ~800MB</strong>.</p>
+
+<h4>Docker Build + Push no GitHub Actions</h4>
+<pre data-lang="yaml"><code><span class="tp">steps</span>:
+  - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+
+  <span class="cm"># Cache de layers Docker (acelera builds subsequentes)</span>
+  - <span class="tp">uses</span>: <span class="str">docker/setup-buildx-action@v3</span>
+
+  - <span class="tp">uses</span>: <span class="str">docker/login-action@v3</span>
+    <span class="tp">with</span>:
+      <span class="tp">registry</span>: <span class="str">ghcr.io</span>
+      <span class="tp">username</span>: <span class="str">${{ github.actor }}</span>
+      <span class="tp">password</span>: <span class="str">${{ secrets.GITHUB_TOKEN }}</span>
+
+  - <span class="tp">uses</span>: <span class="str">docker/build-push-action@v5</span>
+    <span class="tp">with</span>:
+      <span class="tp">context</span>: <span class="str">.</span>
+      <span class="tp">push</span>: <span class="kw">true</span>
+      <span class="tp">tags</span>: |
+        <span class="str">ghcr.io/${{ github.repository }}:${{ github.sha }}</span>
+        <span class="str">ghcr.io/${{ github.repository }}:latest</span>
+      <span class="tp">cache-from</span>: <span class="str">type=gha</span>
+      <span class="tp">cache-to</span>: <span class="str">type=gha,mode=max</span></code></pre>
+
+<div class="card blue">
+<div class="card-title">Registries Populares</div>
+<ul>
+<li><strong>Amazon ECR</strong> — integrado com ECS, EKS, App Runner. Ideal para stack AWS</li>
+<li><strong>GitHub Container Registry (GHCR)</strong> — integrado com GitHub Actions. Gratuito para repos públicos</li>
+<li><strong>Docker Hub</strong> — o original. Bom para imagens públicas, limitado para privadas no plano free</li>
+<li><strong>Google Artifact Registry</strong> — integrado com GKE e Cloud Run</li>
+<li><strong>GitLab Container Registry</strong> — integrado por projeto no GitLab</li>
+</ul>
+</div>
+
+<!-- ═══ QUALITY GATES ═══ -->
+<h3>Quality Gates</h3>
+
+<p>Quality Gates são <strong>criterios mínimos que o código deve atender</strong> para ser aceito. Se qualquer gaté falhar, a pipeline falha é o merge e bloqueado. Isso elimina a subjetividade do "esta bom o suficiente".</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Gate</th><th>Criterio</th><th>Ferramenta</th></tr>
+<tr><td><strong>Cobertura de testes</strong></td><td>Mínimo 80% (novos arquivos: 90%)</td><td>Jest --coverage, Istanbul</td></tr>
+<tr><td><strong>Vulnerabilidades</strong></td><td>Zero critical/high. Medium = warning</td><td>Snyk, Trivy, npm audit</td></tr>
+<tr><td><strong>Lint</strong></td><td>Zero erros (warnings podem ser tolerados)</td><td>ESLint, Prettier</td></tr>
+<tr><td><strong>Type-check</strong></td><td>Zero erros de compilação TypeScript</td><td>tsc --noEmit</td></tr>
+<tr><td><strong>Bundle size</strong></td><td>Não exceder limite definido (ex: 250KB gzip)</td><td>bundlesize, size-limit</td></tr>
+<tr><td><strong>Code smells</strong></td><td>Nenhum novo debt sem justificativa</td><td>SonarQube, CodeClimate</td></tr>
+</table>
+</div>
+
+<h4>Implementando Quality Gates no GitHub</h4>
+<pre data-lang="yaml"><code><span class="cm"># Cobertura mínima com Jest</span>
+<span class="tp">test</span>:
+  <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+  <span class="tp">steps</span>:
+    - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+    - <span class="tp">run</span>: <span class="str">npm ci</span>
+    - <span class="tp">run</span>: <span class="str">npm run test -- --coverage --coverageThreshold='{"global":{"branches":80,"functions":80,"lines":80}}'</span>
+
+<span class="cm"># Security scan com Trivy</span>
+<span class="tp">security</span>:
+  <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+  <span class="tp">steps</span>:
+    - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+    - <span class="tp">name</span>: <span class="str">Run Trivy vulnerability scanner</span>
+      <span class="tp">uses</span>: <span class="str">aquasecurity/trivy-action@master</span>
+      <span class="tp">with</span>:
+        <span class="tp">scan-type</span>: <span class="str">'fs'</span>
+        <span class="tp">severity</span>: <span class="str">'CRITICAL,HIGH'</span>
+        <span class="tp">exit-code</span>: <span class="str">'1'</span>  <span class="cm"># Falha a pipeline se encontrar critical/high</span></code></pre>
+
+<!-- ═══ NOTIFICATIONS ═══ -->
+<h3>Notificações & Status Checks</h3>
+
+<p>De nada adianta uma pipeline falhar se ninguém fica sabendo. Notificações garantem que falhas sejam tratadas imediatamente.</p>
+
+<h4>Slack Webhook no Casó de Falha</h4>
+<pre data-lang="yaml"><code><span class="tp">notify-failure</span>:
+  <span class="tp">needs</span>: [<span class="str">quality</span>, <span class="str">test</span>, <span class="str">build-and-push</span>]
+  <span class="tp">if</span>: <span class="str">failure()</span>  <span class="cm"># Só roda quando algum job falhou</span>
+  <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+  <span class="tp">steps</span>:
+    - <span class="tp">name</span>: <span class="str">Notify Slack</span>
+      <span class="tp">uses</span>: <span class="str">slackapi/slack-github-action@v1</span>
+      <span class="tp">with</span>:
+        <span class="tp">payload</span>: |
+          {
+            "text": "&#10060; Pipeline falhou!",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Pipeline falhou* no repo `${{ github.repository }}`\n*Branch:* `${{ github.ref_name }}`\n*Commit:* `${{ github.sha }}`\n*Autor:* ${{ github.actor }}\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Ver detalhes>"
+                }
+              }
+            ]
+          }
+      <span class="tp">env</span>:
+        <span class="tp">SLACK_WEBHOOK_URL</span>: <span class="str">${{ secrets.SLACK_WEBHOOK_URL }}</span></code></pre>
+
+<h4>Branch Protection com Status Checks</h4>
+<p>No GitHub, você pode configurar <strong>Branch Protection Rules</strong> para exigir que certos jobs passem antes de permitir merge:</p>
+<ul>
+<li><strong>Require status checks to pass</strong> — selecione quais jobs são obrigatórios (ex: quality, test)</li>
+<li><strong>Require pull request reviews</strong> — exijá N aprovações antes do merge</li>
+<li><strong>Require conversation resolution</strong> — todos os comentários devem ser resolvidos</li>
+<li><strong>Require branches to be up to date</strong> — branch deve estar atualizada com main antes de merge</li>
+</ul>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Cuidado:</strong> Status checks obrigatórios só funcionam se os nomes dos jobs no YAML coincidem exatamente com o que você configurou nas regras de proteção. Se renomear um job, atualize a branch protection rule.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: CI/CD para Monorepo</h3>
+<p><strong>Cenário:</strong> Você tem um monorepo com frontend (React) e backend (NestJS). Um commit pode alterár só o frontend, só o backend, ou ambos. Como evitar rodar tudo toda vez?</p>
+
+<div class="diagram">
+<div class="diagram-box green">git push<br><small>(commit)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Detect Changes<br><small>(paths-filter)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">frontend changed?<br><small>Run FE pipeline</small></div>
+<div class="diagram-arrow">&nbsp;</div>
+<div class="diagram-box orange">backend changed?<br><small>Run BE pipeline</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Deploy<br><small>(independente)</small></div>
+</div>
+
+<h4>Implementação com path-filter</h4>
+<pre data-lang="yaml"><code><span class="cm"># .github/workflows/monorepo-ci.yml</span>
+<span class="tp">name</span>: <span class="str">Monorepo CI/CD</span>
+
+<span class="tp">on</span>:
+  <span class="tp">push</span>:
+    <span class="tp">branches</span>: [<span class="str">main</span>]
+  <span class="tp">pull_request</span>:
+    <span class="tp">branches</span>: [<span class="str">main</span>]
+
+<span class="tp">jobs</span>:
+  <span class="cm"># ── Detectar quais pastas mudaram ──</span>
+  <span class="tp">changes</span>:
+    <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="tp">outputs</span>:
+      <span class="tp">frontend</span>: <span class="str">${{ steps.filter.outputs.frontend }}</span>
+      <span class="tp">backend</span>: <span class="str">${{ steps.filter.outputs.backend }}</span>
+    <span class="tp">steps</span>:
+      - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="tp">uses</span>: <span class="str">dorny/paths-filter@v3</span>
+        <span class="tp">id</span>: <span class="str">filter</span>
+        <span class="tp">with</span>:
+          <span class="tp">filters</span>: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+
+  <span class="cm"># ── Pipeline Frontend (só se frontend mudou) ──</span>
+  <span class="tp">frontend-ci</span>:
+    <span class="tp">needs</span>: <span class="str">changes</span>
+    <span class="tp">if</span>: <span class="str">${{ needs.changes.outputs.frontend == 'true' }}</span>
+    <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="tp">defaults</span>:
+      <span class="tp">run</span>:
+        <span class="tp">working-directory</span>: <span class="str">frontend</span>
+    <span class="tp">steps</span>:
+      - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="tp">uses</span>: <span class="str">actions/setup-node@v4</span>
+        <span class="tp">with</span>:
+          <span class="tp">node-version</span>: <span class="str">'20'</span>
+          <span class="tp">cache</span>: <span class="str">'npm'</span>
+          <span class="tp">cache-dependency-path</span>: <span class="str">frontend/package-lock.json</span>
+      - <span class="tp">run</span>: <span class="str">npm ci</span>
+      - <span class="tp">run</span>: <span class="str">npm run lint</span>
+      - <span class="tp">run</span>: <span class="str">npm run test</span>
+      - <span class="tp">run</span>: <span class="str">npm run build</span>
+
+  <span class="cm"># ── Pipeline Backend (só se backend mudou) ──</span>
+  <span class="tp">backend-ci</span>:
+    <span class="tp">needs</span>: <span class="str">changes</span>
+    <span class="tp">if</span>: <span class="str">${{ needs.changes.outputs.backend == 'true' }}</span>
+    <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="tp">defaults</span>:
+      <span class="tp">run</span>:
+        <span class="tp">working-directory</span>: <span class="str">backend</span>
+    <span class="tp">steps</span>:
+      - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="tp">uses</span>: <span class="str">actions/setup-node@v4</span>
+        <span class="tp">with</span>:
+          <span class="tp">node-version</span>: <span class="str">'20'</span>
+          <span class="tp">cache</span>: <span class="str">'npm'</span>
+          <span class="tp">cache-dependency-path</span>: <span class="str">backend/package-lock.json</span>
+      - <span class="tp">run</span>: <span class="str">npm ci</span>
+      - <span class="tp">run</span>: <span class="str">npm run lint</span>
+      - <span class="tp">run</span>: <span class="str">npm run test</span>
+      - <span class="tp">run</span>: <span class="str">npm run build</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Resultado:</strong> Se você alterá apenas um README no frontend, o backend NÃO builda/testa. Economia de minutos de CI a cada commit, e em um time de 10 devs com 20 commits/dia, isso se traduz em horas de CI economizadas por semana.</div>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Pipeline lenta (&gt; 15 minutos):</strong> Se a pipeline demora mais que o tempo de um cafe, devs começar a ignorar. Sintomas: pushes sem esperar pipeline, PRs mergeados com checks pendentes. Solução: paralelismo, cache, testes seletivos.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Sem cache de dependências:</strong> Cada run baixa 500MB de node_modules do zero. Em 30 runs por dia = 15GB de download desperdicado. Sempre configure <code>actions/cache</code> ou o parametro <code>cache</code> do setup-node.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Rodar TUDO em monorepo:</strong> Um fix de typo no README do frontend dispara build Docker do backend, testes E2E e deploy. Use <code>paths-filter</code> para rodar apenas o que mudou.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Secrets nós logs:</strong> Usar <code>echo $SECRET</code> em um step expõe a variável nós logs da pipeline. GitHub mascara automáticamente <code>secrets.*</code>, mas se você concatenar ou manipular a string, ela pode vazar. Nunca faca <code>echo</code> de secrets.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Sem estratégia de rollback:</strong> Deploy automático sem plano de reverter. Se o deploy quebra produção e você não tem rollback, está em apuros. Mantenha pelo menós as 3 últimas imagens Docker tagueadas. Use blue-green ou canary deploy para reverter instantaneamente.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Testes flakey (intermitentes):</strong> Testes que passam 9 em 10 vezes destroem a confiança na pipeline. O time começa a clicar "Re-run" sem investigar. Traté testes flakey como bugs críticos — corrijá ou delete.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Apenas tag <code>latest</code> no Docker:</strong> Se você só pusha <code>latest</code>, não tem como saber qual versão está rodando em produção. Sempre tagueie com SHA do commit ou semver. <code>latest</code> é conveniente para dev, mas perigosó em produção.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Se você precisa fazer algo manual mais de 2 vezes, automatize na pipeline. Build manual? Pipeline. Deploy manual? Pipeline. Rodar testes? Pipeline. Até gerar changelog pode ser automatizado.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Sua pipeline CI esta demorando 25 minutos. Os stages são sequênciais: install (3min) → lint (2min) → typecheck (2min) → unit tests (8min) → e2e tests (6min) → build (4min). Como otimizar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> (1) <strong>Adicione cache de dependências</strong> — install cai de 3min para 15s. (2) <strong>Paralelise</strong> — lint, typecheck, unit tests e e2e tests podem rodar em paralelo após install. O tempo total dos testes passa a ser max(8min, 6min) = 8min ao invés de 18min. (3) Build só roda após todos passarem. Resultado: ~10min (install 15s + testes 8min + build 2min usando cache). Redução de 60%.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Você quer garantir que nenhum PR entre no main sem pelo menós 80% de cobertura de testes e zero vulnerabilidades críticas. Como configurar isso?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> (1) No workflow, adicione <code>--coverageThreshold='{"global":{"lines":80}}'</code> ao comando Jest — a pipeline falha se cobertura for &lt; 80%. (2) Adicione um job com Trivy ou Snyk usando <code>exit-code: '1'</code> para severidade CRITICAL/HIGH. (3) No GitHub, va em Settings &rarr; Branches &rarr; Branch protection rules &rarr; marque "Require status checks to pass" e selecione os jobs de test e security. Agora, PRs com cobertura baixa ou vulnerabilidades críticas não podem ser mergeados.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Explique a diferença entre Continuous Delivery e Continuous Deployment, e em qual cenário você escolheria cada um.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>Continuous Delivery</strong> — a pipeline automatiza tudo até staging. O deploy para produção requer aprovação manual (botao). Ideal para: apps financeiros, saúde, e-commerce grande, ou qualquer sistema onde um bug em produção tem alto custo. <strong>Continuous Deployment</strong> — a pipeline automatiza até produção, sem intervencao humana. Ideal para: SaaS com feature flags, ferramentas internas, blogs, apps com rollback rápido. Prerequisitos: suite de testes extremamente robusta, monitoramento em real-time, e capacidade de rollback em segundos.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — CI/CD Pipelines & Automação</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="31-lgpd-gdpr-privacy.html">&#8592; LGPD, GDPR & Privacy</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="33-gitflow-trunk-based.html" class="primary">Próximo: Gitflow & Trunk-Based &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 32: CI/CD Pipelines
+// ══════════════════════════════════════════
+const SECTION_NUM = 32;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a principal diferença entre Continuous Delivery e Continuous Deployment?",
+    options: [
+      "Delivery não roda testes; Deployment roda testes",
+      "Delivery requer aprovação manual para produção; Deployment e 100% automático até produção",
+      "Delivery e para frontend; Deployment e para backend",
+      "Não ha diferença — são sinônimos"
+    ],
+    correct: 1,
+    explanation: "Continuous Delivery automatiza até staging com gaté manual para produção. Continuous Deployment automatiza tudo — cada commit que passa na pipeline vai direto para produção sem intervencao humana."
+  },
+  {
+    question: "Por que a ordem dos stages na pipeline CI importa (lint antes de testes, por exemplo)?",
+    options: [
+      "Porque o GitHub Actions exige essa ordem",
+      "Para aplicar o princípio fail fast — detectar erros triviais rapidamente sem desperdicar tempo com testes longos",
+      "Porque lint precisa do resultado dos testes para funcionar",
+      "A ordem não importa — todos rodam em paralelo"
+    ],
+    correct: 1,
+    explanation: "Fail fast: lint roda em segundos e pega erros triviais. Não faz sentido esperar 5 minutos de testes para descobrir que faltou um ponto-e-virgula. Stages rápidos primeiro, lentos depois."
+  },
+  {
+    question: "No GitHub Actions, o que faz a keyword 'needs' em um job?",
+    options: [
+      "Define variáveis de ambiente necessárias",
+      "Específica quais secrets o job precisa",
+      "Cria uma dependência — o job só roda após os jobs listados em needs passarem",
+      "Define os packages npm necessários"
+    ],
+    correct: 2,
+    explanation: "needs cria dependências entre jobs. Por padrão, jobs rodam em paralelo. Com needs: [quality, test], o job só inicia após quality E test terem passado com sucesso."
+  },
+  {
+    question: "Qual o benefício principal de multi-stage Docker builds em CI/CD?",
+    options: [
+      "Rodar testes dentro do container",
+      "Imagem final menor é mais segura — sem source code, devDependencies ou ferramentas de build",
+      "Permitir builds em múltiplas linguagens",
+      "Acelerar o tempo de build"
+    ],
+    correct: 1,
+    explanation: "Multi-stage builds separam o ambiente de build do ambiente de produção. A imagem final contém apenas o artefato compilado e dependências de produção, resultando em imagens menores (~150MB vs ~800MB) é mais seguras."
+  },
+  {
+    question: "Sua pipeline CI demora 20 minutos. Qual estratégia NaO ajuda a reduzir esse tempo?",
+    options: [
+      "Adicionar cache de dependências (npm, pip)",
+      "Paralelizar lint, typecheck e testes em jobs separados",
+      "Adicionar mais steps de logging detalhado em cada job",
+      "Usar paths-filter para rodar apenas pipelines afetadas"
+    ],
+    correct: 2,
+    explanation: "Logging detalhado adiciona tempo, não reduz. Cache elimina download repetido de dependências. Paralelismo reduz tempo total. Paths-filter evita rodar pipelines desnecessárias em monorepos."
+  },
+  {
+    question: "O que são Quality Gates em um pipeline CI/CD?",
+    options: [
+      "Firewalls que protegem o servidor de CI",
+      "Criterios mínimos automáticos (cobertura, segurança, lint) que o código deve atender para ser aceito",
+      "Etapas manuais de revisão de código",
+      "Configurações de acesso ao repositório"
+    ],
+    correct: 1,
+    explanation: "Quality Gates são criterios automáticos como cobertura mínima de testes (80%), zero vulnerabilidades críticas, lint sem erros e typecheck passando. Se qualquer gaté falhar, a pipeline bloqueia o merge."
+  },
+  {
+    question: "Em um monorepo com frontend e backend, qual é a melhor prática quando um commit alterá apenas o frontend?",
+    options: [
+      "Rodar a pipeline completa (frontend + backend) por segurança",
+      "Não rodar nenhuma pipeline — confiar no dev",
+      "Usar paths-filter para detectar mudanças e rodar apenas a pipeline do frontend",
+      "Rodar apenas os testes, sem build"
+    ],
+    correct: 2,
+    explanation: "paths-filter (como dorny/paths-filter) detecta quais diretórios mudaram e roda apenas a pipeline afetada. Isso economiza tempo e recursos de CI, especialmente em monorepos grandes com muitos commits por dia."
+  },
+  {
+    question: "Qual o risco de usar apenas a tag 'latest' para Docker images em produção?",
+    options: [
+      "Nenhum — latest sempre aponta para a versão mais recente",
+      "Impossível saber qual versão exata está rodando, dificultando debug e rollback",
+      "A imagem fica maior",
+      "O Docker Hub não permite a tag latest"
+    ],
+    correct: 1,
+    explanation: "Se você só usa latest, não sabe qual commit gerou a imagem em produção. Em caso de bug, não consegue reverter para uma versão específica. Sempre tagueie com SHA do commit ou semver além de latest."
+  },
+  {
+    question: "O que é um teste 'flakey' e por que é perigosó para CI?",
+    options: [
+      "Um teste que roda lentamente",
+      "Um teste que falha intermitentemente sem mudança de código, destruindo a confiança na pipeline",
+      "Um teste que não tem assertions",
+      "Um teste que só funciona em ambiente local"
+    ],
+    correct: 1,
+    explanation: "Testes flakey passam 9 em 10 vezes. O time começa a re-rodar a pipeline sem investigar, é quando uma falha real acontece, e ignorada como 'flakey'. Traté testes flakey como bugs críticos — corrijá ou delete."
+  },
+  {
+    question: "No GitHub Actions, como você garante que PRs só possam ser mergeados se a pipeline CI passou?",
+    options: [
+      "Adicionando um comentário no PR pedindo para verificar",
+      "Configurando Branch Protection Rules com 'Require status checks to pass' para os jobs obrigatórios",
+      "Usando a keyword 'required: true' no workflow YAML",
+      "Enviando notificação Slack para o time"
+    ],
+    correct: 1,
+    explanation: "Branch Protection Rules no GitHub permitem exigir que status checks específicos (jobs da pipeline) passem antes de permitir merge. Isso é configurado em Settings → Branches, selecionando os jobs obrigatórios."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina CI/CD Pipelines.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

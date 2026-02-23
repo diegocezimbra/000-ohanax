@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>56 — Documentação & ADRs | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="55-engenharia-dados.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>56</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="57-acessibilidade-a11y.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:84.8%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 56</span>
+<h2>Documentação & ADRs</h2>
+<div class="section-line"></div>
+
+<p>Código sem documentação é como uma cidade sem placas de rua — você pode até chegar onde precisa, mas vai demorar muito mais e se perder várias vezes. Documentação não é burocracia: é a <strong>memória institucional</strong> do time. Quando o dev que tomou a decisão sai da empresa, a única coisa que resta é o que ele escreveu. E se ele não escreveu nada, você esta sozinho.</p>
+
+<p>Nesta seção, vamos cobrir as práticas modernas de documentação de software: <strong>ADRs</strong> para registrar decisões arquiteturais, <strong>C4 Model</strong> para visualizar arquitetura em níveis, <strong>Mermaid</strong> para diagramas como código, <strong>RFCs</strong> para propostas de mudanças significativas, e <strong>Documentation as Code</strong> para manter docs sempre atualizadas.</p>
+
+<!-- ═══ ADRs ═══ -->
+<h3>ADRs (Architecture Decision Records)</h3>
+
+<h4>O que são e por que documentar decisões</h4>
+<p>Um <strong>ADR</strong> (Architecture Decision Record) é um documento curto que registra uma decisão arquitetural significativa, junto com seu <strong>contexto</strong> é <strong>consequências</strong>. A ideia foi popularizada por Michael Nygard em 2011.</p>
+
+<p>Por que documentar decisões?</p>
+<ul>
+<li><strong>Memória organizacional:</strong> Pessoas saem, decisões ficam. Sem ADRs, ninguem sabe POR QUE o sistema e assim</li>
+<li><strong>Evitar re-debates:</strong> "Por que usamos PostgreSQL e não MongoDB?" — se esta documentado, não precisa rediscutir a cada 6 meses</li>
+<li><strong>Onboarding acelerado:</strong> Novos devs entendem as decisões historicas sem precisar perguntar para 5 pessoas diferentes</li>
+<li><strong>Accountability:</strong> Decisoes são rastreraveis — quem decidiu, quando, com quais informações disponíveis</li>
+<li><strong>Aprendizado:</strong> Revisitar ADRs antigos mostra a evolução do pensamento arquitetural do time</li>
+</ul>
+
+<h4>Templaté padrão (MADR)</h4>
+<p>O formato mais usado é o <strong>MADR</strong> (Markdown Any Decision Records). Estrutura mínima:</p>
+
+<pre data-lang="markdown"><code><span class="cm"># ADR-001: Usar PostgreSQL como banco de dados principal</span>
+
+<span class="kw">## Status</span>
+<span class="str">Accepted</span>
+
+<span class="kw">## Contexto</span>
+Precisamos escolher um banco de dados para o novo sistema de
+pagamentos. Os requisitos são:
+- Transacoes ACID obrigatórias (financeiro)
+- Queries complexas com JOINs entre 5+ tabelas
+- Volume estimado: 10M registros/mes
+- Time tem experiência com SQL
+
+<span class="kw">## Decisao</span>
+Usaremos <span class="fn">PostgreSQL 16</span> como banco principal.
+
+<span class="kw">## Alternativas Consideradas</span>
+<span class="num">1.</span> <span class="tp">MongoDB</span> — Descartado: sem ACID multi-document nativo
+   até recentemente, model relacional e mais natural para
+   dados financeiros
+<span class="num">2.</span> <span class="tp">MySQL</span> — Descartado: PostgreSQL tem melhor suporte a
+   JSON, CTEs recursivas, e extensões (PostGIS se precisar)
+<span class="num">3.</span> <span class="tp">CockroachDB</span> — Descartado: overhead de distribuição
+   desnecessário para escala atual. Complexidade prematura
+
+<span class="kw">## Consequências</span>
+<span class="str">Positivas:</span>
+- ACID completo para transações financeiras
+- Ecossistema maduro (pgAdmin, pgBouncer, pg_dump)
+- Time já tem experiência — sem curva de aprendizado
+
+<span class="str">Negativas:</span>
+- Escalabilidade horizontal limitada (sharding manual)
+- Se ultrapassar 1TB, precisaremos avaliar Citus ou sharding
+- Vendor lock-in em features específicas (JSONB, arrays)
+
+<span class="kw">## Data</span>
+<span class="num">2024-03-15</span>
+
+<span class="kw">## Autores</span>
+@joao-silva, @maria-dev</code></pre>
+
+<h4>Lifecycle de um ADR</h4>
+<p>ADRs não são imutaveis — eles evoluem com o projeto:</p>
+
+<div class="diagram">
+<div class="diagram-box blue">Proposed<br><small>Em discussão</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box green">Accepted<br><small>Aprovado pelo time</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Deprecated<br><small>Não recomendado</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box red">Superseded<br><small>Substituido por outro</small></div>
+</div>
+
+<ul>
+<li><strong>Proposed:</strong> O ADR foi escrito e esta aguardando review do time</li>
+<li><strong>Accepted:</strong> O time concordou com a decisão. E o status padrão</li>
+<li><strong>Deprecated:</strong> A decisão ainda funciona, mas não é mais recomendada para novos projetos</li>
+<li><strong>Superseded by ADR-XXX:</strong> Foi substituido por uma nova decisão. O ADR antigo aponta para o novo</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Regra importante:</strong> Nunca delete um ADR. Mesmo decisões que se mostraram erradas são valiosas — elas documentam o que o time sabia naquele momento e por que a decisão fazia sentido com as informações disponíveis.</div>
+</div>
+
+<h4>Ferramentas para ADRs</h4>
+
+<div class="card">
+<div class="card-title">MADR (Markdown Any Decision Records)</div>
+<p style="color:var(--text2);font-size:.88rem">Templaté padrão em Markdown. Funciona com qualquer repositório Git. Basta criar uma pasta <code>docs/adr/</code> é numerar sequêncialmente.</p>
+</div>
+
+<div class="card blue">
+<div class="card-title">adr-tools CLI</div>
+<p style="color:var(--text2);font-size:.88rem">Ferramenta de linha de comando para gerenciar ADRs. Cria, lista, e faz link entre ADRs automáticamente.</p>
+</div>
+
+<pre data-lang="bash"><code><span class="cm"># Instalar adr-tools</span>
+<span class="fn">brew install</span> adr-tools    <span class="cm"># macOS</span>
+<span class="fn">npm install</span> -g adr       <span class="cm"># via npm (alternativa)</span>
+
+<span class="cm"># Inicializar diretório de ADRs</span>
+<span class="fn">adr init</span> docs/adr
+
+<span class="cm"># Criar novo ADR</span>
+<span class="fn">adr new</span> <span class="str">"Usar PostgreSQL como banco principal"</span>
+<span class="cm"># Cria: docs/adr/0001-usar-postgresql-como-banco-principal.md</span>
+
+<span class="cm"># Listar todos os ADRs</span>
+<span class="fn">adr list</span>
+
+<span class="cm"># Superseder um ADR por outro</span>
+<span class="fn">adr new</span> -s <span class="num">1</span> <span class="str">"Migrar de PostgreSQL para CockroachDB"</span>
+<span class="cm"># Marca ADR-0001 como "Superseded by ADR-0002"</span>
+
+<span class="cm"># Gerar índice (table of contents)</span>
+<span class="fn">adr generate</span> toc &gt; docs/adr/README.md</code></pre>
+
+<h4>Exemplo real: Migracao de Monolito para Microserviços</h4>
+
+<pre data-lang="markdown"><code><span class="cm"># ADR-007: Extrair serviço de Pagamentos do monolito</span>
+
+<span class="kw">## Status</span>
+<span class="str">Accepted</span> (supersedes ADR-003)
+
+<span class="kw">## Contexto</span>
+O módulo de pagamentos no monolito esta causando problemas:
+- Deploys do monolito inteiro para fix de pagamento
+- Escalabilidade diferente (pagamento = CPU-intensive,
+  catálogo = IO-intensive)
+- Time de pagamentos bloqueado pelo time de catálogo
+  (conflitos de merge constantes)
+- Requisito regulatorio: isolamento de dados PCI-DSS
+
+<span class="kw">## Decisao</span>
+Extrair o módulo de pagamentos como um <span class="fn">microserviço</span>
+independente, com:
+- Banco de dados proprio (PostgreSQL dedicado)
+- Comúnicação via <span class="fn">eventos asíncronos</span> (SQS/SNS)
+- API síncrona apenas para operações criticas (criar pagamento)
+
+<span class="kw">## Consequências</span>
+<span class="str">Positivas:</span>
+- Deploy independente (2x por dia vs 1x por semana)
+- Escala independente (auto-scaling por CPU)
+- Isolamento PCI-DSS fácilitado
+- Time autônomo
+
+<span class="str">Negativas:</span>
+- Complexidade de comunicação entre serviços
+- Eventual consistency (pedido criado mas pagamento pendente)
+- Necessidade de distributed tracing (Jaeger)
+- Saga pattern para transações cross-service</code></pre>
+
+<!-- ═══ C4 MODEL ═══ -->
+<h3>C4 Model — Visualizando Arquitetura em 4 Niveis</h3>
+
+<p>O <strong>C4 Model</strong>, criado por Simon Brown, e uma abordagem para visualizar arquitetura de software em 4 níveis de zoom, como um Google Maps da arquitetura. Cada nível responde perguntas diferentes para audiencias diferentes.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Nivel</th><th>Nome</th><th>Audiencia</th><th>Responde</th></tr>
+<tr><td><strong>1</strong></td><td>Context</td><td>Todos (negócio + tech)</td><td>O que o sistema faz? Quem usa? Com quais sistemas externós se comúnica?</td></tr>
+<tr><td><strong>2</strong></td><td>Container</td><td>Devs + Arquitetos</td><td>Quais são as grandes pecas técnicas? (API, frontend, banco, fila)</td></tr>
+<tr><td><strong>3</strong></td><td>Component</td><td>Devs do time</td><td>Como cada container e organizado internamente? (modules, services)</td></tr>
+<tr><td><strong>4</strong></td><td>Code</td><td>Dev individual</td><td>Como o código esta estruturado? (classes, interfaces) — geralmente auto-gerado</td></tr>
+</table>
+</div>
+
+<h4>Nivel 1 — System Context Diagram</h4>
+<p>Visao de helicoptero. Mostra o sistema como uma caixa preta e seus relacionamentos com usuários e sistemas externos.</p>
+
+<pre data-lang="plantuml"><code><span class="kw">@startuml</span> C4_Context
+<span class="fn">!include</span> <span class="str">https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml</span>
+
+<span class="fn">Person</span>(customer, <span class="str">"Cliente"</span>, <span class="str">"Faz compras online"</span>)
+<span class="fn">System</span>(ecommerce, <span class="str">"E-Commerce System"</span>, <span class="str">"Permite compras online"</span>)
+
+<span class="fn">System_Ext</span>(payment, <span class="str">"Gateway Pagamento"</span>, <span class="str">"Stripe/PagSeguro"</span>)
+<span class="fn">System_Ext</span>(email, <span class="str">"Email Service"</span>, <span class="str">"SendGrid"</span>)
+<span class="fn">System_Ext</span>(erp, <span class="str">"ERP"</span>, <span class="str">"SAP/TOTVS"</span>)
+
+<span class="fn">Rel</span>(customer, ecommerce, <span class="str">"Navega, compra"</span>, <span class="str">"HTTPS"</span>)
+<span class="fn">Rel</span>(ecommerce, payment, <span class="str">"Processa pagamentos"</span>, <span class="str">"API REST"</span>)
+<span class="fn">Rel</span>(ecommerce, email, <span class="str">"Envia emails"</span>, <span class="str">"SMTP/API"</span>)
+<span class="fn">Rel</span>(ecommerce, erp, <span class="str">"Sincroniza estoque"</span>, <span class="str">"API REST"</span>)
+
+<span class="kw">@enduml</span></code></pre>
+
+<h4>Nivel 2 — Container Diagram</h4>
+<p>Faz zoom no sistema. Mostra os containers (aplicações, bancos, filas) é como se comúnicam.</p>
+
+<pre data-lang="plantuml"><code><span class="kw">@startuml</span> C4_Container
+<span class="fn">!include</span> <span class="str">https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml</span>
+
+<span class="fn">Person</span>(customer, <span class="str">"Cliente"</span>)
+
+<span class="fn">System_Boundary</span>(ecommerce, <span class="str">"E-Commerce System"</span>) {
+    <span class="fn">Container</span>(spa, <span class="str">"SPA Frontend"</span>, <span class="str">"React"</span>, <span class="str">"Interface do usuário"</span>)
+    <span class="fn">Container</span>(api, <span class="str">"API Backend"</span>, <span class="str">"NestJS"</span>, <span class="str">"Logica de negócio"</span>)
+    <span class="fn">Container</span>(worker, <span class="str">"Worker"</span>, <span class="str">"Node.js"</span>, <span class="str">"Jobs assíncronos"</span>)
+    <span class="fn">ContainerDb</span>(db, <span class="str">"Database"</span>, <span class="str">"PostgreSQL"</span>, <span class="str">"Dados do sistema"</span>)
+    <span class="fn">ContainerQueue</span>(queue, <span class="str">"Message Queue"</span>, <span class="str">"SQS"</span>, <span class="str">"Filas de processamento"</span>)
+    <span class="fn">Container</span>(cache, <span class="str">"Cache"</span>, <span class="str">"Redis"</span>, <span class="str">"Sessions e cache"</span>)
+}
+
+<span class="fn">Rel</span>(customer, spa, <span class="str">"Usa"</span>, <span class="str">"HTTPS"</span>)
+<span class="fn">Rel</span>(spa, api, <span class="str">"Chama"</span>, <span class="str">"REST/JSON"</span>)
+<span class="fn">Rel</span>(api, db, <span class="str">"Le/Escreve"</span>, <span class="str">"TCP/5432"</span>)
+<span class="fn">Rel</span>(api, queue, <span class="str">"Publica"</span>, <span class="str">"HTTPS"</span>)
+<span class="fn">Rel</span>(worker, queue, <span class="str">"Consome"</span>, <span class="str">"HTTPS"</span>)
+<span class="fn">Rel</span>(api, cache, <span class="str">"Le/Escreve"</span>, <span class="str">"TCP/6379"</span>)
+
+<span class="kw">@enduml</span></code></pre>
+
+<h4>Nivel 3 — Component Diagram</h4>
+<p>Faz zoom em um container específico. Mostra os módulos/componentes internos. Util para o time que trabalha naquele container.</p>
+
+<pre data-lang="plantuml"><code><span class="kw">@startuml</span> C4_Component
+<span class="fn">!include</span> <span class="str">https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml</span>
+
+<span class="fn">Container_Boundary</span>(api, <span class="str">"API Backend (NestJS)"</span>) {
+    <span class="fn">Component</span>(auth, <span class="str">"AuthModule"</span>, <span class="str">"NestJS Module"</span>, <span class="str">"JWT + OAuth2"</span>)
+    <span class="fn">Component</span>(orders, <span class="str">"OrdersModule"</span>, <span class="str">"NestJS Module"</span>, <span class="str">"CRUD pedidos"</span>)
+    <span class="fn">Component</span>(payments, <span class="str">"PaymentsModule"</span>, <span class="str">"NestJS Module"</span>, <span class="str">"Processamento"</span>)
+    <span class="fn">Component</span>(catalog, <span class="str">"CatalogModule"</span>, <span class="str">"NestJS Module"</span>, <span class="str">"Produtos"</span>)
+    <span class="fn">Component</span>(notifications, <span class="str">"NotificationsModule"</span>, <span class="str">"NestJS Module"</span>, <span class="str">"Email/Push"</span>)
+}
+
+<span class="fn">Rel</span>(orders, payments, <span class="str">"Cria pagamento"</span>)
+<span class="fn">Rel</span>(orders, catalog, <span class="str">"Verifica estoque"</span>)
+<span class="fn">Rel</span>(payments, notifications, <span class="str">"Notifica resultado"</span>)
+
+<span class="kw">@enduml</span></code></pre>
+
+<h4>Nivel 4 — Code Diagram</h4>
+<p>Diagrama de classes/interfaces dentro de um componente. Na prática, <strong>raramente feito manualmente</strong> — use ferramentas que geram automáticamente a partir do código (TypeDoc, UML generators).</p>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando usar cada nível:</strong> Nivel 1 (Context) em toda documentação. Nivel 2 (Container) para onboarding e discussoes de arquitetura. Nivel 3 (Component) para o time que trabalha no container. Nivel 4 (Code) quase nunca — deixe o IDE gerar se precisar.</div>
+</div>
+
+<!-- ═══ MERMAID ═══ -->
+<h3>Mermaid — Diagramas como Código</h3>
+
+<p><strong>Mermaid</strong> é uma linguagem de diagramas que renderiza direto no Markdown. Suportado nativamente pelo <strong>GitHub</strong>, <strong>GitLab</strong>, <strong>Notion</strong>, <strong>Obsidian</strong>, e <strong>VS Code</strong>. A grande vantagem: diagramas versionados junto com o código no Git.</p>
+
+<h4>Flowchart (Fluxo de Decisao)</h4>
+
+<pre data-lang="mermaid"><code><span class="kw">flowchart</span> TD
+    A[<span class="str">Novo Feature Request</span>] --> B{<span class="str">Impacta arquitetura?</span>}
+    B -- <span class="str">Sim</span> --> C[<span class="str">Escrever RFC</span>]
+    B -- <span class="str">Não</span> --> D{<span class="str">Impacta mais de 1 serviço?</span>}
+    C --> E[<span class="str">Review do time</span>]
+    E --> F{<span class="str">Aprovado?</span>}
+    F -- <span class="str">Sim</span> --> G[<span class="str">Criar ADR</span>]
+    F -- <span class="str">Não</span> --> H[<span class="str">Revisar proposta</span>]
+    H --> C
+    D -- <span class="str">Sim</span> --> C
+    D -- <span class="str">Não</span> --> I[<span class="str">Implementar direto</span>]
+    G --> I</code></pre>
+
+<h4>Sequence Diagram (Fluxo de Interácao)</h4>
+
+<pre data-lang="mermaid"><code><span class="kw">sequenceDiagram</span>
+    <span class="kw">participant</span> <span class="fn">U</span> <span class="kw">as</span> Usuario
+    <span class="kw">participant</span> <span class="fn">F</span> <span class="kw">as</span> Frontend
+    <span class="kw">participant</span> <span class="fn">A</span> <span class="kw">as</span> API
+    <span class="kw">participant</span> <span class="fn">DB</span> <span class="kw">as</span> PostgreSQL
+    <span class="kw">participant</span> <span class="fn">Q</span> <span class="kw">as</span> SQS Queue
+
+    U->>F: <span class="str">Clica "Finalizar Pedido"</span>
+    F->>A: <span class="str">POST /orders</span>
+    A->>DB: <span class="str">INSERT order (status=pending)</span>
+    DB-->>A: <span class="str">order_id</span>
+    A->>Q: <span class="str">Publica evento OrderCreated</span>
+    A-->>F: <span class="str">201 Created {order_id}</span>
+    F-->>U: <span class="str">Tela de confirmacao</span>
+
+    <span class="cm">Note over Q,A: Processamento assíncrono</span>
+    Q->>A: <span class="str">Worker consome OrderCreated</span>
+    A->>DB: <span class="str">UPDATE order (status=processing)</span></code></pre>
+
+<h4>ER Diagram (Entidade-Relacionamento)</h4>
+
+<pre data-lang="mermaid"><code><span class="kw">erDiagram</span>
+    <span class="tp">USER</span> ||--o{ <span class="tp">ORDER</span> : <span class="str">"faz"</span>
+    <span class="tp">ORDER</span> ||--|{ <span class="tp">ORDER_ITEM</span> : <span class="str">"contém"</span>
+    <span class="tp">ORDER_ITEM</span> }o--|| <span class="tp">PRODUCT</span> : <span class="str">"referência"</span>
+    <span class="tp">ORDER</span> ||--o| <span class="tp">PAYMENT</span> : <span class="str">"tem"</span>
+
+    <span class="tp">USER</span> {
+        <span class="kw">uuid</span> <span class="fn">id</span> <span class="str">PK</span>
+        <span class="kw">string</span> <span class="fn">name</span>
+        <span class="kw">string</span> <span class="fn">email</span> <span class="str">UK</span>
+        <span class="kw">timestamp</span> <span class="fn">created_at</span>
+    }
+    <span class="tp">ORDER</span> {
+        <span class="kw">uuid</span> <span class="fn">id</span> <span class="str">PK</span>
+        <span class="kw">uuid</span> <span class="fn">user_id</span> <span class="str">FK</span>
+        <span class="kw">enum</span> <span class="fn">status</span>
+        <span class="kw">decimal</span> <span class="fn">total</span>
+    }
+    <span class="tp">PRODUCT</span> {
+        <span class="kw">uuid</span> <span class="fn">id</span> <span class="str">PK</span>
+        <span class="kw">string</span> <span class="fn">name</span>
+        <span class="kw">decimal</span> <span class="fn">price</span>
+        <span class="kw">int</span> <span class="fn">stock</span>
+    }</code></pre>
+
+<h4>Class Diagram</h4>
+
+<pre data-lang="mermaid"><code><span class="kw">classDiagram</span>
+    <span class="kw">class</span> <span class="tp">PaymentService</span> {
+        -<span class="fn">gateway</span>: PaymentGateway
+        -<span class="fn">repository</span>: PaymentRepository
+        +<span class="fn">createPayment</span>(order: Order): Payment
+        +<span class="fn">refund</span>(paymentId: string): void
+        +<span class="fn">getStatus</span>(paymentId: string): PaymentStatus
+    }
+
+    <span class="kw">class</span> <span class="tp">PaymentGateway</span> {
+        &lt;&lt;<span class="str">interface</span>&gt;&gt;
+        +<span class="fn">charge</span>(amount: number, card: Card): Result
+        +<span class="fn">refund</span>(transactionId: string): Result
+    }
+
+    <span class="kw">class</span> <span class="tp">StripeGateway</span> {
+        +<span class="fn">charge</span>(amount: number, card: Card): Result
+        +<span class="fn">refund</span>(transactionId: string): Result
+    }
+
+    <span class="kw">class</span> <span class="tp">PagSeguroGateway</span> {
+        +<span class="fn">charge</span>(amount: number, card: Card): Result
+        +<span class="fn">refund</span>(transactionId: string): Result
+    }
+
+    <span class="tp">PaymentService</span> --> <span class="tp">PaymentGateway</span>
+    <span class="tp">StripeGateway</span> ..|> <span class="tp">PaymentGateway</span>
+    <span class="tp">PagSeguroGateway</span> ..|> <span class="tp">PaymentGateway</span></code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Integracao com Markdown:</strong> No GitHub e GitLab, basta usar blocos <code>```mermaid</code> dentro de qualquer arquivo <code>.md</code> é o diagrama renderiza automáticamente. Sem ferramentas externas, sem imagens para atualizar manualmente.</div>
+</div>
+
+<!-- ═══ RFC PROCESS ═══ -->
+<h3>RFC Process (Request for Comments)</h3>
+
+<p>Um <strong>RFC</strong> (Request for Comments) é um documento mais longo que um ADR, usado para propor mudanças significativas que afetam múltiplos times ou a arquitetura geral. Enquanto o ADR registra a <strong>decisão final</strong>, o RFC é o <strong>processo de tomada de decisão</strong>.</p>
+
+<h4>Quando usar RFC vs ADR</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>ADR</th><th>RFC / Design Doc</th></tr>
+<tr><td><strong>Tamanho</strong></td><td>1-2 páginas</td><td>5-15 páginas</td></tr>
+<tr><td><strong>Proposito</strong></td><td>Registrar decisão tomada</td><td>Propor e discutir mudança</td></tr>
+<tr><td><strong>Quando</strong></td><td>Apos a decisão</td><td>Antes da decisão</td></tr>
+<tr><td><strong>Audiencia</strong></td><td>Time atual + futuros devs</td><td>Multiplos times + stakeholders</td></tr>
+<tr><td><strong>Review</strong></td><td>Informal (PR review)</td><td>Formal (reuniao + aprovacao)</td></tr>
+<tr><td><strong>Exemplos</strong></td><td>"Usar Redis para cache"</td><td>"Migrar de REST para GraphQL"</td></tr>
+</table>
+</div>
+
+<h4>Templaté de RFC (Design Doc estilo Google)</h4>
+
+<pre data-lang="markdown"><code><span class="cm"># RFC-012: Migrar API publica de REST para GraphQL</span>
+
+<span class="kw">## Metadata</span>
+- <span class="fn">Autor:</span> @joao-silva
+- <span class="fn">Status:</span> <span class="str">Em Review</span>
+- <span class="fn">Criado:</span> <span class="num">2024-06-10</span>
+- <span class="fn">Reviewers:</span> @maria-dev, @carlos-arch, @ana-frontend
+- <span class="fn">Deadline para feedback:</span> <span class="num">2024-06-24</span>
+
+<span class="kw">## Problema</span>
+A API REST atual tem problemas de:
+1. <span class="tp">Over-fetching:</span> Frontend recebe 40 campos mas usa 5
+2. <span class="tp">Under-fetching:</span> Tela de dashboard faz 8 requests
+3. <span class="tp">Versionamento:</span> 3 versões de API ativas (v1, v2, v3)
+4. <span class="tp">Mobile:</span> Payloads grandes impactam 3G/4G
+
+<span class="kw">## Proposta</span>
+Implementar GraphQL como camada sobre os serviços existentes:
+- Apollo Server como gateway
+- Manter REST internamente entre microserviços
+- GraphQL apenas para clientes externós (frontend, mobile)
+- Federation para composicao de schemas entre times
+
+<span class="kw">## Alternativas Consideradas</span>
+<span class="num">1.</span> <span class="str">BFF (Backend for Frontend)</span>
+   Pro: Simples. Contra: N BFFs para N clientes
+<span class="num">2.</span> <span class="str">REST com sparse fieldsets (JSON:API)</span>
+   Pro: Menor mudança. Contra: Não resolve N+1, complexo
+<span class="num">3.</span> <span class="str">gRPC + Envoy</span>
+   Pro: Performance. Contra: Browser support limitado
+
+<span class="kw">## Riscos</span>
+- Curva de aprendizado do time (estimativa: 2 sprints)
+- N+1 queries se resolvers não usarem DataLoader
+- Complexidade de autorização por campo
+- Cache mais difícil que REST (sem HTTP caching nativo)
+
+<span class="kw">## Plano de Implementação</span>
+Fase 1: Schema + resolvers para Catalogo (2 semanas)
+Fase 2: Pedidos + Pagamentos (3 semanas)
+Fase 3: Deprecar endpoints REST v1/v2 (1 mes)
+Fase 4: Mobile migra para GraphQL (2 semanas)
+
+<span class="kw">## Métricas de Sucesso</span>
+- Reducao de 60% no payload medio
+- Reducao de 70% no número de requests por tela
+- P95 latência &lt;= REST atual</code></pre>
+
+<h4>Workflow de Review</h4>
+
+<div class="diagram">
+<div class="diagram-box green">1. Autor escreve<br><small>RFC Draft</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">2. Review assíncrono<br><small>Comentarios no PR</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">3. Reuniao de alinhamento<br><small>30-60min</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">4. Decisao<br><small>Aprovado/Rejeitado</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box green">5. ADR<br><small>Registra decisão</small></div>
+</div>
+
+<ul>
+<li><strong>Passó 1:</strong> Autor escreve o RFC e abre um PR (Pull Request) no repositório de docs</li>
+<li><strong>Passó 2:</strong> Reviewers deixam comentários assíncronamente (prazo: 1-2 semanas)</li>
+<li><strong>Passó 3:</strong> Reuniao para resolver disagreements e alinhar. Não e para ler o doc — todos devem ler antes</li>
+<li><strong>Passó 4:</strong> Decisao final. O autor faz merge do RFC com status "Approved" ou "Rejected"</li>
+<li><strong>Passó 5:</strong> Se aprovado, cria um ADR curto que referência o RFC para registro permanente</li>
+</ul>
+
+<!-- ═══ DOCUMENTATION AS CODE ═══ -->
+<h3>Documentation as Code</h3>
+
+<p><strong>Documentation as Code</strong> é a prática de tratar documentação com o mesmo rigor que código: versionada no Git, revisada por PR, testada no CI, e publicada automáticamente. Se a doc não esta no repositório, ela não existe.</p>
+
+<h4>Ferramentas Modernas</h4>
+
+<div class="card">
+<div class="card-title">MkDocs + Material Theme</div>
+<p style="color:var(--text2);font-size:.88rem"><strong>Stack:</strong> Python. <strong>Formato:</strong> Markdown. O tema Material é o mais popular — busca integrada, dark mode, tabs, admonitions. Ideal para documentação técnica.</p>
+</div>
+
+<div class="card blue">
+<div class="card-title">Docusaurus (Meta/Facebook)</div>
+<p style="color:var(--text2);font-size:.88rem"><strong>Stack:</strong> React. <strong>Formato:</strong> MDX (Markdown + JSX). Excelente para docs publicas de projetos open-source. Suporta i18n, versioning, blog integrado.</p>
+</div>
+
+<div class="card purple">
+<div class="card-title">Astro Starlight</div>
+<p style="color:var(--text2);font-size:.88rem"><strong>Stack:</strong> Astro. <strong>Formato:</strong> Markdown/MDX. Mais moderno, performance excepcional (zero JS por padrão), busca nativa, i18n. Ideal para projetos novos.</p>
+</div>
+
+<h4>Estrutura de Docs em Monorepo</h4>
+
+<pre data-lang="text"><code><span class="fn">my-project/</span>
+├── <span class="fn">apps/</span>
+│   ├── <span class="fn">api/</span>
+│   │   ├── src/
+│   │   └── <span class="str">README.md</span>          <span class="cm"># Como rodar a API localmente</span>
+│   └── <span class="fn">web/</span>
+│       ├── src/
+│       └── <span class="str">README.md</span>          <span class="cm"># Como rodar o frontend</span>
+├── <span class="fn">docs/</span>
+│   ├── <span class="fn">adr/</span>                   <span class="cm"># Architecture Decision Records</span>
+│   │   ├── <span class="num">0001</span>-usar-postgresql.md
+│   │   ├── <span class="num">0002</span>-extrair-serviço-pagamentos.md
+│   │   └── README.md            <span class="cm"># Índice de ADRs</span>
+│   ├── <span class="fn">rfcs/</span>                  <span class="cm"># Design Docs / RFCs</span>
+│   │   └── <span class="num">012</span>-migrar-graphql.md
+│   ├── <span class="fn">guides/</span>                <span class="cm"># Guias de como fazer</span>
+│   │   ├── onboarding.md
+│   │   ├── deploy-produção.md
+│   │   └── troubleshooting.md
+│   ├── <span class="fn">api-reference/</span>         <span class="cm"># Auto-gerado (OpenAPI/Swagger)</span>
+│   └── <span class="str">mkdocs.yml</span>             <span class="cm"># Config do MkDocs</span>
+├── <span class="str">CONTRIBUTING.md</span>            <span class="cm"># Como contribuir</span>
+└── <span class="str">README.md</span>                  <span class="cm"># Visao geral do projeto</span></code></pre>
+
+<h4>Auto-Generated Docs</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Linguagem</th><th>O que gera</th></tr>
+<tr><td><strong>Swagger / OpenAPI</strong></td><td>Qualquer (REST API)</td><td>Documentação interátiva de APIs REST a partir de anotacoes ou spec YAML</td></tr>
+<tr><td><strong>TypeDoc</strong></td><td>TypeScript</td><td>Documentação de bibliotecas a partir de JSDoc/TSDoc comments</td></tr>
+<tr><td><strong>Storybook</strong></td><td>React/Vue/Angular</td><td>Catalogo visual de componentes UI com exemplos interátivos</td></tr>
+<tr><td><strong>Compodoc</strong></td><td>Angular/NestJS</td><td>Documentação de módulos, services, controllers NestJS</td></tr>
+<tr><td><strong>Javadoc / KDoc</strong></td><td>Java / Kotlin</td><td>Documentação de classes e métodos a partir de comments</td></tr>
+</table>
+</div>
+
+<h4>Docs CI/CD Pipeline</h4>
+
+<pre data-lang="yaml"><code><span class="cm"># .github/workflows/docs.yml</span>
+<span class="kw">name:</span> <span class="str">Deploy Documentation</span>
+
+<span class="kw">on:</span>
+  <span class="kw">push:</span>
+    <span class="kw">branches:</span> [<span class="str">main</span>]
+    <span class="kw">paths:</span>
+      - <span class="str">'docs/**'</span>
+      - <span class="str">'mkdocs.yml'</span>
+
+<span class="kw">jobs:</span>
+  <span class="fn">deploy-docs:</span>
+    <span class="kw">runs-on:</span> <span class="str">ubuntu-latest</span>
+    <span class="kw">steps:</span>
+      - <span class="kw">uses:</span> <span class="str">actions/checkout@v4</span>
+
+      - <span class="kw">name:</span> <span class="str">Setup Python</span>
+        <span class="kw">uses:</span> <span class="str">actions/setup-python@v5</span>
+        <span class="kw">with:</span>
+          <span class="kw">python-version:</span> <span class="str">'3.12'</span>
+
+      - <span class="kw">name:</span> <span class="str">Install MkDocs + Material</span>
+        <span class="kw">run:</span> <span class="fn">pip install</span> mkdocs-material mkdocs-mermaid2-plugin
+
+      - <span class="kw">name:</span> <span class="str">Validaté links (broken link check)</span>
+        <span class="kw">run:</span> <span class="fn">mkdocs build</span> --strict
+        <span class="cm"># --strict faz build falhar se tiver links quebrados</span>
+
+      - <span class="kw">name:</span> <span class="str">Deploy to GitHub Pages</span>
+        <span class="kw">run:</span> <span class="fn">mkdocs gh-deploy</span> --force</code></pre>
+
+<pre data-lang="yaml"><code><span class="cm"># mkdocs.yml</span>
+<span class="kw">site_name:</span> <span class="str">My Project Docs</span>
+<span class="kw">theme:</span>
+  <span class="kw">name:</span> <span class="str">material</span>
+  <span class="kw">palette:</span>
+    - <span class="kw">scheme:</span> <span class="str">slate</span>         <span class="cm"># Dark mode</span>
+      <span class="kw">primary:</span> <span class="str">teal</span>
+  <span class="kw">features:</span>
+    - <span class="str">search.highlight</span>
+    - <span class="str">navigation.tabs</span>
+    - <span class="str">navigation.sections</span>
+    - <span class="str">content.code.copy</span>
+
+<span class="kw">plugins:</span>
+  - <span class="str">search</span>
+  - <span class="str">mermaid2</span>              <span class="cm"># Renderiza diagramas Mermaid</span>
+
+<span class="kw">markdown_extensions:</span>
+  - <span class="str">admonition</span>             <span class="cm"># Tip/Warning/Note boxes</span>
+  - <span class="str">pymdownx.highlight</span>     <span class="cm"># Syntax highlighting</span>
+  - <span class="str">pymdownx.superfences</span>   <span class="cm"># Nested code blocks</span>
+  - <span class="str">pymdownx.tabbed</span>        <span class="cm"># Tabs in content</span>
+
+<span class="kw">nav:</span>
+  - <span class="str">Home:</span> index.md
+  - <span class="str">Guias:</span>
+    - <span class="str">Onboarding:</span> guides/onboarding.md
+    - <span class="str">Deploy:</span> guides/deploy-produção.md
+  - <span class="str">ADRs:</span> adr/README.md
+  - <span class="str">API Reference:</span> api-reference/index.md</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Estrategia de Documentação para Projeto Greenfield</h3>
+
+<p><strong>Cenário:</strong> Você esta iniciando um novo projeto com 3 devs, que vai crescer para 15 devs em 12 meses. Qual estratégia de documentação adotar desde o dia 1?</p>
+
+<div class="diagram">
+<div class="diagram-box green">Dia 1<br><small>README + ADRs</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Mes 1<br><small>+ C4 Diagrams</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Mes 3<br><small>+ MkDocs + CI</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Mes 6<br><small>+ RFCs + Auto-docs</small></div>
+</div>
+
+<p><strong>Fase 1 — Dia 1 (3 devs):</strong></p>
+<ol>
+<li><strong>README.md:</strong> Como rodar o projeto localmente (3 comandos máximo), stack útilizada, estrutura de pastas</li>
+<li><strong>docs/adr/:</strong> Criar ADRs para cada decisão técnica (banco, framework, cloud provider, CI). Mesmo com 3 devs, documentar agora é mais fácil que reconstruir depois</li>
+<li><strong>CONTRIBUTING.md:</strong> Code style, branch naming, commit convention, PR process</li>
+<li><strong>Swagger/OpenAPI:</strong> Anotacoes na API desde o primeiro endpoint. Custo zero se feito desde o início</li>
+</ol>
+
+<p><strong>Fase 2 — Mes 1 (5 devs):</strong></p>
+<ol>
+<li><strong>C4 Diagrams:</strong> Nivel 1 (Context) e Nivel 2 (Container) em Mermaid no README. Quando o 4o dev entra, ele precisa de um mapa</li>
+<li><strong>Runbooks:</strong> Como fazer deploy, como restaurar backup, como investigar incidente. Se só 1 pessoa sabe, é um bus factor de 1</li>
+</ol>
+
+<p><strong>Fase 3 — Mes 3 (8 devs):</strong></p>
+<ol>
+<li><strong>MkDocs + CI:</strong> Migrar docs espalhados para site centralizado. Build automático no merge para main. Broken link check</li>
+<li><strong>Onboarding guide:</strong> Documento que leva novo dev de "zero" a "PR em produção" em 1 dia</li>
+</ol>
+
+<p><strong>Fase 4 — Mes 6 (15 devs):</strong></p>
+<ol>
+<li><strong>RFC Process:</strong> Com 15 devs, decisões precisam de processo formal. RFCs com prazo de review, reuniao de alinhamento, e ADR resultante</li>
+<li><strong>TypeDoc/Compodoc:</strong> Auto-gerar docs de bibliotecas internas compartilhadas</li>
+<li><strong>Storybook:</strong> Se tem design system, catálogo visual de componentes</li>
+</ol>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Princípio fundamental:</strong> Documente o MINIMO necessário, mas documente. Uma página que existe e 100% melhor que 10 páginas que ninguem escreveu. Comece pequeno, cresça conforme o time cresce.</div>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Documentar COMO o código funciona ao inves de POR QUE:</strong> O código já diz o "como". Documentação deve explicar POR QUE essa decisão foi tomada, quais alternativas foram consideradas, e quais trade-offs foram aceitos. "Usamos Redis" não é documentação útil. "Usamos Redis porque precisamos de cache com TTL e o time tem experiência" e.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Documentação separada do código (Confluence, Google Docs):</strong> Docs fora do repositório ficam desatualizadas em semanas. Ninguem atualiza o Confluence quando muda o código. Mantenha docs no mesmo repo, revisadas no mesmo PR. Se o deploy muda, o runbook muda no mesmo commit.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Documentação excessiva para time pequeno:</strong> 3 devs não precisam de RFC formal com 5 reviewers. Um ADR curto é suficiente. Ajuste a formalidade ao tamanho do time. Burocracia demais mata a produtividade e faz ninguem querer documentar.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Diagramas em ferramentas graficas (Lucidchart, draw.io) sem versionamento:</strong> Quando o sistema muda, ninguem atualiza a imagem PNG perdida numa pasta do Drive. Use Mermaid ou PlantUML — diagramas como código versionados no Git, revisados no PR.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>A melhor documentação é a que você realmente mantém.</strong> Um README atualizado e 10x mais valiosó que um site de docs bonito mas desatualizado. Prefira docs curtas, próximas do código, e automatizadas (Swagger, TypeDoc) sempre que possível.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra dos 15 minutos:</strong> Se um novo dev não consegue rodar o projeto em 15 minutos seguindo seu README, a documentação falhou. Teste regularmente: peca para alguem de fora seguir o README do zero.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Escreva um ADR para a decisão de usar TypeScript ao inves de JavaScript puro em um projeto novo. Inclua contexto, alternativas e consequências.</div>
+<div class="qa-a">
+<p><strong>Resposta modelo:</strong></p>
+<p><strong># ADR-001: Usar TypeScript como linguagem principal</strong></p>
+<p><strong>Status:</strong> Accepted</p>
+<p><strong>Contexto:</strong> Estamos iniciando um projeto que terá 10+ devs em 1 ano. Código JavaScript sem tipos causa bugs que só aparecem em runtime, dificuldade de refactoring, e IDE sem autocomplete eficaz. O time tem 6 meses de experiência media com TypeScript.</p>
+<p><strong>Decisao:</strong> Usar TypeScript strict mode (strict: true no tsconfig). Todo código novo deve ser TypeScript. Sem "any" sem justificativa em code review.</p>
+<p><strong>Alternativas:</strong> (1) JavaScript + JSDoc — funciona mas sem enforcement em build. (2) Flow — ecossistema menor que TS, comunidade em declinio. (3) JavaScript puro — inaceitável para projeto com 10+ devs.</p>
+<p><strong>Consequências positivas:</strong> Autocomplete, refactoring seguro, bugs caught em compile-time, documentação de tipos inline. <strong>Negativas:</strong> Build step adicional (tsc), curva de aprendizado para generics avançados, config inicial (tsconfig, eslint, paths).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu time de 12 devs não tem nenhuma documentação além de READMEs básicos. Como você introduziria uma cultura de documentação gradualmente?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Introducao gradual em 3 fases: <strong>Semana 1-2:</strong> Padronize READMEs com templaté (como rodar, como testar, como deployar). Cada dev atualiza o README do serviço que mantém. <strong>Mes 1:</strong> Introduza ADRs — toda decisão técnica em reuniao de arquitetura vira um ADR. Comece retroativamente com as 5 decisões mais importantes. Crie templaté no repo. <strong>Mes 2-3:</strong> Setup MkDocs com CI. Migre READMEs e ADRs para site centralizado. Adicione link no Slack/Teams. Regra: toda PR que muda arquitetura precisa de ADR ou updaté de doc. Não force tudo de uma vez — comece pelo que gera mais valor (onboarding) e cresça organicamente.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Crie um diagrama C4 (nível 2 — Container) em Mermaid para um sistema de delivery com: app mobile, API gateway, serviço de pedidos, serviço de entregadores, serviço de pagamentos, banco de dados, e fila de mensagens.</div>
+<div class="qa-a">
+<p><strong>Resposta (Mermaid):</strong></p>
+<pre data-lang="mermaid"><code>flowchart TD
+    Mobile[App Mobile - React Native] --> GW[API Gateway - Kong]
+    GW --> Orders[Serviço Pedidos - NestJS]
+    GW --> Drivers[Serviço Entregadores - NestJS]
+    GW --> Payments[Serviço Pagamentos - NestJS]
+
+    Orders --> DB_Orders[(PostgreSQL - Pedidos)]
+    Drivers --> DB_Drivers[(PostgreSQL - Entregadores)]
+    Payments --> DB_Payments[(PostgreSQL - Pagamentos)]
+
+    Orders --> Queue[SQS - Message Queue]
+    Queue --> Drivers
+    Queue --> Payments
+
+    Payments --> Stripe[Stripe API - Externo]</code></pre>
+<p>O API Gateway roteia requests para os serviços corretos. Comúnicação síncrona (REST) para requests do usuário. Comúnicação assíncrona (SQS) para eventos entre serviços (ex: PedidoCriado aciona Pagamento e aloca Entregador). Cada serviço tem seu proprio banco para isolamento.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Documentação & ADRs</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="55-engenharia-dados.html">&#8592; Anterior: Engenharia de Dados</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="57-acessibilidade-a11y.html" class="primary">Próximo: Acessibilidade (a11y) &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 56: Documentação & ADRs
+// ══════════════════════════════════════════
+const SECTION_NUM = 56;
+const STORAGE_KEY = 'fsm_quiz_56';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é o principal proposito de um ADR (Architecture Decision Record)?",
+    options: [
+      "Documentar cada linha de código alteráda em um commit",
+      "Registrar decisões arquiteturais significativas com contexto e consequências",
+      "Substituir o README.md do projeto",
+      "Criar diagramas UML automáticamente"
+    ],
+    correct: 1,
+    explanation: "Um ADR registra decisões arquiteturais significativas junto com o contexto (por que a decisão foi tomada), alternativas consideradas, e consequências. O objetivo e preservar a memória institucional do time."
+  },
+  {
+    question: "Qual é a sequência correta do lifecycle de um ADR?",
+    options: [
+      "Draft -> Review -> Merge -> Delete",
+      "Proposed -> Accepted -> Deprecated -> Superseded",
+      "Open -> Closed -> Archived -> Deleted",
+      "Created -> Active -> Inactive -> Removed"
+    ],
+    correct: 1,
+    explanation: "O lifecycle de um ADR e: Proposed (em discussão) -> Accepted (aprovado) -> Deprecated (não recomendado mas funcional) -> Superseded (substituido por outro ADR). ADRs nunca devem ser deletados."
+  },
+  {
+    question: "No C4 Model, qual nível mostra o sistema como uma 'caixa preta' com suas interáções externas?",
+    options: [
+      "Nivel 4 — Code Diagram",
+      "Nivel 3 — Component Diagram",
+      "Nivel 2 — Container Diagram",
+      "Nivel 1 — System Context Diagram"
+    ],
+    correct: 3,
+    explanation: "O Nivel 1 (System Context) mostra o sistema como uma caixa preta, focando em quem usa o sistema e com quais sistemas externós ele se comúnica. E a visao mais ampla, ideal para stakeholders não-técnicos."
+  },
+  {
+    question: "Qual a principal vantagem de usar Mermaid para diagramas ao inves de ferramentas graficas como Lucidchart?",
+    options: [
+      "Mermaid gera diagramas mais bonitos visualmente",
+      "Mermaid suporta mais tipos de diagramas que qualquer outra ferramenta",
+      "Diagramas Mermaid são texto, logo podem ser versionados no Git e revisados em PRs",
+      "Mermaid é a única ferramenta gratuita de diagramas"
+    ],
+    correct: 2,
+    explanation: "A principal vantagem do Mermaid é que diagramas são código (texto), então podem ser versionados no Git, revisados em PRs, e mantidos junto com o código. Quando o sistema muda, o diagrama e atualizado no mesmo commit."
+  },
+  {
+    question: "Qual a diferença fundamental entre um RFC e um ADR?",
+    options: [
+      "RFCs são mais curtos que ADRs",
+      "ADRs são escritos antes da decisão; RFCs depois",
+      "RFCs são o processo de tomada de decisão; ADRs registram a decisão final",
+      "RFCs são apenas para projetos open-source"
+    ],
+    correct: 2,
+    explanation: "O RFC é o documento de proposta e discussão (escrito ANTES da decisão). O ADR registra a decisão final (escrito DEPOIS). Quando um RFC e aprovado, ele gera um ADR curto que referência o RFC para registro permanente."
+  },
+  {
+    question: "Por que documentação em Confluence ou Google Docs é considerada uma armadilha?",
+    options: [
+      "Porque Confluence e pago e Google Docs e gratuito",
+      "Porque docs fora do repositório ficam desatualizadas quando o código muda",
+      "Porque Confluence não suporta Markdown",
+      "Porque Google Docs não permite compartilhamento"
+    ],
+    correct: 1,
+    explanation: "Documentação separada do repositório de código fica desatualizada rapidamente. Ninguem lembra de atualizar o Confluence quando faz uma mudança no código. Mantendo docs no mesmo repo, elas podem ser revisadas no mesmo PR que alterá o código."
+  },
+  {
+    question: "Qual nível do C4 Model raramente é feito manualmente é geralmente e auto-gerado?",
+    options: [
+      "Nivel 1 — Context",
+      "Nivel 2 — Container",
+      "Nivel 3 — Component",
+      "Nivel 4 — Code"
+    ],
+    correct: 3,
+    explanation: "O Nivel 4 (Code) mostra classes e interfaces dentro de um componente. Ele raramente é feito manualmente porque muda frequentemente e pode ser gerado automáticamente por ferramentas como TypeDoc ou geradores de UML a partir do código."
+  },
+  {
+    question: "O que a flag --strict faz ao executar 'mkdocs build --strict' em um pipeline de CI?",
+    options: [
+      "Ativa TypeScript strict mode nós exemplos de código",
+      "Faz o build falhar se houver links quebrados ou avisos",
+      "Compila apenas os arquivos Markdown modificados",
+      "Aplica regras de lint ao conteúdo do Markdown"
+    ],
+    correct: 1,
+    explanation: "A flag --strict no MkDocs faz o build falhar se houver links quebrados, referências inválidas, ou outros avisos. Isso garante que a documentação publicada não tenha links mortos — essencial em pipelines de CI/CD."
+  },
+  {
+    question: "Em um projeto greenfield com 3 devs, qual documentação você deve criar no dia 1?",
+    options: [
+      "Site completo com MkDocs, Storybook, e TypeDoc",
+      "README.md (como rodar), ADRs (decisões), e CONTRIBUTING.md",
+      "Apenas comentários no código são suficientes",
+      "RFC formal com 5 reviewers para cada decisão"
+    ],
+    correct: 1,
+    explanation: "No dia 1 com 3 devs, o mínimo essencial e: README.md (como rodar o projeto em 15 minutos), ADRs para decisões técnicas (banco, framework, etc), e CONTRIBUTING.md (code style, branch naming). Ferramentas como MkDocs e RFCs são para quando o time crescer."
+  },
+  {
+    question: "Qual tipo de diagrama Mermaid é mais apropriado para mostrar a interáção temporal entre serviços em um fluxo de checkout?",
+    options: [
+      "Flowchart (fluxograma)",
+      "ER Diagram (entidade-relacionamento)",
+      "Sequence Diagram (diagrama de sequência)",
+      "Class Diagram (diagrama de classes)"
+    ],
+    correct: 2,
+    explanation: "O Sequence Diagram mostra a interáção temporal entre participantes (serviços, usuários, bancos) ao longo do tempo. E ideal para fluxos como checkout, onde a ordem das chamadas importa: usuário -> frontend -> API -> banco -> fila -> pagamento."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Documentação & ADRs.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

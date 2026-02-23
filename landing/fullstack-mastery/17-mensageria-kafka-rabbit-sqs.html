@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>17 — Mensageria - Kafka, RabbitMQ, SQS | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="16-cap-acid-base.html">&#8592; CAP, ACID, BASE</a>
+<div class="nav-center">Seção <span>17</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="18-concorrencia-paralelismo.html">Concorrência &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:25.8%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 17</span>
+<h2>Mensageria - Kafka, RabbitMQ, SQS</h2>
+<div class="section-line"></div>
+
+<p>Mensageria é a espinha dorsal de qualquer sistema distribuído moderno. É o que permite que microsserviços conversem entre si <strong>sem acoplamento temporal</strong> — o produtor não precisa esperar o consumidor processar, é o consumidor não precisa estar online quando a mensagem e publicada. Sem mensageria, você tem chamadas HTTP síncronas encadeadas que criam cascatas de falha.</p>
+
+<p>Existem dois modelos fundamentais: <strong>message queuing</strong> (uma mensagem e consumida por exatamente um consumidor — point-to-point) e <strong>publish/subscribe</strong> (uma mensagem e entregue a todos os assinantes). A maioria dos brokers suporta ambos os modelos com variações. A escolha entre Kafka, RabbitMQ, SQS ou outros depende de throughput, garantias de ordenação, persistência e complexidade operacional.</p>
+
+<!-- ═══ APACHE KAFKA ═══ -->
+<h3>Apache Kafka — Deep Dive</h3>
+
+<p>Kafka não é um message broker tradicional — é uma <strong>plataforma de event streaming distribuída</strong>. Criado no LinkedIn em 2011 e depois open-sourced pela Apache Foundation. A diferença fundamental: no RabbitMQ, mensagens são removidas após consumo. No Kafka, mensagens são <strong>persistidas em disco por um período configurável</strong> (retention), e consumidores controlam seu próprio offset. Isso permite replay, múltiplos consumidores independentes, e auditoria.</p>
+
+<h4>Arquitetura Core</h4>
+<ul>
+<li><strong>Topic:</strong> Canal lógico de mensagens (ex: <code>orders</code>, <code>payments</code>, <code>user-events</code>). Análogo a uma tabela no banco de dados</li>
+<li><strong>Partition:</strong> Cada topic é dividido em partições. Partições são a unidade de paralelismo — cada partição é um log ordenado e imutável. A ordenação só é garantida <strong>dentro de uma partição</strong>, não entre partições</li>
+<li><strong>Offset:</strong> Índice sequêncial de cada mensagem dentro de uma partição. Consumidores rastreiam seu offset — podem avançar, voltar, ou reler desde o início</li>
+<li><strong>Broker:</strong> Servidor Kafka. Um cluster tem múltiplos brokers. Cada partição tem um <strong>leader</strong> (recebe writes) e <strong>réplicas</strong> (followers que replicam os dados)</li>
+<li><strong>Consumer Group:</strong> Grupo de consumidores que dividem o trabalho. Cada partição e atribuída a exatamente um consumidor do grupo. Se o grupo tem 3 consumidores é o topic tem 6 partições, cada consumidor processa 2 partições</li>
+<li><strong>Replication Factor:</strong> Quantas cópias de cada partição existem no cluster. RF=3 significa que a partição existe em 3 brokers — tolerante a falha de 2 brokers</li>
+<li><strong>Retention:</strong> Período de retenção das mensagens (default: 7 dias). Pode ser por tempo (<code>retention.ms</code>) ou por tamanho (<code>retention.bytes</code>). Mensagens não são deletadas após consumo — são deletadas após expirarem</li>
+</ul>
+
+<h4>Producer Acknowledgments (acks)</h4>
+<ul>
+<li><strong>acks=0:</strong> Fire and forget. Producer não espera confirmação. Máximo throughput, risco de perda de mensagem se o broker cair antes de escrever</li>
+<li><strong>acks=1:</strong> Leader confirma a escrita. Se o leader cair antes de replicar, a mensagem pode ser perdida. Bom balance entre throughput e durabilidade</li>
+<li><strong>acks=all (acks=-1):</strong> Todos os réplicas in-sync (ISR) confirmam. Zero perda de dados. Maior latência. Use para dados críticos (financeiro, pedidos)</li>
+</ul>
+
+<h4>Exactly-Once Semantics (EOS)</h4>
+<p>Por padrão, Kafka oferece <strong>at-least-once</strong> delivery — se o consumer crashar após processar mas antes de commitar o offset, a mensagem será reprocessada. Para <strong>exactly-once</strong>, Kafka oferece transações (desde v0.11):</p>
+
+<pre data-lang="typescript"><code><span class="cm">// kafkajs — Transactional Producer (exactly-once)</span>
+<span class="kw">import</span> { <span class="tp">Kafka</span> } <span class="kw">from</span> <span class="str">'kafkajs'</span>;
+
+<span class="kw">const</span> kafka = <span class="kw">new</span> <span class="tp">Kafka</span>({
+  clientId: <span class="str">'order-service'</span>,
+  brokers: [<span class="str">'kafka-1:9092'</span>, <span class="str">'kafka-2:9092'</span>, <span class="str">'kafka-3:9092'</span>],
+});
+
+<span class="kw">const</span> producer = kafka.<span class="fn">producer</span>({
+  idempotent: <span class="num">true</span>,                <span class="cm">// Habilita idempotencia</span>
+  transactionalId: <span class="str">'order-tx-01'</span>,   <span class="cm">// ID único para transações</span>
+  maxInFlightRequests: <span class="num">5</span>,
+});
+
+<span class="kw">async function</span> <span class="fn">processOrder</span>(order: <span class="tp">Order</span>) {
+  <span class="kw">const</span> transaction = <span class="kw">await</span> producer.<span class="fn">transaction</span>();
+
+  <span class="kw">try</span> {
+    <span class="cm">// Envia para múltiplos topics atomicamente</span>
+    <span class="kw">await</span> transaction.<span class="fn">send</span>({
+      topic: <span class="str">'orders'</span>,
+      messages: [{
+        key: order.id,
+        value: <span class="tp">JSON</span>.<span class="fn">stringify</span>(order),
+        headers: { <span class="str">'event-type'</span>: <span class="str">'OrderCreated'</span> },
+      }],
+    });
+
+    <span class="kw">await</span> transaction.<span class="fn">send</span>({
+      topic: <span class="str">'order-analytics'</span>,
+      messages: [{
+        key: order.id,
+        value: <span class="tp">JSON</span>.<span class="fn">stringify</span>({ orderId: order.id, total: order.total }),
+      }],
+    });
+
+    <span class="kw">await</span> transaction.<span class="fn">commit</span>();    <span class="cm">// Ambas ou nenhuma</span>
+  } <span class="kw">catch</span> (err) {
+    <span class="kw">await</span> transaction.<span class="fn">abort</span>();     <span class="cm">// Rollback atomico</span>
+    <span class="kw">throw</span> err;
+  }
+}</code></pre>
+
+<h4>Consumer com kafkajs</h4>
+<pre data-lang="typescript"><code><span class="kw">const</span> consumer = kafka.<span class="fn">consumer</span>({
+  groupId: <span class="str">'payment-service'</span>,
+  sessionTimeout: <span class="num">30000</span>,
+  heartbeatInterval: <span class="num">3000</span>,
+});
+
+<span class="kw">await</span> consumer.<span class="fn">connect</span>();
+<span class="kw">await</span> consumer.<span class="fn">subscribe</span>({
+  topics: [<span class="str">'orders'</span>],
+  fromBeginning: <span class="num">false</span>,   <span class="cm">// true = rele desde offset 0</span>
+});
+
+<span class="kw">await</span> consumer.<span class="fn">run</span>({
+  eachMessage: <span class="kw">async</span> ({ topic, partition, message }) => {
+    <span class="kw">const</span> order = <span class="tp">JSON</span>.<span class="fn">parse</span>(message.value.<span class="fn">toString</span>());
+    <span class="kw">const</span> eventType = message.headers[<span class="str">'event-type'</span>]?.<span class="fn">toString</span>();
+
+    console.<span class="fn">log</span>(<span class="str">`[Partition ${partition}] Offset ${message.offset}: ${eventType}`</span>);
+
+    <span class="cm">// Processa o pagamento</span>
+    <span class="kw">await</span> <span class="fn">processPayment</span>(order);
+
+    <span class="cm">// Offset e commitado automáticamente após eachMessage retornar</span>
+    <span class="cm">// Para controle manual: autoCommit: false + consumer.commitOffsets()</span>
+  },
+});
+
+<span class="cm">// Graceful shutdown</span>
+process.<span class="fn">on</span>(<span class="str">'SIGTERM'</span>, <span class="kw">async</span> () => {
+  <span class="kw">await</span> consumer.<span class="fn">disconnect</span>();
+  process.<span class="fn">exit</span>(<span class="num">0</span>);
+});</code></pre>
+
+<h4>Schema Registry (Avro/Protobuf)</h4>
+<p>Em produção, você não envia JSON puro no Kafka — usa <strong>Schema Registry</strong> com Avro ou Protobuf. O schema e registrado centralmente é versionado. O producer serializa a mensagem contra o schema, é o consumer desserializa. Isso garante <strong>schema evolution</strong> segura: você pode adicionar campos opcionais sem quebrar consumidores antigos (backward compatible), ou exigir novos campos sem quebrar producers antigos (forward compatible).</p>
+
+<h4>Kafka Streams vs Kafka Connect</h4>
+<ul>
+<li><strong>Kafka Streams:</strong> Biblioteca Java/Scala para processamento de streams <strong>dentro da aplicação</strong>. Transformacoes, agregações, joins, windowing — tudo stateful com state stores locais. Não precisa de cluster separado (diferente do Spark/Flink)</li>
+<li><strong>Kafka Connect:</strong> Framework para integrar Kafka com sistemas externos. Source Connectors (DB -> Kafka) e Sink Connectors (Kafka -> DB/S3/Elasticsearch). Exemplos: Debezium (CDC do PostgreSQL), S3 Sink, JDBC Source. Zero código — apenas configuração JSON</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando usar Kafka:</strong> Event sourcing, CDC (Change Data Capture), streaming analytics, pipelines de dados, comunicação entre microsserviços com alto throughput (>100k msg/s), quando você precisa de replay ou múltiplos consumidores independentes lendo o mesmo stream.</div>
+</div>
+
+<!-- ═══ RABBITMQ ═══ -->
+<h3>RabbitMQ — Deep Dive</h3>
+
+<p>RabbitMQ é um <strong>message broker tradicional</strong> implementando o protocolo AMQP 0.9.1 (também suporta MQTT e STOMP). Diferente do Kafka, RabbitMQ foi projetado para <strong>smart broker / dumb consumer</strong> — o broker decide para onde rotear mensagens, gerência filas, e remove mensagens após acknowledgment. Kafka é o oposto: <strong>dumb broker / smart consumer</strong>.</p>
+
+<h4>Exchanges, Queues e Bindings</h4>
+<p>No RabbitMQ, producers nunca enviam diretamente para filas. Eles enviam para <strong>exchanges</strong>, que roteiam mensagens para filas com base em <strong>bindings</strong> é <strong>routing keys</strong>:</p>
+
+<ul>
+<li><strong>Direct Exchange:</strong> Roteia para filas onde o routing key <strong>coincide exatamente</strong> com o binding key. Ex: routing key <code>payment.success</code> vai para fila com binding key <code>payment.success</code></li>
+<li><strong>Fanout Exchange:</strong> Broadcast — envia a mensagem para <strong>todas as filas conectadas</strong>, ignorando routing keys. Ideal para notificações e eventos que múltiplos serviços precisam receber</li>
+<li><strong>Topic Exchange:</strong> Roteia com <strong>pattern matching</strong>. Binding keys usam <code>*</code> (uma palavra) e <code>#</code> (zero ou mais palavras). Ex: binding <code>order.*.brazil</code> recebe <code>order.created.brazil</code> mas não <code>order.created.usa</code></li>
+<li><strong>Headers Exchange:</strong> Roteia baseado em headers da mensagem (não no routing key). Menós comum, mais flexível para regras complexas</li>
+</ul>
+
+<h4>Acknowledgments e Prefetch</h4>
+<ul>
+<li><strong>Auto-ack:</strong> Mensagem e removida assim que entregue ao consumer. Se o consumer crashar durante processamento, a mensagem se perde</li>
+<li><strong>Manual ack:</strong> Consumer confirma após processar com sucesso. Se o consumer crashar, a mensagem volta para a fila (requeue). <strong>Sempre use manual ack em produção</strong></li>
+<li><strong>Nack/Reject:</strong> Consumer rejeita a mensagem. Pode ser requeueada ou enviada para a <strong>Dead Letter Exchange (DLX)</strong></li>
+<li><strong>Prefetch:</strong> Limita quantas mensagens o consumer recebe sem ack. <code>prefetch=1</code> — uma por vez (mais justo, menor throughput). <code>prefetch=100</code> — batches (maior throughput, menós justo entre consumers)</li>
+</ul>
+
+<h4>Dead Letter Exchange (DLX)</h4>
+<p>Quando uma mensagem e rejeitada, expira (TTL), ou a fila atinge seu tamanho máximo, ela pode ser roteada para uma DLX. A DLX é um exchange normal que tipicamente roteia para uma "dead letter queue" para análise. Padrão essencial para não perder mensagens com falha.</p>
+
+<h4>TypeScript com amqplib</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> amqp <span class="kw">from</span> <span class="str">'amqplib'</span>;
+
+<span class="cm">// ── Producer com routing ──</span>
+<span class="kw">async function</span> <span class="fn">setupProducer</span>() {
+  <span class="kw">const</span> conn = <span class="kw">await</span> amqp.<span class="fn">connect</span>(<span class="str">'amqp://user:pass@rabbitmq:5672'</span>);
+  <span class="kw">const</span> channel = <span class="kw">await</span> conn.<span class="fn">createChannel</span>();
+
+  <span class="cm">// Declara exchange do tipo topic</span>
+  <span class="kw">await</span> channel.<span class="fn">assertExchange</span>(<span class="str">'orders'</span>, <span class="str">'topic'</span>, { durable: <span class="num">true</span> });
+
+  <span class="cm">// Publica com routing key</span>
+  <span class="kw">const</span> order = { id: <span class="str">'ord-123'</span>, total: <span class="num">299.90</span>, country: <span class="str">'brazil'</span> };
+  channel.<span class="fn">publish</span>(
+    <span class="str">'orders'</span>,                          <span class="cm">// exchange</span>
+    <span class="str">'order.created.brazil'</span>,            <span class="cm">// routing key</span>
+    Buffer.<span class="fn">from</span>(<span class="tp">JSON</span>.<span class="fn">stringify</span>(order)),
+    {
+      persistent: <span class="num">true</span>,                <span class="cm">// Sobrevive a restart do broker</span>
+      contentType: <span class="str">'application/json'</span>,
+      messageId: <span class="str">'msg-uuid-001'</span>,       <span class="cm">// Idempotency key</span>
+    },
+  );
+}
+
+<span class="cm">// ── Consumer com DLX ──</span>
+<span class="kw">async function</span> <span class="fn">setupConsumer</span>() {
+  <span class="kw">const</span> conn = <span class="kw">await</span> amqp.<span class="fn">connect</span>(<span class="str">'amqp://user:pass@rabbitmq:5672'</span>);
+  <span class="kw">const</span> channel = <span class="kw">await</span> conn.<span class="fn">createChannel</span>();
+
+  <span class="cm">// Dead Letter Exchange</span>
+  <span class="kw">await</span> channel.<span class="fn">assertExchange</span>(<span class="str">'orders.dlx'</span>, <span class="str">'fanout'</span>, { durable: <span class="num">true</span> });
+  <span class="kw">await</span> channel.<span class="fn">assertQueue</span>(<span class="str">'orders.dead-letter'</span>, { durable: <span class="num">true</span> });
+  <span class="kw">await</span> channel.<span class="fn">bindQueue</span>(<span class="str">'orders.dead-letter'</span>, <span class="str">'orders.dlx'</span>, <span class="str">''</span>);
+
+  <span class="cm">// Fila principal com DLX configurada</span>
+  <span class="kw">await</span> channel.<span class="fn">assertExchange</span>(<span class="str">'orders'</span>, <span class="str">'topic'</span>, { durable: <span class="num">true</span> });
+  <span class="kw">await</span> channel.<span class="fn">assertQueue</span>(<span class="str">'payment-service.orders'</span>, {
+    durable: <span class="num">true</span>,
+    deadLetterExchange: <span class="str">'orders.dlx'</span>,  <span class="cm">// Mensagens rejeitadas vao para ca</span>
+    messageTtl: <span class="num">60000</span>,                 <span class="cm">// 60s TTL</span>
+  });
+
+  <span class="cm">// Binding: recebe apenas orders do Brasil</span>
+  <span class="kw">await</span> channel.<span class="fn">bindQueue</span>(
+    <span class="str">'payment-service.orders'</span>, <span class="str">'orders'</span>, <span class="str">'order.created.brazil'</span>
+  );
+
+  <span class="cm">// Prefetch: 10 mensagens por vez</span>
+  <span class="kw">await</span> channel.<span class="fn">prefetch</span>(<span class="num">10</span>);
+
+  <span class="cm">// Consume com manual ack</span>
+  channel.<span class="fn">consume</span>(<span class="str">'payment-service.orders'</span>, <span class="kw">async</span> (msg) => {
+    <span class="kw">if</span> (!msg) <span class="kw">return</span>;
+
+    <span class="kw">try</span> {
+      <span class="kw">const</span> order = <span class="tp">JSON</span>.<span class="fn">parse</span>(msg.content.<span class="fn">toString</span>());
+      <span class="kw">await</span> <span class="fn">processPayment</span>(order);
+      channel.<span class="fn">ack</span>(msg);              <span class="cm">// Sucesso: remove da fila</span>
+    } <span class="kw">catch</span> (err) {
+      console.<span class="fn">error</span>(<span class="str">'Payment failed:'</span>, err);
+      channel.<span class="fn">nack</span>(msg, <span class="num">false</span>, <span class="num">false</span>); <span class="cm">// Rejeita sem requeue (vai para DLX)</span>
+    }
+  });
+}</code></pre>
+
+<h4>Priority Queues</h4>
+<p>RabbitMQ suporta filas com prioridade (0-255, mas recomenda-se até 10). Mensagens com prioridade mais alta são entregues primeiro. Útil para VIP processing, mas aumenta usó de memória e complexidade.</p>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando usar RabbitMQ:</strong> Task queues (background jobs), RPC assíncrono, roteamento complexo (topic exchange), quando você precisa de prioridades, quando a latência importa mais que throughput extremo (RabbitMQ tem menor latência que Kafka para mensagens individuais), protocolos MQTT/STOMP (IoT).</div>
+</div>
+
+<!-- ═══ AMAZON SQS/SNS ═══ -->
+<h3>Amazon SQS / SNS</h3>
+
+<p>SQS (Simple Queue Service) e SNS (Simple Notification Service) são serviços gerenciados da AWS para mensageria. Zero infraestrutura para gerenciar — sem brokers, sem clusters, sem ZooKeeper. <strong>SQS é uma fila</strong> (point-to-point), <strong>SNS e pub/sub</strong>. Juntos, formam o padrão <strong>SNS fan-out para SQS</strong>.</p>
+
+<h4>SQS: Standard vs FIFO</h4>
+<ul>
+<li><strong>Standard Queue:</strong> Throughput ilimitado, at-least-once delivery, best-effort ordering. Mensagens podem ser entregues duplicadas ou fora de ordem. Ideal para workloads tolerantes a duplicatas</li>
+<li><strong>FIFO Queue:</strong> Exactly-once processing, ordering garantido dentro de um <strong>Message Group ID</strong>. Throughput limitado: 300 msg/s sem batching, 3000 msg/s com batching. Use para operações financeiras, sequênciamento de eventos</li>
+</ul>
+
+<h4>Conceitos-chave do SQS</h4>
+<ul>
+<li><strong>Visibility Timeout:</strong> Quando um consumer recebe uma mensagem, ela fica "invisível" para outros consumers por N segundos (default: 30s). Se o consumer não deletar a mensagem nesse período, ela volta a fila. Sempre configure maior que o tempo de processamento</li>
+<li><strong>Long Polling:</strong> Ao inves de fazer polling vazio repetidamente (short polling), long polling espera até N segundos (max 20s) por uma mensagem. <strong>Sempre use long polling</strong> — reduz custos e latência</li>
+<li><strong>Dead Letter Queue (DLQ):</strong> Após N tentativas falhas (maxReceiveCount), a mensagem e movida para uma DLQ separada. Essencial para depuracao</li>
+<li><strong>Delay Queue:</strong> Atrasa a entrega de mensagens por até 15 minutos. Útil para retry com backoff</li>
+</ul>
+
+<h4>SNS Fan-out Pattern</h4>
+<p>SNS pública para múltiplos subscribers simultaneamente. O padrão clássico: um SNS Topic com múltiplas filas SQS assinando. O producer envia para o SNS, e cada fila SQS recebe uma cópia.</p>
+
+<div class="diagram">
+<div class="diagram-box green">OrderService<br><small>(pública no SNS)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">SNS Topic<br><small>order-events</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">SQS: payment-queue<br>SQS: inventory-queue<br>SQS: notification-queue</div>
+</div>
+
+<h4>TypeScript com AWS SDK v3</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { <span class="tp">SQSClient</span>, <span class="tp">SendMessageCommand</span>,
+         <span class="tp">ReceiveMessageCommand</span>, <span class="tp">DeleteMessageCommand</span> } <span class="kw">from</span> <span class="str">'@aws-sdk/client-sqs'</span>;
+
+<span class="kw">const</span> sqs = <span class="kw">new</span> <span class="tp">SQSClient</span>({ region: <span class="str">'us-east-1'</span> });
+<span class="kw">const</span> QUEUE_URL = <span class="str">'https://sqs.us-east-1.amazonaws.com/123456/orders-queue'</span>;
+
+<span class="cm">// ── Enviar mensagem ──</span>
+<span class="kw">async function</span> <span class="fn">sendOrder</span>(order: <span class="tp">Order</span>) {
+  <span class="kw">await</span> sqs.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">SendMessageCommand</span>({
+    QueueUrl: QUEUE_URL,
+    MessageBody: <span class="tp">JSON</span>.<span class="fn">stringify</span>(order),
+    MessageAttributes: {
+      eventType: { DataType: <span class="str">'String'</span>, StringValue: <span class="str">'OrderCreated'</span> },
+    },
+    <span class="cm">// Para FIFO queues:</span>
+    <span class="cm">// MessageGroupId: order.customerId,</span>
+    <span class="cm">// MessageDeduplicationId: order.id,</span>
+  }));
+}
+
+<span class="cm">// ── Consumer loop com long polling ──</span>
+<span class="kw">async function</span> <span class="fn">pollMessages</span>() {
+  <span class="kw">while</span> (<span class="num">true</span>) {
+    <span class="kw">const</span> response = <span class="kw">await</span> sqs.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">ReceiveMessageCommand</span>({
+      QueueUrl: QUEUE_URL,
+      MaxNumberOfMessages: <span class="num">10</span>,       <span class="cm">// Batch até 10</span>
+      WaitTimeSeconds: <span class="num">20</span>,            <span class="cm">// Long polling (max 20s)</span>
+      VisibilityTimeout: <span class="num">60</span>,          <span class="cm">// 60s para processar</span>
+      MessageAttributeNames: [<span class="str">'All'</span>],
+    }));
+
+    <span class="kw">for</span> (<span class="kw">const</span> msg <span class="kw">of</span> response.Messages ?? []) {
+      <span class="kw">try</span> {
+        <span class="kw">const</span> order = <span class="tp">JSON</span>.<span class="fn">parse</span>(msg.Body!);
+        <span class="kw">await</span> <span class="fn">processPayment</span>(order);
+
+        <span class="cm">// Sucesso: deleta da fila</span>
+        <span class="kw">await</span> sqs.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">DeleteMessageCommand</span>({
+          QueueUrl: QUEUE_URL,
+          ReceiptHandle: msg.ReceiptHandle!,
+        }));
+      } <span class="kw">catch</span> (err) {
+        console.<span class="fn">error</span>(<span class="str">'Processing failed, message returns to queue'</span>, err);
+        <span class="cm">// Não deletamos — visibility timeout expira e msg volta para a fila</span>
+        <span class="cm">// Apos maxReceiveCount falhas, vai para DLQ</span>
+      }
+    }
+  }
+}
+
+<span class="cm">// ── SQS + Lambda (serverless consumer) ──</span>
+<span class="cm">// No serverless.yml ou CDK:</span>
+<span class="cm">// Lambda event source: SQS queue</span>
+<span class="cm">// Lambda recebe batch de mensagens automáticamente</span>
+<span class="cm">// Se a função retorna sucesso, mensagens são deletadas</span>
+<span class="cm">// Se falha, voltam para a fila (ou DLQ após retries)</span>
+<span class="kw">export const</span> <span class="fn">handler</span> = <span class="kw">async</span> (event: <span class="tp">SQSEvent</span>) => {
+  <span class="kw">for</span> (<span class="kw">const</span> record <span class="kw">of</span> event.Records) {
+    <span class="kw">const</span> order = <span class="tp">JSON</span>.<span class="fn">parse</span>(record.body);
+    <span class="kw">await</span> <span class="fn">processPayment</span>(order);
+  }
+};</code></pre>
+
+<!-- ═══ REDIS STREAMS ═══ -->
+<h3>Redis Streams</h3>
+
+<p>Redis Streams (desde Redis 5.0) é uma estrutura de dados de log append-only integrada ao Redis. Pense em "Kafka lite" — oferece consumer groups, acknowledgment e persistência, mas com a simplicidade e velocidade do Redis. Não substitui Kafka para workloads de alto volume, mas é perfeito quando você já tem Redis e precisa de streaming leve.</p>
+
+<h4>Comandos Principais</h4>
+<ul>
+<li><strong>XADD:</strong> Adiciona entrada ao stream. <code>XADD orders * orderId ord-123 total 299.90</code> — o <code>*</code> gera um ID automático (timestamp-sequência)</li>
+<li><strong>XREAD:</strong> Le entradas do stream (sem consumer group). Pode bloquear esperando novas mensagens: <code>XREAD BLOCK 5000 STREAMS orders $</code></li>
+<li><strong>XREADGROUP:</strong> Le como parte de um consumer group. Cada mensagem e entregue a apenas um consumer do grupo</li>
+<li><strong>XACK:</strong> Confirma processamento de uma mensagem no consumer group</li>
+<li><strong>XPENDING:</strong> Lista mensagens não confirmadas (equivalente a lag monitoring)</li>
+<li><strong>XCLAIM:</strong> "Reclama" mensagens pendentes de consumers mortos</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { <span class="fn">createClient</span> } <span class="kw">from</span> <span class="str">'redis'</span>;
+
+<span class="kw">const</span> redis = <span class="fn">createClient</span>({ url: <span class="str">'redis://localhost:6379'</span> });
+<span class="kw">await</span> redis.<span class="fn">connect</span>();
+
+<span class="cm">// ── Produzir ──</span>
+<span class="kw">await</span> redis.<span class="fn">xAdd</span>(<span class="str">'orders'</span>, <span class="str">'*'</span>, {
+  orderId: <span class="str">'ord-123'</span>,
+  total: <span class="str">'299.90'</span>,
+  event: <span class="str">'OrderCreated'</span>,
+});
+
+<span class="cm">// ── Criar consumer group ──</span>
+<span class="kw">try</span> {
+  <span class="kw">await</span> redis.<span class="fn">xGroupCreate</span>(<span class="str">'orders'</span>, <span class="str">'payment-group'</span>, <span class="str">'0'</span>, { MKSTREAM: <span class="num">true</span> });
+} <span class="kw">catch</span> (e) { <span class="cm">/* grupo já existe */</span> }
+
+<span class="cm">// ── Consumir ──</span>
+<span class="kw">async function</span> <span class="fn">consume</span>() {
+  <span class="kw">while</span> (<span class="num">true</span>) {
+    <span class="kw">const</span> results = <span class="kw">await</span> redis.<span class="fn">xReadGroup</span>(
+      <span class="str">'payment-group'</span>,      <span class="cm">// consumer group</span>
+      <span class="str">'consumer-1'</span>,         <span class="cm">// consumer name</span>
+      { key: <span class="str">'orders'</span>, id: <span class="str">'>'</span> },  <span class="cm">// '>' = apenas novas mensagens</span>
+      { COUNT: <span class="num">10</span>, BLOCK: <span class="num">5000</span> },
+    );
+
+    <span class="kw">if</span> (!results) <span class="kw">continue</span>;
+
+    <span class="kw">for</span> (<span class="kw">const</span> { id, message } <span class="kw">of</span> results[<span class="num">0</span>].messages) {
+      <span class="kw">await</span> <span class="fn">processPayment</span>(message);
+      <span class="kw">await</span> redis.<span class="fn">xAck</span>(<span class="str">'orders'</span>, <span class="str">'payment-group'</span>, id);  <span class="cm">// ACK</span>
+    }
+  }
+}</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando usar Redis Streams:</strong> Quando você já usa Redis e precisa de streaming simples, low-latency event processing, real-time notifications, raté limiting com sliding window, ou como alternative leve ao Kafka para volumes moderados (&lt;50k msg/s).</div>
+</div>
+
+<!-- ═══ NATS ═══ -->
+<h3>NATS</h3>
+
+<p>NATS é um sistema de mensageria <strong>ultra-leve</strong> escrito em Go. O binário do servidor tem ~15MB, inicia em milissegundos, e consome pouca memória. O core NATS e at-most-once (fire and forget) — ideal para casos onde velocidade é mais importante que durabilidade. Para persistência e exactly-once, existe o <strong>JetStream</strong> (built-in desde NATS 2.2).</p>
+
+<h4>Modos de Operação</h4>
+<ul>
+<li><strong>Core NATS (Pub/Sub):</strong> Ultra-rápido, at-most-once. Se não ha subscriber online, a mensagem se perde. Latência sub-millisecond</li>
+<li><strong>Request/Reply:</strong> RPC síncrono sobre NATS. Publisher envia request e espera reply em um subject temporário</li>
+<li><strong>Queue Groups:</strong> Balanceamento de carga nativo. Subscribers no mesmo queue group recebem a mensagem round-robin (similar a consumer groups)</li>
+<li><strong>JetStream:</strong> Persistência, exactly-once, replay, consumer groups persistentes. Transforma NATS em um sistema durável comparável ao Kafka (menor escala)</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando usar NATS:</strong> Comúnicação entre microsserviços com latência ultra-baixa, IoT (MQTT bridge), service mesh interno, edge computing, é quando a simplicidade operacional e prioridade. NATS é ideal para cenários onde Kafka e overkill e RabbitMQ e pesado demais.</div>
+</div>
+
+<!-- ═══ KEY CONCEPTS ═══ -->
+<h3>Conceitos-Chave de Mensageria</h3>
+
+<h4>Consumer Groups</h4>
+<p>Permitem escalar o consumo de mensagens horizontalmente. Cada mensagem é processada por <strong>exatamente um consumer</strong> dentro do grupo. Se um consumer cai, suas partições/mensagens são redistribuidas (rebalancing). Presente em Kafka (Consumer Groups), RabbitMQ (Competing Consumers), SQS (múltiplos consumers), Redis Streams (Consumer Groups), e NATS (Queue Groups).</p>
+
+<h4>Dead Letter Queue (DLQ)</h4>
+<p>Fila separada onde mensagens que falharam repetidamente são depositadas. Sem DLQ, mensagens com poison pill (dados corrompidos que sempre causam erro) ficam em loop infinito de retry. <strong>Toda fila em produção deve ter uma DLQ</strong>. Monitore o tamanho da DLQ — se cresce, algo está errado.</p>
+
+<h4>Message Deduplication (Idempotency Key)</h4>
+<p>Em sistemas at-least-once, a mesma mensagem pode ser entregue mais de uma vez. Para evitar processamento duplicado, use uma <strong>idempotency key</strong> (geralmente o ID da mensagem) e armazene os IDs processados em um set/tabela. Antes de processar, verifique se o ID já foi visto.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Padrão de idempotencia</span>
+<span class="kw">async function</span> <span class="fn">processIdempotent</span>(messageId: <span class="tp">string</span>, payload: <span class="tp">any</span>) {
+  <span class="cm">// 1. Verifica se já foi processado</span>
+  <span class="kw">const</span> exists = <span class="kw">await</span> redis.<span class="fn">sIsMember</span>(<span class="str">'processed-messages'</span>, messageId);
+  <span class="kw">if</span> (exists) {
+    console.<span class="fn">log</span>(<span class="str">`Message ${messageId} already processed, skipping`</span>);
+    <span class="kw">return</span>;
+  }
+
+  <span class="cm">// 2. Processa</span>
+  <span class="kw">await</span> <span class="fn">processPayment</span>(payload);
+
+  <span class="cm">// 3. Marca como processado (com TTL para não crescer infinitamente)</span>
+  <span class="kw">await</span> redis.<span class="fn">sAdd</span>(<span class="str">'processed-messages'</span>, messageId);
+  <span class="kw">await</span> redis.<span class="fn">expire</span>(<span class="str">'processed-messages'</span>, <span class="num">86400</span>); <span class="cm">// 24h TTL</span>
+}</code></pre>
+
+<h4>Ordering Guarantees</h4>
+<p>Garantia de ordem varia por broker:</p>
+<ul>
+<li><strong>Kafka:</strong> Ordem garantida <strong>dentro de uma partição</strong>. Use a mesma partition key (ex: customerId) para garantir que eventos do mesmo cliente vao para a mesma partição</li>
+<li><strong>RabbitMQ:</strong> Ordem garantida <strong>dentro de uma fila</strong> com um único consumer. Com múltiplos consumers, a ordem não é garantida</li>
+<li><strong>SQS Standard:</strong> Best-effort ordering (não garantido). <strong>SQS FIFO:</strong> Ordem garantida dentro de um Message Group ID</li>
+<li><strong>Redis Streams:</strong> Ordem garantida dentro do stream (IDs são monotonicamente crescentes)</li>
+</ul>
+
+<h4>Schema Evolution</h4>
+<p>Schemas de mensagens mudam ao longo do tempo. Estratégias de compatibilidade:</p>
+<ul>
+<li><strong>Backward compatible:</strong> Novos consumers podem ler mensagens antigas. Adicionar campos opcionais e backward compatible</li>
+<li><strong>Forward compatible:</strong> Antigos consumers podem ler mensagens novas (ignoram campos desconhecidos)</li>
+<li><strong>Full compatible:</strong> Ambos — a opção mais segura. Use Schema Registry (Confluent) para validar automáticamente</li>
+</ul>
+
+<h4>Poison Pill Messages</h4>
+<p>Mensagens com dados inválidos que causam exceções toda vez que são processadas. Sem tratamento, criam loop infinito de retries. Solução: <strong>max retries + DLQ</strong>. Após N falhas, mova para DLQ, logue alertas, e investigue manualmente.</p>
+
+<h4>Backpressure</h4>
+<p>Quando o producer gera mensagens mais rápido que o consumer consegue processar. Estratégias:</p>
+<ul>
+<li><strong>Buffer no broker:</strong> O broker acumula mensagens (Kafka faz isso naturalmente com retenção em disco)</li>
+<li><strong>Raté limiting no producer:</strong> Reduz a taxa de produção</li>
+<li><strong>Scale consumers:</strong> Adiciona mais consumers ao grupo (horizontal scaling)</li>
+<li><strong>Backpressure signal:</strong> Consumer sinaliza ao producer para desacelerar (reactive streams)</li>
+</ul>
+
+<!-- ═══ COMPARISON TABLE ═══ -->
+<h3>Tabela Comparativa</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Caracteristica</th>
+<th>Kafka</th>
+<th>RabbitMQ</th>
+<th>SQS</th>
+<th>Redis Streams</th>
+<th>NATS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Throughput</strong></td>
+<td>Muito alto (milhões/s)</td>
+<td>Alto (50-100k/s)</td>
+<td>Alto (ilimitado*)</td>
+<td>Alto (100k+/s)</td>
+<td>Muito alto (milhões/s)</td>
+</tr>
+<tr>
+<td><strong>Latência</strong></td>
+<td>Baixa (ms)</td>
+<td>Muito baixa (&lt;1ms)</td>
+<td>Moderada (10-50ms)</td>
+<td>Ultra baixa (&lt;1ms)</td>
+<td>Ultra baixa (&lt;0.5ms)</td>
+</tr>
+<tr>
+<td><strong>Ordenação</strong></td>
+<td>Por partição</td>
+<td>Por fila (1 consumer)</td>
+<td>FIFO: por group ID</td>
+<td>Por stream</td>
+<td>Nenhuma (core)</td>
+</tr>
+<tr>
+<td><strong>Persistência</strong></td>
+<td>Disco (dias/semanas)</td>
+<td>Até ACK</td>
+<td>Até 14 dias</td>
+<td>Redis persistence</td>
+<td>JetStream: sim</td>
+</tr>
+<tr>
+<td><strong>Replay</strong></td>
+<td>Sim (offset reset)</td>
+<td>Não</td>
+<td>Não</td>
+<td>Sim (por ID)</td>
+<td>JetStream: sim</td>
+</tr>
+<tr>
+<td><strong>Delivery</strong></td>
+<td>At-least-once / EOS</td>
+<td>At-least-once</td>
+<td>At-least-once / FIFO</td>
+<td>At-least-once</td>
+<td>At-most-once / EOS</td>
+</tr>
+<tr>
+<td><strong>Complexidade</strong></td>
+<td>Alta (ZK/KRaft)</td>
+<td>Media</td>
+<td>Baixa (managed)</td>
+<td>Baixa (já tem Redis)</td>
+<td>Muito baixa</td>
+</tr>
+<tr>
+<td><strong>Ideal para</strong></td>
+<td>Event streaming, CDC, analytics</td>
+<td>Task queues, routing complexo</td>
+<td>Serverless, AWS-native</td>
+<td>Real-time leve, cache events</td>
+<td>Microsserviços, IoT, edge</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>*SQS Standard:</strong> throughput ilimitado, mas FIFO e limitado a 300-3000 msg/s.</p>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Order Processing Pipeline com Kafka</h3>
+<p><strong>Cenário:</strong> Projete um pipeline de processamento de pedidos onde: (1) OrderService cria o pedido, (2) PaymentConsumer processa o pagamento, (3) InventoryConsumer atualiza o estoque, (4) NotificationConsumer envia email/push ao cliente. Todos processam em paralelo. Falhas vao para DLQ.</p>
+
+<div class="diagram">
+<div class="diagram-box green">OrderService<br><small>Producer</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Kafka Topic<br><small>orders (6 partitions)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">PaymentConsumer<br><small>group: payment-svc</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box orange">Kafka Topic<br><small>orders (6 partitions)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">InventoryConsumer<br><small>group: inventory-svc</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box orange">Kafka Topic<br><small>orders (6 partitions)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">NotificationConsumer<br><small>group: notification-svc</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box blue">Qualquer Consumer</div>
+<div class="diagram-arrow">&rarr; falha &rarr;</div>
+<div class="diagram-box red">DLQ Topic<br><small>orders.dlq</small></div>
+</div>
+
+<p><strong>Decisões de design:</strong></p>
+<ul>
+<li><strong>Partition key = orderId:</strong> Garante que todos os eventos de um mesmo pedido vao para a mesma partição (ordenação preservada por pedido)</li>
+<li><strong>3 Consumer Groups independentes:</strong> Cada serviço (payment, inventory, notification) tem seu próprio consumer group. Todos recebem todas as mensagens, mas processam independentemente. Se o PaymentConsumer falhar, Inventory e Notification continuam</li>
+<li><strong>6 partições:</strong> Permite até 6 consumers por grupo, escalabilidade horizontal</li>
+<li><strong>acks=all + Replication Factor 3:</strong> Zero perda de mensagens para pedidos (dados críticos)</li>
+<li><strong>Idempotency key:</strong> Cada consumer armazena orderId processados para evitar duplicatas</li>
+<li><strong>DLQ Topic (orders.dlq):</strong> Após 3 retries, pública a mensagem falha no DLQ topic. Alert no Datadog/CloudWatch monitora o tamanho</li>
+<li><strong>Schema Registry (Avro):</strong> OrderCreatedEvent schema versionado. Backward compatible para que consumers antigos continuem funcionando quando o schema evolui</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// OrderService — Producer</span>
+<span class="kw">async function</span> <span class="fn">createOrder</span>(dto: <span class="tp">CreateOrderDto</span>) {
+  <span class="kw">const</span> order = <span class="kw">await</span> orderRepo.<span class="fn">save</span>(dto);
+
+  <span class="kw">await</span> producer.<span class="fn">send</span>({
+    topic: <span class="str">'orders'</span>,
+    messages: [{
+      key: order.id,                   <span class="cm">// Partition key</span>
+      value: <span class="tp">JSON</span>.<span class="fn">stringify</span>({
+        eventType: <span class="str">'OrderCreated'</span>,
+        orderId: order.id,
+        customerId: order.customerId,
+        items: order.items,
+        total: order.total,
+        createdAt: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">toISOString</span>(),
+      }),
+      headers: {
+        <span class="str">'event-type'</span>: <span class="str">'OrderCreated'</span>,
+        <span class="str">'idempotency-key'</span>: order.id,
+      },
+    }],
+  });
+
+  <span class="kw">return</span> order;
+}
+
+<span class="cm">// PaymentConsumer — com retry e DLQ</span>
+<span class="kw">const</span> MAX_RETRIES = <span class="num">3</span>;
+
+<span class="kw">async function</span> <span class="fn">handleOrderEvent</span>(message: <span class="tp">KafkaMessage</span>) {
+  <span class="kw">const</span> retryCount = <span class="fn">parseInt</span>(
+    message.headers[<span class="str">'retry-count'</span>]?.<span class="fn">toString</span>() ?? <span class="str">'0'</span>
+  );
+
+  <span class="kw">try</span> {
+    <span class="kw">const</span> event = <span class="tp">JSON</span>.<span class="fn">parse</span>(message.value!.<span class="fn">toString</span>());
+    <span class="kw">await</span> <span class="fn">processIdempotent</span>(event.orderId, event);
+  } <span class="kw">catch</span> (err) {
+    <span class="kw">if</span> (retryCount >= MAX_RETRIES) {
+      <span class="cm">// Envia para DLQ</span>
+      <span class="kw">await</span> producer.<span class="fn">send</span>({
+        topic: <span class="str">'orders.dlq'</span>,
+        messages: [{
+          key: message.key,
+          value: message.value,
+          headers: {
+            ...message.headers,
+            <span class="str">'error'</span>: err.message,
+            <span class="str">'failed-at'</span>: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">toISOString</span>(),
+          },
+        }],
+      });
+    } <span class="kw">else</span> {
+      <span class="cm">// Retry com backoff</span>
+      <span class="kw">await</span> <span class="fn">delay</span>(<span class="num">1000</span> * (<span class="num">2</span> ** retryCount));
+      <span class="kw">throw</span> err; <span class="cm">// Kafka fará redelivery</span>
+    }
+  }
+}</code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Usar Kafka como database:</strong> Kafka é um log, não um banco de dados. Ele persiste mensagens por um período, mas não foi projetado para queries ad-hoc, JOINs, ou acesso por chave primária. Se você precisa consultar o estado atual de uma entidade, materialize os eventos em um banco de dados (event sourcing + read model).</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Não monitorar consumer lag:</strong> Consumer lag é a diferença entre o offset mais recente do topic é o offset do consumer. Se o lag cresce, o consumer não está acompanhando a produção. Em Kafka, monitore com <code>kafka-consumer-groups.sh --describe</code> ou ferramentas como Burrow/Datadog. Em RabbitMQ, monitore o queue length. Em SQS, monitore <code>AppróximateNumberOfMessagesVisible</code>.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Ignorar a DLQ:</strong> Sem DLQ, mensagens com poison pill criam retry loops infinitos que consomem recursos e bloqueiam o processamento. Sempre configure DLQ e <strong>monitore ativamente seu tamanho</strong>. Se a DLQ tem mensagens, alguém precisa investigar.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Assumir ordenação entre partições:</strong> No Kafka, a ordenação é garantida <strong>apenas dentro de uma partição</strong>. Se você precisa que eventos do mesmo cliente sejam processados em ordem, use o customerId como partition key. Se você precisa de ordenação global, use uma única partição (mas perde paralelismo).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Mensagens muito grandes:</strong> Kafka tem default max.message.bytes de 1MB. Não envie payloads enormes (imagens, PDFs) via mensageria. Armazene o arquivo no S3 e envie apenas a referência (URL/path) na mensagem. O padrão se chama <strong>Claim Check</strong>.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Comece com SQS se você está na AWS e precisa de simplicidade. Use RabbitMQ se precisa de roteamento complexo ou prioridades. Use Kafka se precisa de event streaming, replay, ou alto throughput com múltiplos consumidores independentes. Use Redis Streams se já tem Redis é o volume e moderado. Use NATS se precisa de ultra-baixa latência e simplicidade operacional.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você precisa garantir que todos os eventos de um mesmo usuário sejam processados na ordem correta em um topic Kafka com 12 partições. Como você faz isso?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use o <code>userId</code> como <strong>partition key</strong> (message key). Kafka usa um hash da key para determinar a partição. Todos os eventos com a mesma key vao para a mesma partição, é a ordenação dentro de uma partição é garantida. Assim, eventos do usuário "usr-123" sempre irão para a partição 7 (por exemplo) é serão processados na ordem em que foram produzidos. Cuidado: se um usuário gerar muito mais eventos que outros, pode criar um "hot partition".</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu RabbitMQ consumer processa uma mensagem com sucesso, mas o serviço crasha antes do ACK. O que acontece? Como você evita processamento duplicado?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> A mensagem volta para a fila (requeue) é será entregue a outro consumer (ou ao mesmo após restart). Para evitar processamento duplicado, implemente <strong>idempotência</strong>: use o <code>messageId</code> como idempotency key, armazene os IDs processados em Redis (SET com TTL), e antes de processar verifique se o ID já existe. Se sim, faca ACK sem processar. Isso garante que re-processamento não cause efeitos colateráis (como cobrar o cliente duas vezes).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você precisa que quando um pedido e criado, 3 serviços independentes (pagamento, estoque, email) sejam notificados. No RabbitMQ, qual exchange type você usa? E no ecossistema AWS?</div>
+<div class="qa-a">
+<p><strong>Solução RabbitMQ:</strong> Use um <strong>Fanout Exchange</strong>. Cada serviço cria sua própria fila e faz binding ao exchange. Quando o OrderService pública no exchange, a mensagem e copiada para as 3 filas. Cada serviço consome sua fila independentemente. Alternativa com Topic Exchange se precisar de filtros (ex: payment só recebe <code>order.created.*</code> mas não <code>order.cancelled.*</code>). <strong>Solução AWS:</strong> Use o padrão <strong>SNS fan-out para SQS</strong>. Crie um SNS topic "order-events", crie 3 filas SQS (payment-queue, inventory-queue, notification-queue) e inscreva todas no SNS topic. O producer pública no SNS, e cada fila recebe uma cópia independente.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Mensageria: Kafka, RabbitMQ, SQS</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="16-cap-acid-base.html">&#8592; CAP, ACID, BASE</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="18-concorrencia-paralelismo.html" class="primary">Próximo: Concorrência e Paralelismo &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 17: Mensageria
+// ══════════════════════════════════════════
+const SECTION_NUM = 17;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "No Kafka, a ordenação de mensagens é garantida em qual nível?",
+    options: [
+      "Por topic (todas as mensagens do topic são ordenadas)",
+      "Por partição (mensagens dentro da mesma partição são ordenadas)",
+      "Por consumer group (cada grupo ve as mensagens em ordem)",
+      "Global (todas as mensagens de todos os topics são ordenadas)"
+    ],
+    correct: 1,
+    explanation: "Kafka garante ordenação APENAS dentro de uma partição. Mensagens em partições diferentes não tem ordenação garantida entre si. Para garantir ordem para uma entidade, use a mesma partition key."
+  },
+  {
+    question: "Qual a diferença fundamental entre acks=1 e acks=all no Kafka Producer?",
+    options: [
+      "acks=1 envia para uma partição; acks=all envia para todas as partições",
+      "acks=1 espera confirmação do leader; acks=all espera de todos os réplicas in-sync",
+      "acks=1 envia uma vez; acks=all reenvia até todas as tentativas terem sucesso",
+      "acks=1 e síncrono; acks=all e assíncrono"
+    ],
+    correct: 1,
+    explanation: "Com acks=1, o leader confirma a escrita sem esperar os réplicas. Com acks=all, todos os réplicas in-sync (ISR) precisam confirmar, garantindo zero perda de dados mesmo se o leader falhar."
+  },
+  {
+    question: "No RabbitMQ, qual exchange type você usaria para enviar uma mensagem para TODAS as filas conectadas?",
+    options: [
+      "Direct Exchange",
+      "Topic Exchange",
+      "Fanout Exchange",
+      "Headers Exchange"
+    ],
+    correct: 2,
+    explanation: "Fanout Exchange faz broadcast — envia a mensagem para todas as filas que tem binding com o exchange, ignorando a routing key. É o padrão clássico de pub/sub no RabbitMQ."
+  },
+  {
+    question: "O que acontece quando uma mensagem no RabbitMQ e rejeitada (nack) sem requeue, é a fila tem uma Dead Letter Exchange configurada?",
+    options: [
+      "A mensagem e descartada permanentemente",
+      "A mensagem volta para o final da fila original",
+      "A mensagem e roteada para a Dead Letter Exchange",
+      "O RabbitMQ tenta enviar para outro consumer no mesmo grupo"
+    ],
+    correct: 2,
+    explanation: "Quando uma mensagem e rejeitada (nack) com requeue=false é a fila tem uma DLX configurada, a mensagem e automáticamente roteada para a Dead Letter Exchange, que tipicamente a deposita numa dead letter queue para análise."
+  },
+  {
+    question: "Qual a vantagem do Long Polling no SQS em comparação com Short Polling?",
+    options: [
+      "Long Polling permite receber mais de 10 mensagens por vez",
+      "Long Polling reduz custos e latência ao esperar até 20s por mensagens ao inves de retornar vazio",
+      "Long Polling habilita FIFO ordering",
+      "Long Polling aumenta o visibility timeout automáticamente"
+    ],
+    correct: 1,
+    explanation: "Short Polling retorna imediatamente, mesmo se a fila estiver vazia (gerando custo e requests desnecessários). Long Polling espera até 20 segundos por uma mensagem, reduzindo o número de requests vazios é a latência de entrega."
+  },
+  {
+    question: "Você precisa garantir exactly-once processing com SQS. Qual tipo de fila você usa e qual recursó habilita?",
+    options: [
+      "Standard Queue com Long Polling",
+      "FIFO Queue com MessageDeduplicationId",
+      "Standard Queue com Dead Letter Queue",
+      "FIFO Queue com Visibility Timeout de 0 segundos"
+    ],
+    correct: 1,
+    explanation: "SQS FIFO queues suportam exactly-once processing usando MessageDeduplicationId. Se o mesmo ID é enviado dentro da janela de deduplicação (5 minutos), a mensagem duplicada e ignorada."
+  },
+  {
+    question: "Qual padrão arquitetural na AWS combina SNS e SQS para permitir que múltiplos serviços recebam o mesmo evento?",
+    options: [
+      "SNS Direct Delivery",
+      "SQS Message Groups",
+      "SNS Fan-out para SQS",
+      "SQS Cross-Region Replication"
+    ],
+    correct: 2,
+    explanation: "O padrão SNS Fan-out usa um SNS Topic com múltiplas filas SQS como subscribers. O producer pública no SNS, e cada fila SQS recebe uma cópia independente da mensagem, permitindo processamento paralelo por serviços diferentes."
+  },
+  {
+    question: "Qual é o principal problema de uma 'poison pill message' é como resolve-lo?",
+    options: [
+      "Mensagem muito grande — comprimir a mensagem antes de enviar",
+      "Mensagem que sempre causa exceção — configurar max retries e Dead Letter Queue",
+      "Mensagem sem schema — usar JSON Schema válidation",
+      "Mensagem duplicada — usar idempotency key"
+    ],
+    correct: 1,
+    explanation: "Uma poison pill é uma mensagem com dados corrompidos/inválidos que causa exceção toda vez que é processada. Sem DLQ, cria um loop infinito de retries. A solução e limitar retries (ex: 3x) e mover para uma Dead Letter Queue para investigação."
+  },
+  {
+    question: "Em qual cenário Redis Streams seria mais adequado que Kafka?",
+    options: [
+      "Pipeline de dados com 2 milhões de mensagens por segundo",
+      "Event sourcing com retenção de eventos por 1 ano",
+      "Aplicação que já usa Redis e precisa de streaming leve com volume moderado",
+      "CDC (Change Data Capture) de um cluster PostgreSQL de produção"
+    ],
+    correct: 2,
+    explanation: "Redis Streams é ideal quando você já tem Redis na infraestrutura e precisa de streaming leve com volume moderado (<50k msg/s). Para alto volume, retenção longa, ou CDC, Kafka é mais adequado."
+  },
+  {
+    question: "Seu consumer Kafka tem um lag crescente (offset do consumer cada vez mais atrasado em relação ao offset do topic). Qual Não é uma solução válida?",
+    options: [
+      "Aumentar o número de consumers no consumer group (até o número de partições)",
+      "Aumentar o número de partições do topic e adicionar consumers",
+      "Aumentar o acks do producer de 1 para all",
+      "Otimizar o tempo de processamento de cada mensagem no consumer"
+    ],
+    correct: 2,
+    explanation: "Mudar acks de 1 para all no producer AUMENTA a latência de produção (mais confirmações necessárias) mas não ajuda o consumer a processar mais rápido. Para reduzir consumer lag: adicione consumers (até o número de partições), aumente partições, ou otimize o processamento."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina mensageria e event streaming.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

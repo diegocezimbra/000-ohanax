@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15 — Data Architecture - Lake, Mesh, CDC | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="14-grafos-vetorial-fulltext.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>15</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="16-cap-acid-base.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:22.7%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 15</span>
+<h2>Data Architecture — Lake, Mesh, CDC</h2>
+<div class="section-line"></div>
+
+<p>Arquitetura de dados é a disciplina que define como dados são <strong>coletados, armazenados, transformados e consumidos</strong> em uma organização. Não é apenas escolher um banco de dados — e projetar o fluxo inteiro desde a origem do dado até o dashboard do CEO ou o modelo de ML que faz previsoes. Para um full-stack engineer, entender data architecture é o que separa quem "salva no PostgreSQL" de quem projeta <strong>plataformas de dados que escalam</strong>.</p>
+
+<p>Nesta seção vamos cobrir os pilares: Data Lake, Data Warehouse, Data Lakehouse, Data Mesh, pipelines ETL/ELT, Change Data Capture (CDC), é como tudo isso se conecta em um sistema real.</p>
+
+<!-- ═══ DATA LAKE ═══ -->
+<h3>Data Lake</h3>
+
+<p>Um Data Lake é um <strong>repositório centralizado que armazena dados brutos em qualquer formato</strong> — estruturados (CSV, tabelas), semi-estruturados (JSON, XML, logs) e não-estruturados (imagens, audio, video, PDFs). A ideia central e: <strong>armazene primeiro, estruture depois</strong> (schema-on-read).</p>
+
+<h4>Caracteristicas Fundamentais</h4>
+<ul>
+<li><strong>Schema-on-read:</strong> O schema não é imposto na escrita. Você define a estrutura quando le os dados. Isso permite flexibilidade máxima — diferentes consumidores podem interpretar os mesmos dados de formas diferentes</li>
+<li><strong>Armazenamento barato:</strong> Object storage (S3, ADLS, GCS) custa centavos por GB/mês. Você pode armazenar petabytes sem falir</li>
+<li><strong>Qualquer formato:</strong> Parquet, ORC, Avro, JSON, CSV, imagens, binários — tudo convive</li>
+<li><strong>Processamento distribuído:</strong> Spark, Presto, Athena, Trino processam os dados in-place sem mover para outro sistema</li>
+</ul>
+
+<h4>Formatos de Arquivo para Data Lake</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Formato</th><th>Tipo</th><th>Compressão</th><th>Schema</th><th>Melhor Para</th></tr>
+<tr><td><strong>Parquet</strong></td><td>Colunar</td><td>Snappy/GZIP</td><td>Embutido</td><td>Analytics, queries colunares (SELECT poucas colunas de bilhões de linhas)</td></tr>
+<tr><td><strong>ORC</strong></td><td>Colunar</td><td>ZLIB/Snappy</td><td>Embutido</td><td>Hive ecosystem, melhor compressão que Parquet em alguns casos</td></tr>
+<tr><td><strong>Avro</strong></td><td>Row-based</td><td>Snappy/Deflate</td><td>Embutido (JSON)</td><td>Streaming, Kafka, evolução de schema (schema registry)</td></tr>
+<tr><td><strong>JSON/NDJSON</strong></td><td>Row-based</td><td>Nenhuma nativa</td><td>Nenhum</td><td>Logs, APIs, dados semi-estruturados simples</td></tr>
+<tr><td><strong>CSV</strong></td><td>Row-based</td><td>Nenhuma</td><td>Nenhum</td><td>Legado, importacao/exportacao simples. Evite para analytics</td></tr>
+</table>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Use Parquet para dados analíticos (90% dos casos). Use Avro para streaming/Kafka. CSV e JSON só para ingestão inicial — converta para Parquet o mais rápido possível.</div>
+</div>
+
+<h4>Estratégias de Particionamento</h4>
+<p>Particionar dados no Data Lake e <strong>crítico para performance</strong>. Sem partições, uma query que precisa de dados de janeiro vai escanear o ano inteiro.</p>
+
+<pre data-lang="filesystem"><code><span class="cm"># Particionamento por data (mais comum)</span>
+s3://my-data-lake/events/
+  <span class="str">year=2025/</span>
+    <span class="str">month=01/</span>
+      <span class="str">day=15/</span>
+        part-00000.parquet
+        part-00001.parquet
+    <span class="str">month=02/</span>
+      ...
+
+<span class="cm"># Particionamento composto (data + região)</span>
+s3://my-data-lake/orders/
+  <span class="str">region=us-east/</span>
+    <span class="str">year=2025/</span>
+      <span class="str">month=03/</span>
+        orders-00000.parquet
+  <span class="str">region=eu-west/</span>
+    ...
+
+<span class="cm"># Query no Athena (só le particoes relevantes)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> events
+<span class="kw">WHERE</span> year = <span class="str">'2025'</span> <span class="kw">AND</span> month = <span class="str">'01'</span>
+<span class="cm">-- Escaneia APENAS a pasta month=01, não o lake inteiro</span></code></pre>
+
+<h4>Anti-pattern: Data Swamp</h4>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Data Swamp</strong> é o que acontece quando um Data Lake não tem governança. Sintomas: ninguém sabe que dados existem, não ha documentação, formatos inconsistentes, dados duplicados, sem controle de acesso, sem data quality. O Lake vira um "lixao de dados". Prevenção: catalogacao (Glue Catalog, Hive Metastore), naming conventions, data quality checks, ownership definido por domínio.</div>
+</div>
+
+<!-- ═══ DATA WAREHOUSE ═══ -->
+<h3>Data Warehouse</h3>
+
+<p>Um Data Warehouse é um <strong>repositório estruturado e otimizado para consultas analíticas</strong> (OLAP). Diferente do Data Lake, aqui os dados são limpos, transformados e organizados ANTES de serem armazenados (schema-on-write). É o destino final dos dados para BI, dashboards e relatórios.</p>
+
+<h4>Caracteristicas</h4>
+<ul>
+<li><strong>Schema-on-write:</strong> Dados devem conformar ao schema antes da inserção. Garante qualidade e consistência</li>
+<li><strong>Armazenamento colunar:</strong> Redshift, BigQuery, Snowflake armazenam dados por coluna, não por linha. Isso permite compressão massiva e queries analíticas extremamente rápidas</li>
+<li><strong>SQL como interface:</strong> Analistas e ferramentas de BI usam SQL padrão para consultar</li>
+<li><strong>Histórico e imutabilidade:</strong> Dados são append-only com versionamento temporal (slowly changing dimensions)</li>
+</ul>
+
+<h4>Star Schema vs Snowflake Schema</h4>
+
+<p>Os dois modelos dimensionais mais usados em Data Warehouses:</p>
+
+<div class="card">
+<div class="card-title">Star Schema</div>
+<p>Uma <strong>tabela fato</strong> central cercada por <strong>tabelas dimensão</strong> desnormalizadas. Mais simples, menós JOINs, melhor performance. Preferido na maioria dos casos.</p>
+<ul>
+<li><strong>Fato:</strong> Métricas/eventos (vendas, cliques, transações). Muitas linhas, poucas colunas</li>
+<li><strong>Dimensão:</strong> Contexto (produto, cliente, tempo, localização). Poucas linhas, muitas colunas descritivas</li>
+</ul>
+</div>
+
+<div class="card blue">
+<div class="card-title">Snowflake Schema</div>
+<p>Igual ao Star, mas as dimensões são <strong>normalizadas</strong> (subdivididas). Mais JOINs, menós redundância de armazenamento. Usado quando espaço e crítico ou dimensões são muito grandes.</p>
+</div>
+
+<div class="diagram">
+<div class="diagram-box orange">dim_product<br><small>id, name, category</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box green">fact_sales<br><small>product_id, customer_id,<br>date_id, qty, revenue</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">dim_customer<br><small>id, name, segment</small></div>
+</div>
+<div class="diagram">
+<div class="diagram-box purple">dim_date<br><small>id, day, month, quarter</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box green">fact_sales</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">dim_store<br><small>id, city, state, region</small></div>
+</div>
+
+<h4>Exemplo: Query Star Schema</h4>
+<pre data-lang="sql"><code><span class="cm">-- Revenue por categoria de produto, por trimestre, últimos 2 anos</span>
+<span class="kw">SELECT</span>
+  d.<span class="fn">quarter</span>,
+  d.<span class="fn">year</span>,
+  p.<span class="fn">category</span>,
+  <span class="fn">SUM</span>(f.<span class="fn">revenue</span>) <span class="kw">AS</span> total_revenue,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> f.<span class="fn">customer_id</span>) <span class="kw">AS</span> unique_customers,
+  <span class="fn">AVG</span>(f.<span class="fn">revenue</span>) <span class="kw">AS</span> avg_order_value
+<span class="kw">FROM</span> fact_sales f
+<span class="kw">JOIN</span> dim_daté d <span class="kw">ON</span> f.date_id = d.id
+<span class="kw">JOIN</span> dim_product p <span class="kw">ON</span> f.product_id = p.id
+<span class="kw">WHERE</span> d.year <span class="kw">BETWEEN</span> <span class="num">2024</span> <span class="kw">AND</span> <span class="num">2025</span>
+<span class="kw">GROUP BY</span> d.quarter, d.year, p.category
+<span class="kw">ORDER BY</span> d.year, d.quarter;
+
+<span class="cm">-- Top 10 clientes por revenue, com segmento</span>
+<span class="kw">SELECT</span>
+  c.<span class="fn">name</span>,
+  c.<span class="fn">segment</span>,
+  <span class="fn">SUM</span>(f.<span class="fn">revenue</span>) <span class="kw">AS</span> lifetime_value,
+  <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_orders
+<span class="kw">FROM</span> fact_sales f
+<span class="kw">JOIN</span> dim_customer c <span class="kw">ON</span> f.customer_id = c.id
+<span class="kw">GROUP BY</span> c.name, c.segment
+<span class="kw">ORDER BY</span> lifetime_value <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">10</span>;</code></pre>
+
+<h4>Comparação de Data Warehouses</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Solução</th><th>Provider</th><th>Separação Compute/Storage</th><th>Pricing</th><th>Destaque</th></tr>
+<tr><td><strong>BigQuery</strong></td><td>GCP</td><td>Sim</td><td>Pay per query (bytes scaneados)</td><td>Serverless, zero admin, ML integrado</td></tr>
+<tr><td><strong>Snowflake</strong></td><td>Multi-cloud</td><td>Sim</td><td>Credits (compute) + storage</td><td>Virtual warehouses, data sharing, time travel</td></tr>
+<tr><td><strong>Redshift</strong></td><td>AWS</td><td>Redshift Serverless sim</td><td>Por hora de cluster ou serverless</td><td>Integração forte com AWS ecosystem</td></tr>
+<tr><td><strong>Synapse</strong></td><td>Azure</td><td>Sim</td><td>DWU (compute units)</td><td>Integração Power BI, Azure Data Factory</td></tr>
+</table>
+</div>
+
+<!-- ═══ DATA LAKEHOUSE ═══ -->
+<h3>Data Lakehouse</h3>
+
+<p>O Data Lakehouse combina o <strong>melhor do Data Lake</strong> (armazenamento barato, qualquer formato, schema-on-read) com o <strong>melhor do Data Warehouse</strong> (ACID transactions, schema enforcement, performance SQL). É a arquitetura que está substituindo a abordagem "Lake + Warehouse separados" em muitas organizações.</p>
+
+<h4>Tecnologias que Habilitam o Lakehouse</h4>
+
+<div class="card">
+<div class="card-title">Delta Lake (Databricks)</div>
+<p>Camada de armazenamento open-source que adiciona <strong>transações ACID sobre arquivos Parquet</strong> em object storage (S3, ADLS, GCS). Criado pela Databricks. Usa um transaction log (<code>_delta_log/</code>) para versionar cada mudança.</p>
+<ul>
+<li><strong>ACID transactions:</strong> Múltiplos writers podem escrever simultaneamente sem corromper dados</li>
+<li><strong>Time travel:</strong> Acesse qualquer versão anterior dos dados</li>
+<li><strong>Schema evolution:</strong> Adicione colunas sem reescrever dados existentes</li>
+<li><strong>MERGE/UPSERT:</strong> Operações que não existem em Parquet puro</li>
+</ul>
+</div>
+
+<div class="card blue">
+<div class="card-title">Apache Iceberg (Netflix)</div>
+<p>Table format open-source criado pela Netflix. Foco em <strong>performance em tabelas enormes</strong> (petabyte-scale). Suporta Spark, Trino, Flink, Dremio. Partition evolution permite mudar a estratégia de particionamento sem reescrever dados. <strong>Hidden partitioning</strong> — o usuário não precisa saber como a tabela e particionada para queries serem rápidas.</p>
+</div>
+
+<div class="card purple">
+<div class="card-title">Apache Hudi (Uber)</div>
+<p>Criado pela Uber para <strong>ingestão incremental e near-real-time</strong>. Foco em cenários de CDC e upserts frequentes. Dois tipos de tabela: Copy-on-Write (leitura rápida, escrita lenta) e Merge-on-Read (escrita rápida, leitura faz merge em tempo real).</p>
+</div>
+
+<h4>Exemplo: Time Travel com Delta Lake</h4>
+<pre data-lang="sql"><code><span class="cm">-- Ver o historico de mudanças da tabela</span>
+<span class="kw">DESCRIBE HISTORY</span> sales;
+<span class="cm">-- version | timestamp            | operation | operationParameters</span>
+<span class="cm">-- 5       | 2025-03-15 14:30:00 | MERGE     | predicate: id = ...</span>
+<span class="cm">-- 4       | 2025-03-15 10:00:00 | WRITE     | mode: append</span>
+<span class="cm">-- 3       | 2025-03-14 22:00:00 | DELETE    | predicate: status = ...</span>
+
+<span class="cm">-- Consultar dados como estavam 2 versões atras</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> sales <span class="kw">VERSION AS OF</span> <span class="num">3</span>;
+
+<span class="cm">-- Consultar dados como estavam ontem</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> sales <span class="kw">TIMESTAMP AS OF</span> <span class="str">'2025-03-14'</span>;
+
+<span class="cm">-- Restaurar tabela para versão anterior (rollback)</span>
+<span class="kw">RESTORE TABLE</span> sales <span class="kw">TO VERSION AS OF</span> <span class="num">3</span>;
+
+<span class="cm">-- MERGE/UPSERT — impossível com Parquet puro</span>
+<span class="kw">MERGE INTO</span> sales <span class="kw">AS</span> target
+<span class="kw">USING</span> new_sales <span class="kw">AS</span> source
+<span class="kw">ON</span> target.id = source.id
+<span class="kw">WHEN MATCHED THEN UPDATE SET</span> *
+<span class="kw">WHEN NOT MATCHED THEN INSERT</span> *;</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Lakehouse vs Lake + Warehouse:</strong> Na arquitetura tradicional, você tem um Lake (S3) + um Warehouse (Redshift) e precisa de ETL para mover dados entre eles. No Lakehouse, os dados ficam no Lake (S3) mas com capacidades de Warehouse (ACID, SQL, schema). Menós movimentação de dados = menós custo, menós latência, menós complexidade.</div>
+</div>
+
+<!-- ═══ DATA MESH ═══ -->
+<h3>Data Mesh</h3>
+
+<p>Data Mesh é um <strong>paradigma organizacional</strong> (não uma tecnologia) proposto por <strong>Zhamak Dehghani</strong> em 2019. Assim como microsserviços descentralizaram aplicações, Data Mesh descentraliza a <strong>propriedade e governança de dados</strong>. Em vez de um time central de dados gerenciar tudo, cada domínio de negócio e dono dos seus próprios dados.</p>
+
+<h4>Os 4 Princípios do Data Mesh</h4>
+
+<div class="card">
+<div class="card-title">1. Domain Ownership (Propriedade por Domínio)</div>
+<p>Cada domínio de negócio (Vendas, Marketing, Logistica, Financeiro) e <strong>dono é responsável pelos seus dados</strong>. O time de vendas não depende de um time central de engenharia de dados para criar pipelines — eles mesmos constroem, publicam e manteem seus data products.</p>
+</div>
+
+<div class="card blue">
+<div class="card-title">2. Data as a Product (Dados como Produto)</div>
+<p>Dados expostos por um domínio devem ser tratados como um <strong>produto com qualidade, SLA, documentação é versionamento</strong>. Assim como uma API tem contrato, um data product tem: schema documentado, SLA de freshness, owner definido, métricas de qualidade é uma forma padronizada de consumo.</p>
+</div>
+
+<div class="card purple">
+<div class="card-title">3. Self-Serve Data Platform (Plataforma Self-Service)</div>
+<p>A organização fornece uma <strong>plataforma que abstrai a complexidade de infra</strong>. Os domínios não precisam configurar Spark clusters, pipelines de ingestão ou permissões S3 — a plataforma oferece templates, tooling e automação para que cada domínio publique seus data products com autonomia.</p>
+</div>
+
+<div class="card orange">
+<div class="card-title">4. Federated Computational Governance (Governança Federada)</div>
+<p>Governança não é centralizada nem ausente — e <strong>federada</strong>. Existe um conjunto de políticas globais (segurança, LGPD, naming conventions, interoperabilidade) definidas colaborativamente, mas a <strong>implementação e responsabilidade de cada domínio</strong>. Pense como a EU: regras comuns, execução local.</p>
+</div>
+
+<h4>Diagrama: Data Mesh vs Arquitetura Centralizada</h4>
+
+<p><strong>Arquitetura Centralizada (tradicional):</strong></p>
+<div class="diagram">
+<div class="diagram-box orange">Domínio Vendas</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Time Central<br>de Dados<br><small>(bottleneck)</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box blue">Domínio Marketing</div>
+</div>
+
+<p><strong>Data Mesh (descentralizado):</strong></p>
+<div class="diagram">
+<div class="diagram-box orange">Vendas<br><small>Data Product: orders</small></div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box green">Self-Serve<br>Platform<br><small>(infra compartilhada)</small></div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box blue">Marketing<br><small>Data Product: campaigns</small></div>
+</div>
+<div class="diagram">
+<div class="diagram-box purple">Logistica<br><small>Data Product: shipments</small></div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box green">Self-Serve<br>Platform</div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box cyan">Financeiro<br><small>Data Product: invoices</small></div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Quando faz sentido:</strong> Data Mesh funciona em <strong>organizações grandes</strong> (100+ engenheiros, múltiplos domínios independentes) onde o time central de dados virou bottleneck. Para startups e times pequenos, a complexidade organizacional do Mesh supera os benefícios. Não adote por hype — adote quando a dor da centralização for real.</div>
+</div>
+
+<!-- ═══ ETL vs ELT ═══ -->
+<h3>ETL vs ELT</h3>
+
+<p>ETL e ELT são paradigmas de <strong>movimentação e transformacao de dados</strong>. A diferença é simples mas tem implicacoes profundas:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>ETL (Extract-Transform-Load)</th><th>ELT (Extract-Load-Transform)</th></tr>
+<tr><td><strong>Ordem</strong></td><td>Transforma ANTES de carregar</td><td>Carrega primeiro, transforma DEPOIS</td></tr>
+<tr><td><strong>Onde transforma</strong></td><td>Em servidor ETL separado (Informática, Talend)</td><td>Dentro do data warehouse (BigQuery, Snowflake)</td></tr>
+<tr><td><strong>Dados brutos</strong></td><td>Descartados após transformacao</td><td>Preservados no lake/warehouse</td></tr>
+<tr><td><strong>Flexibilidade</strong></td><td>Menor — reprocessamento e caro</td><td>Maior — dados brutos sempre disponíveis</td></tr>
+<tr><td><strong>Performance</strong></td><td>Limitada pelo servidor ETL</td><td>Usa o poder de compute do warehouse (MPP)</td></tr>
+<tr><td><strong>Era</strong></td><td>Pre-cloud (servidores on-premise)</td><td>Cloud-native (compute elastico e barato)</td></tr>
+</table>
+</div>
+
+<div class="diagram">
+<div class="diagram-box blue">Sources<br><small>APIs, DBs, Files</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Extract</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Load (raw)</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Transform<br><small>(dbt, SQL)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Consume<br><small>BI, ML, APIs</small></div>
+</div>
+
+<h4>Ferramentas do Ecossistema</h4>
+<ul>
+<li><strong>Orquestração:</strong> <code>Apache Airflow</code> (DAGs em Python), <code>Dagster</code> (data-aware), <code>Prefect</code> (cloud-native)</li>
+<li><strong>Ingestão:</strong> <code>Fivetran</code> (managed, 300+ conectores), <code>Airbyte</code> (open-source), <code>AWS Glue</code> (serverless ETL)</li>
+<li><strong>Transformacao:</strong> <code>dbt</code> (SQL-based transformations), <code>Spark</code> (big data processing)</li>
+<li><strong>Qualidade:</strong> <code>Great Expectations</code> (data válidation), <code>dbt tests</code> (built-in)</li>
+</ul>
+
+<h4>Exemplo: dbt Model (SQL Transformation)</h4>
+<pre data-lang="sql"><code><span class="cm">-- models/marts/finance/monthly_revenue.sql</span>
+<span class="cm">-- dbt transforma dados raw em modelos analiticos usando SELECT</span>
+
+{{ <span class="fn">config</span>(
+    materialized=<span class="str">'table'</span>,
+    schema=<span class="str">'finance'</span>,
+    tags=[<span class="str">'daily'</span>]
+) }}
+
+<span class="kw">WITH</span> orders <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> * <span class="kw">FROM</span> {{ <span class="fn">ref</span>(<span class="str">'stg_orders'</span>) }}
+    <span class="kw">WHERE</span> status = <span class="str">'completed'</span>
+),
+
+payments <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> * <span class="kw">FROM</span> {{ <span class="fn">ref</span>(<span class="str">'stg_payments'</span>) }}
+    <span class="kw">WHERE</span> payment_status = <span class="str">'captured'</span>
+),
+
+monthly <span class="kw">AS</span> (
+    <span class="kw">SELECT</span>
+        <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, o.created_at) <span class="kw">AS</span> month,
+        <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> o.id) <span class="kw">AS</span> total_orders,
+        <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> o.customer_id) <span class="kw">AS</span> unique_customers,
+        <span class="fn">SUM</span>(p.amount) <span class="kw">AS</span> gross_revenue,
+        <span class="fn">SUM</span>(p.amount - p.fees) <span class="kw">AS</span> net_revenue,
+        <span class="fn">AVG</span>(p.amount) <span class="kw">AS</span> avg_order_value
+    <span class="kw">FROM</span> orders o
+    <span class="kw">JOIN</span> payments p <span class="kw">ON</span> o.id = p.order_id
+    <span class="kw">GROUP BY</span> <span class="num">1</span>
+)
+
+<span class="kw">SELECT</span>
+    month,
+    total_orders,
+    unique_customers,
+    gross_revenue,
+    net_revenue,
+    avg_order_value,
+    <span class="cm">-- Métricas derivadas</span>
+    net_revenue / <span class="fn">NULLIF</span>(unique_customers, <span class="num">0</span>) <span class="kw">AS</span> revenue_per_customer,
+    <span class="fn">LAG</span>(net_revenue) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month) <span class="kw">AS</span> prev_month_revenue,
+    <span class="fn">ROUND</span>(
+        (net_revenue - <span class="fn">LAG</span>(net_revenue) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month))
+        / <span class="fn">NULLIF</span>(<span class="fn">LAG</span>(net_revenue) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month), <span class="num">0</span>) * <span class="num">100</span>
+    , <span class="num">2</span>) <span class="kw">AS</span> mom_growth_pct
+<span class="kw">FROM</span> monthly
+<span class="kw">ORDER BY</span> month <span class="kw">DESC</span></code></pre>
+
+<pre data-lang="yaml"><code><span class="cm"># models/marts/finance/monthly_revenue.yml — dbt schema/tests</span>
+<span class="kw">version</span>: <span class="num">2</span>
+
+<span class="kw">models</span>:
+  - <span class="kw">name</span>: monthly_revenue
+    <span class="kw">description</span>: <span class="str">"Receita mensal agregada com métricas de crescimento"</span>
+    <span class="kw">columns</span>:
+      - <span class="kw">name</span>: month
+        <span class="kw">tests</span>:
+          - not_null
+          - unique
+      - <span class="kw">name</span>: gross_revenue
+        <span class="kw">tests</span>:
+          - not_null
+          - <span class="kw">dbt_útils.accepted_range</span>:
+              <span class="kw">min_value</span>: <span class="num">0</span></code></pre>
+
+<!-- ═══ CDC ═══ -->
+<h3>CDC — Change Data Capture</h3>
+
+<p>Change Data Capture é uma técnica que <strong>captura mudanças incrementais</strong> (INSERT, UPDATE, DELETE) em um banco de dados é as propaga para outros sistemas em <strong>near-real-time</strong>. Em vez de fazer dumps periódicos do banco inteiro, você captura apenas o que mudou — o delta.</p>
+
+<h4>Tipos de CDC</h4>
+<ul>
+<li><strong>Log-based CDC</strong> (melhor): Le diretamente o <strong>transaction log</strong> do banco (WAL no PostgreSQL, binlog no MySQL). Zero impacto na performance do banco de produção. Captura toda mudança, incluindo DELETEs</li>
+<li><strong>Trigger-based CDC:</strong> Triggers no banco que escrevem mudanças em uma tabela de auditoria. Impacto na performance. Mais simples de implementar sem ferramentas externas</li>
+<li><strong>Timestamp-based CDC:</strong> Consulta periódica com <code>WHERE updated_at > last_sync</code>. Não captura DELETEs. Pode perder dados se clock skew</li>
+<li><strong>Diff-based CDC:</strong> Compara snapshots completos. Muito caro em tabelas grandes. Só usa quando não tem alternativa</li>
+</ul>
+
+<h4>Debezium + Kafka: A Stack Padrão</h4>
+
+<p><strong>Debezium</strong> é o conector CDC open-source mais usado. Roda como Kafka Connect source connector, le o transaction log do banco e pública eventos de mudança em tópicos Kafka.</p>
+
+<div class="diagram">
+<div class="diagram-box blue">PostgreSQL<br><small>(WAL)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Debezium<br><small>(Kafka Connect)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Apache Kafka<br><small>(tópico por tabela)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Consumers<br><small>S3, Elasticsearch,<br>Redis, Analytics</small></div>
+</div>
+
+<h4>Estrutura de um Evento CDC (Debezium)</h4>
+<pre data-lang="json"><code>{
+  <span class="str">"schema"</span>: { ... },
+  <span class="str">"payload"</span>: {
+    <span class="str">"before"</span>: {
+      <span class="str">"id"</span>: <span class="num">1001</span>,
+      <span class="str">"email"</span>: <span class="str">"old@email.com"</span>,
+      <span class="str">"name"</span>: <span class="str">"Joao"</span>,
+      <span class="str">"status"</span>: <span class="str">"active"</span>
+    },
+    <span class="str">"after"</span>: {
+      <span class="str">"id"</span>: <span class="num">1001</span>,
+      <span class="str">"email"</span>: <span class="str">"new@email.com"</span>,
+      <span class="str">"name"</span>: <span class="str">"Joao Silva"</span>,
+      <span class="str">"status"</span>: <span class="str">"active"</span>
+    },
+    <span class="str">"source"</span>: {
+      <span class="str">"connector"</span>: <span class="str">"postgresql"</span>,
+      <span class="str">"db"</span>: <span class="str">"ecommerce"</span>,
+      <span class="str">"schema"</span>: <span class="str">"public"</span>,
+      <span class="str">"table"</span>: <span class="str">"users"</span>,
+      <span class="str">"lsn"</span>: <span class="num">12345678</span>,
+      <span class="str">"ts_ms"</span>: <span class="num">1710523200000</span>
+    },
+    <span class="str">"op"</span>: <span class="str">"u"</span>,  <span class="cm">// c=create, u=update, d=delete, r=read(snapshot)</span>
+    <span class="str">"ts_ms"</span>: <span class="num">1710523200123</span>
+  }
+}</code></pre>
+
+<h4>Casos de Usó do CDC</h4>
+<ul>
+<li><strong>Sincronização real-time:</strong> Replicar dados de PostgreSQL para Elasticsearch (busca), Redis (cache), Data Lake (analytics) sem batch jobs</li>
+<li><strong>Event sourcing light:</strong> Cada mudança no banco vira um evento imutável no Kafka. Permite reconstruir estado, auditar mudanças</li>
+<li><strong>Cache inválidation:</strong> Quando um produto muda no banco, o consumer inválida o cache Redis automáticamente. Sem TTL arbitrário</li>
+<li><strong>CQRS:</strong> Separa leitura (view models otimizados) de escrita (banco normalizado). CDC propaga mudanças do write model para read models</li>
+<li><strong>Migração zero-downtime:</strong> Replique dados para o novo banco via CDC enquanto o antigo continua operando. Corte quando estiver sincronizado</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Consumer Kafka — inválida cache Redis quando produto muda</span>
+<span class="kw">import</span> { Kafka } <span class="kw">from</span> <span class="str">'kafkajs'</span>;
+<span class="kw">import</span> { Redis } <span class="kw">from</span> <span class="str">'ioredis'</span>;
+
+<span class="kw">const</span> kafka = <span class="kw">new</span> <span class="tp">Kafka</span>({ brokers: [<span class="str">'kafka:9092'</span>] });
+<span class="kw">const</span> redis = <span class="kw">new</span> <span class="tp">Redis</span>();
+<span class="kw">const</span> consumer = kafka.<span class="fn">consumer</span>({ groupId: <span class="str">'cache-inválidator'</span> });
+
+<span class="kw">await</span> consumer.<span class="fn">connect</span>();
+<span class="kw">await</span> consumer.<span class="fn">subscribe</span>({ topic: <span class="str">'ecommerce.public.products'</span> });
+
+<span class="kw">await</span> consumer.<span class="fn">run</span>({
+  <span class="fn">eachMessage</span>: <span class="kw">async</span> ({ message }) => {
+    <span class="kw">const</span> event = JSON.<span class="fn">parse</span>(message.value.<span class="fn">toString</span>());
+    <span class="kw">const</span> { op, after, before } = event.payload;
+
+    <span class="kw">if</span> (op === <span class="str">'u'</span> || op === <span class="str">'d'</span>) {
+      <span class="kw">const</span> productId = (after || before).id;
+      <span class="kw">await</span> redis.<span class="fn">del</span>(<span class="str">`product:${productId}`</span>);
+      <span class="kw">await</span> redis.<span class="fn">del</span>(<span class="str">`product:${productId}:details`</span>);
+      console.<span class="fn">log</span>(<span class="str">`Cache inválidated for product ${productId}`</span>);
+    }
+
+    <span class="kw">if</span> (op === <span class="str">'c'</span>) {
+      <span class="cm">// Novo produto — pre-warm cache</span>
+      <span class="kw">await</span> redis.<span class="fn">setex</span>(
+        <span class="str">`product:${after.id}`</span>,
+        <span class="num">3600</span>,
+        JSON.<span class="fn">stringify</span>(after)
+      );
+    }
+  }
+});</code></pre>
+
+<!-- ═══ DATA LINEAGE & CATALOG ═══ -->
+<h3>Data Lineage &amp; Catalog</h3>
+
+<p>Conforme sua plataforma de dados cresce, surgem perguntas como: <strong>"De onde vem esse dado?"</strong>, <strong>"Se eu mudar essa tabela, o que quebra?"</strong>, <strong>"Quem é o responsável por esse dataset?"</strong>. Data Lineage e Data Catalog respondem essas perguntas.</p>
+
+<h4>Data Lineage (Linhagem de Dados)</h4>
+<p>Rastreia o <strong>caminho completo do dado</strong> — da origem até o consumo final. Mostra todas as transformacoes intermediarias. Essencial para:</p>
+<ul>
+<li><strong>Debugging:</strong> Um dashboard mostra números errados. Lineage mostra exatamente qual transformacao está incorreta</li>
+<li><strong>Impact analysis:</strong> Antes de alterár uma tabela, vejá todos os downstream consumers que serão afetados</li>
+<li><strong>Compliance (LGPD/GDPR):</strong> "Onde dados do usuário X estão armazenados?" Lineage mostra cada cópia, transformacao e destino</li>
+<li><strong>Root cause analysis:</strong> Um modelo de ML começou a fazer previsoes ruins. Lineage mostra que a feature engineering mudou uma fonte de dados</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box blue">PostgreSQL<br><small>orders table</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">dbt model<br><small>stg_orders</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">dbt model<br><small>monthly_revenue</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Metabase<br><small>Revenue Dashboard</small></div>
+</div>
+
+<h4>Data Catalog</h4>
+<p>Um <strong>inventário pesquisavel</strong> de todos os data assets da organização. Pense como um "Google dos dados internos".</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Tipo</th><th>Destaque</th></tr>
+<tr><td><strong>DataHub</strong> (LinkedIn)</td><td>Open-source</td><td>Lineage automático, integração com dbt/Airflow/Spark, API GraphQL</td></tr>
+<tr><td><strong>Apache Atlas</strong></td><td>Open-source</td><td>Hadoop ecosystem, governança e classificação de dados</td></tr>
+<tr><td><strong>Amundsen</strong> (Lyft)</td><td>Open-source</td><td>Search-first UX, popular table rankings, integração simples</td></tr>
+<tr><td><strong>Atlan</strong></td><td>Managed</td><td>UI moderna, colaboracao, lineage visual, governança ativa</td></tr>
+<tr><td><strong>AWS Glue Catalog</strong></td><td>Managed</td><td>Nativo AWS, integra com Athena/Redshift/EMR</td></tr>
+</table>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>dbt + Data Catalog:</strong> Se você usa dbt, já tem lineage de graca. O <code>dbt docs generate</code> cria um grafo interátivo de dependências entre todos os seus modelos. Ferramentas como DataHub importam esse grafo automáticamente. Comece com dbt docs antes de investir em catalog dedicado.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Plataforma de Dados E-commerce</h3>
+
+<p><strong>Cenário:</strong> Você é o arquiteto de dados de um e-commerce mid-size (500K pedidos/mês, 50M pageviews/mês). Precisa projetar uma plataforma que alimente dashboards de BI, modelo de recomendação (ML), busca full-text e cache de produtos. Os dados operacionais estão em PostgreSQL.</p>
+
+<h4>Arquitetura Proposta</h4>
+<div class="diagram">
+<div class="diagram-box blue">PostgreSQL<br><small>(OLTP — orders,<br>products, users)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Debezium<br><small>(CDC log-based)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Apache Kafka<br><small>(event streaming)</small></div>
+</div>
+
+<p>Do Kafka, os dados fluem para múltiplos consumers:</p>
+
+<div class="diagram">
+<div class="diagram-box green">Kafka</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">S3 / Parquet<br><small>(Data Lake)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">BigQuery<br><small>(Data Warehouse)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Metabase<br><small>(BI Dashboards)</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box green">Kafka</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Elasticsearch<br><small>(Busca full-text)</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box green">Kafka</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Redis<br><small>(Cache inválidation)</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box cyan">BigQuery</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">dbt<br><small>(Transformacao)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">ML Features<br><small>(Recomendação)</small></div>
+</div>
+
+<h4>Detalhamento por Camada</h4>
+
+<pre data-lang="yaml"><code><span class="cm"># Arquitetura em camadas</span>
+
+<span class="kw">sources</span>:
+  <span class="str">- PostgreSQL (OLTP)</span>         <span class="cm"># Banco operacional — orders, products, users</span>
+  <span class="str">- Event tracking (frontend)</span> <span class="cm"># Clickstream — pageviews, add_to_cart, purchases</span>
+  <span class="str">- Third-party APIs</span>          <span class="cm"># Google Ads, Meta Ads, pagamentos</span>
+
+<span class="kw">ingestion</span>:
+  <span class="str">- Debezium (CDC)</span>            <span class="cm"># PostgreSQL → Kafka (near-real-time, log-based)</span>
+  <span class="str">- Fivetran</span>                  <span class="cm"># Google Ads, Meta Ads → BigQuery (managed)</span>
+  <span class="str">- Kafka Producer</span>            <span class="cm"># Frontend events → Kafka (real-time)</span>
+
+<span class="kw">storage</span>:
+  <span class="str">- S3 (Data Lake)</span>            <span class="cm"># Raw data em Parquet, particionado por data</span>
+  <span class="str">- BigQuery (Warehouse)</span>      <span class="cm"># Dados transformados, star schema, BI-ready</span>
+
+<span class="kw">transformation</span>:
+  <span class="str">- dbt</span>                       <span class="cm"># SQL models: staging → intermediaté → marts</span>
+  <span class="str">- Airflow</span>                   <span class="cm"># Orquestra pipelines diarios, monitora SLAs</span>
+
+<span class="kw">serving</span>:
+  <span class="str">- Metabase</span>                  <span class="cm"># Dashboards — revenue, conversão, estoque</span>
+  <span class="str">- Elasticsearch</span>             <span class="cm"># Busca de produtos (synced via CDC)</span>
+  <span class="str">- Redis</span>                     <span class="cm"># Cache de produtos (inválidated via CDC)</span>
+  <span class="str">- ML Pipeline</span>               <span class="cm"># Features de BigQuery → modelo de recomendação</span>
+
+<span class="kw">governance</span>:
+  <span class="str">- DataHub</span>                   <span class="cm"># Catalogo, lineage, ownership</span>
+  <span class="str">- dbt tests</span>                 <span class="cm"># Data quality: not_null, unique, accepted_range</span>
+  <span class="str">- Great Expectations</span>        <span class="cm"># Validação de schemas na ingestão</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Por que Kafka no centro?</strong> Kafka atua como a "espinha dorsal" que desacopla producers de consumers. Se amanha você precisar adicionar um novo consumer (ex: data warehouse novo, serviço de fraude), basta conectar ao tópico Kafka — nenhuma mudança nas fontes de dados. Isso é o princípio do <strong>event-driven architecture</strong> aplicado a dados.</div>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Data Swamp:</strong> Data Lake sem governança. Ninguém sabe o que está armazenado, formatos são inconsistentes, dados estão duplicados, sem ownership definido. Prevenção: catalogacao obrigatória, naming conventions, particionamento padronizado, data quality gates na ingestão.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Sem governança:</strong> "Vamos jogar tudo no S3 e depois a gente organiza." Depois nunca chega. Resultado: 50TB de dados que ninguém confia, ninguém sabe a origem, e ninguém quer usar. Governança não é burocracia — e documentação mínima + ownership + quality checks.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>ETL Spaghetti:</strong> Dezenas de scripts cron, Lambdas e Glue jobs que ninguém entende, sem monitoramento, sem retry, sem idempotência. Quando falha, ninguém sabe. Solução: use um orquestrador (Airflow/Dagster), implemente idempotência em cada step, monitore com alertas.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Data Mesh cedo demais:</strong> Adotar Data Mesh em uma empresa de 20 pessoas e over-engineering organizacional. Você não tem domínios independentes suficientes, não tem platform team, é a complexidade vai paralisar o time. Data Mesh resolve problemas de escala organizacional — se você não tem esses problemas, não precisa da solução.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>CDC sem schema registry:</strong> Debezium captura mudanças no schema do banco (ALTER TABLE). Se os consumers não estão preparados para evolução de schema, um deploy que adiciona uma coluna pode quebrar todos os pipelines downstream. Use Schema Registry (Confluent) + Avro para evolução controlada.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática para escolher a arquitetura:</strong> Startup (< 50 devs): PostgreSQL + dbt + Metabase. Mid-size (50-200 devs): Lake + Warehouse + CDC + dbt + Catalog. Enterprise (200+ devs): Data Mesh com self-serve platform. Não pule etapas — cada nível de complexidade existe por uma razão.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Sua empresa tem um PostgreSQL monolítico com 500M de linhas na tabela orders. O time de analytics reclama que queries de BI estão deixando o banco lento. O time de busca precisa dos produtos em Elasticsearch. Como você projetaria a solução?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Implemente CDC com Debezium para capturar mudanças do PostgreSQL em near-real-time via Kafka. Crie dois consumers: (1) Um Kafka Connect sink para Elasticsearch que sincroniza produtos automáticamente — resolve a busca. (2) Um pipeline que persiste eventos no S3 em formato Parquet (Data Lake), com dbt transformando os dados para um star schema no BigQuery/Redshift — resolve BI sem impactar o PostgreSQL. O banco OLTP fica livre para operações transacionais. Adicione dbt tests para validar qualidade e DataHub para lineage.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Você armazena 10TB de logs de aplicação por dia no S3 como JSON. Queries no Athena estão demorando minutos. O que está errado é como corrigir?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Três problemas provaveis: (1) <strong>Formato errado:</strong> JSON e row-based e não comprime bem. Converta para Parquet (colunar, compressão Snappy). Redução tipica: 10TB JSON → 1-2TB Parquet. (2) <strong>Sem particionamento:</strong> Sem partições, Athena escaneia todos os 10TB para cada query. Particione por <code>year/month/day/hour</code>. Uma query de "últimas 24h" escaneara apenas 240GB ao inves de 10TB. (3) <strong>Arquivos muito pequenos:</strong> Milhares de arquivos pequenós (< 128MB) geram overhead de S3 listing. Consolide para arquivos de 128MB-1GB. Use compaction job (Spark ou Athena CTAS) para agrupar.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: O CTO quer adotar Data Mesh. A empresa tem 30 desenvolvedores, 2 times de produto, é um único banco PostgreSQL. O que você recomendaria?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Não adote Data Mesh ainda. Com 30 devs e 2 times, você não tem os problemas que Data Mesh resolve (bottleneck do time central de dados, escala organizacional, domínios independentes). Recomende: (1) Comece com ELT simples: PostgreSQL → dbt → Data Warehouse (BigQuery). (2) Adicione Metabase para BI. (3) Implemente dbt docs para lineage básica. (4) Defina ownership por tabela/modelo (proto-domain ownership). Quando a empresa crescer para 100+ devs e 5+ domínios independentes, reavalie Data Mesh. Hoje, a complexidade organizacional do Mesh paralisaria o time.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Data Architecture</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="14-grafos-vetorial-fulltext.html">&#8592; Anterior</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="16-cap-acid-base.html" class="primary">Próximo: CAP, ACID, BASE &amp; Consistência &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 15: Data Architecture
+// ══════════════════════════════════════════
+const SECTION_NUM = 15;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a principal diferença entre schema-on-read (Data Lake) e schema-on-write (Data Warehouse)?",
+    options: [
+      "Schema-on-read exige que os dados sejam válidados antes da escrita; schema-on-write válida na leitura",
+      "Schema-on-read define a estrutura no momento da consulta; schema-on-write exige schema antes da inserção",
+      "Schema-on-read é mais lento que schema-on-write em todos os cenários",
+      "Não ha diferença prática — são apenas nomes diferentes para o mesmo conceito"
+    ],
+    correct: 1,
+    explanation: "Schema-on-read (Data Lake) permite armazenar dados em qualquer formato e definir a estrutura somente quando os dados são lidos. Schema-on-write (Data Warehouse) exige que os dados conformem ao schema antes de serem inseridos, garantindo qualidade na entrada."
+  },
+  {
+    question: "Qual formato de arquivo é mais adequado para armazenar dados analíticos em um Data Lake?",
+    options: [
+      "CSV — universal é fácil de ler",
+      "JSON — flexível e semi-estruturado",
+      "Parquet — colunar, com compressão e schema embutido",
+      "XML — auto-descritivo e padronizado"
+    ],
+    correct: 2,
+    explanation: "Parquet e colunar (ideal para queries analíticas que leem poucas colunas de muitas linhas), tem compressão eficiente (Snappy/GZIP), schema embutido e e suportado por Spark, Athena, BigQuery, Trino é práticamente todas as ferramentas de dados."
+  },
+  {
+    question: "O que diferencia um Data Lakehouse de um Data Lake + Data Warehouse tradicionais?",
+    options: [
+      "Lakehouse usa bancos NoSQL; Lake+Warehouse usa SQL",
+      "Lakehouse armazena dados no object storage mas adiciona transações ACID, schema enforcement e performance SQL — eliminando a necessidade de dois sistemas separados",
+      "Lakehouse é mais caro e só funciona em cloud privada",
+      "Lakehouse e apenas um Data Lake com uma camada de visualização (BI)"
+    ],
+    correct: 1,
+    explanation: "O Lakehouse (via Delta Lake, Iceberg ou Hudi) adiciona capacidades de Data Warehouse (ACID, schema enforcement, SQL, time travel) sobre armazenamento de Data Lake (S3, ADLS). Isso elimina a duplicação de dados é a latência de ETL entre Lake e Warehouse."
+  },
+  {
+    question: "Quais são os 4 princípios do Data Mesh de Zhamak Dehghani?",
+    options: [
+      "Centralização, padronização, monitoramento e escalabilidade",
+      "Domain ownership, data as a product, self-serve platform, federated governance",
+      "Schema registry, event sourcing, CQRS e microsserviços",
+      "ETL, ELT, CDC e streaming"
+    ],
+    correct: 1,
+    explanation: "Os 4 princípios são: (1) Domain Ownership — cada domínio e dono dos seus dados. (2) Data as a Product — dados com SLA, documentação e qualidade. (3) Self-Serve Platform — infraestrutura que abstrai complexidade. (4) Federated Governance — regras globais, execução por domínio."
+  },
+  {
+    question: "No paradigma ELT, onde a transformacao dos dados acontece?",
+    options: [
+      "Em um servidor ETL separado antes de carregar no destino",
+      "No banco de dados de origem (PostgreSQL, MySQL)",
+      "Dentro do data warehouse/lakehouse, após o carregamento dos dados brutos",
+      "No frontend, antes de exibir ao usuário"
+    ],
+    correct: 2,
+    explanation: "No ELT, os dados são extraidos da fonte e carregados no destino (warehouse) em formato bruto. A transformacao acontece DENTRO do warehouse usando seu poder de compute (MPP). Ferramentas como dbt executam transformacoes SQL diretamente no BigQuery/Snowflake/Redshift."
+  },
+  {
+    question: "Qual tipo de CDC tem menor impacto na performance do banco de produção?",
+    options: [
+      "Trigger-based CDC — usa triggers no banco para capturar mudanças",
+      "Timestamp-based CDC — consultas periódicas com WHERE updated_at > last_sync",
+      "Log-based CDC — le diretamente o transaction log (WAL/binlog) sem impactar queries",
+      "Diff-based CDC — compara snapshots completos do banco"
+    ],
+    correct: 2,
+    explanation: "Log-based CDC (usado pelo Debezium) le o transaction log do banco (WAL no PostgreSQL, binlog no MySQL). O banco já escreve esses logs naturalmente para replicação e recovery — o CDC apenas os le, sem adicionar nenhuma carga extra de queries ou triggers no banco de produção."
+  },
+  {
+    question: "O que é um Data Swamp é como preveni-lo?",
+    options: [
+      "É um Data Lake que ficou lento. Previna com mais servidores",
+      "É um Data Lake sem governança — dados sem documentação, sem ownership, formatos inconsistentes. Previna com catalogacao, naming conventions e data quality checks",
+      "E quando o Data Warehouse fica cheio. Previna com particionamento",
+      "É um termo para Data Lakes em cloud pública. Previna usando on-premise"
+    ],
+    correct: 1,
+    explanation: "Data Swamp é o anti-pattern mais comum de Data Lakes. Acontece quando dados são despejados sem governança — ninguém sabe o que existe, formatos são inconsistentes, sem ownership. Prevenção: catalogacao (Glue Catalog, DataHub), naming conventions, quality gates na ingestão, ownership definido."
+  },
+  {
+    question: "Em um star schema, qual é a função da tabela fato (fact table)?",
+    options: [
+      "Armazena dados descritivos como nomes, categorias e endereços",
+      "Armazena métricas e eventos quantitativos (vendas, cliques, transações) com chaves estrangeiras para dimensões",
+      "Armazena o schema do banco de dados (metadados)",
+      "Armazena dados temporários usados em transformacoes ETL"
+    ],
+    correct: 1,
+    explanation: "A fact table armazena métricas/eventos (revenue, quantity, clicks) junto com chaves estrangeiras (FKs) para tabelas de dimensão (produto, cliente, data, loja). Tem muitas linhas e poucas colunas. As dimension tables fornecem o contexto descritivo (nome do produto, nome do cliente, trimestre)."
+  },
+  {
+    question: "Qual é o papel do Debezium em uma arquitetura de dados?",
+    options: [
+      "É um data warehouse serverless para queries SQL",
+      "É um conector CDC que le transaction logs de bancos e pública eventos de mudança em Kafka",
+      "É uma ferramenta de transformacao SQL similar ao dbt",
+      "É um data catalog para documentar datasets"
+    ],
+    correct: 1,
+    explanation: "Debezium é um conector CDC open-source que roda como Kafka Connect source connector. Ele le o transaction log do banco (WAL/binlog) e pública um evento para cada INSERT, UPDATE e DELETE em um tópico Kafka correspondente a tabela. Isso permite sincronização near-real-time com outros sistemas."
+  },
+  {
+    question: "Quando faz sentido adotar Data Mesh em uma organização?",
+    options: [
+      "Sempre — é a arquitetura mais moderna e deve ser adotada por todos",
+      "Em startups para ganhar agilidade desde o início",
+      "Em organizações grandes (100+ engenheiros) onde o time central de dados virou bottleneck e ha domínios independentes",
+      "Quando você precisa de um Data Lake mas não tem budget para um Data Warehouse"
+    ],
+    correct: 2,
+    explanation: "Data Mesh resolve problemas de escala organizacional — quando o time central de dados não consegue atender a demanda de múltiplos domínios. Para organizações pequenas (< 50 devs), a complexidade organizacional do Mesh (platform team, federated governance, data products) supera os benefícios. Comece simples (dbt + warehouse) e evolua quando a dor for real."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Data Architecture.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

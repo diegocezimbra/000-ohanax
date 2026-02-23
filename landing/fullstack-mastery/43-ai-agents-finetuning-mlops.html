@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>43 — AI Agents, Fine-Tuning & MLOps | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="42-llms-rag-prompt-engineering.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>43</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="44-quality-attributes-ilities.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:65.2%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 43</span>
+<h2>AI Agents, Fine-Tuning & MLOps</h2>
+<div class="section-line"></div>
+
+<p>Se a seção anterior cobriu como usar LLMs via prompts e RAG, esta seção vai mais fundo: como construir <strong>agentes autônomos</strong> que raciocinam, planejam e executam ações; como <strong>customizar modelos</strong> para seu domínio via fine-tuning; é como operar tudo isso em produção com <strong>MLOps</strong>. Essa é a fronteira entre "usar IA" e "construir com IA" — a diferença entre chamar uma API e arquitetar sistemas inteligentes.</p>
+
+<p>Um agente não é apenas um chatbot. E um sistema que recebe um objetivo, <strong>decompoe em passos</strong>, usa ferramentas para executar cada passo, avalia o resultado e <strong>decide o próximo movimento</strong>. Pense em um dev junior autônomo: ele le o ticket, busca no código, escreve a solução, roda os testes e iterá até passar.</p>
+
+<!-- ═══ AI AGENTS ═══ -->
+<h3>AI Agents: Anatomia Completa</h3>
+
+<p>Um AI Agent é composto por 4 pilares fundamentais:</p>
+
+<div class="card">
+<div class="card-title">Os 4 Pilares de um AI Agent</div>
+<ul>
+<li><strong>Reasoning (Raciocínio)</strong> — O LLM como "cérebro" que decide o que fazer. Usa técnicas como Chain-of-Thought, ReAct (Reason + Act), e Tree-of-Thought para decompor problemas complexos</li>
+<li><strong>Tool Use / Function Calling</strong> — Capacidade de invocar ferramentas externas (APIs, banco de dados, shell, browser). O LLM gera uma chamada estruturada, o runtime executa e retorna o resultado</li>
+<li><strong>Memory (Memória)</strong> — Contexto de curto prazo (conversa atual) e longo prazo (vector store, banco). Sem memória, o agente repete erros e perde contexto entre sessões</li>
+<li><strong>Planning (Planejamento)</strong> — Decomposicao de tarefas complexas em subtarefas. Pode ser linear (step-by-step), hierárquico (divide-and-conquer), ou reativo (adapta conforme resultados)</li>
+</ul>
+</div>
+
+<h4>Tool Use / Function Calling — Exemplo Prático em TypeScript</h4>
+<p>Function Calling é o mecanismo pelo qual um LLM "decide" chamar uma função externa. O LLM não executa a função — ele retorna um JSON estruturado descrevendo qual função chamar e com quais parametros. Seu código executa e devolve o resultado.</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> Anthropic <span class="kw">from</span> <span class="str">'@anthropic-aí/sdk'</span>;
+
+<span class="cm">// 1. Defina as ferramentas disponíveis para o agente</span>
+<span class="kw">const</span> tools: Anthropic.Tool[] = [
+  {
+    name: <span class="str">'search_codebase'</span>,
+    description: <span class="str">'Busca no codebase por arquivos que contenham o texto específicado'</span>,
+    input_schema: {
+      type: <span class="str">'object'</span>,
+      properties: {
+        query: { type: <span class="str">'string'</span>, description: <span class="str">'Texto ou regex para buscar'</span> },
+        file_pattern: { type: <span class="str">'string'</span>, description: <span class="str">'Glob pattern (ex: *.ts)'</span> }
+      },
+      required: [<span class="str">'query'</span>]
+    }
+  },
+  {
+    name: <span class="str">'run_tests'</span>,
+    description: <span class="str">'Executa a suite de testes e retorna o resultado'</span>,
+    input_schema: {
+      type: <span class="str">'object'</span>,
+      properties: {
+        test_path: { type: <span class="str">'string'</span>, description: <span class="str">'Caminho do teste (opcional)'</span> }
+      }
+    }
+  },
+  {
+    name: <span class="str">'edit_file'</span>,
+    description: <span class="str">'Edita um arquivo no codebase'</span>,
+    input_schema: {
+      type: <span class="str">'object'</span>,
+      properties: {
+        file_path: { type: <span class="str">'string'</span>, description: <span class="str">'Caminho do arquivo'</span> },
+        old_text: { type: <span class="str">'string'</span>, description: <span class="str">'Texto a substituir'</span> },
+        new_text: { type: <span class="str">'string'</span>, description: <span class="str">'Novo texto'</span> }
+      },
+      required: [<span class="str">'file_path'</span>, <span class="str">'old_text'</span>, <span class="str">'new_text'</span>]
+    }
+  }
+];
+
+<span class="cm">// 2. Agentic loop — o agente iterá até completar a tarefa</span>
+<span class="kw">async function</span> <span class="fn">agentLoop</span>(task: <span class="tp">string</span>) {
+  <span class="kw">const</span> client = <span class="kw">new</span> Anthropic();
+  <span class="kw">const</span> messages: Anthropic.MessageParam[] = [
+    { role: <span class="str">'user'</span>, content: task }
+  ];
+
+  <span class="kw">while</span> (<span class="kw">true</span>) {
+    <span class="kw">const</span> response = <span class="kw">await</span> client.messages.<span class="fn">create</span>({
+      model: <span class="str">'claude-sonnet-4-20250514'</span>,
+      max_tokens: <span class="num">4096</span>,
+      tools,
+      messages
+    });
+
+    <span class="cm">// 3. Se o modelo parou sem pedir tool use, tarefa concluída</span>
+    <span class="kw">if</span> (response.stop_reason === <span class="str">'end_turn'</span>) {
+      <span class="kw">const</span> text = response.content
+        .<span class="fn">filter</span>(b => b.type === <span class="str">'text'</span>)
+        .<span class="fn">map</span>(b => b.text)
+        .<span class="fn">join</span>(<span class="str">'\n'</span>);
+      console.<span class="fn">log</span>(<span class="str">'Agente concluiu:'</span>, text);
+      <span class="kw">return</span> text;
+    }
+
+    <span class="cm">// 4. Processar tool calls</span>
+    messages.<span class="fn">push</span>({ role: <span class="str">'assistant'</span>, content: response.content });
+
+    <span class="kw">const</span> toolUses = response.content.<span class="fn">filter</span>(b => b.type === <span class="str">'tool_use'</span>);
+    <span class="kw">const</span> toolResults = <span class="kw">await</span> Promise.<span class="fn">all</span>(
+      toolUses.<span class="fn">map</span>(<span class="kw">async</span> (toolUse) => ({
+        type: <span class="str">'tool_result'</span> <span class="kw">as const</span>,
+        tool_use_id: toolUse.id,
+        content: <span class="kw">await</span> <span class="fn">executeTool</span>(toolUse.name, toolUse.input)
+      }))
+    );
+
+    messages.<span class="fn">push</span>({ role: <span class="str">'user'</span>, content: toolResults });
+  }
+}
+
+<span class="cm">// 5. Router de execução de ferramentas</span>
+<span class="kw">async function</span> <span class="fn">executeTool</span>(name: <span class="tp">string</span>, input: <span class="tp">any</span>): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+  <span class="kw">switch</span> (name) {
+    <span class="kw">case</span> <span class="str">'search_codebase'</span>:
+      <span class="kw">return</span> <span class="kw">await</span> <span class="fn">searchFiles</span>(input.query, input.file_pattern);
+    <span class="kw">case</span> <span class="str">'run_tests'</span>:
+      <span class="kw">return</span> <span class="kw">await</span> <span class="fn">runTests</span>(input.test_path);
+    <span class="kw">case</span> <span class="str">'edit_file'</span>:
+      <span class="kw">return</span> <span class="kw">await</span> <span class="fn">editFile</span>(input.file_path, input.old_text, input.new_text);
+    <span class="kw">default</span>:
+      <span class="kw">return</span> <span class="str">`Tool ${name} not found`</span>;
+  }
+}</code></pre>
+
+<h4>Planning — Estratégias de Planejamento</h4>
+<p>Um agente sem planejamento é como um dev que começa a codar sem ler o ticket. Existem 3 abordagens principais:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Estratégia</th><th>Como Funciona</th><th>Quando Usar</th><th>Exemplo</th></tr>
+<tr><td><strong>Linear (Step-by-Step)</strong></td><td>Decompoe em passos sequênciais e executa um por vez</td><td>Tarefas previsíveis com ordem clara</td><td>Migrar uma tabela do banco: backup → alter → verify → migraté data</td></tr>
+<tr><td><strong>ReAct (Reason + Act)</strong></td><td>Alterna entre raciocinar sobre o estado atual e agir. A cada passo, reavalia</td><td>Tarefas exploratórias onde o próximo passó depende do resultado anterior</td><td>Debug de um bug: ler log → hipotese → verificar código → testar fix</td></tr>
+<tr><td><strong>Hierarquico</strong></td><td>Divide em subtarefas, delega para sub-agentes, combina resultados</td><td>Tarefas grandes e parallelizáveis</td><td>Code review: agente-segurança + agente-performance + agente-estilo</td></tr>
+</table>
+</div>
+
+<h4>Memory — Curto e Longo Prazo</h4>
+<p>A memória é o que diferencia um agente de uma chamada de API stateless:</p>
+
+<ul>
+<li><strong>Short-Term Memory (Contexto)</strong> — A conversa atual, janela de contexto do LLM (128K-200K tokens). Técnicas: summarization progressiva, sliding window, relevant context extraction</li>
+<li><strong>Long-Term Memory (Persistente)</strong> — Vector store (Pinecone, Qdrant, pgvector) para buscar experiências passadas. O agente "lembra" de erros anteriores, preferências do usuário, decisões arquiteturais. Também pode usar um banco relacional para fatos estruturados</li>
+<li><strong>Episodic Memory</strong> — Logs de execuções anteriores. "Na última vez que fiz deploy, o teste X falhou por causa de Y". Permite aprendizado por experiência</li>
+<li><strong>Shared Memory</strong> — Em sistemas multi-agente, um espaço compartilhado onde agentes comúnicam descobertas. Ex: blackboard pattern</li>
+</ul>
+
+<h4>Multi-Agent Systems</h4>
+<p>Quando um único agente não é suficiente, você orquestra múltiplos agentes especializados:</p>
+
+<div class="diagram">
+<div class="diagram-box green">Orchestrator<br><small>(Planejá e delega)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Agent: Researcher<br><small>(Busca informação)</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box purple">Agent: Coder<br><small>(Escreve código)</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box orange">Agent: Reviewer<br><small>(Avalia qualidade)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Output Final</div>
+</div>
+
+<p><strong>Padrões de comunicação multi-agente:</strong></p>
+<ul>
+<li><strong>Pipeline</strong> — Agentes em sequência. Saída do A e entrada do B. Simples e previsível</li>
+<li><strong>Debate</strong> — Dois agentes argumentam posições opostas, um juiz decide. Melhora qualidade de decisão</li>
+<li><strong>Delegation</strong> — Orchestrator delega subtarefas e combina resultados. Mais flexível</li>
+<li><strong>Voting</strong> — Múltiplos agentes geram soluções independentes, a melhor e selecionada por votação ou scoring</li>
+</ul>
+
+<h4>MCP — Model Context Protocol</h4>
+<p>O <strong>MCP (Model Context Protocol)</strong> é um protocolo aberto criado pela Anthropic que padroniza como agentes se conectam a fontes de dados e ferramentas externas. Pense nele como o "USB-C para IA" — uma interface universal.</p>
+
+<ul>
+<li><strong>Problema que resolve:</strong> Cada integração (GitHub, Slack, DB, filesystem) exigia código custom. MCP padroniza com um protocolo único</li>
+<li><strong>Arquitetura:</strong> Cliente MCP (no agente) se conecta a Servidores MCP (wrappers de ferramentas). Comúnicação via JSON-RPC sobre stdio ou HTTP/SSE</li>
+<li><strong>3 primitivas:</strong> Resources (dados read-only, como arquivos), Tools (ações executáveis, como run_query), e Prompts (templates reútilizáveis)</li>
+<li><strong>Ecossistema:</strong> Servidores MCP já existem para GitHub, PostgreSQL, Filesystem, Slack, Google Drive, e dezenas de outros</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Exemplo: MCP Server simples para buscar dados de um banco</span>
+<span class="kw">import</span> { McpServer } <span class="kw">from</span> <span class="str">'@modelcontextprotocol/sdk/server/mcp.js'</span>;
+<span class="kw">import</span> { StdioServerTransport } <span class="kw">from</span> <span class="str">'@modelcontextprotocol/sdk/server/stdio.js'</span>;
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="kw">const</span> server = <span class="kw">new</span> <span class="fn">McpServer</span>({ name: <span class="str">'db-server'</span>, version: <span class="str">'1.0.0'</span> });
+
+<span class="cm">// Registrar uma Tool que o agente pode chamar</span>
+server.<span class="fn">tool</span>(
+  <span class="str">'query_database'</span>,
+  <span class="str">'Executa uma query SQL read-only no banco de produção'</span>,
+  { sql: z.<span class="fn">string</span>().<span class="fn">describe</span>(<span class="str">'Query SQL SELECT'</span>) },
+  <span class="kw">async</span> ({ sql }) => {
+    <span class="kw">if</span> (!sql.<span class="fn">trim</span>().<span class="fn">toUpperCase</span>().<span class="fn">startsWith</span>(<span class="str">'SELECT'</span>)) {
+      <span class="kw">return</span> { content: [{ type: <span class="str">'text'</span>, text: <span class="str">'Apenas SELECT permitido'</span> }] };
+    }
+    <span class="kw">const</span> rows = <span class="kw">await</span> db.<span class="fn">query</span>(sql);
+    <span class="kw">return</span> { content: [{ type: <span class="str">'text'</span>, text: JSON.<span class="fn">stringify</span>(rows, <span class="kw">null</span>, <span class="num">2</span>) }] };
+  }
+);
+
+<span class="cm">// Registrar um Resource (dados read-only)</span>
+server.<span class="fn">resource</span>(
+  <span class="str">'schema://tables'</span>,
+  <span class="str">'Lista de tabelas do banco'</span>,
+  <span class="kw">async</span> () => ({
+    contents: [{ uri: <span class="str">'schema://tables'</span>, text: <span class="kw">await</span> <span class="fn">getTableSchema</span>() }]
+  })
+);
+
+<span class="kw">const</span> transport = <span class="kw">new</span> <span class="fn">StdioServerTransport</span>();
+<span class="kw">await</span> server.<span class="fn">connect</span>(transport);</code></pre>
+
+<!-- ═══ AGENT FRAMEWORKS ═══ -->
+<h3>Frameworks para Agentes</h3>
+
+<div class="table-wrap">
+<table>
+<tr><th>Framework</th><th>Linguagem</th><th>Foco Principal</th><th>Quando Usar</th></tr>
+<tr><td><strong>LangChain</strong></td><td>Python / TS</td><td>Chains e composicao de LLM + tools. Maior ecossistema de integração</td><td>Prototipos rápidos, muitas integrações prontas</td></tr>
+<tr><td><strong>LangGraph</strong></td><td>Python / TS</td><td>Grafos de estado para agentes. Workflows complexos com ciclos e branching</td><td>Agentes com lógica de decisão complexa, estado persistente</td></tr>
+<tr><td><strong>CrewAI</strong></td><td>Python</td><td>Multi-agent com roles, goals, backstories. Alto nível</td><td>Sistemas multi-agente com interáção tipo "equipe"</td></tr>
+<tr><td><strong>Claude Agent SDK</strong></td><td>Python / TS</td><td>Agentic loop nativo do Claude com tool use, guardrails, handoffs</td><td>Agentes em produção com Claude, controle fino de segurança</td></tr>
+<tr><td><strong>AutoGen (Microsoft)</strong></td><td>Python</td><td>Conversas multi-agente, code execution sandbox</td><td>Agentes que geram e executam código iterátivamente</td></tr>
+<tr><td><strong>Vercel AI SDK</strong></td><td>TypeScript</td><td>Streaming, React Server Components, multi-provider</td><td>Agentes em aplicações Next.js/React com streaming</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando não usar um framework:</strong> Para agentes simples (1 tool, sem estado persistente), o agentic loop manual (como o exemplo acima) é mais leve. Frameworks adicionam overhead. Use quando precisar de estado persistente, multi-agente, ou workflows complexos com branching.</div>
+</div>
+
+<!-- ═══ FINE-TUNING ═══ -->
+<h3>Fine-Tuning: Customização de Modelos</h3>
+
+<p>Fine-tuning é o processo de treinar um modelo pré-treinado em dados específicos do seu domínio. Não é o mesmo que prompt engineering — você está <strong>alterándo os pesos do modelo</strong>. E como a diferença entre dar instruções a um funcionário novo (prompting) vs treinar ele por meses no seu processo (fine-tuning).</p>
+
+<h4>Quando Fine-Tuning FAZ Sentido</h4>
+<ul>
+<li>Você tem um formato de output muito específico e consistente (ex: sempre retornar JSON com schema exato)</li>
+<li>Precisa de latência muito baixa e não pode usar prompts longos</li>
+<li>Tem terminologia/jargao de domínio que o modelo base erra frequentemente</li>
+<li>Quer reduzir custo usando um modelo menor fine-tuned ao invés de um grande com prompt longo</li>
+</ul>
+
+<h4>Quando Fine-Tuning NÃO faz sentido</h4>
+<ul>
+<li>Prompting + few-shot já resolve (tente SEMPRE isso primeiro)</li>
+<li>Você não tem dados de qualidade suficientes (mínimo ~100-1000 exemplos curados)</li>
+<li>O conhecimento muda frequentemente (fine-tuning e estático; RAG e dinâmico)</li>
+<li>Você precisa de citação de fontes (fine-tuning não da provenance; RAG sim)</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<tr><th>Técnica</th><th>O que Faz</th><th>Custo Computacional</th><th>Dados Necessários</th><th>Quando Usar</th></tr>
+<tr><td><strong>Full Fine-Tuning</strong></td><td>Treina TODOS os pesos do modelo</td><td>Altissimo (multi-GPU)</td><td>10K-100K+ exemplos</td><td>Mudar comportamento fundamental do modelo. Raro em prática</td></tr>
+<tr><td><strong>LoRA</strong></td><td>Treina matrices de baixo rank (Low-Rank Adaptation). Congela pesos originais, adiciona adaptadores</td><td>Medio (1 GPU)</td><td>1K-10K exemplos</td><td>Padrão da industria. Melhor custo-benefício para maioria dos casos</td></tr>
+<tr><td><strong>QLoRA</strong></td><td>LoRA + quantização 4-bit. Modelo base em 4-bit, adaptadores em 16-bit</td><td>Baixo (1 GPU consumer)</td><td>1K-10K exemplos</td><td>Quando hardware e limitado. Fine-tune de modelos 70B em GPU de 24GB</td></tr>
+<tr><td><strong>RLHF</strong></td><td>Reinforcement Learning from Human Feedback. Humanós rankeiam outputs, treina reward model, otimiza via PPO</td><td>Muito alto</td><td>10K+ comparações</td><td>Alinhar modelo com preferências humanas. Usado para safety e helpfulness</td></tr>
+<tr><td><strong>DPO</strong></td><td>Direct Preference Optimization. Alternativa ao RLHF sem reward model separado. Treina direto com pares preferred/rejected</td><td>Medio-alto</td><td>5K+ pares</td><td>Alignment mais simples que RLHF. Mais estável no treinamento</td></tr>
+<tr><td><strong>Distillation</strong></td><td>Modelo grande (teacher) gera outputs, modelo pequeno (student) aprende a imita-lo</td><td>Medio</td><td>Gerados pelo teacher</td><td>Reduzir modelo de 70B para 7B mantendo qualidade para tarefas específicas</td></tr>
+</table>
+</div>
+
+<pre data-lang="python"><code><span class="cm"># Exemplo: Fine-tuning com LoRA usando Hugging Face + PEFT</span>
+<span class="kw">from</span> transformers <span class="kw">import</span> AutoModelForCausalLM, AutoTokenizer, TrainingArguments
+<span class="kw">from</span> peft <span class="kw">import</span> LoraConfig, get_peft_model
+<span class="kw">from</span> trl <span class="kw">import</span> SFTTrainer
+
+<span class="cm"># 1. Carregar modelo base</span>
+model = AutoModelForCausalLM.<span class="fn">from_pretrained</span>(<span class="str">"meta-llama/Llama-3-8B"</span>)
+tokenizer = AutoTokenizer.<span class="fn">from_pretrained</span>(<span class="str">"meta-llama/Llama-3-8B"</span>)
+
+<span class="cm"># 2. Configurar LoRA — treina apenas ~0.1% dos parametros</span>
+lora_config = <span class="fn">LoraConfig</span>(
+    r=<span class="num">16</span>,              <span class="cm"># Rank das matrices — maior = mais expressivo mas mais lento</span>
+    lora_alpha=<span class="num">32</span>,      <span class="cm"># Scaling factor</span>
+    target_modules=[<span class="str">"q_proj"</span>, <span class="str">"v_proj"</span>],  <span class="cm"># Quais camadas adaptar</span>
+    lora_dropout=<span class="num">0.05</span>,
+    task_type=<span class="str">"CAUSAL_LM"</span>
+)
+
+model = <span class="fn">get_peft_model</span>(model, lora_config)
+model.<span class="fn">print_trainable_parameters</span>()  <span class="cm"># "trainable: 0.1% of 8B"</span>
+
+<span class="cm"># 3. Treinar</span>
+trainer = <span class="fn">SFTTrainer</span>(
+    model=model,
+    train_dataset=dataset,    <span class="cm"># Seus dados curados em formato instruction/response</span>
+    tokenizer=tokenizer,
+    args=<span class="fn">TrainingArguments</span>(
+        output_dir=<span class="str">"./output"</span>,
+        per_device_train_batch_size=<span class="num">4</span>,
+        num_train_epochs=<span class="num">3</span>,
+        learning_rate=<span class="num">2e-4</span>,
+    )
+)
+trainer.<span class="fn">train</span>()</code></pre>
+
+<!-- ═══ MLOPS ═══ -->
+<h3>MLOps: Operando IA em Produção</h3>
+
+<p>MLOps (Machine Learning Operations) é o equivalente de DevOps para modelos de ML/AI. Enquanto um app tradicional faz deploy de <strong>código</strong>, MLOps precisa gerenciar <strong>código + dados + modelo + config</strong>. E substancialmente mais complexo.</p>
+
+<h4>Model Serving — Infraestrutura de Inferência</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Foco</th><th>Destaque</th></tr>
+<tr><td><strong>vLLM</strong></td><td>Serving de LLMs com alto throughput</td><td>PagedAttention (gerenciamento de memória como páginação de SO), continuous batching. Padrão da industria para self-hosting</td></tr>
+<tr><td><strong>Ollama</strong></td><td>LLMs locais com UX simples</td><td>Um comando para rodar qualquer modelo. Ótimo para dev local. <code>ollama run llama3</code></td></tr>
+<tr><td><strong>TGI (HuggingFace)</strong></td><td>Serving com integração HuggingFace</td><td>Token streaming, quantização automática, flash attention</td></tr>
+<tr><td><strong>TensorRT-LLM (NVIDIA)</strong></td><td>Otimização máxima em GPUs NVIDIA</td><td>Até 2-5x mais rápido que vLLM em hardware NVIDIA. Compilação ahead-of-time</td></tr>
+</table>
+</div>
+
+<h4>Avaliação de Modelos — Métricas</h4>
+<p>Você não pode melhorar o que não mede. Mas avaliar LLMs é muito mais complexo que métricas tradicionais de ML:</p>
+
+<ul>
+<li><strong>BLEU</strong> — Mede sobreposicao de n-grams entre output gerado e referência. Útil para traducao. Ruim para tarefas criativas (penaliza respostas válidas mas diferentes)</li>
+<li><strong>ROUGE</strong> — Similar ao BLEU mas foca em recall (quanto da referência aparece no output). Útil para sumarização</li>
+<li><strong>LLM-as-Judge</strong> — Usar um LLM forte (como Claude Opus) para avaliar outputs de outros modelos. Escala muito melhor que avaliação humana. Requer prompt de avaliação cuidadosó com rubrica clara</li>
+<li><strong>Human Evaluation</strong> — Gold standard. Humanós avaliam em dimensões: útilidade, corretude, segurança, estilo. Caro mas insuperável para edge cases</li>
+<li><strong>Benchmark Suites</strong> — MMLU (conhecimento geral), HumanEval (código), GSM8K (matematica), MT-Bench (multi-turn conversation)</li>
+</ul>
+
+<h4>Prompt Caching</h4>
+<p>Quando você envia o mesmo prefixo de prompt repetidamente (system prompt + context), o provider pode cachear o processamento desse prefixo. Isso reduz <strong>latência em 80%+</strong> é <strong>custo em 90%</strong> para tokens cacheados.</p>
+
+<ul>
+<li><strong>Anthropic:</strong> Automático para prefixos identicos em sessões. Marque blocos grandes com <code>cache_control</code></li>
+<li><strong>OpenAI:</strong> Automatic prompt caching para prefixos de 1024+ tokens identicos</li>
+<li><strong>Self-hosted:</strong> vLLM suporta prefix caching nativo com <code>--enable-prefix-caching</code></li>
+</ul>
+
+<h4>Observabilidade — Langfuse e Alternativas</h4>
+<p>Você precisa observar cada chamada ao LLM em produção. Não basta logar — precisa de traces, custos, latências e qualidade:</p>
+
+<ul>
+<li><strong>Langfuse</strong> — Open-source. Tracing completo de chains/agents, dashboard de custos, avaliação de qualidade, feedback de usuários. Self-hostable</li>
+<li><strong>LangSmith</strong> — Da LangChain. Tight integration com LangChain/LangGraph. Tracing, evaluation, datasets. Cloud-first</li>
+<li><strong>Helicone</strong> — Proxy transparente. Coloque na frente da API e tenha logs automáticos sem mudar código</li>
+<li><strong>Métricas essenciais:</strong> Tokens/request (custo), latência P50/P95/P99, taxa de erros, qualidade (via LLM-as-judge sampling), user satisfaction</li>
+</ul>
+
+<h4>Cost Optimization — Model Routing</h4>
+<p>Nem toda query precisa do modelo mais caro. Model routing envia queries simples para modelos baratos e queries complexas para modelos potentes:</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Model Router — direciona para o modelo certo baseado na complexidade</span>
+<span class="kw">interface</span> <span class="tp">ModelConfig</span> {
+  model: <span class="tp">string</span>;
+  costPer1kTokens: <span class="tp">number</span>;
+  maxComplexity: <span class="tp">number</span>;
+}
+
+<span class="kw">const</span> MODELS: ModelConfig[] = [
+  { model: <span class="str">'claude-haiku'</span>, costPer1kTokens: <span class="num">0.00025</span>, maxComplexity: <span class="num">3</span> },
+  { model: <span class="str">'claude-sonnet'</span>, costPer1kTokens: <span class="num">0.003</span>, maxComplexity: <span class="num">7</span> },
+  { model: <span class="str">'claude-opus'</span>, costPer1kTokens: <span class="num">0.015</span>, maxComplexity: <span class="num">10</span> },
+];
+
+<span class="kw">async function</span> <span class="fn">routeQuery</span>(query: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+  <span class="cm">// Classificador leve estima complexidade (1-10)</span>
+  <span class="kw">const</span> complexity = <span class="kw">await</span> <span class="fn">classifyComplexity</span>(query); <span class="cm">// Usa Haiku</span>
+
+  <span class="kw">const</span> model = MODELS.<span class="fn">find</span>(m => complexity &lt;= m.maxComplexity)
+    || MODELS[MODELS.length - <span class="num">1</span>];
+
+  <span class="kw">return</span> <span class="kw">await</span> <span class="fn">callLLM</span>(model.model, query);
+}
+<span class="cm">// Resultado: 70% das queries vão para Haiku (barato), 25% Sonnet, 5% Opus</span>
+<span class="cm">// Economia de 60-80% sem perda perceptível de qualidade</span></code></pre>
+
+<h4>Responsible AI</h4>
+<p>Construir com IA exige responsabilidade. Não é opcional — é um requisito de engenharia:</p>
+
+<ul>
+<li><strong>Guardrails de input:</strong> Filtrar prompts maliciosos (injection, jailbreak). Use classificadores dedicados antes do LLM</li>
+<li><strong>Guardrails de output:</strong> Validar que o output não contém PII, conteúdo toxico, ou informações fabricadas críticas</li>
+<li><strong>Human-in-the-loop:</strong> Para ações de alto impacto (deletar dados, enviar emails, transações financeiras), exijá confirmação humana</li>
+<li><strong>Bias testing:</strong> Avalie outputs em diferentes demografias. Um sistema de contratação que pontua diferente por genero é um risco legal</li>
+<li><strong>Transparência:</strong> Informe o usuário quando IA está gerando conteúdo. Não finjá ser humano</li>
+</ul>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Multi-Agent Code Review System</h3>
+<p><strong>Cenário:</strong> Projete um sistema multi-agente que faz code review automatizado de Pull Requests. Deve analisar segurança, performance, estilo de código e corretude lógica.</p>
+
+<div class="diagram">
+<div class="diagram-box green">PR Webhook<br><small>(GitHub/GitLab)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Orchestrator Agent<br><small>(Planejá review)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Security Agent<br><small>(OWASP, secrets)</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box orange">Performance Agent<br><small>(N+1, memory leaks)</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box cyan">Style Agent<br><small>(Conventions, DRY)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Aggregator<br><small>(Consolida feedback)</small></div>
+</div>
+
+<p><strong>Arquitetura detalhada:</strong></p>
+<ol>
+<li><strong>Trigger:</strong> Webhook do GitHub recebe PR event. Enfileira na fila SQS/RabbitMQ</li>
+<li><strong>Orchestrator:</strong> Le o diff, classifica os arquivos por tipo (backend, frontend, infra, tests). Decide quais agentes acionar</li>
+<li><strong>Agentes especializados (paralelo):</strong>
+  <ul>
+    <li><strong>Security Agent:</strong> Busca SQL injection, XSS, secrets hardcoded, dependências vulneráveis. System prompt com OWASP Top 10</li>
+    <li><strong>Performance Agent:</strong> Identifica queries N+1, loops desnecessários, memory leaks, missing indexes. Tem acesso a tool de query explain</li>
+    <li><strong>Style Agent:</strong> Verifica convencoes do projeto, duplicação, nomes confusos. Carrega .eslintrc e coding guidelines do repo como contexto</li>
+    <li><strong>Logic Agent:</strong> Analisa corretude da lógica de negócio, edge cases não tratados, race conditions</li>
+  </ul>
+</li>
+<li><strong>Aggregator:</strong> Recebe findings de todos os agentes, remove duplicatas, prioriza por severidade (critical > high > medium > low), formata como review comments</li>
+<li><strong>Output:</strong> Posta comments inline no PR via GitHub API. Se tem findings critical, bloqueia merge</li>
+</ol>
+
+<p><strong>Decisões técnicas:</strong></p>
+<ul>
+<li><strong>Model routing:</strong> Security Agent usa Opus (crítico). Style Agent usa Haiku (baixo risco). Economia de 70%</li>
+<li><strong>Prompt caching:</strong> System prompts dos agentes são identicos entre PRs. Cache reduz latência e custo</li>
+<li><strong>Observabilidade:</strong> Langfuse tracing para cada review, métricas de precisão (false positives), tempo de review</li>
+<li><strong>Guardrail:</strong> Agentes nunca tem permissão de push/merge. Apenas comentam. Human-in-the-loop obrigatório</li>
+</ul>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Fine-tuning como primeiro recurso:</strong> A maioria dos casos se resolve com prompting + few-shot + RAG. Fine-tuning é caro, difícil de iterár e cria lock-in. Só faca quando tiver evidência clara de que prompting não atende. Benchmark: se 3 horas de prompt engineering resolvem, fine-tuning e desperdicio.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Agentes sem limites de iteráção:</strong> Um agente em loop infinito consome tokens indefinidamente. SEMPRE defina max_iterátions (ex: 25), timeout e budget máximo de tokens. Um bug no loop pode custar milhares de dolares em minutos.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Ignorar avaliação:</strong> "Funciona nas demos" não é métrica. Sem avaliação rigorosa (LLM-as-judge + human eval em sample), você não sabe se o modelo melhorou ou piorou após mudanças. Regressions em LLMs são silenciosas.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Comece com prompting. Se não resolver, adicione RAG. Se ainda não resolver, considere fine-tuning de modelo pequeno com LoRA. Cada camada de complexidade deve ter justificativa mensurável.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você precisa que um chatbot de suporte responda SEMPRE em JSON com campos {answer, confidence, sources}. Prompting gera JSON 85% das vezes. Qual abordagem você usaria?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Nesse caso, fine-tuning com LoRA faz sentido. O problema e de <strong>formato consistente</strong> — exatamente o forte do fine-tuning. Gere 1000+ exemplos de pergunta → JSON response usando um modelo grande (distillation), valide manualmente, e fine-tune um modelo menor (ex: Llama 3 8B). O modelo menor fine-tuned vai gerar JSON 99.9% das vezes, com latência e custo muito menores. Alternativa: usar <code>response_format: { type: "json_object" }</code> se o provider suportar (OpenAI/Anthropic suportam).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu agente esta gastando $500/dia em tokens. 70% das queries são perguntas simples de FAQ. Como otimizar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Implemente model routing com 3 camadas: (1) Cache de respostas exatas para perguntas frequentes (Redis, TTL de 1h). Custo: $0. (2) Para queries simples, use Haiku/modelo barato. (3) Para queries complexas, use Opus/modelo forte. Adicione prompt caching para o system prompt (que e identico). Resultado esperado: 40% resolvido por cache ($0), 40% por Haiku ($50/dia), 20% por Opus ($100/dia) = $150/dia total. Economia de 70%.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Explique a diferença entre LoRA e QLoRA. Quando você escolheria QLoRA ao invés de LoRA?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>LoRA</strong> carrega o modelo base em full precision (16-bit) e treina adaptadores de baixo rank. <strong>QLoRA</strong> carrega o modelo base em 4-bit quantizado e treina os mesmos adaptadores em 16-bit. A vantagem do QLoRA e <strong>memória</strong>: um modelo de 70B parametros que precisa de 140GB em LoRA (4x A100 40GB) cabe em ~35GB com QLoRA (1x A100 80GB ou 2x RTX 4090). A qualidade e marginalmente menor (~1-2% em benchmarks). Escolha QLoRA quando: hardware e limitado, modelo é grande (>30B), ou você quer experimentar rapidamente antes de investir em infra maior.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — AI Agents, Fine-Tuning & MLOps</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="42-llms-rag-prompt-engineering.html">&#8592; Anterior: LLMs, RAG & Prompt Engineering</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="44-quality-attributes-ilities.html" class="primary">Próximo: Quality Attributes &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 43: AI Agents, Fine-Tuning & MLOps
+// ══════════════════════════════════════════
+const SECTION_NUM = 43;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Quais são os 4 pilares fundamentais de um AI Agent?",
+    options: [
+      "Input, Processing, Output, Feedback",
+      "Reasoning, Tool Use, Memory, Planning",
+      "Prompt, Context, Model, Response",
+      "Encoder, Decoder, Attention, Embeddings"
+    ],
+    correct: 1,
+    explanation: "Os 4 pilares são: Reasoning (raciocínio via LLM), Tool Use (capacidade de executar ferramentas), Memory (contexto curto e longo prazo), e Planning (decomposicao de tarefas)."
+  },
+  {
+    question: "No padrão de Function Calling, quem executa a função de fato?",
+    options: [
+      "O LLM executa a função internamente",
+      "O servidor do provider (Anthropic/OpenAI) executa",
+      "O seu código (runtime/aplicação) recebe o JSON e executa",
+      "Um sandbox isolado no lado do modelo"
+    ],
+    correct: 2,
+    explanation: "O LLM apenas retorna um JSON estruturado descrevendo qual função chamar e com quais parametros. Seu código (o runtime) é responsável por executar a função e devolver o resultado ao LLM."
+  },
+  {
+    question: "Qual é a principal vantagem do QLoRA sobre o LoRA padrão?",
+    options: [
+      "Qualidade superior do fine-tuning",
+      "Não precisa de dados de treinamento",
+      "Consume significativamente menós memória GPU",
+      "Treina mais rápido por usar menós parametros"
+    ],
+    correct: 2,
+    explanation: "QLoRA carrega o modelo base em 4-bit (quantizado) enquanto LoRA usa 16-bit. Isso permite fine-tuning de modelos de 70B parametros em uma única GPU de 24GB, algo impossível com LoRA padrão."
+  },
+  {
+    question: "Qual abordagem você deve tentar PRIMEIRO antes de considerar fine-tuning?",
+    options: [
+      "RLHF com avaliadores humanos",
+      "Distillation de um modelo maior",
+      "Prompting + Few-shot + RAG",
+      "Full fine-tuning com todos os parametros"
+    ],
+    correct: 2,
+    explanation: "A regra de ouro e: comece com prompting. Se não resolver, adicione RAG. Só considere fine-tuning quando tiver evidência mensurável de que as abordagens mais simples não atendem."
+  },
+  {
+    question: "O que é o MCP (Model Context Protocol)?",
+    options: [
+      "Um formato de compressão de modelos para inferência rápida",
+      "Um protocolo aberto que padroniza como agentes se conectam a ferramentas e dados externos",
+      "Uma métrica de avaliação de qualidade de modelos",
+      "Um framework de orquestração de treinamento distribuído"
+    ],
+    correct: 1,
+    explanation: "MCP é o 'USB-C para IA' — um protocolo aberto criado pela Anthropic que padroniza a conexão entre agentes e fontes de dados/ferramentas via JSON-RPC, com 3 primitivas: Resources, Tools e Prompts."
+  },
+  {
+    question: "Qual é o principal risco de um agente sem max_iterátions definido?",
+    options: [
+      "O modelo vai gerar outputs de baixa qualidade",
+      "O agente pode entrar em loop infinito consumindo tokens e gerando custo ilimitado",
+      "O agente não conseguira usar ferramentas",
+      "A memória de longo prazo será corrompida"
+    ],
+    correct: 1,
+    explanation: "Um agente em loop infinito consome tokens indefinidamente. Sem limites de iteráção, timeout e budget máximo, um bug pode custar milhares de dolares em minutos."
+  },
+  {
+    question: "Qual ferramenta é considerada o padrão da industria para serving de LLMs self-hosted com alto throughput?",
+    options: [
+      "Ollama",
+      "TensorRT-LLM",
+      "vLLM",
+      "Flask + Transformers"
+    ],
+    correct: 2,
+    explanation: "vLLM é o padrão da industria para self-hosting de LLMs, com PagedAttention para gerenciamento eficiente de memória e continuous batching para alto throughput."
+  },
+  {
+    question: "O que é 'LLM-as-Judge' no contexto de avaliação de modelos?",
+    options: [
+      "Usar um LLM para gerar dados de treinamento",
+      "Usar um LLM forte para avaliar e pontuar outputs de outros modelos",
+      "Usar um LLM para decidir qual modelo usar via routing",
+      "Usar um LLM para comprimir prompts longos"
+    ],
+    correct: 1,
+    explanation: "LLM-as-Judge usa um modelo forte (como Claude Opus) para avaliar outputs de outros modelos. Escala muito melhor que avaliação humana e requer um prompt de avaliação com rubrica clara."
+  },
+  {
+    question: "Em um sistema multi-agente, qual padrão usa dois agentes que argumentam posições opostas para melhorar qualidade de decisão?",
+    options: [
+      "Pipeline",
+      "Delegation",
+      "Debate",
+      "Voting"
+    ],
+    correct: 2,
+    explanation: "O padrão Debaté usa dois agentes que argumentam posições opostas, com um juiz que decide. Isso melhora a qualidade da decisão ao forçar a exploração de contra-argumentos."
+  },
+  {
+    question: "Qual é a diferença fundamental entre RLHF e DPO para alignment de modelos?",
+    options: [
+      "RLHF usa dados sintéticos; DPO usa dados humanos",
+      "RLHF treina um reward model separado + PPO; DPO otimiza direto com pares preferred/rejected sem reward model",
+      "RLHF e para modelos pequenos; DPO e para modelos grandes",
+      "RLHF muda a arquitetura do modelo; DPO apenas muda os pesos"
+    ],
+    correct: 1,
+    explanation: "RLHF treina um reward model separado com preferências humanas e usa PPO para otimizar o LLM. DPO simplifica eliminando o reward model e otimizando diretamente com pares de respostas preferidas/rejeitadas. DPO é mais estável é simples de implementar."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina AI Agents, Fine-Tuning e MLOps.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

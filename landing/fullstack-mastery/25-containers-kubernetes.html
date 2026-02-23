@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>25 — Containers & Kubernetes | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="24-aws-servicos-essenciais.html">&#8592; AWS Essenciais</a>
+<div class="nav-center">Seção <span>25</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="26-iac-terraform-pulumi-cdk.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:37.9%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 25</span>
+<h2>Containers & Kubernetes</h2>
+<div class="section-line"></div>
+
+<p>Containers revolucionaram a forma como empacotamos, distribuímos e executamos software. Docker padronizou o formato de container, e Kubernetes se tornou o orquestrador padrão da indústria. Juntos, eles formam a espinha dorsal da infraestrutura moderna — de startups a empresas como Google, Spotify e Nubank. Nesta seção, vamos do <strong>Dockerfile até o Helm chart</strong>, cobrindo tudo que um full-stack developer precisa saber para operar em ambientes containerizados.</p>
+
+<p>Antes de containers, o deploy era "funciona na minha máquina". Containers resolvem isso empacotando a aplicação + dependências + runtime em uma unidade isolada e reproduzível. Kubernetes vai além: gerência centenas ou milhares desses containers automáticamente.</p>
+
+<!-- ═══ DOCKER DEEP ═══ -->
+<h3>Docker Deep Dive</h3>
+
+<h4>Conceitos Fundamentais</h4>
+<p><strong>Image (Imagem):</strong> Um templaté read-only composto por <strong>layers</strong> (camadas). Cada instrução no Dockerfile cria uma layer. Layers são cacheadas e compartilhadas entre imagens — se 10 imagens usam <code>node:20-alpine</code> como base, essa layer existe uma única vez no disco.</p>
+
+<p><strong>Container:</strong> Uma instância em execução de uma imagem. O isolamento é feito via mecanismos do kernel Linux:</p>
+<ul>
+<li><strong>Namespaces</strong> — isolam PID, rede, filesystem, usuários. Cada container "acha" que é o único processo rodando</li>
+<li><strong>Cgroups (Control Groups)</strong> — limitam CPU, memória, I/O. Impedem que um container consuma todos os recursos do host</li>
+<li><strong>Union Filesystem</strong> — overlay de camadas read-only + uma camada writable no topo. Escrita eficiente via copy-on-write</li>
+</ul>
+
+<div class="card blue">
+<div class="card-title">Image vs Container</div>
+<p style="color:var(--text2);font-size:.88rem">Pense na imagem como uma <strong>classe</strong> é no container como uma <strong>instância</strong>. A imagem é o blueprint (imutável). O container é o processo em execução (efêmero, com estado). Você pode criar múltiplos containers da mesma imagem.</p>
+</div>
+
+<h4>Dockerfile Best Practices</h4>
+<p>O Dockerfile define como sua imagem e construída. A ordem das instruções impacta diretamente o <strong>cache de layers</strong> é o tamanho final da imagem.</p>
+
+<ul>
+<li><strong>Multi-stage builds</strong> — separe o ambiente de build do ambiente de produção. O estagio de build pode ter compiladores, devDependencies. O estagio final cópia apenas os artefatos necessários</li>
+<li><strong>.dockerignore</strong> — exclua <code>node_modules</code>, <code>.git</code>, <code>dist</code>, <code>.env</code>. Reduz o build context e previne vazamento de segredos</li>
+<li><strong>Non-root user</strong> — NUNCA rode como root em produção. Crie um usuário dedicado com <code>USER node</code> ou <code>USER appuser</code></li>
+<li><strong>Layer caching</strong> — copie <code>package.json</code> é <code>package-lock.json</code> ANTES do código-fonte. Assim, <code>npm install</code> só re-executa quando dependências mudam</li>
+<li><strong>Imagens mínimais</strong> — use <code>alpine</code> (5MB) ou <code>distroless</code> (sem shell) como base. Menós superficie de ataque, menor tamanho</li>
+</ul>
+
+<h4>Exemplo: Dockerfile Multi-Stage para NestJS</h4>
+<pre data-lang="dockerfile"><code><span class="cm"># ── Estagio 1: Build ──</span>
+<span class="kw">FROM</span> node:<span class="num">20</span>-alpine <span class="kw">AS</span> builder
+
+<span class="kw">WORKDIR</span> /app
+
+<span class="cm"># Copia package files primeiro (cache de layer)</span>
+<span class="kw">COPY</span> package.json package-lock.json ./
+<span class="kw">RUN</span> npm ci --ignore-scripts
+
+<span class="cm"># Copia código-fonte e compila</span>
+<span class="kw">COPY</span> tsconfig*.json nest-cli.json ./
+<span class="kw">COPY</span> src/ ./src/
+<span class="kw">RUN</span> npm run build
+
+<span class="cm"># Remove devDependencies</span>
+<span class="kw">RUN</span> npm prune --production
+
+<span class="cm"># ── Estagio 2: Produção ──</span>
+<span class="kw">FROM</span> node:<span class="num">20</span>-alpine <span class="kw">AS</span> production
+
+<span class="cm"># Segurança: usuário não-root</span>
+<span class="kw">RUN</span> addgroup -g <span class="num">1001</span> -S appgroup && \
+    adduser -S appuser -u <span class="num">1001</span> -G appgroup
+
+<span class="kw">WORKDIR</span> /app
+
+<span class="cm"># Copia apenas artefatos necessários do builder</span>
+<span class="kw">COPY</span> --from=builder --chown=appuser:appgroup /app/dist ./dist
+<span class="kw">COPY</span> --from=builder --chown=appuser:appgroup /app/node_modules ./node_modules
+<span class="kw">COPY</span> --from=builder --chown=appuser:appgroup /app/package.json ./
+
+<span class="kw">USER</span> appuser
+<span class="kw">EXPOSE</span> <span class="num">3000</span>
+
+<span class="kw">HEALTHCHECK</span> --interval=<span class="num">30</span>s --timeout=<span class="num">3</span>s --retries=<span class="num">3</span> \
+  <span class="kw">CMD</span> wget --no-verbose --tries=<span class="num">1</span> --spider http://localhost:<span class="num">3000</span>/health || exit <span class="num">1</span>
+
+<span class="kw">CMD</span> [<span class="str">"node"</span>, <span class="str">"dist/main.js"</span>]</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Por que multi-stage?</strong> O estagio de build inclui TypeScript compiler, devDependencies, source maps — tudo desnecessário em produção. Com multi-stage, a imagem final tem apenas o JavaScript compilado e dependências de produção. Resultado tipico: de 800MB para 150MB.</div>
+</div>
+
+<h4>Volumes: Persistência de Dados</h4>
+<p>Containers são <strong>efêmeros</strong> — quando removidos, todos os dados escritos na camada writable são perdidos. Volumes resolvem isso.</p>
+
+<ul>
+<li><strong>Bind mounts</strong> — mapeiam um diretório do host para o container. Ótimo para desenvolvimento: <code>-v ./src:/app/src</code>. O host controla o conteúdo</li>
+<li><strong>Named volumes</strong> — gerenciados pelo Docker. Ótimo para produção: <code>-v pgdata:/var/lib/postgresql/data</code>. Persiste mesmo após remover o container</li>
+<li><strong>tmpfs mounts</strong> — armazenamento em memória. Útil para dados temporários sensíveis que não devem ir para disco</li>
+</ul>
+
+<h4>Networking no Docker</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Driver</th><th>Descrição</th><th>Casó de Uso</th></tr>
+<tr><td><strong>bridge</strong></td><td>Rede isolada padrão. Containers se comúnicam por nome do serviço</td><td>Maioria das aplicações</td></tr>
+<tr><td><strong>host</strong></td><td>Container usa a rede do host diretamente. Sem isolamento de rede</td><td>Performance máxima (raro)</td></tr>
+<tr><td><strong>overlay</strong></td><td>Rede entre múltiplos Docker hosts. Roteamento automático</td><td>Docker Swarm / clusters</td></tr>
+<tr><td><strong>none</strong></td><td>Sem rede. Container completamente isolado</td><td>Batch jobs sem rede</td></tr>
+</table>
+</div>
+
+<h4>Docker Compose: Orquestração Local</h4>
+<p>Docker Compose define e gerência aplicações multi-container com um único arquivo YAML. Essencial para desenvolvimento local e ambientes de CI.</p>
+
+<pre data-lang="yaml"><code><span class="cm"># docker-compose.yml — NestJS + PostgreSQL + Redis</span>
+<span class="kw">version</span>: <span class="str">"3.9"</span>
+
+<span class="kw">services</span>:
+  <span class="fn">app</span>:
+    <span class="kw">build</span>:
+      <span class="kw">context</span>: .
+      <span class="kw">dockerfile</span>: Dockerfile
+      <span class="kw">target</span>: production
+    <span class="kw">ports</span>:
+      - <span class="str">"3000:3000"</span>
+    <span class="kw">environment</span>:
+      - <span class="tp">DATABASE_URL</span>=postgresql://app:secret@postgres:<span class="num">5432</span>/mydb
+      - <span class="tp">REDIS_URL</span>=redis://redis:<span class="num">6379</span>
+      - <span class="tp">NODE_ENV</span>=production
+    <span class="kw">depends_on</span>:
+      <span class="fn">postgres</span>:
+        <span class="kw">condition</span>: service_healthy
+      <span class="fn">redis</span>:
+        <span class="kw">condition</span>: service_healthy
+    <span class="kw">restart</span>: unless-stopped
+    <span class="kw">networks</span>:
+      - backend
+
+  <span class="fn">postgres</span>:
+    <span class="kw">image</span>: postgres:<span class="num">16</span>-alpine
+    <span class="kw">environment</span>:
+      - <span class="tp">POSTGRES_USER</span>=app
+      - <span class="tp">POSTGRES_PASSWORD</span>=secret
+      - <span class="tp">POSTGRES_DB</span>=mydb
+    <span class="kw">volumes</span>:
+      - pgdata:/var/lib/postgresql/data
+    <span class="kw">healthcheck</span>:
+      <span class="kw">test</span>: [<span class="str">"CMD-SHELL"</span>, <span class="str">"pg_isready -U app -d mydb"</span>]
+      <span class="kw">interval</span>: 5s
+      <span class="kw">timeout</span>: 3s
+      <span class="kw">retries</span>: <span class="num">5</span>
+    <span class="kw">networks</span>:
+      - backend
+
+  <span class="fn">redis</span>:
+    <span class="kw">image</span>: redis:<span class="num">7</span>-alpine
+    <span class="kw">command</span>: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    <span class="kw">healthcheck</span>:
+      <span class="kw">test</span>: [<span class="str">"CMD"</span>, <span class="str">"redis-cli"</span>, <span class="str">"ping"</span>]
+      <span class="kw">interval</span>: 5s
+      <span class="kw">timeout</span>: 3s
+      <span class="kw">retries</span>: <span class="num">5</span>
+    <span class="kw">networks</span>:
+      - backend
+
+<span class="kw">volumes</span>:
+  <span class="fn">pgdata</span>:
+
+<span class="kw">networks</span>:
+  <span class="fn">backend</span>:
+    <span class="kw">driver</span>: bridge</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>depends_on com condition:</strong> O <code>depends_on</code> simples só garante que o container iníciou, não que o serviço está pronto. Use <code>condition: service_healthy</code> com healthchecks para garantir que o PostgreSQL está aceitando conexões antes da app iniciar.</div>
+</div>
+
+<!-- ═══ CONTAINER SECURITY ═══ -->
+<h3>Container Security</h3>
+<p>Containers compartilham o kernel do host. Uma vulnerabilidade no container pode comprometer toda a máquina. Segurança não é opcional.</p>
+
+<ul>
+<li><strong>Non-root user</strong> — Sempre use <code>USER</code> no Dockerfile. Se o processo for comprometido, o atacante não tem acesso root no host</li>
+<li><strong>Read-only filesystem</strong> — Use <code>--read-only</code> no runtime. A aplicação só pode escrever em volumes explicitamente montados</li>
+<li><strong>Vulnerability scanning</strong> — Integre <code>Trivy</code> ou <code>Snyk</code> no CI pipeline. Escaneie imagens antes de cada deploy</li>
+<li><strong>Minimal base images</strong> — <code>alpine</code> (5MB, com shell) ou <code>distroless</code> (sem shell, sem package manager). Menós binários = menós vetores de ataque</li>
+<li><strong>No secrets em imagens</strong> — NUNCA use <code>COPY .env</code> ou <code>ENV SECRET_KEY=abc</code>. Use Docker secrets, Vault, ou injecao em runtime</li>
+<li><strong>Pin versions</strong> — Use <code>node:20.11.0-alpine</code>, não <code>node:latest</code>. Builds reproduziveis e sem surpresas</li>
+</ul>
+
+<pre data-lang="bash"><code><span class="cm"># Escanear imagem com Trivy</span>
+trivy image myapp:latest
+
+<span class="cm"># Rodar container com filesystem read-only</span>
+docker run --read-only --tmpfs /tmp myapp:latest
+
+<span class="cm"># Verificar se container roda como root (deveria ser não)</span>
+docker inspect --format <span class="str">'{{.Config.User}}'</span> myapp:latest</code></pre>
+
+<div class="card orange">
+<div class="card-title">Distroless vs Alpine</div>
+<ul style="color:var(--text2);font-size:.88rem">
+<li><strong>Alpine</strong> (~5MB): Tem shell (sh), package manager (apk). Bom para debug. Usa musl libc (pode causar incompatibilidades com apps que esperam glibc)</li>
+<li><strong>Distroless</strong> (~2MB): Sem shell, sem package manager, sem nada além do runtime. Impossível "entrar" no container. Máximo de segurança, mínimo de debugging</li>
+<li><strong>Recomendação</strong>: Alpine para desenvolvimento é maioria dos casos. Distroless para serviços críticos em produção onde segurança e prioridade máxima</li>
+</ul>
+</div>
+
+<!-- ═══ KUBERNETES DEEP ═══ -->
+<h3>Kubernetes Deep Dive</h3>
+<p>Kubernetes (K8s) é um sistema de orquestração de containers open-source criado pelo Google. Ele automatiza deployment, scaling, networking e gerenciamento de aplicações containerizadas. Pense no Docker como gerenciar <strong>um</strong> container. Kubernetes gerência <strong>centenas ou milhares</strong>.</p>
+
+<h4>Arquitetura: Control Plane + Worker Nodes</h4>
+
+<div class="diagram">
+<div class="diagram-box green">Control Plane<br><small>Cerebro do cluster</small></div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box blue">Worker Node 1<br><small>kubelet + pods</small></div>
+<div class="diagram-arrow">&nbsp;</div>
+<div class="diagram-box blue">Worker Node 2<br><small>kubelet + pods</small></div>
+<div class="diagram-arrow">&nbsp;</div>
+<div class="diagram-box blue">Worker Node N<br><small>kubelet + pods</small></div>
+</div>
+
+<p><strong>Control Plane (Master):</strong></p>
+<ul>
+<li><strong>API Server (kube-apiserver)</strong> — Ponto de entrada único. Toda comunicação passa por ele (kubectl, dashboards, outros componentes). REST API sobre HTTPS</li>
+<li><strong>etcd</strong> — Key-value store distribuído. Armazena TODO o estado do cluster (configurações, secrets, status dos pods). É o "banco de dados" do Kubernetes</li>
+<li><strong>Scheduler (kube-scheduler)</strong> — Decide em qual worker node cada novo pod será executado. Considera recursos disponíveis, afinidade, taints/tolerations</li>
+<li><strong>Controller Manager</strong> — Executa loops de reconciliação. Garante que o estado ATUAL do cluster converge para o estado DESEJADO (ex: "quero 3 réplicas" &rarr; cria pods até ter 3)</li>
+</ul>
+
+<p><strong>Worker Nodes:</strong></p>
+<ul>
+<li><strong>kubelet</strong> — Agente que roda em cada node. Recebe instruções do API Server e garante que os containers estão rodando conforme específicado</li>
+<li><strong>kube-proxy</strong> — Gerência regras de rede no node. Implementa Services (load balancing entre pods)</li>
+<li><strong>Container Runtime</strong> — containerd ou CRI-O (Docker não é mais o runtime padrão desde K8s 1.24). Responsável por efetivamente rodar os containers</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box orange">API Server</div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box purple">Scheduler</div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box cyan">Controller Manager</div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box green">etcd<br><small>Estado do cluster</small></div>
+</div>
+
+<h4>Core Resources do Kubernetes</h4>
+
+<p><strong>Pod</strong> — Menor unidade deployavel. Um ou mais containers que compartilham rede e storage. Na prática, 99% dos pods tem um único container. Pods são efêmeros — nunca crie pods diretamente, use Deployments.</p>
+
+<p><strong>Deployment</strong> — Gerência ReplicaSets e pods. Define o estado desejado (imagem, réplicas, resources). Suporta rolling updates (zero downtime) e rollback automático se o novo pod falhar healthchecks.</p>
+
+<p><strong>Service</strong> — Abstrai o acesso aos pods (que tem IPs efêmeros). Fornece um IP estável e DNS name.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Tipo de Service</th><th>Descrição</th><th>Acesso</th></tr>
+<tr><td><strong>ClusterIP</strong></td><td>IP interno do cluster. Padrão</td><td>Apenas dentro do cluster</td></tr>
+<tr><td><strong>NodePort</strong></td><td>Expoe porta fixa em cada node (30000-32767)</td><td>Externo via IP_DO_NODE:PORTA</td></tr>
+<tr><td><strong>LoadBalancer</strong></td><td>Provisiona load balancer externo (cloud)</td><td>Externo via IP público</td></tr>
+<tr><td><strong>ExternalName</strong></td><td>Aliás DNS para serviço externo</td><td>Redireciona para CNAME</td></tr>
+</table>
+</div>
+
+<p><strong>Ingress</strong> — Gerência acesso HTTP/HTTPS externo. Roteamento baseado em host ou path. Um único LoadBalancer para múltiplos serviços, ao inves de um LB por serviço (que fica caro).</p>
+
+<p><strong>ConfigMap &amp; Secret</strong> — Desacoplam configuração do código. ConfigMap para dados não sensíveis (feature flags, URLs). Secret para dados sensíveis (API keys, senhas) — codificados em base64 (Não é criptografia, apenas encoding).</p>
+
+<p><strong>PersistentVolumeClaim (PVC)</strong> — Solicita armazenamento persistente. O cluster provisiona um PersistentVolume (PV) automáticamente via StorageClass. Essencial para bancos de dados.</p>
+
+<h4>YAML: Deployment + Service + Ingress</h4>
+<pre data-lang="yaml"><code><span class="cm"># ── Deployment ──</span>
+<span class="kw">apiVersion</span>: apps/v1
+<span class="kw">kind</span>: Deployment
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: api-server
+  <span class="kw">labels</span>:
+    <span class="kw">app</span>: api-server
+<span class="kw">spec</span>:
+  <span class="kw">replicas</span>: <span class="num">3</span>
+  <span class="kw">selector</span>:
+    <span class="kw">matchLabels</span>:
+      <span class="kw">app</span>: api-server
+  <span class="kw">strategy</span>:
+    <span class="kw">type</span>: RollingUpdate
+    <span class="kw">rollingUpdate</span>:
+      <span class="kw">maxSurge</span>: <span class="num">1</span>          <span class="cm"># Cria 1 pod novo antes de matar o antigo</span>
+      <span class="kw">maxUnavailable</span>: <span class="num">0</span>   <span class="cm"># Nunca ter menós que 3 pods rodando</span>
+  <span class="kw">template</span>:
+    <span class="kw">metadata</span>:
+      <span class="kw">labels</span>:
+        <span class="kw">app</span>: api-server
+    <span class="kw">spec</span>:
+      <span class="kw">containers</span>:
+        - <span class="kw">name</span>: api
+          <span class="kw">image</span>: myregistry/api-server:<span class="num">1.2.0</span>
+          <span class="kw">ports</span>:
+            - <span class="kw">containerPort</span>: <span class="num">3000</span>
+          <span class="kw">resources</span>:
+            <span class="kw">requests</span>:
+              <span class="kw">cpu</span>: <span class="str">"250m"</span>       <span class="cm"># 0.25 CPU</span>
+              <span class="kw">memory</span>: <span class="str">"256Mi"</span>
+            <span class="kw">limits</span>:
+              <span class="kw">cpu</span>: <span class="str">"500m"</span>       <span class="cm"># 0.5 CPU máximo</span>
+              <span class="kw">memory</span>: <span class="str">"512Mi"</span>
+          <span class="kw">livenessProbe</span>:
+            <span class="kw">httpGet</span>:
+              <span class="kw">path</span>: /health
+              <span class="kw">port</span>: <span class="num">3000</span>
+            <span class="kw">initialDelaySeconds</span>: <span class="num">10</span>
+            <span class="kw">periodSeconds</span>: <span class="num">15</span>
+          <span class="kw">readinessProbe</span>:
+            <span class="kw">httpGet</span>:
+              <span class="kw">path</span>: /ready
+              <span class="kw">port</span>: <span class="num">3000</span>
+            <span class="kw">initialDelaySeconds</span>: <span class="num">5</span>
+            <span class="kw">periodSeconds</span>: <span class="num">5</span>
+          <span class="kw">env</span>:
+            - <span class="kw">name</span>: DATABASE_URL
+              <span class="kw">valueFrom</span>:
+                <span class="kw">secretKeyRef</span>:
+                  <span class="kw">name</span>: db-credentials
+                  <span class="kw">key</span>: url
+            - <span class="kw">name</span>: LOG_LEVEL
+              <span class="kw">valueFrom</span>:
+                <span class="kw">configMapKeyRef</span>:
+                  <span class="kw">name</span>: app-config
+                  <span class="kw">key</span>: log-level
+---
+<span class="cm"># ── Service ──</span>
+<span class="kw">apiVersion</span>: v1
+<span class="kw">kind</span>: Service
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: api-server-svc
+<span class="kw">spec</span>:
+  <span class="kw">selector</span>:
+    <span class="kw">app</span>: api-server
+  <span class="kw">ports</span>:
+    - <span class="kw">port</span>: <span class="num">80</span>
+      <span class="kw">targetPort</span>: <span class="num">3000</span>
+  <span class="kw">type</span>: ClusterIP
+---
+<span class="cm"># ── Ingress ──</span>
+<span class="kw">apiVersion</span>: networking.k8s.io/v1
+<span class="kw">kind</span>: Ingress
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: api-ingress
+  <span class="kw">annotations</span>:
+    <span class="kw">nginx.ingress.kubernetes.io/ssl-redirect</span>: <span class="str">"true"</span>
+    <span class="kw">cert-manager.io/cluster-issuer</span>: <span class="str">"letsencrypt-prod"</span>
+<span class="kw">spec</span>:
+  <span class="kw">ingressClassName</span>: nginx
+  <span class="kw">tls</span>:
+    - <span class="kw">hosts</span>:
+        - api.myapp.com
+      <span class="kw">secretName</span>: api-tls
+  <span class="kw">rules</span>:
+    - <span class="kw">host</span>: api.myapp.com
+      <span class="kw">http</span>:
+        <span class="kw">paths</span>:
+          - <span class="kw">path</span>: /
+            <span class="kw">pathType</span>: Prefix
+            <span class="kw">backend</span>:
+              <span class="kw">service</span>:
+                <span class="kw">name</span>: api-server-svc
+                <span class="kw">port</span>:
+                  <span class="kw">number</span>: <span class="num">80</span></code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>livenessProbe vs readinessProbe:</strong> A liveness probe verifica se o container está VIVO — se falhar, o kubelet reinicia o container. A readiness probe verifica se está PRONTO para receber tráfego — se falhar, o pod e removido do Service (sem tráfego) mas não reiniciado. Configure ambos SEMPRE.</div>
+</div>
+
+<h4>Recursos Avancados</h4>
+
+<p><strong>StatefulSet</strong> — Para workloads stateful (bancos de dados, filas). Garante identidade de rede estável (pod-0, pod-1), ordem de criação/remocao, e volumes persistentes individuais por pod. Necessário para PostgreSQL, MongoDB, Kafka.</p>
+
+<p><strong>DaemonSet</strong> — Garante que um pod roda em CADA node do cluster. Usado para agentes de logging (Fluentd), monitoramento (Prometheus node-exporter), ou network plugins (Calico).</p>
+
+<p><strong>Job / CronJob</strong> — Job executa uma tarefa até completar (migração de banco, processamento batch). CronJob agenda Jobs recorrentes (backup noturno, limpeza de dados antigos). Syntax cron padrão.</p>
+
+<p><strong>HPA (Horizontal Pod Autoscaler)</strong> — Escala automáticamente o número de réplicas baseado em métricas (CPU, memória, métricas customizadas). Se a media de CPU passar de 70%, cria mais pods. Se cair, remove.</p>
+
+<pre data-lang="yaml"><code><span class="cm"># HPA — Auto-scaling baseado em CPU</span>
+<span class="kw">apiVersion</span>: autoscaling/v2
+<span class="kw">kind</span>: HorizontalPodAutoscaler
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: api-server-hpa
+<span class="kw">spec</span>:
+  <span class="kw">scaleTargetRef</span>:
+    <span class="kw">apiVersion</span>: apps/v1
+    <span class="kw">kind</span>: Deployment
+    <span class="kw">name</span>: api-server
+  <span class="kw">minReplicas</span>: <span class="num">2</span>
+  <span class="kw">maxReplicas</span>: <span class="num">10</span>
+  <span class="kw">metrics</span>:
+    - <span class="kw">type</span>: Resource
+      <span class="kw">resource</span>:
+        <span class="kw">name</span>: cpu
+        <span class="kw">target</span>:
+          <span class="kw">type</span>: Utilization
+          <span class="kw">averageUtilization</span>: <span class="num">70</span></code></pre>
+
+<p><strong>VPA (Vertical Pod Autoscaler)</strong> — Ajusta automáticamente os resources (requests/limits) de CPU e memória baseado no usó real. Complementar ao HPA.</p>
+
+<p><strong>PodDisruptionBudget (PDB)</strong> — Garante que durante manutenção (node drain, upgrade), um número mínimo de pods continua rodando. Previne downtime durante operações de cluster.</p>
+
+<pre data-lang="yaml"><code><span class="cm"># PDB — Sempre manter pelo menós 2 pods rodando</span>
+<span class="kw">apiVersion</span>: policy/v1
+<span class="kw">kind</span>: PodDisruptionBudget
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: api-server-pdb
+<span class="kw">spec</span>:
+  <span class="kw">minAvailable</span>: <span class="num">2</span>
+  <span class="kw">selector</span>:
+    <span class="kw">matchLabels</span>:
+      <span class="kw">app</span>: api-server</code></pre>
+
+<!-- ═══ HELM ═══ -->
+<h3>Helm: Package Manager do Kubernetes</h3>
+<p>Helm é o "npm do Kubernetes". Empacota recursos K8s em <strong>Charts</strong> — templates reútilizáveis com valores configuráveis. Em vez de aplicar 15 YAMLs separados, você instala um chart com um comando.</p>
+
+<ul>
+<li><strong>Chart</strong> — Pacote Helm. Contém templates YAML + valores padrão + metadata</li>
+<li><strong>values.yaml</strong> — Valores de configuração. Cada ambiente (dev, staging, prod) pode ter seu próprio arquivo de values</li>
+<li><strong>Release</strong> — Uma instância instalada de um chart. Você pode ter múltiplas releases do mesmo chart (ex: redis-cache, redis-sessions)</li>
+<li><strong>Repository</strong> — Onde charts são armazenados e distribuídos (ex: Bitnami, Artifact Hub)</li>
+</ul>
+
+<pre data-lang="yaml"><code><span class="cm"># values.yaml — Configuração do chart</span>
+<span class="kw">replicaCount</span>: <span class="num">3</span>
+
+<span class="kw">image</span>:
+  <span class="kw">repository</span>: myregistry/api-server
+  <span class="kw">tag</span>: <span class="str">"1.2.0"</span>
+  <span class="kw">pullPolicy</span>: IfNotPresent
+
+<span class="kw">service</span>:
+  <span class="kw">type</span>: ClusterIP
+  <span class="kw">port</span>: <span class="num">80</span>
+
+<span class="kw">ingress</span>:
+  <span class="kw">enabled</span>: <span class="num">true</span>
+  <span class="kw">host</span>: api.myapp.com
+
+<span class="kw">resources</span>:
+  <span class="kw">requests</span>:
+    <span class="kw">cpu</span>: 250m
+    <span class="kw">memory</span>: 256Mi
+  <span class="kw">limits</span>:
+    <span class="kw">cpu</span>: 500m
+    <span class="kw">memory</span>: 512Mi
+
+<span class="kw">autoscaling</span>:
+  <span class="kw">enabled</span>: <span class="num">true</span>
+  <span class="kw">minReplicas</span>: <span class="num">2</span>
+  <span class="kw">maxReplicas</span>: <span class="num">10</span>
+  <span class="kw">targetCPUUtilization</span>: <span class="num">70</span></code></pre>
+
+<pre data-lang="bash"><code><span class="cm"># Comandos Helm essenciais</span>
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install my-redis bitnami/redis --values redis-values.yaml
+helm upgrade my-api ./my-chart --values prod-values.yaml
+helm rollback my-api <span class="num">1</span>    <span class="cm"># Volta para revisao anterior</span>
+helm list                  <span class="cm"># Lista releases instalados</span></code></pre>
+
+<!-- ═══ OPERATORS ═══ -->
+<h3>Operators &amp; Custom Resource Definitions (CRDs)</h3>
+<p>Operators estendem o Kubernetes para gerenciar aplicações complexas automáticamente. Usam CRDs para definir novos tipos de recursos e controllers para implementar lógica de reconciliação.</p>
+
+<ul>
+<li><strong>CRD (Custom Resource Definition)</strong> — Define um novo tipo de recursó no Kubernetes. Ex: <code>PostgresCluster</code>, <code>CertificateRequest</code>. Depois de registrar a CRD, você pode criar instâncias como qualquer outro recursó K8s</li>
+<li><strong>Controller / Reconciliation Loop</strong> — Observa o estado desejado (CRD) é o estado atual (cluster). Se diferirem, toma ações para convergir. Ex: se o CRD diz "3 réplicas do PostgreSQL", o operator verifica e cria/remove instâncias conforme necessário</li>
+<li><strong>Exemplos populares</strong>: CloudNativePG (PostgreSQL), Strimzi (Kafka), cert-manager (TLS), Prometheus Operator</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Quando usar Operators:</strong> Para gerenciar aplicações stateful complexas (databases, message queues) onde upgrades, backups e failover exigem lógica específica. Não crie um operator para uma app stateless simples — um Deployment é suficiente.</div>
+</div>
+
+<!-- ═══ SERVICE MESH ═══ -->
+<h3>Service Mesh</h3>
+<p>Service mesh é uma camada de infraestrutura dedicada a gerenciar comunicação serviço-a-serviço. Adiciona observabilidade, segurança e controle de tráfego <strong>sem mudar código da aplicação</strong>.</p>
+
+<h4>Como funciona</h4>
+<p>Um <strong>sidecar proxy</strong> (geralmente Envoy) e injetado em cada pod. Todo tráfego de rede passa pelo proxy antes de chegar ao container da aplicação. O proxy é transparente — a app não sabe que ele existe.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Pod A<br><small>App + Envoy Sidecar</small></div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box orange">mTLS<br><small>Criptografia automática</small></div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box blue">Pod B<br><small>App + Envoy Sidecar</small></div>
+</div>
+
+<h4>Principais Service Meshes</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Service Mesh</th><th>Proxy</th><th>Complexidade</th><th>Ideal Para</th></tr>
+<tr><td><strong>Istio</strong></td><td>Envoy</td><td>Alta</td><td>Grandes empresas, features completas</td></tr>
+<tr><td><strong>Linkerd</strong></td><td>linkerd2-proxy (Rust)</td><td>Baixa</td><td>Simplicidade, performance, CNCF graduated</td></tr>
+<tr><td><strong>Cilium</strong></td><td>eBPF (sem sidecar)</td><td>Media</td><td>Performance, observabilidade L3/L4/L7</td></tr>
+</table>
+</div>
+
+<h4>Features Principais</h4>
+<ul>
+<li><strong>mTLS (mutual TLS)</strong> — Criptografia automática entre todos os serviços. Zero-trust networking sem mudar código</li>
+<li><strong>Traffic management</strong> — Canary deploys (envie 5% do tráfego para nova versão), A/B testing, circuit breakers, retries, timeouts</li>
+<li><strong>Observabilidade</strong> — Métricas (latência P99 entre serviços), traces distribuídos, grafos de dependência — tudo automático</li>
+<li><strong>Políticas de acesso</strong> — Controle fino de quem pode chamar quem (service A pode chamar service B, mas C não pode)</li>
+</ul>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Quando você Não precisa de service mesh:</strong> Monolito. Menós de 5 microsserviços. Time pequeno. O overhead de complexidade operacional (sidecars, control plane, debugging) não se justifica. Comece sem mesh, adicione quando a dor aparecer. Muitas features (retries, circuit breakers) podem ser implementadas com libraries (como Polly ou Resilience4j) sem service mesh.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Microsserviços no Kubernetes</h3>
+<p><strong>Cenário:</strong> Deploy de uma aplicação de e-commerce com 3 serviços (API Gateway, Worker de processamento de pedidos, Frontend SPA) + PostgreSQL + Redis. Requisitos: auto-scaling, zero downtime deploys, TLS terminado no Ingress.</p>
+
+<div class="diagram">
+<div class="diagram-box cyan">Internet</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Ingress<br><small>Nginx + TLS</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Frontend<br><small>Deployment (2 réplicas)</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box green">Ingress<br><small>/api/*</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">API Service<br><small>Deployment + HPA (2-10)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Worker<br><small>Deployment (2-5)</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box orange">API + Worker</div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box red">PostgreSQL<br><small>StatefulSet + PVC</small></div>
+<div class="diagram-arrow">&nbsp;</div>
+<div class="diagram-box purple">Redis<br><small>Deployment + PVC</small></div>
+</div>
+
+<p><strong>Decisões arquiteturais:</strong></p>
+<ul>
+<li><strong>Frontend</strong> — Deployment com 2 réplicas. Serve arquivos estáticos via Nginx. Não precisa de HPA (baixo consumo de recursos)</li>
+<li><strong>API Service</strong> — Deployment com HPA (min 2, max 10, target CPU 70%). Liveness + readiness probes. Resources requests/limits definidos</li>
+<li><strong>Worker</strong> — Deployment com HPA baseado em tamanho da fila (métrica customizada). Processa pedidos de forma assíncrona via Redis queue</li>
+<li><strong>PostgreSQL</strong> — StatefulSet com PersistentVolumeClaim. Backups via CronJob. Ou melhor: use um managed database (RDS) e evite a complexidade de rodar DB em K8s</li>
+<li><strong>Redis</strong> — Deployment simples se usado apenas como cache (dados podem ser perdidos). StatefulSet se usado como fila persistente</li>
+<li><strong>Ingress</strong> — Nginx Ingress Controller. Rota <code>/</code> para Frontend, <code>/api/*</code> para API Service. TLS via cert-manager + Let's Encrypt</li>
+<li><strong>PodDisruptionBudget</strong> — minAvailable: 1 para cada serviço crítico (API, Worker)</li>
+<li><strong>ConfigMap</strong> para feature flags e URLs. <strong>Secret</strong> para credenciais de banco e API keys</li>
+</ul>
+
+<pre data-lang="yaml"><code><span class="cm"># StatefulSet simplificado para PostgreSQL</span>
+<span class="kw">apiVersion</span>: apps/v1
+<span class="kw">kind</span>: StatefulSet
+<span class="kw">metadata</span>:
+  <span class="kw">name</span>: postgres
+<span class="kw">spec</span>:
+  <span class="kw">serviceName</span>: postgres
+  <span class="kw">replicas</span>: <span class="num">1</span>
+  <span class="kw">selector</span>:
+    <span class="kw">matchLabels</span>:
+      <span class="kw">app</span>: postgres
+  <span class="kw">template</span>:
+    <span class="kw">metadata</span>:
+      <span class="kw">labels</span>:
+        <span class="kw">app</span>: postgres
+    <span class="kw">spec</span>:
+      <span class="kw">containers</span>:
+        - <span class="kw">name</span>: postgres
+          <span class="kw">image</span>: postgres:<span class="num">16</span>-alpine
+          <span class="kw">ports</span>:
+            - <span class="kw">containerPort</span>: <span class="num">5432</span>
+          <span class="kw">env</span>:
+            - <span class="kw">name</span>: POSTGRES_PASSWORD
+              <span class="kw">valueFrom</span>:
+                <span class="kw">secretKeyRef</span>:
+                  <span class="kw">name</span>: postgres-secret
+                  <span class="kw">key</span>: password
+          <span class="kw">volumeMounts</span>:
+            - <span class="kw">name</span>: pgdata
+              <span class="kw">mountPath</span>: /var/lib/postgresql/data
+          <span class="kw">resources</span>:
+            <span class="kw">requests</span>:
+              <span class="kw">cpu</span>: <span class="str">"500m"</span>
+              <span class="kw">memory</span>: <span class="str">"1Gi"</span>
+            <span class="kw">limits</span>:
+              <span class="kw">cpu</span>: <span class="str">"1000m"</span>
+              <span class="kw">memory</span>: <span class="str">"2Gi"</span>
+  <span class="kw">volumeClaimTemplates</span>:
+    - <span class="kw">metadata</span>:
+        <span class="kw">name</span>: pgdata
+      <span class="kw">spec</span>:
+        <span class="kw">accessModes</span>: [<span class="str">"ReadWriteOnce"</span>]
+        <span class="kw">storageClassName</span>: gp3
+        <span class="kw">resources</span>:
+          <span class="kw">requests</span>:
+            <span class="kw">storage</span>: <span class="str">"20Gi"</span></code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Rodar databases em K8s sem experiência:</strong> PostgreSQL, MySQL e MongoDB em Kubernetes exigem conhecimento profundo de StatefulSets, PVCs, backups, failover e recovery. Se você não tem um DBA ou plataforma madura, use um managed database (RDS, Cloud SQL). O custo extra do managed compensa a complexidade evitada.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Sem resource limits (noisy neighbors):</strong> Um pod sem limits pode consumir TODA a CPU e memória do node, matando outros pods. SEMPRE defina requests (garantia mínima) e limits (teto máximo). Sem isso, um deploy defeituosó pode derrubar o cluster inteiro.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Sem liveness/readiness probes:</strong> Sem probes, o Kubernetes não sabe se sua aplicação está saudável. Um pod pode estar em deadlock (processo rodando mas não respondendo) e continuar recebendo tráfego. Configure AMBAS as probes em todo Deployment.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Helm chart sprawl:</strong> Criar um chart gigante com 50 templates e 200 linhas de values.yaml e tão ruim quanto YAML cru. Mantenha charts focados. Um chart por serviço. Use umbrella charts com moderação. Se o values.yaml tem mais de 100 linhas, provavelmente precisa ser dividido.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Kubernetes para um time de 2:</strong> K8s é poderosó mas complexo. Upgrades de cluster, RBAC, networking, monitoring, log aggregation — tudo exige operação dedicada. Para times pequenós com poucas aplicações, considere alternativas: Docker Compose + VM, AWS ECS/Fargate, Google Cloud Run, Railway/Fly.io. K8s escala bem, mas tem custo mínimo alto de operação.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Use managed Kubernetes (EKS, GKE, AKS) quando precisar de K8s. NUNCA opere o control plane manualmente em produção. O managed elimina a parte mais crítica e complexa (etcd, API server, upgrades). Foque no que importa: seus workloads.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Seu Dockerfile cópia todo o código-fonte antes de rodar npm install. Toda mudança em qualquer arquivo inválida o cache do npm install. Como otimizar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Copie <code>package.json</code> é <code>package-lock.json</code> primeiro, rode <code>npm ci</code>, e Só DEPOIS copie o resto do código. Assim, a layer do npm install só e inválidada quando as dependências mudam, não quando você muda um arquivo .ts. Isso reduz o tempo de build de minutos para segundos na maioria dos casos.</p>
+<pre data-lang="dockerfile"><code><span class="kw">COPY</span> package.json package-lock.json ./
+<span class="kw">RUN</span> npm ci
+<span class="kw">COPY</span> . .</code></pre>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Sua aplicação recebe tráfego mesmo quando o banco de dados está inacessível, causando erros 500. Como resolver com Kubernetes?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Configure uma <strong>readiness probe</strong> que verifique a conectividade com o banco. Quando o banco cai, a probe falha, o pod e removido do Service (para de receber tráfego), mas continua rodando. Quando o banco volta, a probe passa, é o pod volta a receber tráfego. A liveness probe deve verificar apenas se a aplicação em si está viva (não dependências externas), para evitar restart loops.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você precisa fazer deploy de uma nova versão da API sem downtime. Como configurar o Deployment?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>RollingUpdaté strategy</strong> com <code>maxSurge: 1</code> é <code>maxUnavailable: 0</code>. O Kubernetes cria 1 pod novo com a versão atualizada, espera a readiness probe passar, e só então remove 1 pod antigo. Repete até todos serem atualizados. Resultado: sempre tem pods saudaveis respondendo. Combine com <code>PodDisruptionBudget</code> para proteger contra interrupções durante o rolling update. Se algo der errado, <code>kubectl rollout undo</code> faz rollback instantâneo.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Containers & Kubernetes</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="24-aws-servicos-essenciais.html">&#8592; AWS Essenciais</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="26-iac-terraform-pulumi-cdk.html" class="primary">Próximo: IaC — Terraform, Pulumi & CDK &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 25: Containers & Kubernetes
+// ══════════════════════════════════════════
+const SECTION_NUM = 25;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual mecanismo do kernel Linux é responsável por isolar processos, rede e filesystem entre containers?",
+    options: [
+      "Cgroups",
+      "Namespaces",
+      "SELinux",
+      "iptables"
+    ],
+    correct: 1,
+    explanation: "Namespaces isolam PID, rede, filesystem, usuários — cada container 'acha' que é o único processo. Cgroups limitam recursos (CPU, memória), mas não fazem isolamento."
+  },
+  {
+    question: "Qual a principal vantagem de um multi-stage build no Dockerfile?",
+    options: [
+      "Permite rodar múltiplos containers em paralelo",
+      "Reduz o tamanho da imagem final ao copiar apenas artefatos de produção",
+      "Habilita hot-reload durante desenvolvimento",
+      "Permite usar múltiplas linguagens no mesmo container"
+    ],
+    correct: 1,
+    explanation: "Multi-stage builds separam o ambiente de build (com compiladores, devDependencies) do ambiente de produção. A imagem final contém apenas o código compilado e dependências de runtime, reduzindo drasticamente o tamanho."
+  },
+  {
+    question: "No Docker Compose, qual a diferença entre depends_on simples e depends_on com condition: service_healthy?",
+    options: [
+      "Não ha diferença — ambos esperam o serviço estar pronto",
+      "depends_on simples só garante que o container iníciou; com condition espera o healthcheck passar",
+      "depends_on com condition reinicia o container dependente se o serviço cair",
+      "depends_on simples e para desenvolvimento; com condition e para produção"
+    ],
+    correct: 1,
+    explanation: "depends_on simples garante apenas que o container foi criado e iníciou, não que o serviço está pronto para conexões. Com condition: service_healthy, o Docker Compose espera o healthcheck do serviço dependente passar antes de iniciar o container."
+  },
+  {
+    question: "Qual componente do Kubernetes armazena todo o estado do cluster?",
+    options: [
+      "API Server",
+      "Scheduler",
+      "etcd",
+      "Controller Manager"
+    ],
+    correct: 2,
+    explanation: "etcd é o key-value store distribuído que armazena TODO o estado do cluster (configurações, secrets, status dos pods). É o 'banco de dados' do Kubernetes. Todos os outros componentes leem/escrevem estado via etcd (através do API Server)."
+  },
+  {
+    question: "Qual a diferença entre liveness probe e readiness probe no Kubernetes?",
+    options: [
+      "Liveness verifica se o pod existe; readiness verifica se tem recursos suficientes",
+      "Liveness reinicia o container se falhar; readiness remove o pod do Service (sem tráfego) se falhar",
+      "Liveness e para containers stateful; readiness e para stateless",
+      "Não ha diferença prática — ambos reiniciam o container"
+    ],
+    correct: 1,
+    explanation: "Liveness probe verifica se o container está vivo — falha resulta em restart. Readiness probe verifica se está pronto para tráfego — falha remove do Service mas Não reinicia. Use liveness para detectar deadlocks e readiness para dependências externas (banco, cache)."
+  },
+  {
+    question: "Quando você deve usar StatefulSet ao inves de Deployment?",
+    options: [
+      "Quando a aplicação precisa de mais de 3 réplicas",
+      "Quando precisa de identidade de rede estável, ordem de criação e volumes persistentes individuais",
+      "Quando a aplicação e stateless mas precisa de alta disponibilidade",
+      "Quando precisa de auto-scaling horizontal"
+    ],
+    correct: 1,
+    explanation: "StatefulSet garante identidade de rede estável (pod-0, pod-1), ordem de criação/remocao, e volumes persistentes individuais por pod. Essencial para bancos de dados (PostgreSQL, MongoDB) e sistemas distribuídos (Kafka, ZooKeeper)."
+  },
+  {
+    question: "Qual tipo de Service do Kubernetes é mais indicado para expor uma API para a internet em ambiente cloud?",
+    options: [
+      "ClusterIP",
+      "NodePort",
+      "LoadBalancer (ou Ingress com LoadBalancer)",
+      "ExternalName"
+    ],
+    correct: 2,
+    explanation: "LoadBalancer provisiona um load balancer externo do cloud provider com IP público. Na prática, usa-se Ingress com um único LoadBalancer para rotear tráfego HTTP/HTTPS para múltiplos serviços (mais eficiente que um LB por serviço)."
+  },
+  {
+    question: "Qual é o principal benefício de um service mesh como Istio ou Linkerd?",
+    options: [
+      "Substituir o Kubernetes por uma solução mais simples",
+      "Adicionar mTLS, traffic management e observabilidade sem mudar código da aplicação",
+      "Eliminar a necessidade de containers",
+      "Prover armazenamento persistente para pods"
+    ],
+    correct: 1,
+    explanation: "Service mesh injeta sidecar proxies em cada pod que interceptam todo tráfego de rede. Isso adiciona mTLS (criptografia entre serviços), traffic management (canary, circuit breakers) e observabilidade (métricas, traces) de forma transparente — sem alterár o código da aplicação."
+  },
+  {
+    question: "Por que é crítico definir resource requests e limits em todo Deployment do Kubernetes?",
+    options: [
+      "Porque o Kubernetes não funciona sem eles",
+      "Porque sem limits, um pod defeituosó pode consumir todos os recursos do node, afetando outros pods (noisy neighbor)",
+      "Porque é necessário para habilitar o Ingress",
+      "Porque o Helm exige para gerar os templates"
+    ],
+    correct: 1,
+    explanation: "Sem limits, um pod com memory leak ou loop infinito pode consumir toda CPU/memória do node, causando OOMKill em outros pods (noisy neighbor). Requests garantem recursos mínimos para scheduling. Limits definem o teto. Ambos são essenciais para estabilidade do cluster."
+  },
+  {
+    question: "Qual alternativa descreve CORRETAMENTE quando Não usar Kubernetes?",
+    options: [
+      "Quando você tem mais de 10 microsserviços",
+      "Quando o time e pequeno (2-3 devs) e tem poucas aplicações — o overhead operacional não se justifica",
+      "Quando precisa de auto-scaling",
+      "Quando usa containers Docker"
+    ],
+    correct: 1,
+    explanation: "Kubernetes tem custo operacional significativo: upgrades de cluster, RBAC, networking, monitoring, log aggregation. Para times pequenós com poucas apps, alternativas como Docker Compose + VM, ECS/Fargate, Cloud Run ou Fly.io são mais adequadas. K8s brilha em escala, mas tem custo mínimo alto."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Containers & Kubernetes.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

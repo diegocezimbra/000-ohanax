@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>66 — Requisitos Não Funcionais | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="65-computacao-quantica.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>66</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="../fullstack-mastery.html">Índice &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:100%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 66</span>
+<h2>Requisitos Não Funcionais — Engenharia de Requisitos Completa</h2>
+<div class="section-line"></div>
+
+<p>Requisitos Funcionais dizem <strong>o que</strong> o sistema faz. Requisitos Não Funcionais (NFRs) dizem <strong>como</strong> o sistema deve se comportar enquanto faz. Um sistema pode ter todas as features certas mas ser inútilizavel — lento, inseguro, impossível de manter, fora de compliance. NFRs são o que separa software que funciona de software que funciona <strong>em produção, sob pressão, por anos</strong>.</p>
+
+<p>Na Seção 44 abordamos Quality Attributes do ponto de vista <strong>arquitetural</strong> — como cada atributo afeta decisões de design. Aqui o foco e <strong>Engenharia de Requisitos</strong>: como elicitar, documentar, específicar com métricas, testar e validar NFRs em projetos reais. Vamos cobrir <strong>38 NFRs organizados em 10 categorias</strong>, com templates de documentação, frameworks formais e exercícios práticos.</p>
+
+<div class="card blue">
+<div class="card-title">Diferenca fundamental</div>
+<p style="color:var(--text2);font-size:.88rem"><strong>Seção 44 (Quality Attributes):</strong> "Precisamos de alta disponibilidade, então vamos usar multi-AZ com failover automático" — decisão arquitetural.<br>
+<strong>Seção 66 (NFRs):</strong> "O sistema deve ter disponibilidade de 99.95% medida mensalmente, excluindo janelas de manutenção programadas de até 4h/mes, com penalidade de 5% do contrato por cada 0.01% abaixo do SLA" — requisito específicado, mensurável e testável.</p>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Regra de ouro:</strong> Se você não consegue MEDIR um NFR, ele não é um requisito — é um desejo. "O sistema deve ser rápido" não é NFR. "95% dos requests devem ter latência &lt; 200ms (P95) medida no API Gateway" é um NFR.</div>
+</div>
+
+<!-- ═══════════════════ CATEGORIA 1: DESEMPENHO ═══════════════════ -->
+<h3>Categoria 1: Desempenho (Performance)</h3>
+
+<p>NFRs de desempenho definem <strong>quao rápido e eficiente</strong> o sistema deve ser. São os mais visiveis para o usuário final é frequentemente os primeiros a serem percebidos quando violados.</p>
+
+<h4>1. Tempo de Resposta (Latencia)</h4>
+<p><strong>Definição:</strong> Tempo entre o envio de uma requisição é o recebimento da resposta completa. Deve ser específicado em percentis, NAO em media — a media esconde outliers que destroem a experiência do usuário.</p>
+<ul>
+<li><strong>Métricas:</strong> P50 (mediana), P95, P99. Ex: P50 &lt; 100ms, P95 &lt; 300ms, P99 &lt; 1s</li>
+<li><strong>Como específicar:</strong> "Para endpoints de consulta, P95 da latência end-to-end (medida no load balancer) deve ser &lt; 200ms sob carga normal (até 500 req/s)"</li>
+<li><strong>Como testar:</strong> Load testing com k6/Gatling/Locust, synthetic monitoring (Datadog, New Relic), RUM (Real User Monitoring)</li>
+<li><strong>Exemplo real:</strong> Amazon descobriu que cada 100ms de latência adicional reduz vendas em 1%. Google descobriu que 500ms a mais reduz tráfego em 20%</li>
+<li><strong>Trade-offs:</strong> Menor latência = mais cache, CDNs, read replicas = maior custo e complexidade de consistência. Otimizar P99 e exponencialmente mais caro que P50</li>
+</ul>
+
+<pre data-lang="yaml"><code><span class="cm"># Exemplo de específicacao de SLO (Service Level Objective)</span>
+<span class="fn">slo</span>:
+  <span class="fn">name</span>: <span class="str">"API de Catalogo - Tempo de Resposta"</span>
+  <span class="fn">target</span>:
+    <span class="fn">p50</span>: <span class="str">"&lt; 50ms"</span>
+    <span class="fn">p95</span>: <span class="str">"&lt; 200ms"</span>
+    <span class="fn">p99</span>: <span class="str">"&lt; 500ms"</span>
+  <span class="fn">measurement</span>: <span class="str">"Medido no API Gateway (Cloudfront -> ALB -> App)"</span>
+  <span class="fn">load_condition</span>: <span class="str">"Ate 1000 req/s de carga sustentada"</span>
+  <span class="fn">exclusions</span>: <span class="str">"Cold starts após deploy não contam"</span></code></pre>
+
+<h4>2. Throughput (Vazao)</h4>
+<p><strong>Definição:</strong> Quantidade de trabalho que o sistema consegue processar por unidade de tempo. Diferente de latência — um sistema pode ter baixa latência mas baixo throughput (processa rápido, mas pouco de cada vez).</p>
+<ul>
+<li><strong>Métricas:</strong> Requests/segundo, transações/segundo (TPS), mensagens/segundo, bytes/segundo</li>
+<li><strong>Como específicar:</strong> "O sistema de pagamentos deve processar no mínimo 500 TPS sustentados e suportar picos de 2000 TPS por 5 minutos sem degradação"</li>
+<li><strong>Como testar:</strong> Strêss test progressivo (rampa de carga), soak test (carga constante por horas), spike test (pico subito)</li>
+<li><strong>Exemplo real:</strong> Visa processa ~65.000 TPS em media. Na Black Friday, e-commerces brasileiros precisam de 10-50x o throughput normal</li>
+<li><strong>Trade-offs:</strong> Mais throughput = mais instancias, async processing, batching = maior custo infra é mais complexidade de ordenacao/consistência</li>
+</ul>
+
+<h4>3. Capacidade (Capacity)</h4>
+<p><strong>Definição:</strong> Limites máximos que o sistema suporta em termos de usuários simultâneos, volume de dados, conexões, etc. E o "teto" do sistema.</p>
+<ul>
+<li><strong>Métricas:</strong> Max concurrent users, max data volume (TB), max connections, max records per table</li>
+<li><strong>Como específicar:</strong> "O sistema deve suportar 10.000 usuários simultâneos com tempo de resposta dentro do SLO. O banco deve suportar até 5TB de dados com queries mantendo P95 &lt; 500ms"</li>
+<li><strong>Como testar:</strong> Capacity testing (aumentar carga até o sistema degradar), profiling de banco com volumes reais, benchmark de storage I/O</li>
+<li><strong>Exemplo real:</strong> Slack armazena trilhoes de mensagens. O dimensionamento de capacidade define se você precisa de sharding, particionamento ou arquivamento</li>
+<li><strong>Trade-offs:</strong> Planejamento de capacidade excessivo = desperdicio de recursos. Insuficiente = sistema cai em picos. A melhor estratégia e <strong>observar e escalar</strong>, não adivinhar</li>
+</ul>
+
+<h4>4. Eficiência de Recursos</h4>
+<p><strong>Definição:</strong> Quao bem o sistema útiliza CPU, memória, disco, rede e outros recursos computacionais para realizar seu trabalho.</p>
+<ul>
+<li><strong>Métricas:</strong> CPU útilization target (ex: avg 40%, max 70%), memory usage (ex: &lt; 80% RSS), custo por transação</li>
+<li><strong>Como específicar:</strong> "Em carga normal, a aplicação deve consumir &lt; 512MB de RAM por instancia é manter CPU abaixo de 60%. O custo por 1000 transações não deve exceder $0.05"</li>
+<li><strong>Como testar:</strong> APM tools (Datadog, New Relic), profiling (pprof, py-spy), análise de memory leaks, cost allocation tags na AWS</li>
+<li><strong>Exemplo real:</strong> WhatsApp conseguiu 2 milhões de conexões por servidor Erlang. Eficiência é o que separa uma startup de $500/mes de infraestrutura de uma que gasta $50.000/mes para o mesmo tráfego</li>
+<li><strong>Trade-offs:</strong> Maximizar eficiência pode sacrificar legibilidade do código (otimizações prematuras). O ponto ideal e <strong>eficiente o suficiente</strong>, não máximamente otimizado</li>
+</ul>
+
+<div class="tip warn">
+<span class="tip-icon">!</span>
+<div><strong>Armadilha clássica:</strong> Definir NFR de performance usando MEDIA. "Tempo medio de resposta &lt; 200ms" permite que 1% dos usuários espere 30 segundos. Sempre use percentis (P95, P99). Jeff Dean (Google) cunhou: "At scale, tail latencies dominate."</div>
+</div>
+
+<!-- ═══════════════════ CATEGORIA 2: CONFIABILIDADE ═══════════════════ -->
+<h3>Categoria 2: Confiabilidade (Reliability)</h3>
+
+<p>NFRs de confiabilidade garantem que o sistema <strong>funciona corretamente e esta disponível</strong> quando necessário. São críticos para sistemas financeiros, de saude e qualquer aplicação onde falha tem consequências graves.</p>
+
+<h4>5. Disponibilidade (Availability)</h4>
+<p><strong>Definição:</strong> Proporcao do tempo em que o sistema esta operacional e acessível para os usuários. Medida em "nines" — cada nine adicional e exponencialmente mais caro.</p>
+<ul>
+<li><strong>Métricas:</strong> Uptime percentage, MTBF (Mean Time Between Failures), planned vs unplanned downtime</li>
+<li><strong>Como específicar:</strong> "O sistema deve manter 99.95% de disponibilidade medida mensalmente. Janelas de manutenção programadas (max 2h/mes, entre 02h-06h GMT-3) não contam como downtime. Downtime não planejado máximo: 21.9 minutos/mes"</li>
+<li><strong>Como testar:</strong> Synthetic monitoring 24/7, health check endpoints, Chaos Engineering (Chaos Monkey, Gremlin), failover drills</li>
+<li><strong>Exemplo real:</strong> AWS S3 promete 99.99% availability. Cada ponto depois de 99.9% custa 10x mais em infraestrutura (multi-AZ, multi-region, auto-failover)</li>
+<li><strong>Trade-offs:</strong> 99.99% requer redundancia total (multi-AZ, multi-region, active-active). O custo sobe exponencialmente com cada nine adicional</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<tr><th>Nines</th><th>Uptime</th><th>Downtime/Ano</th><th>Downtime/Mes</th><th>Custo Relativo</th></tr>
+<tr><td>99%</td><td>2 nines</td><td>3.65 dias</td><td>7.3 horas</td><td>1x (baseline)</td></tr>
+<tr><td>99.9%</td><td>3 nines</td><td>8.76 horas</td><td>43.8 min</td><td>~3x</td></tr>
+<tr><td>99.95%</td><td>3.5 nines</td><td>4.38 horas</td><td>21.9 min</td><td>~5x</td></tr>
+<tr><td>99.99%</td><td>4 nines</td><td>52.6 minutos</td><td>4.38 min</td><td>~10x</td></tr>
+<tr><td>99.999%</td><td>5 nines</td><td>5.26 minutos</td><td>26.3 seg</td><td>~100x</td></tr>
+</table>
+</div>
+
+<h4>6. Tolerancia a Falhas (Fault Tolerance)</h4>
+<p><strong>Definição:</strong> Capacidade do sistema de continuar operando (possívelmente com funcionalidade reduzida) quando componentes falham. Não e sobre evitar falhas — e sobre sobreviver a elas.</p>
+<ul>
+<li><strong>Métricas:</strong> Percentage of functionality available during failure, failover time, blast radius</li>
+<li><strong>Como específicar:</strong> "Se o serviço de recomendações ficar indisponível, o catálogo deve continuar funcionando exibindo 'produtos mais vendidos' como fallback. Failover de banco primário para replica deve completar em &lt; 30 segundos"</li>
+<li><strong>Como testar:</strong> Chaos Engineering (matar instancias, cortar rede, injetar latência), Game Days, failover drills trimestrais</li>
+<li><strong>Exemplo real:</strong> Netflix Chaos Monkey desliga instancias em produção aleatóriamente. Se o sistema não sobrevive, o time conserta antes que um incidente real aconteca</li>
+<li><strong>Trade-offs:</strong> Mais tolerância = mais replicas, circuit breakers, fallbacks, bulkheads = mais complexidade é mais código para manter</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Especificacao de degradação graciosa (graceful degradation)</span>
+<span class="kw">interface</span> <span class="tp">FaultToleranceSpec</span> {
+  <span class="fn">scenário</span>: <span class="tp">string</span>;
+  <span class="fn">affectedComponent</span>: <span class="tp">string</span>;
+  <span class="fn">expectedBehavior</span>: <span class="tp">string</span>;
+  <span class="fn">maxImpactDuration</span>: <span class="tp">string</span>;
+  <span class="fn">userNotification</span>: <span class="tp">string</span>;
+}
+
+<span class="kw">const</span> <span class="fn">specs</span>: <span class="tp">FaultToleranceSpec</span>[] = [
+  {
+    <span class="fn">scenário</span>: <span class="str">"Database primary down"</span>,
+    <span class="fn">affectedComponent</span>: <span class="str">"PostgreSQL primary"</span>,
+    <span class="fn">expectedBehavior</span>: <span class="str">"Auto-failover to read replica, writes queued"</span>,
+    <span class="fn">maxImpactDuration</span>: <span class="str">"30 seconds"</span>,
+    <span class="fn">userNotification</span>: <span class="str">"None - transparent to user"</span>
+  },
+  {
+    <span class="fn">scenário</span>: <span class="str">"Payment gateway timeout"</span>,
+    <span class="fn">affectedComponent</span>: <span class="str">"Stripe API"</span>,
+    <span class="fn">expectedBehavior</span>: <span class="str">"Retry 3x with exponential backoff, then circuit break"</span>,
+    <span class="fn">maxImpactDuration</span>: <span class="str">"15 seconds"</span>,
+    <span class="fn">userNotification</span>: <span class="str">"'Pagamento em processamento, tente novamente'"</span>
+  }
+];</code></pre>
+
+<h4>7. Recuperabilidade (Recoverability)</h4>
+<p><strong>Definição:</strong> Capacidade de restaurar o sistema ao estado operacional após uma falha, incluindo recuperação de dados. Definida por dois métricas criticas: RPO e RTO.</p>
+<ul>
+<li><strong>Métricas:</strong> RPO (Recovery Point Objective) = perda máxima de dados aceitável. RTO (Recovery Time Objective) = tempo máximo para restaurar o serviço</li>
+<li><strong>Como específicar:</strong> "RPO: 1 hora (backups incrementais a cada hora). RTO: 4 horas para restauracao completa em caso de desastre regional. Backup full diario as 03h, retido por 30 dias. Teste de restore mensal obrigatório"</li>
+<li><strong>Como testar:</strong> Disaster Recovery drills (restore de backup em ambiente isolado), medicion do tempo real de recovery, validação de integridade pos-restore</li>
+<li><strong>Exemplo real:</strong> GitLab em 2017 perdeu 6h de dados de produção porque o backup não funcionava. RPO era teoricamente 24h, mas ninguem testava o restore</li>
+<li><strong>Trade-offs:</strong> RPO de 0 (zero data loss) requer replicação síncrona — que adiciona latência em cada escrita. RPO de 1h com backup assíncrono é muito mais barato</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box red">Desastre</div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box orange">RPO<br><small>Dados perdidos</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Desastre</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">RTO<br><small>Tempo de recovery</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Sistema OK</div>
+</div>
+
+<h4>8. Durabilidade (Durability)</h4>
+<p><strong>Definição:</strong> Garantia de que dados persistidos não seráo perdidos, mesmo em caso de falha de hardware. E sobre a persistência dos dados após serem aceitos pelo sistema.</p>
+<ul>
+<li><strong>Métricas:</strong> Durabilidade em nines (ex: 99.999999999% = 11 nines do S3), replicação factor</li>
+<li><strong>Como específicar:</strong> "Dados de transações financeiras devem ter durabilidade de 99.999999999% (11 nines). Mínimo 3 replicas em AZs diferentes. Nenhuma transação confirmada ao usuário pode ser perdida"</li>
+<li><strong>Como testar:</strong> Matar discos/instancias e verificar dados, audit de replicação, checksums periódicos de integridade</li>
+<li><strong>Exemplo real:</strong> AWS S3 garante 99.999999999% durability — projetado para perder no máximo 1 objeto a cada 10.000 anós para 10 milhões de objetos</li>
+<li><strong>Trade-offs:</strong> Mais replicas = mais custo de storage é mais latência de escrita (se síncrono). Async replication é mais barato mas pode perder dados em falhas</li>
+</ul>
+
+<!-- ═══════════════════ CATEGORIA 3: SEGURANCA ═══════════════════ -->
+<h3>Categoria 3: Segurança (Security)</h3>
+
+<p>NFRs de segurança protegem o sistema contra acessos não autorizados, manipação de dados e violações de privacidade. São requisitos <strong>não negociaveis</strong> em qualquer sistema em produção.</p>
+
+<h4>9. Confidencialidade (Confidentiality)</h4>
+<p><strong>Definição:</strong> Garantia de que dados sensiveis só são acessiveis por entidades autorizadas. Inclui encriptacao, controle de acesso e classificação de dados.</p>
+<ul>
+<li><strong>Métricas:</strong> Dados classificados por nível (public, internal, confidential, restricted), encryption coverage (%)</li>
+<li><strong>Como específicar:</strong> "Todos os dados PII devem ser encriptados em repousó (AES-256) e em transito (TLS 1.3). Tokens de acesso devem ter TTL máximo de 15 minutos. Dados de cartao de credito nunca devem ser armazenados em texto plano. Logs não devem conter PII"</li>
+<li><strong>Como testar:</strong> Penetration testing (OWASP ZAP, Burp Suite), code review focado em segurança, SAST/DAST tools, secret scanning (Gitleaks, Trufflehog)</li>
+<li><strong>Exemplo real:</strong> Equifax (2017) expouos dados de 147 milhões de pessoas por não encriptar dados em repousó e não patchear uma vulnerabilidade conhecida</li>
+<li><strong>Trade-offs:</strong> Encriptacao adiciona latência (~1-5ms por operação). Controle de acesso granular aumenta complexidade de gestão. Zero Trust é ideal mas custa mais para implementar</li>
+</ul>
+
+<h4>10. Integridade (Integrity)</h4>
+<p><strong>Definição:</strong> Garantia de que dados não são alterádos de forma não autorizada ou acidental. Inclui validação, checksums e trilhas de auditoria.</p>
+<ul>
+<li><strong>Métricas:</strong> Data válidation pass rate, checksum verification rate, audit trail completeness</li>
+<li><strong>Como específicar:</strong> "Toda operação de escrita deve ser válidada contra schema. Transferencias financeiras devem ter checksum SHA-256. Toda alterácao em dados críticos deve gerar registro de auditoria com: who, what, when, old_value, new_value"</li>
+<li><strong>Como testar:</strong> Fuzzing (enviar dados inválidos), verificação de checksums, audit trail review, injection testing (SQL, XSS, NoSQL)</li>
+<li><strong>Exemplo real:</strong> Um sistema bancario sem validação permitiu transferencia de valor negativo — efetivamente roubando dinheiro</li>
+<li><strong>Trade-offs:</strong> Validação rigorosa aumenta latência. Audit trails completos consomem storage significativo. O custo de NAO ter integridade (fraude, inconsistência) é muito maior</li>
+</ul>
+
+<h4>11. Autenticação &amp; Autorizacao</h4>
+<p><strong>Definição:</strong> Autenticação verifica "quem e você?" e autorização verifica "o que você pode fazer?". Devem ser requisitos separados e bem definidos.</p>
+<ul>
+<li><strong>Métricas:</strong> MFA adoption rate, time to authenticate, authorization check coverage, brute force protection thresholds</li>
+<li><strong>Como específicar:</strong> "Autenticação: MFA obrigatório para admins. Sessoes expiram em 24h. Lockout após 5 tentativas falhas por 15 minutos. Autorizacao: RBAC com 4 roles (admin, manager, editor, viewer). Princípio do menor privilégio — nenhum role default tem acesso a dados financeiros"</li>
+<li><strong>Como testar:</strong> Testes de broken access control (OWASP Top 10 #1), verificar se endpoints sem auth são intencionais, testar privilege escalation horizontal e vertical</li>
+<li><strong>Exemplo real:</strong> Broken Access Control é a vulnerabilidade #1 do OWASP Top 10 (2021). Facebook teve bug onde qualquer usuário podia ver fotos privadas de outros</li>
+<li><strong>Trade-offs:</strong> MFA aumenta friccao do usuário. RBAC muito granular é difícil de gerenciar. OAuth/OIDC adicionam complexidade mas são padrões da industria</li>
+</ul>
+
+<h4>12. Não-Repudio (Non-Repudiation)</h4>
+<p><strong>Definição:</strong> Garantia de que uma acao realizada não pode ser negada posteriormente. Critico em sistemas legais, financeiros e de saude.</p>
+<ul>
+<li><strong>Métricas:</strong> Percentage of critical actions with digital signature, audit log retention period, log tamper-proofing</li>
+<li><strong>Como específicar:</strong> "Todas as transações financeiras devem ter assinatura digital do operador. Logs de auditoria devem ser imutaveis (append-only) e retidos por 7 anos. Nenhum usuário, incluindo admins, pode alterár ou deletar registros de auditoria"</li>
+<li><strong>Como testar:</strong> Verificar se logs são append-only, testar se admins podem alterár audit trails, validar assinaturas digitais</li>
+<li><strong>Exemplo real:</strong> Blockchain é o exemplo extremo de não-repudio — toda transação e publicamente verificavel e imutável</li>
+<li><strong>Trade-offs:</strong> Append-only logs crescem indefinidamente (custo de storage). Assinaturas digitais adicionam latência e complexidade de gestão de chaves</li>
+</ul>
+
+<!-- ═══════════════════ CATEGORIA 4: USABILIDADE ═══════════════════ -->
+<h3>Categoria 4: Usabilidade (Usability)</h3>
+
+<p>NFRs de usabilidade definem <strong>quao fácil e agradavel</strong> é usar o sistema. Frequentemente negligenciados por engenheiros, mas tem impacto direto em adoção e retenção.</p>
+
+<h4>13. Aprendibilidade (Learnability)</h4>
+<p><strong>Definição:</strong> Quao rápido um novo usuário consegue aprender a usar o sistema e completar suas primeiras tarefas sem ajuda externa.</p>
+<ul>
+<li><strong>Métricas:</strong> Time to first task completion, number of errors in first session, help/documentation access rate</li>
+<li><strong>Como específicar:</strong> "Um usuário novo deve conseguir completar o cadastro e primeira compra em menós de 5 minutos, sem consultar documentação. A taxa de abandono no onboarding deve ser &lt; 20%"</li>
+<li><strong>Como testar:</strong> Usability testing com usuários reais (5 é suficiente para encontrar 85% dos problemas), A/B testing de fluxos, analytics de funil de onboarding</li>
+<li><strong>Exemplo real:</strong> Slack investiu pesadamente em onboarding — Slackbot guia o usuário pelas primeiras interáções, resultando em 30% mais engajamento na primeira semana</li>
+<li><strong>Trade-offs:</strong> Simplicidade para novatos pode limitar funcionalidades para usuários avançados. Progressive disclosure é a técnica — mostrar o básico primeiro, complexidade sob demanda</li>
+</ul>
+
+<h4>14. Eficiência de Uso</h4>
+<p><strong>Definição:</strong> Quao rápido um usuário <strong>experiente</strong> consegue realizar tarefas recorrentes. Diferente de aprendibilidade — foco e em produtividade, não em descoberta.</p>
+<ul>
+<li><strong>Métricas:</strong> Task completion time (experienced user), clicks/steps to complete task, keyboard shortcuts coverage</li>
+<li><strong>Como específicar:</strong> "Um operador treinado deve conseguir processar um pedido em &lt; 30 segundos (max 5 cliques). O sistema deve suportar atalhos de teclado para todas as operações frequentes. Busca e filtros devem retornar resultados em &lt; 1 segundo"</li>
+<li><strong>Como testar:</strong> Observacao direta com usuários frequentes, GOMS analysis (Goals, Operators, Methods, Selection rules), heatmaps</li>
+<li><strong>Exemplo real:</strong> Bloomberg Terminal é extremamente difícil de aprender mas incrivelmente eficiente para traders experientes — tudo é acessível via comandos rápidos</li>
+<li><strong>Trade-offs:</strong> Otimizar para power users pode tornar a interface intimidante para novos usuários. Solução: interfaces adaptativas com níveis de complexidade</li>
+</ul>
+
+<h4>15. Acessibilidade (Accessibility)</h4>
+<p><strong>Definição:</strong> Garantia de que o sistema é útilizavel por pessoas com deficiências (visual, auditiva, motora, cognitiva). Alem de etico, e requisito legal em muitos paises.</p>
+<ul>
+<li><strong>Métricas:</strong> WCAG compliance level (A, AA, AAA), automated accessibility score (Lighthouse), screen reader compatibility</li>
+<li><strong>Como específicar:</strong> "O sistema deve atingir WCAG 2.1 nível AA. Todas as imagens devem ter alt text. Contraste de cores mínimo 4.5:1. Navegacao completa deve ser possível via teclado. Suporte a screen readers (NVDA, VoiceOver)"</li>
+<li><strong>Como testar:</strong> axe-core (automated), Lighthouse accessibility audit, teste manual com screen reader, teste com usuários PcD</li>
+<li><strong>Exemplo real:</strong> Domino's Pizza foi processada nós EUA por site inacessível a usuários cegos. Perdeu na Suprema Corte. Em 2025, a Lei Brasileira de Inclusao exige acessibilidade digital</li>
+<li><strong>Trade-offs:</strong> WCAG AAA é extremamente restritivo e caro. AA é o padrão razoável. Acessibilidade desde o design (shift-left) custa muito menós que retrofitting</li>
+</ul>
+
+<h4>16. Satisfacao do Usuario</h4>
+<p><strong>Definição:</strong> Nivel de satisfacao geral dos usuários com a experiência do sistema. Métrica subjetiva mas mensurável com instrumentos padronizados.</p>
+<ul>
+<li><strong>Métricas:</strong> SUS score (System Usability Scale, 0-100), NPS (Net Promoter Score, -100 a +100), CSAT (Customer Satisfaction Score)</li>
+<li><strong>Como específicar:</strong> "O sistema deve manter SUS score acima de 68 (media da industria) e NPS acima de +30. Pesquisa de satisfacao deve ser aplicada trimestralmente com amostra mínima de 100 usuários"</li>
+<li><strong>Como testar:</strong> Surveys padronizados (SUS tem 10 perguntas), NPS survey in-app, análise de churn e feature adoption</li>
+<li><strong>Exemplo real:</strong> SUS score medio da industria e 68. Acima de 80 é considerado "excelente". Abaixo de 50 e sinal de redesign urgente</li>
+<li><strong>Trade-offs:</strong> Otimizar para satisfacao imediata pode sacrificar funcionalidade a longo prazo. Usuarios pedem features que não necessariamente melhoram o produto</li>
+</ul>
+
+<!-- ═══════════════════ CATEGORIA 5: ESCALABILIDADE ═══════════════════ -->
+<h3>Categoria 5: Escalabilidade (Scalability)</h3>
+
+<p>NFRs de escalabilidade definem como o sistema deve crescer para atender aumento de demanda. A pergunta não é "SE" vai crescer, mas "QUANDO" — é o sistema precisa estar preparado.</p>
+
+<h4>17. Escalabilidade Horizontal</h4>
+<p><strong>Definição:</strong> Capacidade de adicionar mais instancias/nós ao sistema para distribuir a carga. Scale OUT, não UP.</p>
+<ul>
+<li><strong>Métricas:</strong> Linear scalability ratio (2x nós = ~2x throughput?), max cluster size, sharding granularity</li>
+<li><strong>Como específicar:</strong> "O sistema deve suportar escalar de 3 para 30 instancias sem mudança de código ou configuração manual. Adicionar uma instancia deve aumentar throughput em pelo menós 80% do proporcional (eficiência de escala &gt; 0.8)"</li>
+<li><strong>Como testar:</strong> Benchmark com 3, 6, 12, 24 instancias e comparar throughput. Verificar se ha bottlenecks centralizados (DB, shared state)</li>
+<li><strong>Exemplo real:</strong> Stateless APIs escalam horizontalmente com fácilidade. Bancos de dados são o bottleneck — sharding (Vitess, Citus) ou bancos distribuídos (CockroachDB, Spanner) são necessários</li>
+<li><strong>Trade-offs:</strong> Escalabilidade horizontal requer aplicação stateless, distributed caching, e coordenacao. Complexidade arquitetural significativamente maior</li>
+</ul>
+
+<h4>18. Escalabilidade Vertical</h4>
+<p><strong>Definição:</strong> Capacidade de aumentar recursos (CPU, RAM, disco) de uma única instancia para lidar com mais carga. Scale UP.</p>
+<ul>
+<li><strong>Métricas:</strong> Max instance size suportado, performance per core, vertical scaling ceiling</li>
+<li><strong>Como específicar:</strong> "O sistema deve funcionar corretamente em instancias de 2 vCPU até 96 vCPU sem necessidade de reconfiguração. A aplicação deve útilizar todos os cores disponíveis para processamento paralelo"</li>
+<li><strong>Como testar:</strong> Testar em instancias progressivamente maiores, verificar se a aplicação útiliza os recursos adicionais (threading, connection pool sizing)</li>
+<li><strong>Exemplo real:</strong> Bancos de dados relacionais frequentemente escalam melhor verticalmente (instancias maiores) antes de precisar de sharding horizontal</li>
+<li><strong>Trade-offs:</strong> Tem limite fisico (não existe máquina infinita). E mais simples que horizontal mas cria single point of failure. E uma estratégia válida até certo ponto</li>
+</ul>
+
+<h4>19. Elasticidade (Elasticity)</h4>
+<p><strong>Definição:</strong> Capacidade de escalar automáticamente para CIMA em picos de demanda E para BAIXO quando a demanda diminui. E escalabilidade + automação + otimização de custo.</p>
+<ul>
+<li><strong>Métricas:</strong> Scale-up time (tempo para provisionar), scale-down time, cost savings during low traffic, auto-scaling accuracy</li>
+<li><strong>Como específicar:</strong> "O auto-scaler deve detectar aumento de 50% no tráfego e provisionar novas instancias em &lt; 2 minutos. Deve escalar de volta em &lt; 10 minutos após tráfego normalizar. Custo de infraestrutura não deve exceder 20% acima do ótimo teorico"</li>
+<li><strong>Como testar:</strong> Spike tests com ramp-up rápido, verificar tempo de provisionamento real, calcular custo durante periodos de baixa demanda vs capacidade alocada</li>
+<li><strong>Exemplo real:</strong> E-commerces na Black Friday: tráfego 50x normal por 48h, depois volta ao baseline. Sem elasticidade, você paga 50x a infra o ano todo ou cai no pico</li>
+<li><strong>Trade-offs:</strong> Auto-scaling precisa de métricas confiaveis para triggering. Scale-up tem cold start penalty. Scale-down muito agressivo causa flapping (sobe/desce repetidamente)</li>
+</ul>
+
+<!-- ═══════════════════ CATEGORIA 6: MANUTENIBILIDADE ═══════════════════ -->
+<h3>Categoria 6: Manutenibilidade (Maintainability)</h3>
+
+<p>NFRs de manutenibilidade determinam <strong>quao fácil é manter, evoluir e debugar</strong> o sistema ao longo do tempo. 80% do custo de software e manutenção — esses requisitos definem se o sistema será sustentável ou se tornará um legado problematico.</p>
+
+<h4>20. Modularidade (Modularity)</h4>
+<p><strong>Definição:</strong> Grau em que o sistema é composto por componentes independentes que podem ser desenvolvidos, testados e deployados separadamente.</p>
+<ul>
+<li><strong>Métricas:</strong> Coupling between modules (baixo = melhor), cohesion within modules (alto = melhor), dependency graph depth</li>
+<li><strong>Como específicar:</strong> "Nenhum módulo deve ter mais de 5 dependências diretas. Alterácao em um módulo não deve exigir mudanças em mais de 2 outros módulos. Cada módulo deve ter API publica documentada e contrato versionado"</li>
+<li><strong>Como testar:</strong> Análise estática de dependências (Madge, dependency-cruiser), architecture fitness functions, métricas de afferent/efferent coupling</li>
+<li><strong>Exemplo real:</strong> Monolito do Shopify atingiu o ponto onde uma mudança no checkout quebrava o catálogo. Refatoraram para módulos com bounded contexts claros</li>
+<li><strong>Trade-offs:</strong> Modularidade excessiva leva a distributed monolith (pior dos dois mundos). O granulo ideal depende do tamanho do time e taxa de mudança</li>
+</ul>
+
+<h4>21. Testabilidade (Testability)</h4>
+<p><strong>Definição:</strong> Quao fácil e escrever e executar testes automatizados para o sistema. Inclui cobertura, velocidade de execução é fácilidade de setup.</p>
+<ul>
+<li><strong>Métricas:</strong> Code coverage (statement, branch), test execution time, test setup complexity, flaky test rate</li>
+<li><strong>Como específicar:</strong> "Cobertura de testes mínima de 80% para código de negócios. Suite de testes unitários deve rodar em &lt; 5 minutos. Nenhum teste deve depender de serviços externós (mock obrigatório). Taxa de flaky tests &lt; 1%"</li>
+<li><strong>Como testar:</strong> Coverage reports (Istanbul, JaCoCo), CI pipeline timing, análise de flaky tests (historico de resultados inconsistentes)</li>
+<li><strong>Exemplo real:</strong> Google exige que testes unitários rodem em &lt; 60 segundos. Testes lentos não são executados e código sem cobertura não é aprovado em code review</li>
+<li><strong>Trade-offs:</strong> 100% coverage não significa qualidade. Testes muito acoplados a implementação quebram a cada refatoração. O objetivo e confiança, não número</li>
+</ul>
+
+<h4>22. Analisabilidade (Analysability / Observability)</h4>
+<p><strong>Definição:</strong> Quao fácil e diagnosticar problemas, entender comportamentos inesperados e debugar o sistema em produção.</p>
+<ul>
+<li><strong>Métricas:</strong> MTTR (Mean Time To Resolution), time to root cause, log searchability, trace coverage</li>
+<li><strong>Como específicar:</strong> "Todo request deve ter trace-id propagado end-to-end. Logs estruturados (JSON) obrigatórios. Dashboards de saude devem mostrar RED metrics (Rate, Errors, Duration) por serviço. Alertas devem ser acionaveis — nenhum alerta sem runbook"</li>
+<li><strong>Como testar:</strong> Injetar falhas e medir tempo de diagnóstico, verificar se traces estão completos, testar alertas com cenários simulados</li>
+<li><strong>Exemplo real:</strong> Honeycomb popularizou "observabilidade" vs "monitoramento" — a capacidade de fazer perguntas ad-hoc sobre o sistema que você não previu antecipadamente</li>
+<li><strong>Trade-offs:</strong> Instrumentacao detalhada gera volumes enormes de dados (custo de storage e processamento). Logs demais e tao ruim quanto logs de menós — sinal vs ruido</li>
+</ul>
+
+<h4>23. Modificabilidade (Modifiability)</h4>
+<p><strong>Definição:</strong> Quao fácil e barato é fazer mudanças no sistema (novas features, correcoes, adaptacoes). E o NFR que mais impacta velocidade de entrega a longo prazo.</p>
+<ul>
+<li><strong>Métricas:</strong> Lead time for changes, change failure rate, lines of code changed per feature, regression raté after changes</li>
+<li><strong>Como específicar:</strong> "Adicionar um novo tipo de pagamento deve exigir mudanças em no máximo 3 arquivos. Lead time medio para mudanças deve ser &lt; 1 semana (da decisão ao deploy). Change failure raté &lt; 15% (DORA metrics 'Elite' level)"</li>
+<li><strong>Como testar:</strong> Medir DORA metrics historicamente, análise de impacto de mudanças recentes, arquitetura fitness functions que verificam compliance</li>
+<li><strong>Exemplo real:</strong> Empresas com alta modificabilidade deployam multiplas vezes ao dia (Google, Netflix, Amazon). Com baixa modificabilidade, um release leva meses e vem cheio de bugs</li>
+<li><strong>Trade-offs:</strong> Alta modificabilidade requer investimento continuo em arquitetura limpa, testes e CI/CD. O payoff é a longo prazo — no curto prazo parece "lento"</li>
+</ul>
+
+<!-- ═══════════════════ CATEGORIA 7: PORTABILIDADE ═══════════════════ -->
+<h3>Categoria 7: Portabilidade (Portability)</h3>
+
+<p>NFRs de portabilidade definem quao fácil e mover o sistema entre diferentes ambientes, plataformas ou provedores.</p>
+
+<h4>24. Adaptabilidade (Adaptability)</h4>
+<p><strong>Definição:</strong> Capacidade do sistema de funcionar em diferentes ambientes (dev, staging, production) e plataformas (Linux, Windows, Docker, K8s) sem modificacao.</p>
+<ul>
+<li><strong>Métricas:</strong> Number of supported environments, environment-specific code percentage, configuration externalization rate</li>
+<li><strong>Como específicar:</strong> "O sistema deve funcionar em Docker containers e pode ser deployado em AWS, GCP ou Azure sem mudança de código. Toda configuração ambiente-específica deve estar em variáveis de ambiente ou config files externós (12-Factor App)"</li>
+<li><strong>Como testar:</strong> Deploy em ambientes diferentes e validar funcionalidade, verificar que zero config esta hardcoded no código</li>
+<li><strong>Exemplo real:</strong> Kubernetes abstraiu a infraestrutura — uma aplicação containerizada roda igual na AWS, GCP, Azure ou on-premise</li>
+<li><strong>Trade-offs:</strong> Abstracoes de plataforma adicionam complexidade. Usar features nativas de um provedor (AWS Lambda, GCP BigQuery) sacrifica portabilidade por performance/custo</li>
+</ul>
+
+<h4>25. Instalabilidade (Installability)</h4>
+<p><strong>Definição:</strong> Quao fácil e complexo e instalar e configurar o sistema em um novo ambiente. Inclui setup inicial e atualizacoes.</p>
+<ul>
+<li><strong>Métricas:</strong> Time to first deploy, number of manual steps, documentation completeness, rollback time</li>
+<li><strong>Como específicar:</strong> "Deploy completo em novo ambiente deve ser possível com um único comando em &lt; 15 minutos. Zero dependência de configuração manual. Infrastructure as Code (Terraform/Pulumi) obrigatório para toda infraestrutura"</li>
+<li><strong>Como testar:</strong> Deploy from scratch em ambiente limpo, medir tempo e número de passos, verificar que tudo esta automatizado</li>
+<li><strong>Exemplo real:</strong> "Works on my machine" e sintoma de baixa instalabilidade. Docker Compose + IaC eliminam esse problema — ambiente identico em qualquer lugar</li>
+<li><strong>Trade-offs:</strong> IaC e containers adicionam curva de aprendizado. Para projetos pequenos, pode ser overengineering. Para projetos serios, é essencial</li>
+</ul>
+
+<h4>26. Substituibilidade (Replaceability)</h4>
+<p><strong>Definição:</strong> Capacidade de substituir componentes ou dependências externas sem impacto significativo no sistema. Vendor independence.</p>
+<ul>
+<li><strong>Métricas:</strong> Vendor-specific code percentage, abstraction layer coverage, migration effort estimaté (days)</li>
+<li><strong>Como específicar:</strong> "Todas as integrações com serviços externós devem usar camada de abstração (Adapter/Port pattern). Migrar de AWS SQS para RabbitMQ deve exigir apenas implementação de novo adapter, sem mudança na lógica de negócios. Lock-in máximo aceitável: 30 dev-days para migrar qualquer componente"</li>
+<li><strong>Como testar:</strong> Contar linhas de código vendor-specific, simular substituição de um componente, medir effort real vs estimado</li>
+<li><strong>Exemplo real:</strong> Empresas que usaram Parse (BaaS da Facebook) tiveram que reescrever tudo quando foi descontinuado. Abstracoes teriam reduzido o impacto</li>
+<li><strong>Trade-offs:</strong> Abstracoes adicionam complexidade e impedem usó de features nativas otimizadas. O pragmatismo é usar abstrações onde substituição e provavel e vendor-specific onde não e</li>
+</ul>
+
+<!-- ═══════════════════ CATEGORIA 8: COMPATIBILIDADE ═══════════════════ -->
+<h3>Categoria 8: Compatibilidade (Compatibility)</h3>
+
+<p>NFRs de compatibilidade definem como o sistema interáge com outros sistemas e coexiste no ecossistema tecnológico da organização.</p>
+
+<h4>27. Interoperabilidade (Interoperability)</h4>
+<p><strong>Definição:</strong> Capacidade de trocar dados e interágir com outros sistemas de forma padronizada e eficiente.</p>
+<ul>
+<li><strong>Métricas:</strong> Number of supported API standards, data format compliance rate, integration test coverage</li>
+<li><strong>Como específicar:</strong> "APIs devem seguir OpenAPI 3.0 com documentação auto-gerada. Dados exportados devem estar em formatos padrão (JSON, CSV, XML). Webhooks devem seguir padrão CloudEvents. APIs devem ser versionadas (URL path ou header) com backwards compatibility por pelo menós 12 meses"</li>
+<li><strong>Como testar:</strong> Contract testing (Pact), schema válidation automatizada, integration tests com sistemas parceiros, API compatibility tests entre versões</li>
+<li><strong>Exemplo real:</strong> Stripe e referência em interoperabilidade — API consistente, versionada, com backwards compatibility e documentação excepcional</li>
+<li><strong>Trade-offs:</strong> Manter backwards compatibility limita inovacao. Suportar múltiplos formatos aumenta complexidade. Versionamento de API exige gestão ativa de lifecycle</li>
+</ul>
+
+<h4>28. Coexistência (Co-existence)</h4>
+<p><strong>Definição:</strong> Capacidade de funcionar corretamente ao lado de outros sistemas no mesmo ambiente, sem interferência mutua (recursos compartilhados, portas, configurações).</p>
+<ul>
+<li><strong>Métricas:</strong> Resource isolation level, port/config conflicts, noisy neighbor impact</li>
+<li><strong>Como específicar:</strong> "O sistema não deve consumir mais de 40% dos recursos de CPU/memória do host em operação normal. Todas as portas devem ser configuraveis via environment variables. Não deve haver dependência de paths absolutos no sistema de arquivos. Deve funcionar em cluster Kubernetes com resource limits definidos"</li>
+<li><strong>Como testar:</strong> Deploy ao lado de outros serviços e medir impacto mutuo, verificar resource limits, testar com noisy neighbor simulation</li>
+<li><strong>Exemplo real:</strong> Em Kubernetes, um pod sem resource limits pode consumir toda a CPU do no e impactar todos os outros pods — "noisy neighbor problem"</li>
+<li><strong>Trade-offs:</strong> Isolamento completo (VMs dedicadas) e caro. Containers com resource limits são o meio-termo. Serverless elimina o problema mas tem outros trade-offs</li>
+</ul>
+
+<!-- ═══════════════════ CATEGORIA 9: LEGAL & REGULATORIO ═══════════════════ -->
+<h3>Categoria 9: Requisitos Legais &amp; Regulatorios</h3>
+
+<p>NFRs legais e regulatorios são <strong>obrigatórios por lei</strong> — não são negociaveis e violações podem resultar em multas pesadas, processos judiciais e danós a reputacao.</p>
+
+<h4>29. LGPD / GDPR (Protecao de Dados)</h4>
+<p><strong>Definição:</strong> Conformidade com leis de proteção de dados pessoais. LGPD (Brasil) e GDPR (Europa) são as mais relevantes, com requisitos similares.</p>
+<ul>
+<li><strong>Métricas:</strong> Consent management compliance rate, data subject request response time, DPO (Data Protection Officer) designado</li>
+<li><strong>Como específicar:</strong> "O sistema deve implementar: (1) Consent management — coleta explicita de consentimento para cada finalidade. (2) Right to erasure — deletar todos os dados de um usuário em &lt; 72h após solicitacao. (3) Data portability — exportar dados do usuário em formato legivel por máquina. (4) Privacy by design — minimizacao de dados, pseudonimizacao onde possível. (5) Breach notification — capacidade de notificar ANPD em &lt; 72h após incidente"</li>
+<li><strong>Como testar:</strong> Audit de compliance, testar fluxo de consent, testar data erasure completo (verificar todos os bancos, caches, backups), penetration testing</li>
+<li><strong>Exemplo real:</strong> Meta (Facebook) foi multada em 1.2 bilhao de euros pela GDPR em 2023. No Brasil, LGPD prevee multa de até 2% do faturamento (max R$50 milhões por infracao)</li>
+<li><strong>Trade-offs:</strong> Compliance completo exige investimento significativo em tooling e processos. Erasure é especialmente complexo em sistemas distribuídos com backups. Mas o custo de não-compliance é muito maior</li>
+</ul>
+
+<h4>30. PCI-DSS (Segurança de Pagamentos)</h4>
+<p><strong>Definição:</strong> Padrão de segurança para processamento de cartoes de credito/debito. Obrigatorio para qualquer sistema que toca dados de cartao.</p>
+<ul>
+<li><strong>Métricas:</strong> PCI compliance level (1-4), SAQ completion status, quarterly vulnerability scan pass</li>
+<li><strong>Como específicar:</strong> "O sistema NAO deve armazenar dados de cartao (PAN, CVV, data de válidade) em nenhum formato. Usar tokenizacao via gateway de pagamento (Stripe, Braintree). Rede segmentada — ambiente PCI isolado. Criptografia TLS 1.2+ obrigatória. Logs não devem conter dados de cartao. Scans de vulnerabilidade trimestrais por ASV credenciado"</li>
+<li><strong>Como testar:</strong> Audit PCI-DSS anual (Level 1), ASV scan trimestral, penetration testing, verificar logs por PAN leaks</li>
+<li><strong>Exemplo real:</strong> A melhor estratégia e <strong>não tocar dados de cartao</strong> — usar Stripe Elements, Payment Intents, ou similar. Isso reduz PCI scope de ~300 para ~20 requisitos (SAQ-A)</li>
+<li><strong>Trade-offs:</strong> PCI compliance total é extremamente custoso. Delegar para gateway de pagamento reduz scope drasticamente. Customizacao do checkout e limitada quando tokeniza no frontend</li>
+</ul>
+
+<h4>31. SOC 2 (Controles de Segurança)</h4>
+<p><strong>Definição:</strong> Framework de auditoria que verifica controles de segurança, disponibilidade, integridade de processamento, confidencialidade e privacidade. Exigido por empresas B2B.</p>
+<ul>
+<li><strong>Métricas:</strong> SOC 2 Type I/II compliance status, control effectiveness percentage, remediation time for findings</li>
+<li><strong>Como específicar:</strong> "O sistema deve estar em conformidade com SOC 2 Type II Trust Service Criteria. Controles obrigatórios: access management, change management, incident response, encryption, backup, monitoring. Audit trail de 12 meses. Evidencias automatizadas via Vanta/Drata/Secureframe"</li>
+<li><strong>Como testar:</strong> Audit SOC 2 anual por firma credenciada, monitoramento continuo de controles, gap analysis trimestral</li>
+<li><strong>Exemplo real:</strong> Quase todo cliente enterprise exige SOC 2 Type II antes de contratar. Sem ele, você não vende para empresas grandes. Drata/Vanta automatizam 70% das evidencias</li>
+<li><strong>Trade-offs:</strong> SOC 2 Type II leva 6-12 meses para obter. Custo de auditoria: $30-100K/ano. Compliance continuo exige dedicacao — mas desbloqueia mercado enterprise</li>
+</ul>
+
+<h4>32. HIPAA (Dados de Saude)</h4>
+<p><strong>Definição:</strong> Regulacao americana para proteção de dados de saude (PHI - Protected Health Information). Aplicavel se o sistema processa dados de saude, mesmo indiretamente.</p>
+<ul>
+<li><strong>Métricas:</strong> PHI encryption status, BAA (Business Associaté Agreement) coverage, access audit completeness</li>
+<li><strong>Como específicar:</strong> "Dados PHI devem ser criptografados em repousó (AES-256) e em transito (TLS 1.2+). Acessó a PHI deve ser logado com audit trail imutável. BAA assinado com todos os sub-processadores. Segregacao de ambientes obrigatória. Backup criptografado com retenção de 6 anos"</li>
+<li><strong>Como testar:</strong> HIPAA risk assessment anual, audit de acesso a PHI, verificação de criptografia end-to-end, teste de breach notification process</li>
+<li><strong>Exemplo real:</strong> AWS, GCP e Azure oferecem serviços HIPAA-eligible, mas você precisa configurar corretamente e assinar BAA. Serviços não-eligible (ex: certos serviços serverless) não podem processar PHI</li>
+<li><strong>Trade-offs:</strong> HIPAA restringe severamente onde é como dados podem ser armazenados é processados. Custo de infraestrutura HIPAA-compliant e 2-3x maior. Analytics de dados de saude e limitado</li>
+</ul>
+
+<h4>33. Retencao de Dados (Data Retention)</h4>
+<p><strong>Definição:</strong> Politicas que definem por quanto tempo dados devem ser mantidos é quando devem ser deletados. Exigido por LGPD/GDPR e multiplas regulacoes setoriais.</p>
+<ul>
+<li><strong>Métricas:</strong> Data retention compliance rate, orphaned data percentage, deletion automation coverage</li>
+<li><strong>Como específicar:</strong> "Dados de usuários ativos: retidos enquanto conta ativa + 30 dias. Dados de usuários deletados: anonimizados em 72h, exceto obrigacoes legais. Logs de auditoria: 7 anós (obrigacao fiscal). Logs de aplicação: 90 dias. Backups: 30 dias. Politica de data lifecycle automatizada — nenhum dado sem owner e retention period definido"</li>
+<li><strong>Como testar:</strong> Audit de dados orfaos, verificar que jobs de cleanup rodam corretamente, testar que dados expirados são realmente deletados</li>
+<li><strong>Exemplo real:</strong> GDPR multa por reter dados além do necessário (princípio de minimizacao). Ao mesmo tempo, regulacoes fiscais exigem reter dados por 5-10 anos. O equilibrio e: anonimizar dados pessoais mas manter dados fiscais</li>
+<li><strong>Trade-offs:</strong> Delecao automatizada pode causar perda de dados importantes se mal configurada. Retencao excessiva aumenta custo de storage e risco de breach. O ideal e classificação clara por tipo de dado</li>
+</ul>
+
+<!-- ═══════════════════ CATEGORIA 10: OPERACIONAIS ═══════════════════ -->
+<h3>Categoria 10: Requisitos Operacionais</h3>
+
+<p>NFRs operacionais definem como o sistema e <strong>operado em produção</strong> — deploy, monitoramento, configuração e manutenção dia-a-dia.</p>
+
+<h4>34. Observabilidade (Observability)</h4>
+<p><strong>Definição:</strong> Capacidade de entender o estado interno do sistema a partir de seus outputs externós (logs, métricas, traces). Diferente de monitoramento — observabilidade permite responder perguntas que você NAO previu.</p>
+<ul>
+<li><strong>Métricas:</strong> Trace coverage (% of requests traced), log searchability time, alert-to-resolution time, dashboard coverage</li>
+<li><strong>Como específicar:</strong> "3 pilares obrigatórios: (1) Logs estruturados (JSON) com correlation-id em todo request. (2) Métricas RED (Rate, Errors, Duration) + USE (Utilization, Saturation, Errors) para cada serviço. (3) Distributed tracing com 100% sampling em erros e 10% em tráfego normal. Stack: OpenTelemetry para instrumentação, Grafana/Datadog para visualização"</li>
+<li><strong>Como testar:</strong> Injetar falhas e medir tempo de diagnóstico, verificar que traces cobrem todo o fluxo, testar alertas com cenários reais</li>
+<li><strong>Exemplo real:</strong> Google usa SRE (Site Reliability Engineering) com SLIs/SLOs/SLAs derivados de observabilidade. A decisão "devemos investir em reliability ou features?" é baseada em error budget</li>
+<li><strong>Trade-offs:</strong> Instrumentacao completa gera TB de dados/dia. Custo de Datadog/New Relic pode ser significativo. OpenTelemetry + Grafana Stack reduz custo mas exige mais operação</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Exemplo: Structured logging com correlation</span>
+<span class="kw">import</span> { <span class="fn">Logger</span> } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+
+<span class="kw">export class</span> <span class="tp">OrderService</span> {
+  <span class="kw">privaté readonly</span> <span class="fn">logger</span> = <span class="kw">new</span> <span class="fn">Logger</span>(<span class="str">'OrderService'</span>);
+
+  <span class="kw">async</span> <span class="fn">createOrder</span>(<span class="fn">dto</span>: <span class="tp">CreateOrderDto</span>, <span class="fn">traceId</span>: <span class="tp">string</span>) {
+    <span class="kw">this</span>.<span class="fn">logger</span>.<span class="fn">log</span>({
+      <span class="fn">message</span>: <span class="str">'Creating order'</span>,
+      <span class="fn">traceId</span>,
+      <span class="fn">userId</span>: dto.<span class="fn">userId</span>,
+      <span class="fn">itemCount</span>: dto.<span class="fn">items</span>.<span class="fn">length</span>,
+      <span class="fn">totalAmount</span>: dto.<span class="fn">total</span>,
+      <span class="fn">timestamp</span>: <span class="kw">new</span> <span class="fn">Date</span>().<span class="fn">toISOString</span>()
+    });
+
+    <span class="cm">// Métrica customizada</span>
+    <span class="fn">metrics</span>.<span class="fn">increment</span>(<span class="str">'orders.created'</span>, {
+      <span class="fn">payment_method</span>: dto.<span class="fn">paymentMethod</span>,
+      <span class="fn">region</span>: dto.<span class="fn">region</span>
+    });
+  }
+}</code></pre>
+
+<h4>35. Deployabilidade (Deployability)</h4>
+<p><strong>Definição:</strong> Quao fácil, rápido e seguro é fazer deploy de novas versões do sistema. Inclui capacidade de rollback.</p>
+<ul>
+<li><strong>Métricas:</strong> Deployment frequency (DORA), deployment time, rollback time, change failure raté (DORA)</li>
+<li><strong>Como específicar:</strong> "Deploy em produção deve ser possível a qualquer momento com um click/merge. Pipeline completo (build + test + deploy) em &lt; 15 minutos. Rollback para versão anterior em &lt; 5 minutos. Blue-green ou canary deployment obrigatório — zero downtime. Deployment frequency mínima: diaria"</li>
+<li><strong>Como testar:</strong> Medir DORA metrics, simular rollback, verificar que deploy não causa downtime (zero-downtime deployment test)</li>
+<li><strong>Exemplo real:</strong> Amazon faz deploy a cada 11.7 segundos em media. Netflix faz centenas de deploys por dia. Isso só é possível com CI/CD maduro e confiança no pipeline</li>
+<li><strong>Trade-offs:</strong> Pipeline robusto de CI/CD exige investimento inicial significativo. Canary deployments adicionam complexidade de roteamento. Mas o retorno e velocidade e segurança</li>
+</ul>
+
+<h4>36. Configurabilidade (Configurability)</h4>
+<p><strong>Definição:</strong> Capacidade de alterár o comportamento do sistema sem mudança de código ou deploy. Feature flags, configurações de ambiente, parametros de negócios.</p>
+<ul>
+<li><strong>Métricas:</strong> Percentage of tunable parameters, feature flag coverage, configuration change latency</li>
+<li><strong>Como específicar:</strong> "Parametros de negócios (limites, taxas, thresholds) devem ser configuraveis via admin panel sem deploy. Feature flags para novas funcionalidades — ativar/desativar para % de usuários ou por tenant. Configuracoes de ambiente (URLs, credentials) via environment variables. Mudanca de config deve propagar em &lt; 30 segundos"</li>
+<li><strong>Como testar:</strong> Alterár configs e verificar propagacao, testar feature flags com diferentes segmentos, verificar que configs sensiveis não são expostas em logs</li>
+<li><strong>Exemplo real:</strong> LaunchDarkly, Flagsmith e Split.io são plataformas de feature flags. Facebook controla features para bilhoes de usuários com gatekeepers sem deploy</li>
+<li><strong>Trade-offs:</strong> Muitos feature flags criam "debt de configuração" — flags que ninguem lembra se pode remover. Disciplina de cleanup e obrigatória. Config distribuida pode causar inconsistência transitoria</li>
+</ul>
+
+<h4>37. Internacionalizacao (i18n)</h4>
+<p><strong>Definição:</strong> Capacidade do sistema de suportar múltiplos idiomas, moedas, fusos horarios e formatos regionais.</p>
+<ul>
+<li><strong>Métricas:</strong> Number of supported locales, translation coverage percentage, locale-specific test coverage</li>
+<li><strong>Como específicar:</strong> "O sistema deve suportar pt-BR e en-US no lancamento, com arquitetura pronta para adicionar novos idiomas sem mudança de código. Datas devem respeitar timezone do usuário. Moedas devem ser formatadas conforme locale. Textos devem usar i18n keys (nunca hardcoded). Layout deve funcionar com textos 40% mais longos (alémaes são mais longos que ingles)"</li>
+<li><strong>Como testar:</strong> Pseudo-localization testing (substituir textos por versões mais longas com caracteres especiais), screenshot testing per locale, verificar que nenhum texto esta hardcoded</li>
+<li><strong>Exemplo real:</strong> Airbnb suporta 60+ idiomas. O custo de adicionar i18n depois e 10x maior que fazer desde o início — retrofitting exige tocar cada string do sistema</li>
+<li><strong>Trade-offs:</strong> i18n desde o dia 1 adiciona overhead em development. Se você tem certeza que só vai operar em um pais, pode não valer. Mas mudanças de plano acontecem — é o custo de retrofit e enorme</li>
+</ul>
+
+<h4>38. Sustentabilidade (Green IT)</h4>
+<p><strong>Definição:</strong> Eficiência energetica e pegada de carbono do sistema. Emergente como requisito em empresas ESG-conscientes e regulacoes europeias.</p>
+<ul>
+<li><strong>Métricas:</strong> Carbon footprint per transaction, energy efficiency (transactions per kWh), cloud waste percentage</li>
+<li><strong>Como específicar:</strong> "O sistema deve minimizar recursos ociosos (auto-scaling para zero quando sem tráfego). Escolher regioes de cloud com energia renovavel (AWS us-west-2 = 95% renovavel). Otimizar queries e batch processing para reduzir tempo de computação. Relatorio trimestral de carbon footprint via AWS Carbon Footprint tool"</li>
+<li><strong>Como testar:</strong> AWS Carbon Footprint dashboard, medir custo de infraestrutura como proxy (menós gasto = menós recursó = menós carbono), audit de recursos ociosos</li>
+<li><strong>Exemplo real:</strong> A EU esta implementando regulacoes que exigem relatório de emissoes digitais. Google Cloud e carbon-neutral desde 2007. AWS planejá 100% renovavel até 2025</li>
+<li><strong>Trade-offs:</strong> Sustentabilidade pode conflitar com performance (mais cache = mais memória = mais energia). Serverless é mais eficiente para cargas variáveis. O alinhamento com custo ajuda — reduzir waste e bom para o planeta E para o orcamento</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">+</span>
+<div><strong>Padrão emergente:</strong> NFRs de sustentabilidade estão ganhando tracao. A Software Carbon Intensity (SCI) specification da Green Software Foundation já é usada por Microsoft, Google e ThoughtWorks. O futuro próximo vai exigir isso como compliance.</div>
+</div>
+
+</div><!-- /section principal NFRs -->
+
+<!-- ═══════════════════ COMO DOCUMENTAR NFRs ═══════════════════ -->
+<div class="section">
+<h3>Como Documentar NFRs — Templaté Padrão</h3>
+
+<p>Um NFR mal documentado e tao inútil quanto não ter NFR. Use o criterio <strong>SMART</strong>: Specific, Measurable, Achievable, Relevant, Time-bound.</p>
+
+<div class="card">
+<div class="card-title">Templaté de Especificacao de NFR</div>
+<pre data-lang="markdown"><code><span class="cm">## NFR-001: Tempo de Resposta da API de Catalogo</span>
+
+<span class="fn">**Categoria:**</span> <span class="str">Desempenho</span>
+<span class="fn">**Prioridade:**</span> <span class="str">Alta (P1)</span>
+<span class="fn">**Stakeholder:**</span> <span class="str">Product Owner + SRE Team</span>
+
+<span class="fn">**Descricao:**</span>
+<span class="str">O endpoint GET /api/products deve responder dentro</span>
+<span class="str">dos limites de latência específicados, garantindo</span>
+<span class="str">experiência fluida para o usuário final.</span>
+
+<span class="fn">**Criterios de Aceitacao (Measurable):**</span>
+<span class="str">- P50 latency &lt; 50ms</span>
+<span class="str">- P95 latency &lt; 200ms</span>
+<span class="str">- P99 latency &lt; 500ms</span>
+<span class="str">- Medido no API Gateway (não na aplicação)</span>
+<span class="str">- Sob carga de até 1000 req/s sustentados</span>
+<span class="str">- Excluindo cold starts após deploy</span>
+
+<span class="fn">**Como Testar:**</span>
+<span class="str">- Load test com k6 simulando 1000 req/s por 30min</span>
+<span class="str">- Synthetic monitoring via Datadog (a cada 1min)</span>
+<span class="str">- Dashboard de SLO com alertas automáticos</span>
+
+<span class="fn">**Trade-offs Aceitos:**</span>
+<span class="str">- Dados de catálogo podem ter até 5min de cache</span>
+<span class="str">- Consistency eventual é aceitável para listagens</span>
+
+<span class="fn">**Consequência de Violacao:**</span>
+<span class="str">- P1 incident se P95 > 500ms por > 5 minutos</span>
+<span class="str">- SLA penalty de 5% se meta mensal não atingida</span></code></pre>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">X</span>
+<div><strong>NFR mal escrito:</strong> "O sistema deve ser rápido." — Não e específico, não é mensurável, não tem criterio de aceitacao. Qualquer número serve? 5 segundos e "rápido"? Isso não é requisito, e desejo.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">+</span>
+<div><strong>NFR bem escrito:</strong> "95% dos requests GET /products devem ter latência end-to-end &lt; 200ms, medida no ALB, sob carga de até 1000 req/s, excluindo janelas de deploy." — Especifico, mensurável, testável, com condições claras.</div>
+</div>
+
+</div><!-- /section documentação -->
+
+<!-- ═══════════════════ NFR FRAMEWORK ═══════════════════ -->
+<div class="section">
+<h3>NFR Framework (Chung et al.)</h3>
+
+<p>O <strong>NFR Framework</strong> de Lawrence Chung é o modelo academico mais usado para modelar requisitos não funcionais. Usa o conceito de <strong>softgoals</strong> — objetivos que não tem criterio de satisfacao binário (satisfeito/não satisfeito), mas sim um espectro.</p>
+
+<h4>Conceitos-Chave</h4>
+<ul>
+<li><strong>Softgoal:</strong> Objetivo qualitativo sem criterio binário. Ex: "O sistema deve ser seguro" — quao seguro e "seguro o suficiente"?</li>
+<li><strong>Operacionalizacao:</strong> Tecnica concreta que contribui para o softgoal. Ex: "Usar TLS 1.3", "Implementar MFA", "Fazer penetration testing trimestral"</li>
+<li><strong>Contribuicoes:</strong> Relacoes entre softgoals e operacionalizacoes: Make (++), Help (+), Unknown (?), Hurt (-), Break (--)</li>
+<li><strong>SIG (Softgoal Interdependency Graph):</strong> Grafo que mostra como operacionalizacoes contribuem para softgoals é como softgoals conflitam entre si</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box purple">Segurança<br><small>(softgoal)</small></div>
+<div class="diagram-arrow">&larr; ++</div>
+<div class="diagram-box green">TLS 1.3<br><small>(operac.)</small></div>
+<div class="diagram-arrow">&nbsp;&nbsp;</div>
+<div class="diagram-box green">MFA<br><small>(operac.)</small></div>
+<div class="diagram-arrow">-- &rarr;</div>
+<div class="diagram-box orange">Usabilidade<br><small>(softgoal)</small></div>
+</div>
+<p style="text-align:center;font-size:.82rem;color:var(--text3)">MFA contribui positivamente (++) para Segurança, mas negativamente (--) para Usabilidade — trade-off clássico.</p>
+
+<h4>Quando Usar o NFR Framework?</h4>
+<ul>
+<li><strong>Na elicitacao:</strong> Para identificar conflitos entre NFRs cedo (segurança vs usabilidade, performance vs custo)</li>
+<li><strong>Na priorização:</strong> Para decidir quais operacionalizacoes investir dado budget limitado</li>
+<li><strong>Na comunicação:</strong> SIG e visual é fácilita discussão com stakeholders não-técnicos</li>
+</ul>
+</div>
+
+<!-- ═══════════════════ ISO 25010 ═══════════════════ -->
+<div class="section">
+<h3>ISO 25010 (SQuaRE) — Product Quality Model</h3>
+
+<p>A <strong>ISO/IEC 25010:2011</strong> (Systems and Software Quality Requirements and Evaluation) define o modelo padrão de qualidade de produto de software. Organiza qualidade em <strong>8 caracteristicas</strong> é <strong>31 sub-caracteristicas</strong>.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Caracteristica</th><th>Sub-caracteristicas</th><th>Mapeamento NFRs desta Seção</th></tr>
+<tr><td><strong>Adequacao Funcional</strong></td><td>Completude, Corretude, Adequacao</td><td>(Requisitos funcionais — não cobre aqui)</td></tr>
+<tr><td><strong>Eficiência de Performance</strong></td><td>Tempo, Throughput, Utilizacao de recursos</td><td>NFRs 1-4 (Desempenho)</td></tr>
+<tr><td><strong>Compatibilidade</strong></td><td>Coexistência, Interoperabilidade</td><td>NFRs 27-28 (Compatibilidade)</td></tr>
+<tr><td><strong>Usabilidade</strong></td><td>Reconhecibilidade, Aprendibilidade, Operabilidade, Protecao contra erro, Estetica, Acessibilidade</td><td>NFRs 13-16 (Usabilidade)</td></tr>
+<tr><td><strong>Confiabilidade</strong></td><td>Maturidade, Disponibilidade, Tolerancia a falhas, Recuperabilidade</td><td>NFRs 5-8 (Confiabilidade)</td></tr>
+<tr><td><strong>Segurança</strong></td><td>Confidencialidade, Integridade, Não-repudio, Responsabilidade, Autenticidade</td><td>NFRs 9-12 (Segurança)</td></tr>
+<tr><td><strong>Manutenibilidade</strong></td><td>Modularidade, Reusabilidade, Analisabilidade, Modificabilidade, Testabilidade</td><td>NFRs 20-23 (Manutenibilidade)</td></tr>
+<tr><td><strong>Portabilidade</strong></td><td>Adaptabilidade, Instalabilidade, Substituibilidade</td><td>NFRs 24-26 (Portabilidade)</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>ISO 25010 vs Nossos NFRs:</strong> A ISO 25010 cobre 8 categorias de qualidade de produto. Nos adicionamos 2 categorias extras que a ISO não cobre explicitamente: <strong>Requisitos Legais/Regulatorios</strong> (29-33) e <strong>Requisitos Operacionais</strong> (34-38). Na prática, projetos reais sempre precisam dessas categorias.</div>
+</div>
+
+</div>
+
+<!-- ═══════════════════ TABELA RESUMO ═══════════════════ -->
+<div class="section">
+<h3>Tabela Resumo — Todos os 38 NFRs</h3>
+
+<p>Referencia rápida com categoria, métrica-chave é como testar cada NFR.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>#</th><th>NFR</th><th>Categoria</th><th>Métrica-Chave</th><th>Como Testar</th></tr>
+<tr><td>1</td><td>Tempo de Resposta</td><td>Desempenho</td><td>P95 latência</td><td>Load test (k6)</td></tr>
+<tr><td>2</td><td>Throughput</td><td>Desempenho</td><td>Requests/segundo</td><td>Strêss test</td></tr>
+<tr><td>3</td><td>Capacidade</td><td>Desempenho</td><td>Max concurrent users</td><td>Capacity test</td></tr>
+<tr><td>4</td><td>Eficiência de Recursos</td><td>Desempenho</td><td>CPU/RAM útilization</td><td>APM profiling</td></tr>
+<tr><td>5</td><td>Disponibilidade</td><td>Confiabilidade</td><td>Uptime % (nines)</td><td>Synthetic monitoring</td></tr>
+<tr><td>6</td><td>Tolerancia a Falhas</td><td>Confiabilidade</td><td>Failover time</td><td>Chaos Engineering</td></tr>
+<tr><td>7</td><td>Recuperabilidade</td><td>Confiabilidade</td><td>RPO / RTO</td><td>DR drills</td></tr>
+<tr><td>8</td><td>Durabilidade</td><td>Confiabilidade</td><td>Durability nines</td><td>Kill disk tests</td></tr>
+<tr><td>9</td><td>Confidencialidade</td><td>Segurança</td><td>Encryption coverage %</td><td>Pentest</td></tr>
+<tr><td>10</td><td>Integridade</td><td>Segurança</td><td>Validation pass rate</td><td>Fuzzing</td></tr>
+<tr><td>11</td><td>Autenticação/Autorizacao</td><td>Segurança</td><td>MFA adoption %</td><td>OWASP testing</td></tr>
+<tr><td>12</td><td>Não-Repudio</td><td>Segurança</td><td>Audit trail coverage</td><td>Log tamper test</td></tr>
+<tr><td>13</td><td>Aprendibilidade</td><td>Usabilidade</td><td>Time to 1st task</td><td>Usability testing</td></tr>
+<tr><td>14</td><td>Eficiência de Uso</td><td>Usabilidade</td><td>Task completion time</td><td>Observation</td></tr>
+<tr><td>15</td><td>Acessibilidade</td><td>Usabilidade</td><td>WCAG level</td><td>axe-core / Lighthouse</td></tr>
+<tr><td>16</td><td>Satisfacao do Usuario</td><td>Usabilidade</td><td>SUS score / NPS</td><td>Surveys</td></tr>
+<tr><td>17</td><td>Escalab. Horizontal</td><td>Escalabilidade</td><td>Scale efficiency ratio</td><td>Multi-node benchmark</td></tr>
+<tr><td>18</td><td>Escalab. Vertical</td><td>Escalabilidade</td><td>Max instance size</td><td>Instance upgrade test</td></tr>
+<tr><td>19</td><td>Elasticidade</td><td>Escalabilidade</td><td>Scale-up time</td><td>Spike test</td></tr>
+<tr><td>20</td><td>Modularidade</td><td>Manutenibilidade</td><td>Module coupling</td><td>Static analysis</td></tr>
+<tr><td>21</td><td>Testabilidade</td><td>Manutenibilidade</td><td>Code coverage %</td><td>Coverage reports</td></tr>
+<tr><td>22</td><td>Analisabilidade</td><td>Manutenibilidade</td><td>MTTR</td><td>Fault injection</td></tr>
+<tr><td>23</td><td>Modificabilidade</td><td>Manutenibilidade</td><td>Lead time for changes</td><td>DORA metrics</td></tr>
+<tr><td>24</td><td>Adaptabilidade</td><td>Portabilidade</td><td>Supported environments</td><td>Multi-env deploy</td></tr>
+<tr><td>25</td><td>Instalabilidade</td><td>Portabilidade</td><td>Time to first deploy</td><td>Clean env deploy</td></tr>
+<tr><td>26</td><td>Substituibilidade</td><td>Portabilidade</td><td>Vendor-specific code %</td><td>Migration simulation</td></tr>
+<tr><td>27</td><td>Interoperabilidade</td><td>Compatibilidade</td><td>API standard compliance</td><td>Contract testing</td></tr>
+<tr><td>28</td><td>Coexistência</td><td>Compatibilidade</td><td>Resource isolation</td><td>Noisy neighbor test</td></tr>
+<tr><td>29</td><td>LGPD/GDPR</td><td>Legal</td><td>Consent compliance %</td><td>Privacy audit</td></tr>
+<tr><td>30</td><td>PCI-DSS</td><td>Legal</td><td>PCI level</td><td>ASV scan + audit</td></tr>
+<tr><td>31</td><td>SOC 2</td><td>Legal</td><td>Control effectiveness %</td><td>Annual audit</td></tr>
+<tr><td>32</td><td>HIPAA</td><td>Legal</td><td>PHI encryption status</td><td>Risk assessment</td></tr>
+<tr><td>33</td><td>Retencao de Dados</td><td>Legal</td><td>Compliance rate</td><td>Data lifecycle audit</td></tr>
+<tr><td>34</td><td>Observabilidade</td><td>Operacional</td><td>Trace coverage %</td><td>Fault injection drill</td></tr>
+<tr><td>35</td><td>Deployabilidade</td><td>Operacional</td><td>Deploy frequency (DORA)</td><td>Pipeline metrics</td></tr>
+<tr><td>36</td><td>Configurabilidade</td><td>Operacional</td><td>Feature flag coverage</td><td>Config change test</td></tr>
+<tr><td>37</td><td>Internacionalizacao</td><td>Operacional</td><td>Locale coverage</td><td>Pseudo-localization</td></tr>
+<tr><td>38</td><td>Sustentabilidade</td><td>Operacional</td><td>Carbon per transaction</td><td>Cloud carbon tools</td></tr>
+</table>
+</div>
+
+</div>
+
+<!-- ═══════════════════ MINI SYSTEM DESIGN ═══════════════════ -->
+<div class="section">
+<h3>Mini System Design — Definindo NFRs para um E-commerce</h3>
+
+<p>Vamos aplicar tudo na prática: definir os NFRs prioritarios para um <strong>e-commerce de medio porte</strong> (100K usuários ativos, 500 pedidos/dia, catálogo de 50K produtos).</p>
+
+<h4>Passó 1: Identificar NFRs Prioritarios</h4>
+<p>Nem todos os 38 NFRs são igualmente importantes. Para este e-commerce, priorizamos:</p>
+
+<div class="card">
+<div class="card-title">NFRs Criticos (P0 — não-negociaveis)</div>
+<ul style="color:var(--text2);font-size:.88rem">
+<li><strong>Disponibilidade:</strong> 99.9% — downtime máximo de 43 min/mes (perda de vendas e inaceitável)</li>
+<li><strong>Segurança (PCI + LGPD):</strong> Tokenizacao de pagamentos, consent management, encryption end-to-end</li>
+<li><strong>Tempo de Resposta:</strong> P95 &lt; 300ms para catálogo, P95 &lt; 1s para checkout</li>
+<li><strong>Durabilidade:</strong> 11 nines para dados de pedidos — nenhum pedido pode ser perdido</li>
+</ul>
+</div>
+
+<div class="card blue">
+<div class="card-title">NFRs Importantes (P1 — devem ser atendidos)</div>
+<ul style="color:var(--text2);font-size:.88rem">
+<li><strong>Elasticidade:</strong> Auto-scale para Black Friday (50x tráfego normal por 48h)</li>
+<li><strong>Recuperabilidade:</strong> RPO 1h, RTO 4h (backups hourly, DR plan documentado)</li>
+<li><strong>Observabilidade:</strong> Logs + métricas + traces com alertas para P1 incidents</li>
+<li><strong>Deployabilidade:</strong> Deploy diario sem downtime, rollback em &lt; 5min</li>
+</ul>
+</div>
+
+<div class="card orange">
+<div class="card-title">NFRs Desejaveis (P2 — nice to have)</div>
+<ul style="color:var(--text2);font-size:.88rem">
+<li><strong>Acessibilidade:</strong> WCAG 2.1 AA (importante mas pode ser incrementado)</li>
+<li><strong>i18n:</strong> pt-BR apenas no lancamento, preparado para en-US futuro</li>
+<li><strong>Substituibilidade:</strong> Abstracoes para payment gateway (trocar Stripe se necessário)</li>
+<li><strong>Sustentabilidade:</strong> Auto-scaling para zero fora do horario comercial</li>
+</ul>
+</div>
+
+<h4>Passó 2: Especificar com Criterios SMART</h4>
+
+<pre data-lang="yaml"><code><span class="cm"># NFR-EC-001: Disponibilidade do E-commerce</span>
+<span class="fn">nfr</span>:
+  <span class="fn">id</span>: <span class="str">NFR-EC-001</span>
+  <span class="fn">category</span>: <span class="str">Confiabilidade</span>
+  <span class="fn">priority</span>: <span class="str">P0</span>
+  <span class="fn">description</span>: <span class="str">|</span>
+    <span class="str">O sistema deve manter 99.9% de disponibilidade</span>
+    <span class="str">para endpoints críticos (catálogo, carrinho, checkout).</span>
+  <span class="fn">acceptance_criteria</span>:
+    - <span class="str">"Uptime >= 99.9% medido mensalmente pelo Datadog"</span>
+    - <span class="str">"Downtime não planejado máximo: 43 min/mes"</span>
+    - <span class="str">"Manutenção programada: max 2h/mes, entre 02h-05h"</span>
+    - <span class="str">"Health check endpoint com < 100ms de resposta"</span>
+  <span class="fn">test_strategy</span>:
+    - <span class="str">"Synthetic monitoring a cada 30 segundos"</span>
+    - <span class="str">"Chaos Engineering trimestral (kill instance, kill AZ)"</span>
+    - <span class="str">"Failover drill mensal (database + cache)"</span>
+  <span class="fn">trade_offs</span>:
+    - <span class="str">"Multi-AZ obrigatório (custo 1.5x vs single-AZ)"</span>
+    - <span class="str">"Read replicas para catálogo (eventual consistency OK)"</span>
+  <span class="fn">violation_consequence</span>:
+    - <span class="str">"P0 incident -> page SRE on-call"</span>
+    - <span class="str">"SLA breach -> credito de 10% para clientes afetados"</span>
+
+<span class="cm"># NFR-EC-002: Elasticidade Black Friday</span>
+<span class="fn">nfr</span>:
+  <span class="fn">id</span>: <span class="str">NFR-EC-002</span>
+  <span class="fn">category</span>: <span class="str">Escalabilidade</span>
+  <span class="fn">priority</span>: <span class="str">P1</span>
+  <span class="fn">description</span>: <span class="str">|</span>
+    <span class="str">O sistema deve escalar automáticamente para</span>
+    <span class="str">suportar 50x o tráfego normal durante Black Friday.</span>
+  <span class="fn">acceptance_criteria</span>:
+    - <span class="str">"Scale-up de 3 para 50 instancias em < 5 minutos"</span>
+    - <span class="str">"Scale-down para baseline em < 15 minutos pos-pico"</span>
+    - <span class="str">"SLO de latência mantido durante escalonamento"</span>
+    - <span class="str">"Custo de infra durante pico não excede 3x baseline"</span>
+  <span class="fn">test_strategy</span>:
+    - <span class="str">"Load test pre-Black Friday simulando 50x"</span>
+    - <span class="str">"Game Day 2 semanas antes do evento"</span></code></pre>
+
+<h4>Passó 3: Identificar Conflitos</h4>
+<p>NFRs sempre conflitam. Documentar os trade-offs evita surpresas:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>NFR A</th><th>vs</th><th>NFR B</th><th>Conflito</th><th>Decisao</th></tr>
+<tr><td>Performance (cache)</td><td>vs</td><td>Consistência (dados frescos)</td><td>Cache de 5min para catálogo pode mostrar preço desatualizado</td><td>Cache de 60s + invalidação por evento de preço</td></tr>
+<tr><td>Segurança (MFA)</td><td>vs</td><td>Usabilidade (friccao)</td><td>MFA no checkout aumenta abandono de carrinho</td><td>MFA apenas para login de admin. Checkout usa 3D Secure do gateway</td></tr>
+<tr><td>Disponibilidade (multi-region)</td><td>vs</td><td>Custo</td><td>Multi-region dobra custo de infraestrutura</td><td>Multi-AZ (não multi-region). Custo 1.5x, não 2x</td></tr>
+<tr><td>Observabilidade (full traces)</td><td>vs</td><td>Performance (overhead)</td><td>Tracing 100% adiciona ~2ms por span</td><td>Sample 10% normal, 100% em erros. Overhead aceitável</td></tr>
+</table>
+</div>
+
+</div>
+
+<!-- ═══════════════════ ARMADILHAS COMUNS ═══════════════════ -->
+<div class="section">
+<h3>Armadilhas Comuns ao Definir NFRs</h3>
+
+<div class="tip bad">
+<span class="tip-icon">X</span>
+<div><strong>Armadilha 1 — NFRs vagos:</strong> "O sistema deve ser seguro", "Deve ter boa performance", "Deve ser escalável". Sem métricas, sem criterio de aceitacao, sem como testar. Isso não é requisito — e wishful thinking. SEMPRE quantifique.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">X</span>
+<div><strong>Armadilha 2 — Ignorar NFRs até o final:</strong> "Vamos primeiro fazer funcionar, depois otimizamos." Resultado: sistema monolitico, sem testes, sem observabilidade, que precisa de rewrite completo quando chega em produção. NFRs devem ser definidos no Sprint 0.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">X</span>
+<div><strong>Armadilha 3 — Querer todos os NFRs no nível máximo:</strong> "Queremos 99.999% availability, P99 &lt; 10ms, zero data loss, WCAG AAA, e budget de $500/mes." Impossível. NFRs são trade-offs. Priorize 3-5 críticos e aceite compromissos nós demais.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">!</span>
+<div><strong>Armadilha 4 — Não testar NFRs:</strong> "Nossó SLA e 99.9% availability" mas ninguem nunca fez failover drill. O SLA e uma mentira. Se você não testa, não sabe se atende. Traté NFRs como features — com Definition of Done e testes automatizados.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">!</span>
+<div><strong>Armadilha 5 — Confundir SLA com SLO:</strong> SLO (Service Level Objective) e meta interna de engenharia. SLA (Service Level Agreement) e contrato com cliente com penalidades. Seu SLO deve ser mais restrito que o SLA — se o SLA e 99.9%, seu SLO deve ser 99.95% para ter margem (error budget).</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">+</span>
+<div><strong>Boa prática — Error Budget:</strong> Se seu SLO é 99.95% (21.9 min downtime/mes) e você usou 10 minutos em incidentes, você tem 11.9 minutos de "error budget" restante. Se o budget acabar, PARE de lancar features e foque em reliability. Esse modelo (Google SRE) alinha incentivos entre devs e ops.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">+</span>
+<div><strong>Boa prática — NFR Fitness Functions:</strong> Transforme NFRs em testes automatizados que rodam no CI/CD. Ex: "Build falha se code coverage &lt; 80%", "Deploy falha se load test P95 &gt; 300ms", "Pipeline alerta se cyclomatic complexity &gt; 15". Isso garante que NFRs não degradem ao longo do tempo.</div>
+</div>
+
+</div>
+
+<!-- ═══════════════════ EXERCICIOS ═══════════════════ -->
+<div class="section">
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você é o tech lead de um sistema de telemedicina (consultas por video). Defina os 5 NFRs mais críticos com métricas SMART e criterios de aceitacao.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong></p>
+<ol>
+<li><strong>Disponibilidade (P0):</strong> 99.99% (4 nines) — consulta medica não pode cair no meio. Criterio: &lt; 4.38 min downtime/mes. Teste: failover drill semanal, synthetic monitoring a cada 15s.</li>
+<li><strong>Segurança HIPAA/LGPD (P0):</strong> Dados de saude (PHI) criptografados AES-256 em repousó e TLS 1.3 em transito. Video call E2E encrypted. Audit trail de todo acesso a prontuario. Criterio: 100% dos dados PHI encriptados, zero PII em logs. Teste: pentest trimestral, audit semestral.</li>
+<li><strong>Performance de Video (P0):</strong> Latencia de video &lt; 150ms (essential para conversa natural). Jitter &lt; 30ms. Packet loss &lt; 1%. Criterio: Medido P95 em sessões reais. Teste: synthetic video calls com diferentes bandwidths, strêss test com 1000 sessões simultaneas.</li>
+<li><strong>Recuperabilidade (P1):</strong> RPO = 0 para dados de consulta (replicação síncrona). RTO = 15 min. Criterio: Backup real-time, restore testado mensalmente. Perder dados de consulta medica pode ter consequências legais.</li>
+<li><strong>Acessibilidade (P1):</strong> WCAG 2.1 AA — pacientes idosos e com deficiências precisam usar o sistema. Fontes ajustaveis, alto contraste, compatibilidade com screen readers. Criterio: Score Lighthouse Accessibility &gt; 90. Teste: teste com usuários PcD a cada release major.</li>
+</ol>
+<p>Trade-off aceito: Custo de infraestrutura ~5x maior que um SaaS genérico por causa de 4 nines + HIPAA + E2E encryption. Justificado pelo risco medico-legal.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu CTO diz "nossó SLA e 99.99% mas nossó budget de infra e $500/mes e temos um único servidor." Explique por que isso e problematico e proponha um plano realista.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong></p>
+<p><strong>Por que é problematico:</strong> 99.99% (4 nines) permite apenas 4.38 minutos de downtime por mes. Um único servidor significa: (1) qualquer restart, patch ou deploy causa downtime — só o deploy já consome o budget; (2) falha de hardware = downtime total sem failover; (3) sem redundancia de rede, disco ou aplicação; (4) custo de 4 nines tipicamente e $5,000-50,000/mes dependendo da escala (multi-AZ, auto-failover, load balancers, replicas). Com $500/mes você consegue uma instancia medium + banco managed + CDN — o que da ~99% a 99.5% realista.</p>
+<p><strong>Plano realista:</strong></p>
+<ol>
+<li>Redefinir SLA para 99.5% (3.65h downtime/mes) — realista para o budget</li>
+<li>Usar serviços managed: RDS Multi-AZ ($50/mes — já da failover de banco), Elastic Beanstalk com min 2 instancias ($100/mes), CloudFront CDN ($10/mes)</li>
+<li>Health checks + auto-restart = ~99.5-99.9% possível</li>
+<li>Apresentar ao CTO: tabela de custo vs uptime mostrando que 99.99% exige ~$5K/mes mínimo</li>
+<li>Propor roadmap: começar com 99.5%, evoluir para 99.9% quando revenue justificar o custo</li>
+</ol>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Sua empresa recebeu uma reclamacao de cliente dizendo "o sistema esta lento." Como você transforma essa reclamacao em NFRs mensuráveis e define um plano de acao?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong></p>
+<p><strong>Passó 1 — Definir "lento" com métricas:</strong> Coletar RUM (Real User Monitoring) data: qual é o P50, P95, P99 atual? Quais páginas/endpoints são os mais lentos? Para quais regioes/dispositivos? "Lento" para o cliente pode ser: tempo de carregamento da página > 3s, uma busca que demora 5s, ou o checkout que trava por 10s.</p>
+<p><strong>Passó 2 — Definir NFRs SMART:</strong></p>
+<ul>
+<li>NFR-PERF-001: "Tempo de carregamento da homepage: LCP (Largest Contentful Paint) &lt; 2.5s para P75 dos usuários (Core Web Vitals 'Good')"</li>
+<li>NFR-PERF-002: "API de busca: P95 &lt; 500ms para queries com até 1000 resultados"</li>
+<li>NFR-PERF-003: "Fluxo de checkout completo: P95 &lt; 3s end-to-end (incluindo validação de pagamento)"</li>
+</ul>
+<p><strong>Passó 3 — Plano de acao:</strong></p>
+<ol>
+<li>Instrumentar: Adicionar RUM (Datadog, Sentry Performance), distributed tracing, Core Web Vitals tracking</li>
+<li>Diagnosticar: Identificar bottlenecks (N+1 queries? API lenta? Frontend bundle grande? CDN miss?)</li>
+<li>Priorizar: Corrigir os 3 endpoints mais lentos com maior impacto em conversão</li>
+<li>Automatizar: Dashboard de SLO com alertas quando P95 degrada, load test no CI/CD</li>
+<li>Prevenir: Performance budget no CI — build falha se bundle &gt; 200KB ou P95 &gt; target</li>
+</ol>
+</div>
+</div>
+
+</div>
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Requisitos Não Funcionais</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="65-computacao-quantica.html">&#8592; Anterior: Computação Quantica</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="../fullstack-mastery.html" class="primary">Voltar ao Índice &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 66: Requisitos Não Funcionais
+// ══════════════════════════════════════════
+const SECTION_NUM = 66;
+const STORAGE_KEY = 'fsm_quiz_66';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual a forma CORRETA de específicar um NFR de performance?",
+    options: [
+      "O sistema deve ser rápido e responsivo",
+      "O tempo de resposta deve ser menor que 1 segundo",
+      "P95 da latência end-to-end deve ser < 200ms, medida no API Gateway, sob carga de até 1000 req/s",
+      "A performance deve atender as expectativas dos usuários"
+    ],
+    correct: 2,
+    explanation: "Um NFR válido deve ser SMART: específico (P95, endpoint), mensurável (< 200ms), com ponto de medição (API Gateway) e condições de carga (1000 req/s). As demais opcoes são vagas e não testaveis."
+  },
+  {
+    question: "Qual a diferença entre RPO e RTO?",
+    options: [
+      "RPO é o tempo para recuperar e RTO é a perda de dados aceitável",
+      "RPO é a perda máxima de dados aceitável e RTO é o tempo máximo para restaurar o serviço",
+      "Ambos medem a mesma coisa de formas diferentes",
+      "RPO se aplica a bancos de dados e RTO a aplicações"
+    ],
+    correct: 1,
+    explanation: "RPO (Recovery Point Objective) define quanta data você pode perder (ex: RPO de 1h = pode perder até 1h de dados). RTO (Recovery Time Objective) define quanto tempo o sistema pode ficar fora (ex: RTO de 4h = deve voltar em 4h). São métricas complementares de recuperabilidade."
+  },
+  {
+    question: "Em um e-commerce na Black Friday, qual NFR e MAIS crítico: Escalabilidade ou Elasticidade?",
+    options: [
+      "Escalabilidade — precisa lidar com 50x mais carga",
+      "Elasticidade — precisa escalar automáticamente para cima E para baixo",
+      "São sinônimos",
+      "Disponibilidade — nenhum dos dois importa se o site cair"
+    ],
+    correct: 1,
+    explanation: "Elasticidade é mais critica para Black Friday. Escalabilidade é a capacidade de crescer, mas elasticidade e crescer AUTOMATICAMENTE no pico e ENCOLHER depois para não pagar por capacidade ociosa. Na Black Friday, o tráfego sobe 50x por 48h e volta ao normal — elasticidade é o que garante custo-eficiência."
+  },
+  {
+    question: "O que o NFR Framework de Chung usa para modelar requisitos não funcionais?",
+    options: [
+      "User Stories com criterios de aceitacao",
+      "Softgoals com contribuicoes positivas e negativas entre si",
+      "Diagramas UML de atividades",
+      "Tabelas de decisão booleanas"
+    ],
+    correct: 1,
+    explanation: "O NFR Framework usa softgoals (objetivos sem criterio binário de satisfacao), operacionalizacoes (técnicas concretas) e contribuicoes (Make/Help/Hurt/Break) para modelar como NFRs se relacionam e conflitam. O SIG (Softgoal Interdependency Graph) é o artefato principal."
+  },
+  {
+    question: "Qual a melhor estratégia para compliance PCI-DSS em um e-commerce?",
+    options: [
+      "Criptografar dados de cartao no banco de dados da aplicação",
+      "Não tocar dados de cartao — usar tokenizacao via gateway (Stripe Elements)",
+      "Armazenar apenas o CVV criptografado para fácilitar compras futuras",
+      "Implementar PCI-DSS Level 1 completo independente do volume"
+    ],
+    correct: 1,
+    explanation: "A melhor estratégia e NUNCA tocar dados de cartao. Usando Stripe Elements ou similar, o PAN vai direto do browser para o gateway, e você recebe apenas um token. Isso reduz PCI scope de ~300 para ~20 requisitos (SAQ-A). Armazenar CVV e explicitamente proibido pelo PCI-DSS."
+  },
+  {
+    question: "Qual métrica de usabilidade tem escala padronizada de 0-100 com media da industria de 68?",
+    options: [
+      "NPS (Net Promoter Score)",
+      "CSAT (Customer Satisfaction Score)",
+      "SUS (System Usability Scale)",
+      "CES (Customer Effort Score)"
+    ],
+    correct: 2,
+    explanation: "O SUS (System Usability Scale) é um questionario padronizado de 10 perguntas que resulta em score de 0-100. A media da industria e 68. Acima de 80 e 'excelente'. O NPS vai de -100 a +100 e mede lealdade, não usabilidade específicamente."
+  },
+  {
+    question: "O que é 'error budget' no contexto de SRE e NFRs?",
+    options: [
+      "O orcamento financeiro alocado para correcao de bugs",
+      "A quantidade de downtime permitida antes de parar de lancar features e focar em reliability",
+      "O número máximo de erros 5xx permitidos por dia",
+      "O budget para ferramentas de monitoramento"
+    ],
+    correct: 1,
+    explanation: "Error budget é a diferença entre o SLO e 100%. Se SLO é 99.95% (21.9 min downtime/mes) e você usou 10 min, restam 11.9 min. Se o error budget acabar, o time PARA de lancar features e foca em reliability. Esse modelo (Google SRE) alinha incentivos entre velocidade e estabilidade."
+  },
+  {
+    question: "Qual NFR e diretamente violado quando você hardcoda URLs de serviços, credenciais e feature toggles no código-fonte?",
+    options: [
+      "Portabilidade",
+      "Configurabilidade",
+      "Segurança e Configurabilidade",
+      "Testabilidade"
+    ],
+    correct: 2,
+    explanation: "Hardcodar viola diretamente Segurança (credenciais no código = vulnerabilidade critica) E Configurabilidade (não permite alterár comportamento sem deploy). Também impacta Portabilidade (não funciona em outro ambiente) e Testabilidade (não permite mock). Mas os dois primeiros são os mais diretos."
+  },
+  {
+    question: "Segundo a ISO 25010, quantas caracteristicas de qualidade de produto existem?",
+    options: [
+      "5 caracteristicas",
+      "6 caracteristicas",
+      "8 caracteristicas",
+      "10 caracteristicas"
+    ],
+    correct: 2,
+    explanation: "A ISO 25010 define 8 caracteristicas: Adequacao Funcional, Eficiência de Performance, Compatibilidade, Usabilidade, Confiabilidade, Segurança, Manutenibilidade e Portabilidade. Cada uma tem sub-caracteristicas, totalizando 31. Nos adicionamos 2 categorias extras (Legal e Operacional) que a ISO não cobre explicitamente."
+  },
+  {
+    question: "Qual dessas afirmacoes sobre NFRs esta INCORRETA?",
+    options: [
+      "NFRs devem ser definidos desde o Sprint 0 do projeto",
+      "Todos os 38 NFRs devem ser maximizados simultaneamente",
+      "NFRs devem ter criterios de aceitacao mensuráveis e testaveis",
+      "NFRs frequentemente conflitam entre si e exigem trade-offs conscientes"
+    ],
+    correct: 1,
+    explanation: "E IMPOSSIVEL maximizar todos os NFRs simultaneamente — eles conflitam entre si. Mais segurança (MFA) reduz usabilidade. Mais performance (cache) reduz consistência. Mais disponibilidade (multi-region) aumenta custo. A habilidade de um engenheiro senior e priorizar os 3-5 mais críticos e aceitar trade-offs nós demais."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Requisitos Não Funcionais.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

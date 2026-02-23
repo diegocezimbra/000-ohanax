@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>35 — GitOps & Progressive Delivery | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="34-deploy-blue-green-canary.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>35</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="36-logs-metricas-tracing.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:53%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 35</span>
+<h2>GitOps &amp; Progressive Delivery</h2>
+<div class="section-line"></div>
+
+<p>GitOps e Progressive Delivery representam a evolução natural do CI/CD. Enquanto pipelines tradicionais empurram (push) artefatos para produção, GitOps inverte o modelo: o cluster <strong>puxa (pull)</strong> o estado desejado de um repositório Git. Progressive Delivery vai além, adicionando <strong>inteligência na liberação</strong> — deploy gradual com métricas automáticas que decidem se avançam ou revertem. Juntos, formam a base do deploy moderno em Kubernetes.</p>
+
+<p>A ideia central é simples: <strong>Git é a única fonte de verdade</strong>. Se o estado do cluster divergir do que está no Git, o sistema automáticamente reconcilia. Se algo der errado, rollback e literálmente <code>git revert</code>. Auditoria completa, revisão via Pull Request, e zero <code>kubectl apply</code> manual em produção.</p>
+
+<!-- ═══ GITOPS DEEP ═══ -->
+<h3>GitOps — Modelo Pull-Based</h3>
+<p>O termo "GitOps" foi cunhado pela Weaveworks em 2017. O princípio fundamental é que <strong>todo o estado da infraestrutura e das aplicações e declarado em Git</strong>. Um operador (agent) rodando dentro do cluster Kubernetes observa o repositório Git e continuamente reconcilia o estado real com o estado desejado.</p>
+
+<h4>Push vs Pull Model</h4>
+<p>No modelo <strong>push tradicional</strong> (CI/CD clássico), o pipeline de CI faz build, roda testes, e depois executa <code>kubectl apply</code> ou <code>helm upgrade</code> para empurrar as mudanças para o cluster. O problema: o CI precisa de credenciais do cluster, e qualquer pessoa com acesso ao pipeline pode alterár produção.</p>
+
+<p>No modelo <strong>pull (GitOps)</strong>, o CI apenas commita a mudança no repositório Git (ex: atualiza a tag da imagem). Um operador dentro do cluster — como ArgoCD ou Flux — detecta a mudança e aplica automáticamente. O cluster nunca expõe credenciais externamente.</p>
+
+<div class="card">
+<div class="card-title">Pilares do GitOps</div>
+<ul>
+<li><strong>Declarativo</strong> — Todo o sistema e descrito declarativamente (YAML/JSON no Git)</li>
+<li><strong>Versionado e Imutável</strong> — O estado desejado e versionado em Git, com histórico completo</li>
+<li><strong>Pull Automático</strong> — Agentes aprovados puxam automáticamente o estado desejado</li>
+<li><strong>Reconciliação Continua</strong> — O software continuamente observa o estado real e corrige drift</li>
+</ul>
+</div>
+
+<h4>Reconciliation Loop</h4>
+<p>O operador GitOps executa um loop continuo: <strong>Observe &rarr; Compare &rarr; Act</strong>. Ele observa o repositório Git para mudanças, compara o estado desejado (Git) com o estado real (cluster), e se houver divergência (drift), age para reconciliar. Esse loop roda a cada poucos segundos ou pode ser disparado por webhooks.</p>
+
+<pre data-lang="text"><code><span class="cm">// Reconciliation Loop — O coração do GitOps</span>
+
+   +──────────────────────────────────────────+
+   |           REPOSITÓRIO GIT                |
+   |   (Manifests YAML — fonte de verdade)    |
+   +─────────────────┬────────────────────────+
+                     |
+            Observe (poll/webhook)
+                     |
+                     v
+   +──────────────────────────────────────────+
+   |          GITOPS OPERATOR                 |
+   |  (ArgoCD / Flux — roda DENTRO do cluster)|
+   |                                          |
+   |  1. Le estado desejado do Git            |
+   |  2. Le estado real do Kubernetes API     |
+   |  3. Calcula diff                         |
+   |  4. Aplica mudanças se necessário        |
+   +─────────────────┬────────────────────────+
+                     |
+              Apply (reconcile)
+                     |
+                     v
+   +──────────────────────────────────────────+
+   |          KUBERNETES CLUSTER              |
+   |    (Estado real — pods, services, etc)   |
+   +──────────────────────────────────────────+</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Beneficios imediatos do GitOps:</strong> Rollback = <code>git revert</code>. Auditoria = <code>git log</code>. Code review de infra = Pull Request. Reproducibilidade total — qualquer commit recria o cluster inteiro. Sem "snowflake servers" — ninguém faz <code>kubectl edit</code> manual.</div>
+</div>
+
+<!-- ═══ ARGOCD DEEP ═══ -->
+<h3>ArgoCD — Arquitetura e Uso</h3>
+<p>ArgoCD é a ferramenta de GitOps mais popular para Kubernetes. Ele roda dentro do cluster como um conjunto de controllers e expõe uma UI web para visualizar o estado das aplicações. O conceito central é o <strong>Application CRD</strong> — um recursó customizado do Kubernetes que define a relação entre um repositório Git é um namespace no cluster.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Git Repo<br><small>(manifests)</small></div>
+<div class="diagram-arrow">&larr; poll</div>
+<div class="diagram-box blue">ArgoCD<br><small>(operator)</small></div>
+<div class="diagram-arrow">&rarr; apply</div>
+<div class="diagram-box purple">K8s Cluster<br><small>(workloads)</small></div>
+</div>
+
+<h4>Application CRD</h4>
+<p>Cada aplicação no ArgoCD é definida como um recursó <code>Application</code>. Ele específica onde está o código (Git repo + path + branch), para onde vai (cluster + namespace), é como sincronizar (automático ou manual).</p>
+
+<pre data-lang="yaml"><code><span class="cm"># ArgoCD Application — define a relação Git &rarr; Cluster</span>
+<span class="tp">apiVersion</span>: argoproj.io/v1alpha1
+<span class="tp">kind</span>: Application
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">minha-api</span>
+  <span class="tp">namespace</span>: <span class="str">argocd</span>
+<span class="tp">spec</span>:
+  <span class="tp">project</span>: <span class="str">default</span>
+
+  <span class="cm"># Fonte — de onde puxar os manifests</span>
+  <span class="tp">source</span>:
+    <span class="tp">repoURL</span>: <span class="str">https://github.com/empresa/k8s-config.git</span>
+    <span class="tp">targetRevision</span>: <span class="str">main</span>
+    <span class="tp">path</span>: <span class="str">apps/minha-api/overlays/production</span>
+
+  <span class="cm"># Destino — onde aplicar no cluster</span>
+  <span class="tp">destination</span>:
+    <span class="tp">server</span>: <span class="str">https://kubernetes.default.svc</span>
+    <span class="tp">namespace</span>: <span class="str">production</span>
+
+  <span class="cm"># Politica de Sync</span>
+  <span class="tp">syncPolicy</span>:
+    <span class="tp">automated</span>:
+      <span class="tp">prune</span>: <span class="kw">true</span>        <span class="cm"># Remove recursos que não estão no Git</span>
+      <span class="tp">selfHeal</span>: <span class="kw">true</span>     <span class="cm"># Corrige drift automáticamente</span>
+    <span class="tp">syncOptions</span>:
+      - <span class="str">CreateNamespace=true</span>
+      - <span class="str">PruneLast=true</span>
+    <span class="tp">retry</span>:
+      <span class="tp">limit</span>: <span class="num">3</span>
+      <span class="tp">backoff</span>:
+        <span class="tp">duration</span>: <span class="str">5s</span>
+        <span class="tp">factor</span>: <span class="num">2</span>
+        <span class="tp">maxDuration</span>: <span class="str">3m</span></code></pre>
+
+<h4>Sync Policies: Auto vs Manual</h4>
+<p>Com <strong>automated sync</strong>, qualquer commit no branch monitorado dispara reconciliação automática. Com <strong>manual sync</strong>, o ArgoCD detecta o drift mas espera que alguém clique "Sync" na UI ou execute <code>argocd app sync</code>. Para produção, muitas equipes usam <strong>auto-sync em dev/staging</strong> é <strong>manual sync em produção</strong> com aprovação via PR.</p>
+
+<ul>
+<li><strong>prune: true</strong> — Remove do cluster recursos que foram deletados do Git</li>
+<li><strong>selfHeal: true</strong> — Se alguém fizer <code>kubectl edit</code> manual, ArgoCD reverte a mudança</li>
+<li><strong>PruneLast</strong> — Deleta recursos somente após todos os outros estarem saudáveis</li>
+</ul>
+
+<h4>Health Checks e Rollback</h4>
+<p>ArgoCD monitora o <strong>health status</strong> de cada recurso: Healthy, Progressing, Degraded, Suspended, Missing. Se um Deployment não atinge o estado Healthy (pods não ficam Ready), o ArgoCD marca como Degraded. Rollback é um clique — ele aplica a versão anterior do Git.</p>
+
+<h4>Multi-Cluster</h4>
+<p>ArgoCD suporta gerenciar múltiplos clusters a partir de uma única instância. Você registra clusters via <code>argocd cluster add</code> é referência o endpoint no campo <code>destination.server</code> de cada Application.</p>
+
+<h4>Sync Waves</h4>
+<p>Quando você precisa de ordem no deploy (ex: CRDs antes dos recursos, ConfigMaps antes dos Deployments), use <strong>sync waves</strong>. Anote os recursos com <code>argocd.argoproj.io/sync-wave: "N"</code>. ArgoCD aplica wave 0, espera ficar healthy, depois wave 1, e assim por diante.</p>
+
+<pre data-lang="yaml"><code><span class="cm"># Sync Wave — garante ordem de deploy</span>
+<span class="cm"># Wave 0: Namespace e ConfigMap (primeiro)</span>
+<span class="tp">apiVersion</span>: v1
+<span class="tp">kind</span>: ConfigMap
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">app-config</span>
+  <span class="tp">annotations</span>:
+    <span class="tp">argocd.argoproj.io/sync-wave</span>: <span class="str">"0"</span>
+<span class="tp">data</span>:
+  <span class="tp">DATABASE_URL</span>: <span class="str">postgres://db:5432/app</span>
+---
+<span class="cm"># Wave 1: Database migration Job (segundo)</span>
+<span class="tp">apiVersion</span>: batch/v1
+<span class="tp">kind</span>: Job
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">db-migrate</span>
+  <span class="tp">annotations</span>:
+    <span class="tp">argocd.argoproj.io/sync-wave</span>: <span class="str">"1"</span>
+    <span class="tp">argocd.argoproj.io/hook</span>: <span class="str">PreSync</span>
+<span class="tp">spec</span>:
+  <span class="tp">template</span>:
+    <span class="tp">spec</span>:
+      <span class="tp">containers</span>:
+        - <span class="tp">name</span>: <span class="str">migrate</span>
+          <span class="tp">image</span>: <span class="str">app:v2.0.0</span>
+          <span class="tp">command</span>: [<span class="str">"npm"</span>, <span class="str">"run"</span>, <span class="str">"migrate"</span>]
+      <span class="tp">restartPolicy</span>: <span class="str">Never</span>
+---
+<span class="cm"># Wave 2: Deployment (terceiro — após migration)</span>
+<span class="tp">apiVersion</span>: apps/v1
+<span class="tp">kind</span>: Deployment
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">minha-api</span>
+  <span class="tp">annotations</span>:
+    <span class="tp">argocd.argoproj.io/sync-wave</span>: <span class="str">"2"</span>
+<span class="tp">spec</span>:
+  <span class="tp">replicas</span>: <span class="num">3</span>
+  <span class="tp">template</span>:
+    <span class="tp">spec</span>:
+      <span class="tp">containers</span>:
+        - <span class="tp">name</span>: <span class="str">api</span>
+          <span class="tp">image</span>: <span class="str">app:v2.0.0</span></code></pre>
+
+<!-- ═══ FLUX ═══ -->
+<h3>Flux — Alternativa ao ArgoCD</h3>
+<p>Flux (atualmente Flux v2, parte do projeto CNCF) e outra ferramenta popular de GitOps. Diferente do ArgoCD que tem uma UI rica é um Application CRD único, Flux é mais <strong>modular e Kustomize-native</strong>. Ele usa múltiplos CRDs especializados para definir o fluxo.</p>
+
+<h4>CRDs do Flux</h4>
+<ul>
+<li><strong>GitRepository</strong> — Define qual repositório Git monitorar e com que frequência</li>
+<li><strong>Kustomization</strong> — Define qual path no repositório aplicar e com que dependências</li>
+<li><strong>HelmRepository / HelmRelease</strong> — Para charts Helm</li>
+<li><strong>ImageRepository / ImagePolicy / ImageUpdateAutomation</strong> — Para atualizar tags de imagem automáticamente</li>
+</ul>
+
+<pre data-lang="yaml"><code><span class="cm"># Flux — GitRepository + Kustomization</span>
+<span class="tp">apiVersion</span>: source.toolkit.fluxcd.io/v1
+<span class="tp">kind</span>: GitRepository
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">app-config</span>
+  <span class="tp">namespace</span>: <span class="str">flux-system</span>
+<span class="tp">spec</span>:
+  <span class="tp">interval</span>: <span class="str">1m</span>
+  <span class="tp">url</span>: <span class="str">https://github.com/empresa/k8s-config.git</span>
+  <span class="tp">ref</span>:
+    <span class="tp">branch</span>: <span class="str">main</span>
+  <span class="tp">secretRef</span>:
+    <span class="tp">name</span>: <span class="str">git-credentials</span>
+---
+<span class="tp">apiVersion</span>: kustomize.toolkit.fluxcd.io/v1
+<span class="tp">kind</span>: Kustomization
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">production-apps</span>
+  <span class="tp">namespace</span>: <span class="str">flux-system</span>
+<span class="tp">spec</span>:
+  <span class="tp">interval</span>: <span class="str">5m</span>
+  <span class="tp">sourceRef</span>:
+    <span class="tp">kind</span>: <span class="str">GitRepository</span>
+    <span class="tp">name</span>: <span class="str">app-config</span>
+  <span class="tp">path</span>: <span class="str">./clusters/production</span>
+  <span class="tp">prune</span>: <span class="kw">true</span>
+  <span class="tp">healthChecks</span>:
+    - <span class="tp">apiVersion</span>: apps/v1
+      <span class="tp">kind</span>: <span class="str">Deployment</span>
+      <span class="tp">name</span>: <span class="str">minha-api</span>
+      <span class="tp">namespace</span>: <span class="str">production</span>
+  <span class="tp">timeout</span>: <span class="str">3m</span></code></pre>
+
+<h4>ArgoCD vs Flux — Comparação</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>ArgoCD</th><th>Flux</th></tr>
+<tr><td><strong>UI</strong></td><td>UI web rica e completa</td><td>Sem UI nativa (use Weave GitOps)</td></tr>
+<tr><td><strong>Modelo</strong></td><td>Application CRD centralizado</td><td>CRDs modulares é compostos</td></tr>
+<tr><td><strong>Multi-tenant</strong></td><td>Projetos com RBAC</td><td>Namespaces com Kustomization</td></tr>
+<tr><td><strong>Kustomize</strong></td><td>Suportado</td><td>Nativo e first-class</td></tr>
+<tr><td><strong>Helm</strong></td><td>Suportado (render via template)</td><td>Suportado (HelmRelease CRD)</td></tr>
+<tr><td><strong>Image Automation</strong></td><td>Via Argo Image Updater</td><td>Nativo (ImagePolicy CRD)</td></tr>
+<tr><td><strong>Multi-cluster</strong></td><td>Nativo e robusto</td><td>Via remote Kustomization</td></tr>
+<tr><td><strong>Comunidade</strong></td><td>Muito grande, CNCF Graduated</td><td>Grande, CNCF Graduated</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Qual escolher?</strong> ArgoCD se você quer UI rica, multi-cluster fácil, e uma experiência mais "pronta". Flux se você prefere composicao de CRDs, integração nativa com Kustomize, e automação de imagens built-in. Ambos são CNCF Graduated e production-ready.</div>
+</div>
+
+<!-- ═══ PROGRESSIVE DELIVERY ═══ -->
+<h3>Progressive Delivery — Deploy Inteligente</h3>
+<p>Progressive Delivery é a evolução do Continuous Delivery. Combina <strong>Feature Flags + Canary Releases + Observabilidade + Rollback Automatizado</strong> para criar deploys que se auto-válidam. Em vez de "deploy tudo de uma vez e torcer", você libera gradualmente e deixa as <strong>métricas decidirem</strong> se avança ou reverte.</p>
+
+<h4>Fluxo Tipico de Progressive Delivery</h4>
+<div class="diagram">
+<div class="diagram-box green">Deploy<br><small>1% tráfego</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Monitor<br><small>métricas OK?</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Scale<br><small>10% tráfego</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Monitor<br><small>métricas OK?</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Scale<br><small>50% &rarr; 100%</small></div>
+</div>
+
+<p>Se em qualquer etapa a taxa de erro (error rate), latência (p99), ou qualquer métrica customizada ultrapassar o threshold definido, o sistema <strong>automáticamente faz rollback</strong> para a versão anterior. Nenhuma intervencao humana necessária.</p>
+
+<div class="card blue">
+<div class="card-title">Componentes do Progressive Delivery</div>
+<ul>
+<li><strong>Traffic Splitting</strong> — Dividir tráfego entre versão antiga e nova (via Service Mesh ou Ingress)</li>
+<li><strong>Canary Analysis</strong> — Comparar métricas da versão nova vs versão antiga em tempo real</li>
+<li><strong>Feature Flags</strong> — Ativar funcionalidades por usuário/percentual sem novo deploy</li>
+<li><strong>Automated Rollback</strong> — Reverter automáticamente se métricas degradam</li>
+<li><strong>Observability</strong> — Prometheus/Datadog/CloudWatch alimentando a análise</li>
+</ul>
+</div>
+
+<!-- ═══ ARGO ROLLOUTS ═══ -->
+<h3>Argo Rollouts — Canary &amp; Blue-Green no K8s</h3>
+<p>Argo Rollouts é um controller do Kubernetes que substitui o Deployment padrão por um <strong>Rollout CRD</strong> com suporte nativo a Canary e Blue-Green deployments. Ele integra com Prometheus, Datadog, CloudWatch e outros para <strong>análise automática de métricas</strong> é decisão de promotion/rollback.</p>
+
+<h4>Canary com Argo Rollouts</h4>
+<pre data-lang="yaml"><code><span class="cm"># Argo Rollouts — Canary com análise automática</span>
+<span class="tp">apiVersion</span>: argoproj.io/v1alpha1
+<span class="tp">kind</span>: Rollout
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">minha-api</span>
+<span class="tp">spec</span>:
+  <span class="tp">replicas</span>: <span class="num">10</span>
+  <span class="tp">revisionHistoryLimit</span>: <span class="num">3</span>
+  <span class="tp">selector</span>:
+    <span class="tp">matchLabels</span>:
+      <span class="tp">app</span>: <span class="str">minha-api</span>
+  <span class="tp">strategy</span>:
+    <span class="tp">canary</span>:
+      <span class="cm"># Steps — define a progressão gradual</span>
+      <span class="tp">steps</span>:
+        - <span class="tp">setWeight</span>: <span class="num">5</span>          <span class="cm"># 5% do tráfego para canary</span>
+        - <span class="tp">pause</span>:
+            <span class="tp">duration</span>: <span class="str">2m</span>       <span class="cm"># Espera 2 min para coletar métricas</span>
+        - <span class="tp">analysis</span>:
+            <span class="tp">templates</span>:
+              - <span class="tp">templateName</span>: <span class="str">success-rate</span>
+        - <span class="tp">setWeight</span>: <span class="num">20</span>         <span class="cm"># Se métricas OK, sobe para 20%</span>
+        - <span class="tp">pause</span>:
+            <span class="tp">duration</span>: <span class="str">5m</span>
+        - <span class="tp">analysis</span>:
+            <span class="tp">templates</span>:
+              - <span class="tp">templateName</span>: <span class="str">success-rate</span>
+        - <span class="tp">setWeight</span>: <span class="num">50</span>         <span class="cm"># 50% do tráfego</span>
+        - <span class="tp">pause</span>:
+            <span class="tp">duration</span>: <span class="str">10m</span>
+        - <span class="tp">analysis</span>:
+            <span class="tp">templates</span>:
+              - <span class="tp">templateName</span>: <span class="str">success-rate</span>
+              - <span class="tp">templateName</span>: <span class="str">latency-check</span>
+        <span class="cm"># Se todas as análises passarem, promove para 100%</span>
+
+      <span class="cm"># Referência aos Services de tráfego</span>
+      <span class="tp">canaryService</span>: <span class="str">minha-api-canary</span>
+      <span class="tp">stableService</span>: <span class="str">minha-api-stable</span>
+
+      <span class="cm"># Integração com Ingress/Service Mesh para split</span>
+      <span class="tp">trafficRouting</span>:
+        <span class="tp">nginx</span>:
+          <span class="tp">stableIngress</span>: <span class="str">minha-api-ingress</span></code></pre>
+
+<h4>AnalysisTemplaté — Métricas que Decidem</h4>
+<p>O <code>AnalysisTemplate</code> define as queries de métricas que o Argo Rollouts executa para decidir se a versão canary esta saudável. Se a análise falhar, rollback e automático.</p>
+
+<pre data-lang="yaml"><code><span class="cm"># AnalysisTemplaté — Query Prometheus para validar canary</span>
+<span class="tp">apiVersion</span>: argoproj.io/v1alpha1
+<span class="tp">kind</span>: AnalysisTemplate
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">success-rate</span>
+<span class="tp">spec</span>:
+  <span class="tp">metrics</span>:
+    - <span class="tp">name</span>: <span class="str">success-rate</span>
+      <span class="tp">interval</span>: <span class="str">30s</span>
+      <span class="tp">count</span>: <span class="num">5</span>
+      <span class="tp">successCondition</span>: <span class="str">result[0] >= 0.95</span>   <span class="cm"># Taxa de sucessó >= 95%</span>
+      <span class="tp">failureLimit</span>: <span class="num">2</span>                        <span class="cm"># Tolera 2 falhas antes de abortar</span>
+      <span class="tp">provider</span>:
+        <span class="tp">prometheus</span>:
+          <span class="tp">address</span>: <span class="str">http://prometheus.monitoring:9090</span>
+          <span class="tp">query</span>: |
+            <span class="str">sum(rate(http_requests_total{</span>
+              <span class="str">app="minha-api",</span>
+              <span class="str">status=~"2.."</span>
+            <span class="str">}[2m])) /</span>
+            <span class="str">sum(rate(http_requests_total{</span>
+              <span class="str">app="minha-api"</span>
+            <span class="str">}[2m]))</span>
+---
+<span class="tp">apiVersion</span>: argoproj.io/v1alpha1
+<span class="tp">kind</span>: AnalysisTemplate
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">latency-check</span>
+<span class="tp">spec</span>:
+  <span class="tp">metrics</span>:
+    - <span class="tp">name</span>: <span class="str">p99-latency</span>
+      <span class="tp">interval</span>: <span class="str">30s</span>
+      <span class="tp">count</span>: <span class="num">5</span>
+      <span class="tp">successCondition</span>: <span class="str">result[0] <= 500</span>     <span class="cm"># p99 latência &lt;= 500ms</span>
+      <span class="tp">failureLimit</span>: <span class="num">2</span>
+      <span class="tp">provider</span>:
+        <span class="tp">prometheus</span>:
+          <span class="tp">address</span>: <span class="str">http://prometheus.monitoring:9090</span>
+          <span class="tp">query</span>: |
+            <span class="str">histogram_quantile(0.99,</span>
+              <span class="str">sum(rate(http_request_duration_seconds_bucket{</span>
+                <span class="str">app="minha-api"</span>
+              <span class="str">}[2m])) by (le)</span>
+            <span class="str">) * 1000</span></code></pre>
+
+<h4>Blue-Green com Argo Rollouts</h4>
+<pre data-lang="yaml"><code><span class="cm"># Argo Rollouts — Blue-Green strategy</span>
+<span class="tp">apiVersion</span>: argoproj.io/v1alpha1
+<span class="tp">kind</span>: Rollout
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">minha-api-bg</span>
+<span class="tp">spec</span>:
+  <span class="tp">replicas</span>: <span class="num">5</span>
+  <span class="tp">strategy</span>:
+    <span class="tp">blueGreen</span>:
+      <span class="tp">activeService</span>: <span class="str">minha-api-active</span>      <span class="cm"># Service que recebe tráfego real</span>
+      <span class="tp">previewService</span>: <span class="str">minha-api-preview</span>    <span class="cm"># Service para testar antes de promover</span>
+      <span class="tp">autoPromotionEnabled</span>: <span class="kw">false</span>           <span class="cm"># Requer aprovação manual</span>
+      <span class="tp">prePromotionAnalysis</span>:
+        <span class="tp">templates</span>:
+          - <span class="tp">templateName</span>: <span class="str">success-rate</span>
+        <span class="tp">args</span>:
+          - <span class="tp">name</span>: <span class="str">service-name</span>
+            <span class="tp">value</span>: <span class="str">minha-api-preview</span>
+      <span class="tp">scaleDownDelaySeconds</span>: <span class="num">30</span>             <span class="cm"># Espera 30s antes de desligar o antigo</span></code></pre>
+
+<!-- ═══ FLAGGER ═══ -->
+<h3>Flagger — Progressive Delivery com Service Mesh</h3>
+<p>Flagger e outra ferramenta de Progressive Delivery, criada pela Weaveworks (mesma empresa do GitOps). Similar ao Argo Rollouts em objetivo, mas com foco forte na integração com <strong>Service Meshes</strong> (Istio, Linkerd) e <strong>Ingress controllers</strong> (Nginx, Contour, Gloo).</p>
+
+<h4>Como Flagger Funciona</h4>
+<p>Flagger observa um Deployment padrão do Kubernetes. Quando detecta uma mudança na imagem ou config, ele automáticamente cria uma versão canary, configura traffic splitting via Service Mesh, e executa análise de métricas. Se aprovado, promove. Se falhar, reverte.</p>
+
+<pre data-lang="yaml"><code><span class="cm"># Flagger — Canary com Istio</span>
+<span class="tp">apiVersion</span>: flagger.app/v1beta1
+<span class="tp">kind</span>: Canary
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">minha-api</span>
+<span class="tp">spec</span>:
+  <span class="tp">targetRef</span>:
+    <span class="tp">apiVersion</span>: apps/v1
+    <span class="tp">kind</span>: <span class="str">Deployment</span>
+    <span class="tp">name</span>: <span class="str">minha-api</span>
+  <span class="tp">service</span>:
+    <span class="tp">port</span>: <span class="num">80</span>
+    <span class="tp">targetPort</span>: <span class="num">3000</span>
+  <span class="tp">analysis</span>:
+    <span class="tp">interval</span>: <span class="str">1m</span>
+    <span class="tp">threshold</span>: <span class="num">5</span>         <span class="cm"># Max falhas antes de rollback</span>
+    <span class="tp">maxWeight</span>: <span class="num">50</span>        <span class="cm"># Max % tráfego para canary</span>
+    <span class="tp">stepWeight</span>: <span class="num">10</span>       <span class="cm"># Incremento a cada step (10, 20, 30...)</span>
+    <span class="tp">metrics</span>:
+      - <span class="tp">name</span>: <span class="str">request-success-rate</span>
+        <span class="tp">thresholdRange</span>:
+          <span class="tp">min</span>: <span class="num">99</span>
+        <span class="tp">interval</span>: <span class="str">1m</span>
+      - <span class="tp">name</span>: <span class="str">request-duration</span>
+        <span class="tp">thresholdRange</span>:
+          <span class="tp">max</span>: <span class="num">500</span>
+        <span class="tp">interval</span>: <span class="str">1m</span></code></pre>
+
+<div class="card orange">
+<div class="card-title">Argo Rollouts vs Flagger</div>
+<ul>
+<li><strong>Argo Rollouts</strong> — Substitui o Deployment por um Rollout CRD. Mais controle granular nós steps. Melhor para quem já usa ArgoCD</li>
+<li><strong>Flagger</strong> — Trabalha COM Deployments padrão (não substitui). Mais transparente. Melhor para quem usa Istio/Linkerd como traffic management</li>
+<li><strong>Ambos</strong> — Suportam Prometheus, Datadog, CloudWatch. Ambos fazem canary e blue-green. Escolha pelo ecosistema existente</li>
+</ul>
+</div>
+
+<!-- ═══ BEST PRACTICES ═══ -->
+<h3>GitOps Best Practices</h3>
+
+<h4>1. Separe o Repo de App do Repo de Config</h4>
+<p>Mantenha o código da aplicação (src, tests, Dockerfile) em um repositório e os manifests Kubernetes (Deployments, Services, Kustomize overlays) em outro. Isso evita que commits de código disparem deploys indesejados e permite que equipes de plataforma gerenciem infra independentemente.</p>
+
+<pre data-lang="text"><code><span class="cm">// Estrutura recomendada — 2 repositórios</span>
+
+<span class="fn">empresa/minha-api</span>              <span class="cm"># Repo de APP (código)</span>
+  src/
+  tests/
+  Dockerfile
+  package.json
+  .github/workflows/ci.yml     <span class="cm"># CI: build + push imagem para ECR/GHCR</span>
+
+<span class="fn">empresa/k8s-config</span>             <span class="cm"># Repo de CONFIG (manifests)</span>
+  apps/
+    minha-api/
+      base/                    <span class="cm"># Manifests base (Deployment, Service, etc)</span>
+        deployment.yaml
+        service.yaml
+        kustomization.yaml
+      overlays/
+        dev/                   <span class="cm"># Customizações para dev</span>
+          kustomization.yaml   <span class="cm"># replicas: 1, imagem: :dev-sha</span>
+        staging/
+          kustomization.yaml   <span class="cm"># replicas: 2, imagem: :staging-sha</span>
+        production/
+          kustomization.yaml   <span class="cm"># replicas: 5, imagem: :v1.2.3</span>
+    outro-serviço/
+      base/
+      overlays/</code></pre>
+
+<h4>2. Secrets em Git — Use Sealed Secrets ou SOPS</h4>
+<p>Nunca commite secrets em plaintext no Git. Use <strong>Sealed Secrets</strong> (Bitnami) que encripta o Secret com a chave pública do cluster — só o controller dentro do cluster consegue decriptar. Ou use <strong>SOPS</strong> (Mozilla) com KMS para encriptar valores dentro de YAML.</p>
+
+<pre data-lang="bash"><code><span class="cm"># Sealed Secrets — encripta antes de commitar</span>
+
+<span class="cm"># 1. Criar um Secret normal (não commite esse!)</span>
+kubectl creaté secret generic db-creds \
+  --from-literál=password=<span class="str">SuperSecret123</span> \
+  --dry-run=client -o yaml > <span class="str">secret.yaml</span>
+
+<span class="cm"># 2. Encriptar com kubeseal (seguro para Git)</span>
+kubeseal --format yaml < <span class="str">secret.yaml</span> > <span class="str">sealed-secret.yaml</span>
+
+<span class="cm"># 3. sealed-secret.yaml pode ser commitado no Git!</span>
+<span class="cm"># O SealedSecret controller no cluster decripta automáticamente</span>
+
+<span class="cm"># ── SOPS com AWS KMS ──</span>
+<span class="cm"># Encriptar</span>
+sops --encrypt --kms <span class="str">arn:aws:kms:us-east-1:123:key/abc</span> \
+  <span class="str">secret.yaml</span> > <span class="str">secret.enc.yaml</span>
+
+<span class="cm"># Flux e ArgoCD tem plugins nativos para decriptar SOPS</span></code></pre>
+
+<h4>3. Image Tag Automation</h4>
+<p>Quando o CI faz push de uma nova imagem, o sistema deve automáticamente atualizar a tag no repositório de config. No Flux, use <strong>Image Automation Controllers</strong>. No ArgoCD, use o <strong>Argo CD Image Updater</strong>.</p>
+
+<pre data-lang="yaml"><code><span class="cm"># Flux Image Automation — atualiza tag automáticamente</span>
+<span class="tp">apiVersion</span>: image.toolkit.fluxcd.io/v1beta2
+<span class="tp">kind</span>: ImageRepository
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">minha-api</span>
+<span class="tp">spec</span>:
+  <span class="tp">image</span>: <span class="str">123456789.dkr.ecr.us-east-1.amazonaws.com/minha-api</span>
+  <span class="tp">interval</span>: <span class="str">1m</span>
+---
+<span class="tp">apiVersion</span>: image.toolkit.fluxcd.io/v1beta2
+<span class="tp">kind</span>: ImagePolicy
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">minha-api</span>
+<span class="tp">spec</span>:
+  <span class="tp">imageRepositoryRef</span>:
+    <span class="tp">name</span>: <span class="str">minha-api</span>
+  <span class="tp">policy</span>:
+    <span class="tp">semver</span>:
+      <span class="tp">range</span>: <span class="str">">=1.0.0"</span>    <span class="cm"># Aceita qualquer tag semver >= 1.0.0</span>
+---
+<span class="tp">apiVersion</span>: image.toolkit.fluxcd.io/v1beta2
+<span class="tp">kind</span>: ImageUpdateAutomation
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">auto-update</span>
+<span class="tp">spec</span>:
+  <span class="tp">interval</span>: <span class="str">1m</span>
+  <span class="tp">sourceRef</span>:
+    <span class="tp">kind</span>: <span class="str">GitRepository</span>
+    <span class="tp">name</span>: <span class="str">app-config</span>
+  <span class="tp">git</span>:
+    <span class="tp">commit</span>:
+      <span class="tp">author</span>:
+        <span class="tp">name</span>: <span class="str">Flux Bot</span>
+        <span class="tp">email</span>: <span class="str">flux@empresa.com</span>
+      <span class="tp">messageTemplate</span>: <span class="str">"chore: updaté minha-api to {{.NewTag}}"</span>
+  <span class="tp">update</span>:
+    <span class="tp">path</span>: <span class="str">./apps/minha-api</span>
+    <span class="tp">strategy</span>: <span class="str">Setters</span></code></pre>
+
+<h4>4. PR-Based Promotions Between Environments</h4>
+<p>Use Pull Requests para promover entre ambientes. CI em dev commita direto. Para staging, CI abre um PR de dev &rarr; staging no repo de config. Para produção, abra PR de staging &rarr; production que requer aprovação humana. Isso combina GitOps com revisão de código para deploys críticos.</p>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Pipeline ideal:</strong> Push no app repo &rarr; CI faz build/test/push imagem &rarr; CI abre PR no config repo atualizando a tag em dev overlay &rarr; ArgoCD auto-sync em dev &rarr; Após validação, PR de dev para staging &rarr; Auto-sync em staging &rarr; Após QA, PR para production (requer 2 approvals) &rarr; Manual sync em production.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: GitOps para 3 Ambientes</h3>
+<p><strong>Cenário:</strong> Implemente GitOps para uma aplicação com 3 ambientes (dev, staging, prod). Cada ambiente tem configurações diferentes (replicas, recursos, variáveis). Deploys em dev são automáticos, staging requer PR, e prod requer aprovação humana.</p>
+
+<div class="diagram">
+<div class="diagram-box green">App Repo<br><small>CI: build + push</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Config Repo<br><small>overlays/env</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">ArgoCD<br><small>ApplicationSet</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Clusters<br><small>dev/stg/prod</small></div>
+</div>
+
+<h4>Estrutura do Repositório de Config</h4>
+<pre data-lang="text"><code><span class="fn">k8s-config/</span>
+  apps/
+    minha-api/
+      base/
+        deployment.yaml        <span class="cm"># Deployment genérico</span>
+        service.yaml
+        hpa.yaml
+        kustomization.yaml
+      overlays/
+        dev/
+          kustomization.yaml   <span class="cm"># replicas: 1, resources: 256Mi</span>
+          patches/
+            deployment-patch.yaml
+        staging/
+          kustomization.yaml   <span class="cm"># replicas: 2, resources: 512Mi</span>
+          patches/
+            deployment-patch.yaml
+        production/
+          kustomization.yaml   <span class="cm"># replicas: 5, resources: 1Gi, HPA</span>
+          patches/
+            deployment-patch.yaml
+            hpa-patch.yaml</code></pre>
+
+<h4>ArgoCD ApplicationSet — Uma Definição para N Ambientes</h4>
+<pre data-lang="yaml"><code><span class="cm"># ApplicationSet — gera 1 Application por ambiente automáticamente</span>
+<span class="tp">apiVersion</span>: argoproj.io/v1alpha1
+<span class="tp">kind</span>: ApplicationSet
+<span class="tp">metadata</span>:
+  <span class="tp">name</span>: <span class="str">minha-api</span>
+  <span class="tp">namespace</span>: <span class="str">argocd</span>
+<span class="tp">spec</span>:
+  <span class="tp">generators</span>:
+    - <span class="tp">list</span>:
+        <span class="tp">elements</span>:
+          - <span class="tp">env</span>: <span class="str">dev</span>
+            <span class="tp">cluster</span>: <span class="str">https://dev-cluster.example.com</span>
+            <span class="tp">autoSync</span>: <span class="str">"true"</span>
+          - <span class="tp">env</span>: <span class="str">staging</span>
+            <span class="tp">cluster</span>: <span class="str">https://staging-cluster.example.com</span>
+            <span class="tp">autoSync</span>: <span class="str">"true"</span>
+          - <span class="tp">env</span>: <span class="str">production</span>
+            <span class="tp">cluster</span>: <span class="str">https://prod-cluster.example.com</span>
+            <span class="tp">autoSync</span>: <span class="str">"false"</span>      <span class="cm"># Manual em prod!</span>
+  <span class="tp">template</span>:
+    <span class="tp">metadata</span>:
+      <span class="tp">name</span>: <span class="str">"minha-api-{{env}}"</span>
+    <span class="tp">spec</span>:
+      <span class="tp">project</span>: <span class="str">default</span>
+      <span class="tp">source</span>:
+        <span class="tp">repoURL</span>: <span class="str">https://github.com/empresa/k8s-config.git</span>
+        <span class="tp">targetRevision</span>: <span class="str">main</span>
+        <span class="tp">path</span>: <span class="str">"apps/minha-api/overlays/{{env}}"</span>
+      <span class="tp">destination</span>:
+        <span class="tp">server</span>: <span class="str">"{{cluster}}"</span>
+        <span class="tp">namespace</span>: <span class="str">"{{env}}"</span>
+      <span class="tp">syncPolicy</span>:
+        <span class="tp">automated</span>:
+          <span class="tp">prune</span>: <span class="kw">true</span>
+          <span class="tp">selfHeal</span>: <span class="kw">true</span></code></pre>
+
+<h4>Fluxo de Promoção entre Ambientes</h4>
+<ol>
+<li><strong>Dev</strong> — CI faz push da imagem com tag <code>dev-{sha}</code>. Flux Image Automation ou script do CI atualiza o overlay de dev com a nova tag. ArgoCD auto-sync aplica</li>
+<li><strong>Staging</strong> — Após validação em dev, CI abre PR no config repo: "Promote minha-api v1.2.3 to staging". PR atualiza o overlay de staging. Merge = deploy</li>
+<li><strong>Production</strong> — Equipe abre PR de staging para production. Requer 2 approvals. Merge atualiza o overlay de production. ArgoCD detecta mas NÃO faz auto-sync. SRE faz sync manual na UI após verificação</li>
+</ol>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Secrets em plaintext no Git:</strong> NUNCA commite Secrets Kubernetes diretamente. Mesmo em repos privados, qualquer pessoa com acesso le as credenciais. Use Sealed Secrets, SOPS com KMS, ou External Secrets Operator que puxa de Vault/AWS Secrets Manager.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Drift causado por kubectl manual:</strong> Se alguém faz <code>kubectl edit deployment</code> ou <code>kubectl scale</code> direto no cluster, o estado real diverge do Git. ArgoCD com <code>selfHeal: true</code> reverte automáticamente. Sem isso, você perde a garantia de "Git = verdade".</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Sync Waves excessivas:</strong> Mais de 3-4 sync waves indica que seu deploy é complexo demais ou que você está tentando orquestrar demais via ArgoCD. Considere simplificar a arquitetura ou usar init containers para dependências.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Não testar manifests antes do merge:</strong> Sempre valide YAML com <code>kustomize build</code>, <code>kubeval</code>, ou <code>kubeconform</code> no CI antes de mergear. Um YAML inválido no repo de config quebra o sync e pode bloquear deploys.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Progressive Delivery sem observabilidade:</strong> Canary releases automatizados sem métricas confiáveis são perigosos. Se você não tem Prometheus/Datadog com métricas de erro raté e latência, comece por Canary manual. Automatize DEPOIS de ter observabilidade madura.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Se você não consegue reconstruir todo o ambiente a partir de <code>git clone</code> + <code>apply</code>, você não tem GitOps de verdade. O teste final e deletar o cluster e recria-lo inteiramente a partir do repositório Git.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Sua equipe usa ArgoCD com auto-sync em produção. Um dev comete um erro no manifest é o deploy automático causa downtime. Como prevenir isso?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> 1) Desativar auto-sync em produção (<code>automated: null</code> ou <code>autoSync: false</code>). 2) Exigir PRs com pelo menós 2 approvals para o overlay de production. 3) Adicionar <code>kustomize build</code> + <code>kubeconform</code> no CI do config repo para validar manifests antes do merge. 4) Usar <code>preSync</code> hooks com AnalysisTemplates para validar antes de aplicar. 5) Implementar Progressive Delivery com Argo Rollouts para que mesmo deploys manuais passem por canary com métricas.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Você precisa guardar credenciais de banco de dados no repositório de config GitOps. Como fazer isso de forma segura?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Opção 1: <strong>Sealed Secrets</strong> — use <code>kubeseal</code> para encriptar o Secret com a chave pública do cluster. Commite o SealedSecret no Git. O controller no cluster decripta. Opção 2: <strong>SOPS + KMS</strong> — encripte apenas os valores sensíveis dentro do YAML com AWS KMS, GCP KMS, ou Azure Key Vault. ArgoCD e Flux tem plugins nativos. Opção 3: <strong>External Secrets Operator</strong> — não guarde secrets no Git. Defina um ExternalSecret CRD que referência o secret no AWS Secrets Manager ou HashiCorp Vault. O operator sincroniza automáticamente.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Sua API está usando Argo Rollouts com canary. Após um deploy, 5% do tráfego vai para a versão nova. O error raté sobe de 0.1% para 3%. O que acontece automáticamente?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> O AnalysisTemplaté com <code>successCondition: result[0] >= 0.95</code> (95% success rate) detecta que a taxa de sucessó caiu para 97% (3% de erro). Se o <code>failureLimit</code> for 2, ele aguarda mais 2 medicoes. Se o erro persistir, a análise falha é o Argo Rollouts executa <strong>rollback automático</strong>: escala os pods canary para zero, restaura 100% do tráfego para a versão stable, e marca o Rollout como "Degraded". O time recebe alerta e pode investigar sem impacto em produção. Se o threshold fosse 99% (failureCondition em 1% de erro), o rollback seria mais agressivo e imediato.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — GitOps &amp; Progressive Delivery</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="34-deploy-blue-green-canary.html">&#8592; Anterior</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="36-logs-metricas-tracing.html" class="primary">Próximo: Logs, Métricas &amp; Tracing &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 35: GitOps & Progressive Delivery
+// ══════════════════════════════════════════
+const SECTION_NUM = 35;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a principal diferença entre o modelo push (CI/CD tradicional) é o modelo pull (GitOps)?",
+    options: [
+      "No push o CI faz testes; no pull o CI não faz testes",
+      "No push o CI aplica mudanças no cluster; no pull um operador dentro do cluster puxa o estado do Git",
+      "No push usa Docker; no pull usa Podman",
+      "No push o deploy e manual; no pull é sempre automático"
+    ],
+    correct: 1,
+    explanation: "No modelo push, o CI executa kubectl apply/helm upgrade enviando mudanças para o cluster. No modelo pull (GitOps), um operador como ArgoCD ou Flux roda DENTRO do cluster e puxa continuamente o estado desejado do Git."
+  },
+  {
+    question: "No ArgoCD, o que acontece quando selfHeal está ativado e alguém faz 'kubectl edit deployment' diretamente no cluster?",
+    options: [
+      "A mudança manual e mantida é o Git e atualizado automáticamente",
+      "O ArgoCD detecta o drift e reverte a mudança para o estado do Git",
+      "O ArgoCD pausa o sync e envia um alerta",
+      "Nada acontece — selfHeal só funciona com Helm charts"
+    ],
+    correct: 1,
+    explanation: "Com selfHeal: true, o ArgoCD detecta que o estado real divergiu do Git (drift) e automáticamente reconcilia, revertendo a mudança manual. Isso garante que Git permanece como única fonte de verdade."
+  },
+  {
+    question: "Qual é a função das sync waves no ArgoCD?",
+    options: [
+      "Distribuir tráfego gradualmente entre versões",
+      "Garantir ordem de deploy — recursos com wave menor são aplicados primeiro",
+      "Sincronizar múltiplos clusters simultaneamente",
+      "Comprimir os manifests YAML para transferência mais rápida"
+    ],
+    correct: 1,
+    explanation: "Sync waves permitem ordenar o deploy. Recursos com annotation sync-wave: '0' são aplicados primeiro, depois wave '1', etc. Útil para garantir que ConfigMaps existam antes dos Deployments, ou que migrations rodem antes da aplicação."
+  },
+  {
+    question: "Qual CRD do Flux é responsável por definir qual repositório Git monitorar?",
+    options: [
+      "Kustomization",
+      "HelmRelease",
+      "GitRepository",
+      "ImagePolicy"
+    ],
+    correct: 2,
+    explanation: "O GitRepository CRD do Flux define a URL do repositório, o branch, o intervalo de polling, e as credenciais de acesso. A Kustomization CRD referência o GitRepository e define qual path aplicar."
+  },
+  {
+    question: "Em Progressive Delivery, o que acontece se a taxa de erro da versão canary ultrapassa o threshold definido?",
+    options: [
+      "O tráfego é dividido 50/50 entre canary e stable",
+      "Um alerta é enviado mas o canary continua recebendo tráfego",
+      "O sistema automáticamente faz rollback para a versão stable",
+      "O deploy e pausado indefinidamente até intervencao manual"
+    ],
+    correct: 2,
+    explanation: "O princípio fundamental do Progressive Delivery é o rollback automático baseado em métricas. Se o AnalysisTemplaté detecta que métricas como error raté ou latência ultrapassam o threshold, o canary e abortado e 100% do tráfego volta para a versão stable."
+  },
+  {
+    question: "No Argo Rollouts, qual recursó define as queries de métricas usadas para decidir se uma versão canary e promovida?",
+    options: [
+      "Rollout",
+      "AnalysisTemplate",
+      "DestinationRule",
+      "ServiceMonitor"
+    ],
+    correct: 1,
+    explanation: "O AnalysisTemplaté define as métricas (Prometheus queries, Datadog queries, etc), as condições de sucessó (successCondition), o limite de falhas (failureLimit), e o intervalo de verificação. O Rollout referência o AnalysisTemplaté nós seus steps."
+  },
+  {
+    question: "Qual a forma recomendada de gerenciar secrets em um repositório GitOps?",
+    options: [
+      "Commitar os Secrets em base64 — já estão 'encriptados'",
+      "Usar Sealed Secrets, SOPS com KMS, ou External Secrets Operator",
+      "Colocar os secrets em um branch privado separado",
+      "Usar variáveis de ambiente no CI e injetar no deploy"
+    ],
+    correct: 1,
+    explanation: "Base64 NÃO e encriptação — e encoding reversível. A forma segura é usar Sealed Secrets (encripta com chave pública do cluster), SOPS com KMS (encripta valores no YAML), ou External Secrets Operator (puxa de Vault/AWS Secrets Manager sem guardar no Git)."
+  },
+  {
+    question: "Por que é recomendado separar o repositório de código (app) do repositório de configuração (manifests K8s)?",
+    options: [
+      "Para que o Git não fique com arquivos grandes demais",
+      "Para evitar que commits de código disparem deploys indesejados e permitir controle independente",
+      "Porque ArgoCD não suporta monorepos",
+      "Para que o CI sejá mais rápido"
+    ],
+    correct: 1,
+    explanation: "Separar repos evita que um commit em código (ex: fix typo no README) dispare um deploy. Também permite que equipes de plataforma gerenciem manifests independentemente é que diferentes permissões de acesso sejam aplicadas em cada repo."
+  },
+  {
+    question: "Qual a principal diferença entre Argo Rollouts e Flagger?",
+    options: [
+      "Argo Rollouts só funciona com Istio; Flagger funciona com qualquer ingress",
+      "Argo Rollouts substitui o Deployment por um Rollout CRD; Flagger trabalha com Deployments padrão",
+      "Flagger é mais antigo e não suporta canary releases",
+      "Argo Rollouts não suporta blue-green; Flagger suporta ambos"
+    ],
+    correct: 1,
+    explanation: "Argo Rollouts usa um CRD próprio (Rollout) que substitui o Deployment. Flagger observa Deployments padrão do Kubernetes e cria a infraestrutura canary automáticamente. Ambos suportam canary e blue-green, e ambos integram com Prometheus e Service Meshes."
+  },
+  {
+    question: "Qual o 'teste final' para validar que você tem GitOps de verdade?",
+    options: [
+      "Ter ArgoCD instalado no cluster",
+      "Conseguir reconstruir todo o ambiente a partir de git clone + apply",
+      "Ter mais de 100 commits no repositório de config",
+      "Usar Helm charts para todas as aplicações"
+    ],
+    correct: 1,
+    explanation: "O teste definitivo do GitOps e: delete o cluster, faca git clone do repositório de config, aplique, é o ambiente inteiro é recriado identicamente. Se alguma configuração manual é necessária, você não tem GitOps completo — tem drift não documentado."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina GitOps e Progressive Delivery.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16 — CAP, ACID, BASE & Consistência | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="15-data-architecture.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>16</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="17-mensageria-kafka-rabbit-sqs.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:24.2%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 16</span>
+<h2>CAP, ACID, BASE & Consistência</h2>
+<div class="section-line"></div>
+
+<p>Em sistemas distribuídos, você não pode ter tudo. Cada decisão de arquitetura envolve <strong>trade-offs fundamentais</strong> entre consistência, disponibilidade e tolerância a partições. Entender esses teoremas e modelos de consistência é o que separa engenheiros que constroem sistemas que "funcionam no demo" de engenheiros que constroem sistemas que <strong>sobrevivem em produção</strong>.</p>
+
+<p>Esta seção cobre os alicerces teóricos e práticos: do Teorema CAP ao PACELC, de ACID a BASE, dos níveis de isolamento aos algoritmos de consensó distribuído. Se você vai projetar qualquer sistema que roda em mais de uma máquina, este conteúdo e <strong>não-negociável</strong>.</p>
+
+<!-- ═══ CAP Theorem ═══ -->
+<h3>Teorema CAP</h3>
+<p>Formulado por Eric Brewer em 2000 e formalizado por Gilbert e Lynch em 2002. O teorema diz que em um sistema de dados distribuído, você só pode garantir <strong>duas das três propriedades</strong> simultaneamente:</p>
+
+<ul>
+<li><strong>Consistency (C)</strong> — Toda leitura recebe a escrita mais recente ou um erro. Todos os nós veem os mesmos dados ao mesmo tempo. Não existe leitura "stale"</li>
+<li><strong>Availability (A)</strong> — Toda requisição recebe uma resposta (não necessariamente com o dado mais recente), sem garantia de que é a escrita mais recente</li>
+<li><strong>Partition Tolerance (P)</strong> — O sistema continua funcionando mesmo quando a rede entre nós falha (mensagens perdidas ou atrasadas)</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box green">C<br><small>Consistency</small></div>
+<div class="diagram-arrow">&mdash;</div>
+<div class="diagram-box blue">A<br><small>Availability</small></div>
+<div class="diagram-arrow">&mdash;</div>
+<div class="diagram-box purple">P<br><small>Partition Tolerance</small></div>
+</div>
+
+<p><strong>Por que você não pode ter os três?</strong> Em qualquer sistema distribuído real, partições de rede <strong>vao acontecer</strong> — fios quebram, switches falham, data centers perdem conectividade. Portanto, P não é opcional. A escolha real e: quando uma partição acontece, você prioriza <strong>C (consistência)</strong> ou <strong>A (disponibilidade)</strong>?</p>
+
+<h4>Sistemas CP — Consistency + Partition Tolerance</h4>
+<p>Quando ocorre uma partição, o sistema <strong>recusa requisições</strong> nós nós que não conseguem confirmar consistência. Disponibilidade e sacrificada para garantir que nenhuma leitura retorne dados desatualizados.</p>
+
+<ul>
+<li><strong>MongoDB</strong> (com <code>writeConcern: "majority"</code>) — Escritas só são confirmadas quando a maioria dos nós réplica set confirmam. Se a maioria não está acessível, a escrita falha</li>
+<li><strong>HBase</strong> — Construído sobre HDFS com um único Master node. Se o master cai, a região fica indisponível até failover</li>
+<li><strong>etcd / Consul</strong> — Usam Raft para consenso. Se não ha quorum (maioria dos nós), o sistema para de aceitar escritas</li>
+<li><strong>Zookeeper</strong> — Similar, usa ZAB (Zookeeper Atomic Broadcast). Lider precisa de quorum para operar</li>
+</ul>
+
+<pre data-lang="mongodb"><code><span class="cm">// MongoDB — write concern majority (comportamento CP)</span>
+db.orders.<span class="fn">insertOne</span>(
+  { customerId: <span class="str">"c-123"</span>, total: <span class="num">599.90</span>, status: <span class="str">"pending"</span> },
+  { writeConcern: { w: <span class="str">"majority"</span>, wtimeout: <span class="num">5000</span> } }
+)
+<span class="cm">// Se 2 de 3 nós estão indisponíveis → escrita FALHA (timeout)</span>
+<span class="cm">// Garantia: qualquer leitura com readConcern "majority" vera este dado</span>
+
+<span class="cm">// Read concern majority — garante leitura consistente</span>
+db.orders.<span class="fn">find</span>(
+  { customerId: <span class="str">"c-123"</span> }
+).<span class="fn">readConcern</span>(<span class="str">"majority"</span>)
+<span class="cm">// So retorna dados que foram replicados para a maioria</span></code></pre>
+
+<h4>Sistemas AP — Availability + Partition Tolerance</h4>
+<p>Quando ocorre uma partição, o sistema continua <strong>aceitando leituras e escritas</strong> em todos os nós, mesmo que os dados possam estar desatualizados. A consistência e reconciliada <strong>eventualmente</strong>, após a partição ser resolvida.</p>
+
+<ul>
+<li><strong>Cassandra</strong> — Cada no aceita leituras/escritas independentemente. Usa timestamps para resolver conflitos (Last-Write-Wins). Tunable consistency via <code>ConsistencyLevel</code></li>
+<li><strong>DynamoDB</strong> — Escritas são confirmadas após replicação para quorum, mas leituras podem ser "eventually consistent" por padrão (mais rápidas e baratas)</li>
+<li><strong>CouchDB</strong> — Multi-master replication. Cada no aceita escritas offline. Conflitos detectados e resolvidos na reconciliação</li>
+<li><strong>Riak</strong> — Usa vector clocks para detectar conflitos. Permite leitura/escrita em qualquer no mesmo durante partições</li>
+</ul>
+
+<pre data-lang="cql"><code><span class="cm">-- Cassandra — tunable consistency levels</span>
+<span class="cm">-- Escrita com consistência ONE (AP — rápido, eventual)</span>
+<span class="kw">CONSISTENCY</span> ONE;
+<span class="kw">INSERT INTO</span> orders (id, customer_id, total, status)
+<span class="kw">VALUES</span> (uuid(), <span class="str">'c-123'</span>, <span class="num">599.90</span>, <span class="str">'pending'</span>);
+<span class="cm">-- Confirma após 1 replica responder. Rapido mas pode perder dados.</span>
+
+<span class="cm">-- Escrita com consistência QUORUM (mais CP — mais lento, consistente)</span>
+<span class="kw">CONSISTENCY</span> QUORUM;
+<span class="kw">INSERT INTO</span> orders (id, customer_id, total, status)
+<span class="kw">VALUES</span> (uuid(), <span class="str">'c-123'</span>, <span class="num">599.90</span>, <span class="str">'pending'</span>);
+<span class="cm">-- Confirma após (replication_factor / 2 + 1) replicas. Mais seguro.</span>
+
+<span class="cm">-- Leitura com consistência ALL (garante dado mais recente)</span>
+<span class="kw">CONSISTENCY</span> ALL;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders <span class="kw">WHERE</span> id = ?;
+<span class="cm">-- Le de TODAS as replicas. Se uma esta fora, requisição falha.</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>CAP não é binário.</strong> Sistemas modernós permitem <strong>tunable consistency</strong> — você ajusta o nível de consistência por operação. Cassandra com <code>QUORUM</code> reads + <code>QUORUM</code> writes se comporta como CP. DynamoDB com <code>strongly consistent reads</code> também. A escolha CP vs AP é por <strong>operação</strong>, não apenas por sistema.</div>
+</div>
+
+<div class="table-wrap">
+<table>
+<tr><th>Sistema</th><th>Categoria CAP</th><th>Comportamento durante partição</th><th>Resolução de conflito</th></tr>
+<tr><td><strong>PostgreSQL</strong> (single node)</td><td>CA (sem partição)</td><td>N/A — single node</td><td>ACID transactions</td></tr>
+<tr><td><strong>MongoDB</strong> (majority)</td><td>CP</td><td>Recusa escrita se sem quorum</td><td>Réplica set election</td></tr>
+<tr><td><strong>etcd</strong></td><td>CP</td><td>Read-only sem quorum</td><td>Raft consensus</td></tr>
+<tr><td><strong>Cassandra</strong></td><td>AP (tunavel)</td><td>Aceita em todos os nós</td><td>Last-Write-Wins (timestamps)</td></tr>
+<tr><td><strong>DynamoDB</strong></td><td>AP (tunavel)</td><td>Aceita em nós saudaveis</td><td>Eventual + conditional writes</td></tr>
+<tr><td><strong>CouchDB</strong></td><td>AP</td><td>Aceita em todos os nós</td><td>Revision tree + conflict flag</td></tr>
+</table>
+</div>
+
+<!-- ═══ PACELC ═══ -->
+<h3>Teorema PACELC</h3>
+<p>O CAP só descreve o que acontece <strong>durante uma partição</strong>. Mas é quando a rede está saudável? Daniel Abadi propôs o PACELC em 2010 como extensão:</p>
+
+<p><strong>Se Partition (P), escolha entre Availability (A) ou Consistency (C). Else (E), escolha entre Latency (L) ou Consistency (C).</strong></p>
+
+<div class="diagram">
+<div class="diagram-box red">Partição?</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">SIM: A ou C?</div>
+<div class="diagram-arrow">&nbsp;</div>
+<div class="diagram-box cyan">Não: L ou C?</div>
+</div>
+
+<p>Isso captura um trade-off que o CAP ignora: mesmo sem partições, replicar dados para múltiplos nós <strong>adiciona latência</strong>. Se você quer consistência forte sem partições, paga com latência (espera todas as réplicas confirmarem). Se quer baixa latência, aceita dados potencialmente desatualizados.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Sistema</th><th>Durante Partição (PA/PC)</th><th>Operação Normal (EL/EC)</th><th>Classificação</th></tr>
+<tr><td><strong>DynamoDB</strong></td><td>PA — prioriza disponibilidade</td><td>EL — prioriza latência (eventual reads)</td><td>PA/EL</td></tr>
+<tr><td><strong>Cassandra</strong></td><td>PA — aceita em qualquer no</td><td>EL — latência baixa por padrão</td><td>PA/EL</td></tr>
+<tr><td><strong>PostgreSQL</strong> (sync replication)</td><td>PC — recusa escrita sem standby</td><td>EC — espera standby confirmar</td><td>PC/EC</td></tr>
+<tr><td><strong>MongoDB</strong> (majority)</td><td>PC — precisa de quorum</td><td>EC — espera maioria confirmar</td><td>PC/EC</td></tr>
+<tr><td><strong>CockroachDB</strong></td><td>PC — Raft consensus</td><td>EC — serializable por padrão</td><td>PC/EC</td></tr>
+<tr><td><strong>Cosmos DB</strong></td><td>Configurável</td><td>Configurável (5 níveis)</td><td>Tunavel</td></tr>
+</table>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Para dados financeiros (transações, saldos, pagamentos), escolha <strong>PC/EC</strong> — consistência sempre. Para dados de analytics, sessões de usuário, feeds de conteúdo, <strong>PA/EL</strong> é aceitável — velocidade importa mais que perfeicao.</div>
+</div>
+
+<!-- ═══ ACID ═══ -->
+<h3>ACID — Transações Relacionais</h3>
+<p>ACID é o modelo de consistência dos bancos relacionais. São quatro garantias que toda transação deve prover:</p>
+
+<div class="card">
+<div class="card-title">As 4 Propriedades ACID</div>
+<ul>
+<li><strong>Atomicity (Atomicidade)</strong> — A transação e tudo ou nada. Se qualquer operação falha, todas são revertidas. Não existe estado intermediário visível</li>
+<li><strong>Consistency (Consistência)</strong> — A transação leva o banco de um estado válido para outro estado válido. Constraints, foreign keys, triggers — tudo é respeitado</li>
+<li><strong>Isolation (Isolamento)</strong> — Transações concorrentes não interferem entre si. O resultado é o mesmo como se fossem executadas sequêncialmente</li>
+<li><strong>Durability (Durabilidade)</strong> — Uma vez confirmada (COMMIT), a transação persiste mesmo se o servidor cai imediatamente depois. Dados são gravados em disco (WAL)</li>
+</ul>
+</div>
+
+<h4>Atomicidade na prática — Transferência bancaria</h4>
+<pre data-lang="sql"><code><span class="cm">-- Sem transação: se o sistema cai entre as duas operações,</span>
+<span class="cm">-- o dinheiro desaparece (debitou mas não creditou)</span>
+<span class="kw">UPDATE</span> accounts <span class="kw">SET</span> balance = balance - <span class="num">1000</span> <span class="kw">WHERE</span> id = <span class="num">1</span>;
+<span class="cm">-- &lt;crash aqui&gt; -- dinheiro sumiu!</span>
+<span class="kw">UPDATE</span> accounts <span class="kw">SET</span> balance = balance + <span class="num">1000</span> <span class="kw">WHERE</span> id = <span class="num">2</span>;
+
+<span class="cm">-- Com transação ACID: tudo ou nada</span>
+<span class="kw">BEGIN</span>;
+  <span class="kw">UPDATE</span> accounts <span class="kw">SET</span> balance = balance - <span class="num">1000</span> <span class="kw">WHERE</span> id = <span class="num">1</span>;
+  <span class="kw">UPDATE</span> accounts <span class="kw">SET</span> balance = balance + <span class="num">1000</span> <span class="kw">WHERE</span> id = <span class="num">2</span>;
+
+  <span class="cm">-- Verificacao: saldo não pode ser negativo</span>
+  <span class="kw">DO</span> $$
+  <span class="kw">BEGIN</span>
+    <span class="kw">IF</span> (<span class="kw">SELECT</span> balance <span class="kw">FROM</span> accounts <span class="kw">WHERE</span> id = <span class="num">1</span>) &lt; <span class="num">0</span> <span class="kw">THEN</span>
+      <span class="kw">RAISE EXCEPTION</span> <span class="str">'Saldo insuficiente'</span>;
+    <span class="kw">END IF</span>;
+  <span class="kw">END</span>
+  $$;
+<span class="kw">COMMIT</span>;
+<span class="cm">-- Se QUALQUER operação falha → ROLLBACK automático, ambas contas intactas</span></code></pre>
+
+<h4>Níveis de Isolamento (Isolation Levels)</h4>
+<p>O isolamento total (Serializable) é o mais seguro mas o mais lento. SQL define 4 níveis, cada um permitindo diferentes <strong>anomalias</strong>:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Nível</th><th>Dirty Read</th><th>Non-Repeatable Read</th><th>Phantom Read</th><th>Performance</th></tr>
+<tr><td><strong>Read Uncommitted</strong></td><td>Sim</td><td>Sim</td><td>Sim</td><td>Mais rápido</td></tr>
+<tr><td><strong>Read Committed</strong></td><td>Não</td><td>Sim</td><td>Sim</td><td>Rápido</td></tr>
+<tr><td><strong>Repeatable Read</strong></td><td>Não</td><td>Não</td><td>Sim*</td><td>Moderado</td></tr>
+<tr><td><strong>Serializable</strong></td><td>Não</td><td>Não</td><td>Não</td><td>Mais lento</td></tr>
+</table>
+</div>
+
+<p><small>* PostgreSQL implementa Repeatable Read usando MVCC (Snapshot Isolation), que também previne Phantom Reads na prática. O padrão SQL, entretanto, permite phantoms neste nível.</small></p>
+
+<h4>Anomalia 1: Dirty Read</h4>
+<p>Uma transação le dados <strong>não commitados</strong> de outra transação. Se a outra fizer ROLLBACK, você leu dados que nunca existiram.</p>
+
+<pre data-lang="sql"><code><span class="cm">-- Transacao A                         -- Transacao B</span>
+<span class="kw">BEGIN</span>;                                  <span class="kw">BEGIN</span>;
+<span class="kw">UPDATE</span> products
+  <span class="kw">SET</span> price = <span class="num">0.01</span>
+  <span class="kw">WHERE</span> id = <span class="num">42</span>;
+                                        <span class="cm">-- Read Uncommitted: le price = 0.01</span>
+                                        <span class="kw">SELECT</span> price <span class="kw">FROM</span> products
+                                          <span class="kw">WHERE</span> id = <span class="num">42</span>;
+                                        <span class="cm">-- Resultado: 0.01 (dado sujo!)</span>
+<span class="kw">ROLLBACK</span>;
+<span class="cm">-- O preço nunca foi 0.01 de verdade</span>  <span class="cm">-- B tomou decisão com dado inválido</span></code></pre>
+
+<h4>Anomalia 2: Non-Repeatable Read</h4>
+<p>Dentro de uma mesma transação, a mesma query retorna <strong>valores diferentes</strong> porque outra transação commitou uma alteráção no meio.</p>
+
+<pre data-lang="sql"><code><span class="cm">-- Transacao A (Read Committed)        -- Transacao B</span>
+<span class="kw">BEGIN</span>;                                  <span class="kw">BEGIN</span>;
+<span class="kw">SELECT</span> balance <span class="kw">FROM</span> accounts
+  <span class="kw">WHERE</span> id = <span class="num">1</span>;
+<span class="cm">-- Resultado: 5000</span>
+                                        <span class="kw">UPDATE</span> accounts
+                                          <span class="kw">SET</span> balance = <span class="num">3000</span>
+                                          <span class="kw">WHERE</span> id = <span class="num">1</span>;
+                                        <span class="kw">COMMIT</span>;
+
+<span class="kw">SELECT</span> balance <span class="kw">FROM</span> accounts
+  <span class="kw">WHERE</span> id = <span class="num">1</span>;
+<span class="cm">-- Resultado: 3000 ← valor mudou!</span>
+<span class="cm">-- Mesma query, mesma transação, resultado diferente</span>
+<span class="kw">COMMIT</span>;</code></pre>
+
+<h4>Anomalia 3: Phantom Read</h4>
+<p>Uma transação re-executa uma query com filtro e ve <strong>linhas novas</strong> que não existiam antes, porque outra transação inseriu dados que correspondem ao filtro.</p>
+
+<pre data-lang="sql"><code><span class="cm">-- Transacao A (Read Committed)        -- Transacao B</span>
+<span class="kw">BEGIN</span>;                                  <span class="kw">BEGIN</span>;
+<span class="kw">SELECT COUNT</span>(*) <span class="kw">FROM</span> orders
+  <span class="kw">WHERE</span> status = <span class="str">'pending'</span>;
+<span class="cm">-- Resultado: 5</span>
+                                        <span class="kw">INSERT INTO</span> orders (status)
+                                          <span class="kw">VALUES</span> (<span class="str">'pending'</span>);
+                                        <span class="kw">COMMIT</span>;
+
+<span class="kw">SELECT COUNT</span>(*) <span class="kw">FROM</span> orders
+  <span class="kw">WHERE</span> status = <span class="str">'pending'</span>;
+<span class="cm">-- Resultado: 6 ← linha fantasma apareceu!</span>
+<span class="kw">COMMIT</span>;</code></pre>
+
+<h4>Configurando Isolation Levels no PostgreSQL</h4>
+<pre data-lang="sql"><code><span class="cm">-- Padrão do PostgreSQL: Read Committed</span>
+<span class="kw">SHOW</span> default_transaction_isolation;
+<span class="cm">-- "read committed"</span>
+
+<span class="cm">-- Mudar para uma transação específica</span>
+<span class="kw">BEGIN TRANSACTION ISOLATION LEVEL</span> SERIALIZABLE;
+  <span class="kw">SELECT</span> balance <span class="kw">FROM</span> accounts <span class="kw">WHERE</span> id = <span class="num">1</span>;
+  <span class="cm">-- Snapshot fixo no início da transação</span>
+  <span class="cm">-- Nenhuma outra transação pode modificar dados lidos</span>
+  <span class="kw">UPDATE</span> accounts <span class="kw">SET</span> balance = balance - <span class="num">500</span> <span class="kw">WHERE</span> id = <span class="num">1</span>;
+<span class="kw">COMMIT</span>;
+<span class="cm">-- Se houver conflito de serialização → erro 40001</span>
+<span class="cm">-- Aplicacao deve fazer retry</span>
+
+<span class="cm">-- Mudar padrão globalmente (postgresql.conf)</span>
+<span class="cm">-- default_transaction_isolation = 'repeatable read'</span></code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>PostgreSQL Repeatable Read != MySQL Repeatable Read.</strong> PostgreSQL usa MVCC com Snapshot Isolation real — cada transação ve um snapshot consistente do início. MySQL InnoDB usa gap locking parcial, o que pode permitir alguns phantoms. Sempre teste no banco que você usa.</div>
+</div>
+
+<!-- ═══ BASE ═══ -->
+<h3>BASE — Consistência Eventual</h3>
+<p>BASE é o oposto filosofico de ACID. Enquanto ACID prioriza <strong>corretude imediata</strong>, BASE prioriza <strong>disponibilidade e performance</strong>, aceitando inconsistência temporária.</p>
+
+<div class="card blue">
+<div class="card-title">As 3 Propriedades BASE</div>
+<ul>
+<li><strong>Basically Available (Basicamente Disponível)</strong> — O sistema garante disponibilidade mesmo com falhas parciais. Pode retornar dados desatualizados, mas sempre retorna algo. Nenhum no e ponto único de falha</li>
+<li><strong>Soft Staté (Estado Flexível)</strong> — O estado do sistema pode mudar ao longo do tempo, mesmo sem input. Dados são propagados entre nós em background. Em qualquer momento, diferentes nós podem ter versões diferentes do mesmo dado</li>
+<li><strong>Eventually Consistent (Eventualmente Consistente)</strong> — Se nenhuma escrita nova for feita, eventualmente todas as réplicas convergirao para o mesmo valor. O "eventualmente" pode ser milissegundos ou minutos, dependendo do sistema</li>
+</ul>
+</div>
+
+<h4>BASE na prática: DynamoDB</h4>
+<pre data-lang="typescript"><code><span class="cm">// DynamoDB — Leitura eventual (padrão, mais barata, mais rápida)</span>
+<span class="kw">const</span> eventual = <span class="kw">await</span> dynamodb.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">GetCommand</span>({
+  TableName: <span class="str">'orders'</span>,
+  Key: { orderId: <span class="str">'ord-123'</span> },
+  ConsistentRead: <span class="kw">false</span>, <span class="cm">// padrão — eventual consistency</span>
+}));
+<span class="cm">// Pode retornar dado de 1-2 segundos atras</span>
+<span class="cm">// Custo: 0.5 RCU (Read Capacity Unit)</span>
+
+<span class="cm">// DynamoDB — Leitura fortemente consistente (mais cara, mais lenta)</span>
+<span class="kw">const</span> strong = <span class="kw">await</span> dynamodb.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">GetCommand</span>({
+  TableName: <span class="str">'orders'</span>,
+  Key: { orderId: <span class="str">'ord-123'</span> },
+  ConsistentRead: <span class="kw">true</span>, <span class="cm">// strongly consistent</span>
+}));
+<span class="cm">// Garantia: retorna o dado mais recente</span>
+<span class="cm">// Custo: 1.0 RCU (2x mais caro)</span>
+
+<span class="cm">// Conditional write — evita race conditions sem lock</span>
+<span class="kw">await</span> dynamodb.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">UpdateCommand</span>({
+  TableName: <span class="str">'inventory'</span>,
+  Key: { productId: <span class="str">'p-456'</span> },
+  UpdateExpression: <span class="str">'SET stock = stock - :qty'</span>,
+  ConditionExpression: <span class="str">'stock >= :qty'</span>,
+  ExpressionAttributeValues: { <span class="str">':qty'</span>: <span class="num">1</span> },
+}));
+<span class="cm">// Se stock &lt; qty → ConditionalCheckFailedException</span>
+<span class="cm">// Optimistic concurrency sem locks distribuídos</span></code></pre>
+
+<h4>ACID vs BASE — Quando usar cada um</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>ACID</th><th>BASE</th></tr>
+<tr><td><strong>Prioridade</strong></td><td>Corretude (Correctness)</td><td>Disponibilidade (Availability)</td></tr>
+<tr><td><strong>Consistência</strong></td><td>Forte, imediata</td><td>Eventual, convergente</td></tr>
+<tr><td><strong>Escalabilidade</strong></td><td>Vertical (scale up)</td><td>Horizontal (scale out)</td></tr>
+<tr><td><strong>Complexidade</strong></td><td>Banco gerência (simples para dev)</td><td>Aplicação gerência (complexo para dev)</td></tr>
+<tr><td><strong>Casos de uso</strong></td><td>Financeiro, saúde, inventário crítico</td><td>Social media, IoT, analytics, cache</td></tr>
+<tr><td><strong>Exemplos</strong></td><td>PostgreSQL, MySQL, Oracle</td><td>Cassandra, DynamoDB, Redis</td></tr>
+</table>
+</div>
+
+<!-- ═══ MODELOS DE CONSISTENCIA ═══ -->
+<h3>Modelos de Consistência</h3>
+<p>Além de "forte" é "eventual", existem vários níveis intermediários. Cada um oferece garantias diferentes sobre a <strong>ordem e visibilidade</strong> das operações de leitura e escrita.</p>
+
+<h4>1. Strong Consistency (Linearizabilidade)</h4>
+<p>A garantia mais forte. Toda operação aparenta ter sido executada em um <strong>único ponto no tempo</strong>, entre a invocação é a resposta. Qualquer leitura após uma escrita <strong>sempre</strong> retorna o valor mais recente, em qualquer no.</p>
+
+<pre data-lang="text"><code>Timeline:  t0────t1────t2────t3────t4────t5
+Writer:    ──[WRITE x=1]──────────────────
+Reader A:  ──────────[READ x]→ 1  ✓
+Reader B:  ──────────────[READ x]→ 1  ✓
+<span class="cm">Garantia: após WRITE completar, TODOS os READs retornam 1</span>
+<span class="cm">Exemplos: PostgreSQL single-node, etcd, Spanner</span></code></pre>
+
+<h4>2. Eventual Consistency</h4>
+<p>A garantia mais fraca. Se nenhuma escrita nova for feita, <strong>eventualmente</strong> todas as réplicas convergem. Mas não ha garantia de quando "eventualmente" acontece. Leituras podem retornar valores antigos por um período indeterminado.</p>
+
+<pre data-lang="text"><code>Timeline:  t0────t1────t2────t3────t4────t5────t6
+Writer:    ──[WRITE x=1]─────────────────────────
+Reader A:  ──────[READ x]→ 0  (stale!)
+Reader B:  ────────────[READ x]→ 0  (stale!)
+Reader A:  ──────────────────[READ x]→ 1  ✓ (convergiu)
+Reader B:  ────────────────────────[READ x]→ 1  ✓
+<span class="cm">Exemplos: DynamoDB (default), DNS, Cassandra (CL=ONE)</span></code></pre>
+
+<h4>3. Causal Consistency</h4>
+<p>Operações que tem relação de <strong>causa e efeito</strong> são vistas na ordem correta. Se A escreve x, e B le x e depois escreve y baseado nele, todos os observadores veem x antes de y. Operações <strong>sem relação causal</strong> podem ser vistas em qualquer ordem.</p>
+
+<pre data-lang="text"><code>Timeline:
+User A: POST "Alguem quer cafe?"           (msg-1)
+User B: READ msg-1 → POST "Eu quero!"      (msg-2, causado por msg-1)
+User C: Ve msg-1 antes de msg-2  ✓  (ordem causal preservada)
+User C: NUNCA ve msg-2 sem msg-1  ✓  (causalidade garantida)
+<span class="cm">Exemplos: MongoDB (causal sessions), Cosmos DB (session consistency)</span></code></pre>
+
+<h4>4. Read-Your-Writes</h4>
+<p>Após uma escrita, o <strong>mesmo cliente</strong> sempre ve sua própria escrita em leituras subsequentes. Outros clientes podem não ver imediatamente.</p>
+
+<pre data-lang="text"><code>Timeline:
+User A: WRITE profile.name = "Carlos"
+User A: READ profile.name → "Carlos"  ✓  (sempre ve sua escrita)
+User B: READ profile.name → "Carlos Antigo"  (pode estar stale)
+<span class="cm">Exemplos: Session tokens fixados em replica, DynamoDB (ConsistentRead)</span></code></pre>
+
+<h4>5. Monotonic Reads</h4>
+<p>Se um cliente le valor v1 no tempo t1, leituras subsequentes <strong>nunca retornam um valor mais antigo</strong> que v1. Não ha "voltar no tempo".</p>
+
+<pre data-lang="text"><code>Timeline:
+User A: READ x → 5
+User A: READ x → 3  ✗  (violação! voltou no tempo)
+User A: READ x → 5  ✓  (monotônico — nunca menor que último lido)
+User A: READ x → 7  ✓  (pode avançar)
+<span class="cm">Sem monotonic reads, você pode balancear entre replicas</span>
+<span class="cm">e ver valores antigos alternadamente. Solução: sticky sessions.</span></code></pre>
+
+<div class="diagram">
+<div class="diagram-box green">Linearizable<br><small>(mais forte)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Causal<br><small>(causa-efeito)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Read-Your-Writes<br><small>(sessão)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Monotonic Reads<br><small>(sem retrocesso)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Eventual<br><small>(mais fraca)</small></div>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Na prática:</strong> A maioria dos sistemas não precisa de linearizabilidade (cara demais). <strong>Read-your-writes + monotonic reads</strong> é suficiente para 90% dos casos — o usuário ve suas próprias alteráções e nunca "volta no tempo". Você consegue isso com sticky sessions ou lendo da réplica primária após escritas.</div>
+</div>
+
+<!-- ═══ CONSENSO DISTRIBUIDO ═══ -->
+<h3>Consensó Distribuído</h3>
+<p>Como nós de um sistema distribuído <strong>concordam sobre um valor</strong> quando mensagens podem ser perdidas, atrasadas ou duplicadas, e nós podem cair a qualquer momento? Este é o problema de consenso.</p>
+
+<h4>Raft — Consensó Compreensível</h4>
+<p>Projetado por Diego Ongaro e John Ousterhout em 2014 como alternativa compreensível ao Paxos. Usado por <strong>etcd, Consul, CockroachDB, TiKV</strong>. Funciona em três fases:</p>
+
+<div class="card">
+<div class="card-title">Raft — Passó a Passo</div>
+<p><strong>1. Leader Election (Eleicao de Lider)</strong></p>
+<ul>
+<li>Todos os nós começam como <strong>Followers</strong></li>
+<li>Se um Follower não recebe heartbeat do Leader em um timeout aleatório (150-300ms), vira <strong>Candidate</strong></li>
+<li>Candidaté incrementa seu <code>term</code> é pede votos (<code>RequestVote</code>) aos demais</li>
+<li>Se recebe maioria dos votos → vira <strong>Leader</strong>. Cada term tem no máximo 1 Leader</li>
+<li>Timeout aleatório previne split votes (dois candidates simultâneos)</li>
+</ul>
+<p><strong>2. Log Replication (Replicação de Log)</strong></p>
+<ul>
+<li>Todas as escritas vao para o Leader</li>
+<li>Leader adiciona entrada ao seu log e envia <code>AppendEntries</code> para todos Followers</li>
+<li>Quando maioria confirma (quorum) → entrada e <strong>committed</strong></li>
+<li>Leader notifica Followers para aplicar a entrada commitada na state machine</li>
+</ul>
+<p><strong>3. Safety (Segurança)</strong></p>
+<ul>
+<li>Apenas o no com o log mais completo pode ser eleito Leader</li>
+<li>Entries commitadas nunca são sobrescritas</li>
+<li>Se um Follower está atrasado, o Leader envia as entradas faltantes</li>
+</ul>
+</div>
+
+<pre data-lang="text"><code>      ┌──────────┐    Heartbeat    ┌──────────┐
+      │  Leader  │ ──────────────→ │ Follower │
+      │ (Node 1) │                 │ (Node 2) │
+      └──────────┘                 └──────────┘
+           │          AppendEntries       │
+           │ ────────────────────────────→ │
+           │ ←──── ACK ──────────────────  │
+           │                               │
+           │         ┌──────────┐          │
+           │ ──────→ │ Follower │ ←──────  │
+           │         │ (Node 3) │          │
+                     └──────────┘
+
+<span class="cm">Quorum: 2 de 3 nós (maioria). Com 5 nos, quorum = 3.</span>
+<span class="cm">Tolera: (N-1)/2 falhas. 3 nós tolera 1 falha. 5 nós tolera 2.</span></code></pre>
+
+<h4>Paxos — O Algoritmo Original</h4>
+<p>Proposto por Leslie Lamport em 1989. Matematicamente provado correto, mas <strong>notoriamente difícil de entender e implementar</strong>. Usa três papeis: Proposer, Acceptor, Learner. Duas fases: Prepare (proposta com número) e Accept (aceitacao pelo quorum). Google Spanner usa Multi-Paxos internamente.</p>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Paxos vs Raft:</strong> Ambos resolvem o mesmo problema com as mesmas garantias. Raft foi projetado para ser mais fácil de entender e implementar, com um Leader claro. Na prática, prefira Raft para novos sistemas. Paxos e relevante por contexto histórico e para entrevistas.</div>
+</div>
+
+<h4>Two-Phase Commit (2PC)</h4>
+<p>Protocolo para transações distribuídas que envolvem múltiplos bancos/serviços. Um <strong>Coordinator</strong> orquestra o commit atômico.</p>
+
+<pre data-lang="text"><code>       Coordinator
+           │
+    Phase 1: PREPARE
+    ┌──────┼──────┐
+    ▼      ▼      ▼
+  DB-A   DB-B   DB-C
+  "OK"   "OK"   "OK"
+    │      │      │
+    └──────┼──────┘
+           │
+    Phase 2: COMMIT
+    ┌──────┼──────┐
+    ▼      ▼      ▼
+  DB-A   DB-B   DB-C
+  DONE   DONE   DONE
+
+<span class="cm">Se QUALQUER participante diz "NO" na Phase 1 → ABORT em todos</span></code></pre>
+
+<pre data-lang="sql"><code><span class="cm">-- PostgreSQL: Prepared Transactions (2PC nativo)</span>
+<span class="cm">-- Node A (Orders DB)</span>
+<span class="kw">BEGIN</span>;
+<span class="kw">INSERT INTO</span> orders (id, total) <span class="kw">VALUES</span> (<span class="str">'ord-1'</span>, <span class="num">599.90</span>);
+<span class="kw">PREPARE TRANSACTION</span> <span class="str">'order_txn_001'</span>;
+
+<span class="cm">-- Node B (Payments DB)</span>
+<span class="kw">BEGIN</span>;
+<span class="kw">INSERT INTO</span> payments (order_id, amount) <span class="kw">VALUES</span> (<span class="str">'ord-1'</span>, <span class="num">599.90</span>);
+<span class="kw">PREPARE TRANSACTION</span> <span class="str">'payment_txn_001'</span>;
+
+<span class="cm">-- Coordinator: ambos preparados? COMMIT!</span>
+<span class="kw">COMMIT PREPARED</span> <span class="str">'order_txn_001'</span>;   <span class="cm">-- Node A</span>
+<span class="kw">COMMIT PREPARED</span> <span class="str">'payment_txn_001'</span>; <span class="cm">-- Node B</span>
+
+<span class="cm">-- Se qualquer PREPARE falhar:</span>
+<span class="kw">ROLLBACK PREPARED</span> <span class="str">'order_txn_001'</span>;
+<span class="kw">ROLLBACK PREPARED</span> <span class="str">'payment_txn_001'</span>;</code></pre>
+
+<p><strong>Problema do 2PC: Blocking.</strong> Se o Coordinator cai após Phase 1 (todos disserám "OK") mas antes de Phase 2 (COMMIT/ABORT), os participantes ficam <strong>travados</strong> — não sabem se devem commitar ou abortar. Locks são mantidos indefinidamente.</p>
+
+<h4>Three-Phase Commit (3PC)</h4>
+<p>Adiciona uma fase intermediária <strong>"Pre-Commit"</strong> entre Prepare e Commit. Resolve o problema de blocking: se o Coordinator cai, os participantes podem decidir sozinhos com base na fase atual. Na prática, <strong>raramente usado</strong> — a complexidade não compensa. Sistemas modernós preferem Sagas ou eventos.</p>
+
+<h4>Vector Clocks</h4>
+<p>Mecanismo para rastrear <strong>causalidade</strong> em sistemas distribuídos sem relogio global. Cada no mantém um vetor com contadores para todos os nós.</p>
+
+<pre data-lang="text"><code><span class="cm">3 nos: A, B, C. Vetor = [A:0, B:0, C:0]</span>
+
+1. A escreve x=1        → A:[1,0,0]
+2. A envia para B       → B:[1,1,0]  (B incrementa seu contador)
+3. B escreve x=2        → B:[1,2,0]
+4. C escreve x=3        → C:[0,0,1]  (concorrente com A e B!)
+
+<span class="cm">Comparacao:</span>
+<span class="cm">[1,2,0] vs [0,0,1] → CONFLITO (nenhum domina o outro)</span>
+<span class="cm">[1,0,0] vs [1,2,0] → [1,0,0] aconteceu ANTES de [1,2,0]</span>
+
+<span class="cm">Regra: V1 &lt; V2 se todo elemento de V1 &lt;= V2 e pelo menós um &lt;</span>
+<span class="cm">Se nenhum domina o outro → eventos concorrentes → CONFLITO</span>
+
+<span class="cm">Usado em: Riak, Dynamo original (Amazon)</span></code></pre>
+
+<h4>Gossip Protocol</h4>
+<p>Protocolo de comunicação inspirado em <strong>epidemiologia</strong> — informação se espalha como um virus. Cada no periodicamente escolhe um no aleatório e troca informações. Garante <strong>eventual convergence</strong> com alta probabilidade.</p>
+
+<ul>
+<li><strong>Como funciona:</strong> A cada intervalo (ex: 1 segundo), no A escolhe no aleatório B e envia seu "digest" (resumo do estado). B compara, envia diferenças, ambos atualizam</li>
+<li><strong>Convergencia:</strong> Com N nós, informação atinge todos em O(log N) rodadas. 1000 nós → ~10 rodadas para propagação completa</li>
+<li><strong>Tolerância a falha:</strong> Não depende de lider ou coordenador. Se um no cai, os demais continuam gossipando</li>
+<li><strong>Usado em:</strong> Cassandra (detecção de falha + distribuição de schema), Consul (membership), Redis Cluster (slot mapping)</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Resumo de uso:</strong> Raft/Paxos para <strong>consensó forte</strong> (eleicao de lider, configuração crítica). 2PC para <strong>transações distribuídas</strong> (com cuidado — prefira Sagas). Vector Clocks para <strong>detecção de conflitos</strong>. Gossip para <strong>propagação eventual</strong> (membership, health checks).</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Contador Distribuído</h3>
+<p><strong>Cenário:</strong> Projete um contador distribuído que suporte milhões de incrementos por segundo. Pense em um botão de "like" global ou um contador de visualizações de video.</p>
+
+<h4>Abordagem 1: Consistência Forte (CP)</h4>
+<pre data-lang="typescript"><code><span class="cm">// Contador com consistência forte — correto mas LENTO</span>
+<span class="cm">// Cada incremento e uma transação serializada</span>
+<span class="kw">async function</span> <span class="fn">incrementStrong</span>(counterId: <span class="tp">string</span>) {
+  <span class="kw">await</span> db.<span class="fn">query</span>(<span class="str">`
+    UPDATE counters
+    SET value = value + 1
+    WHERE id = $1
+  `</span>, [counterId]);
+  <span class="cm">// Lock na linha → serializa todos os incrementos</span>
+  <span class="cm">// Throughput: ~10K ops/sec (limitado por single row lock)</span>
+}
+
+<span class="cm">// Problema: Hot key! Todos os escritores competem pela mesma linha.</span>
+<span class="cm">// Resultado: contenção de lock, throughput degradado.</span></code></pre>
+
+<h4>Abordagem 2: Sharded Counter (Compromisso)</h4>
+<pre data-lang="typescript"><code><span class="cm">// Sharded counter — divide o contador em N shards</span>
+<span class="kw">const</span> NUM_SHARDS = <span class="num">100</span>;
+
+<span class="kw">async function</span> <span class="fn">incrementSharded</span>(counterId: <span class="tp">string</span>) {
+  <span class="kw">const</span> shardId = Math.<span class="fn">floor</span>(Math.<span class="fn">random</span>() * NUM_SHARDS);
+  <span class="kw">await</span> db.<span class="fn">query</span>(<span class="str">`
+    UPDATE counter_shards
+    SET value = value + 1
+    WHERE counter_id = $1 AND shard_id = $2
+  `</span>, [counterId, shardId]);
+  <span class="cm">// 100 shards → 100x menós contenção</span>
+  <span class="cm">// Throughput: ~1M ops/sec</span>
+}
+
+<span class="kw">async function</span> <span class="fn">getCount</span>(counterId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">number</span>&gt; {
+  <span class="kw">const</span> result = <span class="kw">await</span> db.<span class="fn">query</span>(<span class="str">`
+    SELECT SUM(value) as total
+    FROM counter_shards
+    WHERE counter_id = $1
+  `</span>, [counterId]);
+  <span class="kw">return</span> result.rows[<span class="num">0</span>].total;
+  <span class="cm">// Leitura: agrega todos os shards (ligeiramente mais lenta)</span>
+}</code></pre>
+
+<h4>Abordagem 3: CRDT — G-Counter (AP, Eventual)</h4>
+<pre data-lang="typescript"><code><span class="cm">// CRDT: Conflict-free Replicated Data Type</span>
+<span class="cm">// G-Counter: Grow-only counter para sistemas AP</span>
+<span class="cm">// Cada no tem seu proprio contador. Total = soma de todos.</span>
+
+<span class="kw">type</span> <span class="tp">GCounter</span> = Record&lt;<span class="tp">string</span>, <span class="tp">number</span>&gt;; <span class="cm">// { nodeId: count }</span>
+
+<span class="kw">function</span> <span class="fn">increment</span>(counter: <span class="tp">GCounter</span>, nodeId: <span class="tp">string</span>): <span class="tp">GCounter</span> {
+  <span class="kw">return</span> { ...counter, [nodeId]: (counter[nodeId] || <span class="num">0</span>) + <span class="num">1</span> };
+}
+
+<span class="kw">function</span> <span class="fn">value</span>(counter: <span class="tp">GCounter</span>): <span class="tp">number</span> {
+  <span class="kw">return</span> Object.<span class="fn">values</span>(counter).<span class="fn">reduce</span>((sum, v) => sum + v, <span class="num">0</span>);
+}
+
+<span class="kw">function</span> <span class="fn">merge</span>(a: <span class="tp">GCounter</span>, b: <span class="tp">GCounter</span>): <span class="tp">GCounter</span> {
+  <span class="kw">const</span> result: <span class="tp">GCounter</span> = { ...a };
+  <span class="kw">for</span> (<span class="kw">const</span> [node, count] <span class="kw">of</span> Object.<span class="fn">entries</span>(b)) {
+    result[node] = Math.<span class="fn">max</span>(result[node] || <span class="num">0</span>, count);
+  }
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// Propriedades magicas do CRDT:</span>
+<span class="cm">// - merge e comutativo: merge(A,B) == merge(B,A)</span>
+<span class="cm">// - merge e associativo: merge(A, merge(B,C)) == merge(merge(A,B), C)</span>
+<span class="cm">// - merge e idempotente: merge(A,A) == A</span>
+<span class="cm">// → Ordem de sincronização não importa! Sempre converge.</span>
+
+<span class="cm">// Node-A: {A:5, B:0}  Node-B: {A:3, B:7}</span>
+<span class="cm">// merge → {A:5, B:7} — ambos os nós convergem para isso</span>
+<span class="cm">// Throughput: milhões/sec (zero coordenação)</span></code></pre>
+
+<div class="table-wrap">
+<table>
+<tr><th>Abordagem</th><th>Consistência</th><th>Throughput</th><th>Complexidade</th><th>Casó de Uso</th></tr>
+<tr><td><strong>Single row UPDATE</strong></td><td>Forte (ACID)</td><td>~10K/sec</td><td>Baixa</td><td>Saldo bancario</td></tr>
+<tr><td><strong>Sharded counter</strong></td><td>Forte (ACID)</td><td>~1M/sec</td><td>Media</td><td>Inventário e-commerce</td></tr>
+<tr><td><strong>CRDT G-Counter</strong></td><td>Eventual</td><td>Milhões/sec</td><td>Alta</td><td>Likes, views, analytics</td></tr>
+</table>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Assumir consistência forte em tudo:</strong> Muitos devs usam PostgreSQL e assumem que todo o sistema tem consistência forte. Mas quando você adiciona um cache (Redis), uma fila (SQS), ou réplica de leitura — sua consistência já é <strong>eventual</strong>. Se a aplicação le do cache enquanto o banco já foi atualizado, você tem um stale read. Mapeie explicitamente onde a consistência muda.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Ignorar partition tolerance:</strong> "Meu sistema roda em uma única AZ, não precisó me preocupar com partições." Errado. A rede interna de um data center também falha — switches, NICs defeituosas, congestionamento. AWS relata partições internas regularmente. Se seu sistema tem mais de 1 no, partições <strong>vao</strong> acontecer.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Não entender isolation levels:</strong> O padrão do PostgreSQL e Read Committed — não Serializable. Muitos devs escrevem lógica de negócio que <strong>assume</strong> Serializable (ex: "verifique saldo, depois debite") sem SET TRANSACTION ISOLATION LEVEL. O resultado: race conditions em produção que nunca aparecem no ambiente local single-user.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>2PC como bala de prata:</strong> Two-Phase Commit garante atomicidade distribuída, mas tem custo enorme: latência (2 network round-trips), blocking (coordinator failure), e reduz throughput drasticamente. Na maioria dos cenários de microsserviços, <strong>Sagas com compensação</strong> são preferaveis — aceite consistência eventual e traté falhas com ações compensatorias.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Comece com consistência forte (PostgreSQL, ACID). Relaxe conscientemente quando precisar de performance ou disponibilidade. Documente cada ponto onde a consistência muda. A pior situação é um sistema que você <strong>acha</strong> que é consistente mas não e.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você está projetando um sistema de e-commerce. O serviço de inventário precisa decrementar estoque atomicamente. O serviço de pedidos precisa criar o pedido. Se o pagamento falhar, ambos devem reverter. Que estratégia de consistência você usaria é por que?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use o padrão <strong>Saga com compensação</strong>. Sequência: (1) Reservar estoque (inventário), (2) Criar pedido (pedidos), (3) Processar pagamento (pagamentos). Se pagamento falha: (3c) compensar pedido (cancelar), (2c) compensar estoque (devolver). Cada passó é uma transação ACID local. A consistência global e <strong>eventual</strong> — durante a execução da saga, o sistema está em estado intermediário. 2PC seria mais correto mas introduz blocking e acoplamento forte entre serviços. Para e-commerce, eventual consistency com compensação é o padrão da indústria (Amazon, Uber).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu sistema usa PostgreSQL com 1 primário e 2 réplicas de leitura. Um usuário atualiza seu perfil e imediatamente recarrega a página. Ele ve os dados antigos. O que aconteceu é como você corrige?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Replication lag. A escrita foi para o primário, a leitura foi para uma réplica que ainda não recebeu a atualização. Soluções: (1) <strong>Read-your-writes</strong> — após escrita, força próxima leitura para o primário (sticky connection por X segundos). (2) Envie um cookie/header com o timestamp da última escrita. Se a réplica está atrás desse timestamp, redireciona para o primário. (3) Use synchronous replication (mais lento, mas garante consistência nas réplicas). A opção 1 é a mais usada na prática — resolve o problema UX sem sacrificar performance geral.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Em uma entrevista, o entrevistador pergunta: "Por que você não pode ter CAP completo? Me convenca com um exemplo concreto." Como você responde?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Imagine 2 nós (A e B) com um banco de dados replicado. A rede entre eles cai (partição). Um cliente escreve x=5 no no A. Agora outro cliente le x do no B. Você tem duas opções: (1) No B retorna o valor antigo (x=3) → você tem <strong>Availability</strong> mas perdeu <strong>Consistency</strong>. (2) No B retorna erro "indisponível" até a partição ser resolvida → você tem <strong>Consistency</strong> mas perdeu <strong>Availability</strong>. Não ha terceira opção. E impossível que B retorne x=5 se a rede entre A e B está cortada. Portanto, durante uma partição, você DEVE escolher entre C e A.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — CAP, ACID, BASE & Consistência</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="15-data-architecture.html">&#8592; Data Architecture</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="17-mensageria-kafka-rabbit-sqs.html" class="primary">Próximo: Mensageria &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 16: CAP, ACID, BASE & Consistência
+// ══════════════════════════════════════════
+const SECTION_NUM = 16;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "O Teorema CAP afirma que um sistema distribuído só pode garantir duas de três propriedades. Em sistemas distribuídos reais, qual propriedade Não é opcional?",
+    options: [
+      "Consistency — dados sempre corretos",
+      "Availability — sempre retorna resposta",
+      "Partition Tolerance — funciona com falha de rede",
+      "Todas são opcionais dependendo do caso"
+    ],
+    correct: 2,
+    explanation: "Partition Tolerance não é opcional porque partições de rede VAO acontecer em qualquer sistema distribuído real. A escolha prática e entre Consistency e Availability durante uma partição."
+  },
+  {
+    question: "Cassandra com ConsistencyLevel.ONE para leitura e escrita e classificada como que tipo de sistema no CAP?",
+    options: [
+      "CP — Consistency + Partition Tolerance",
+      "CA — Consistency + Availability",
+      "AP — Availability + Partition Tolerance",
+      "CAP — todas as três"
+    ],
+    correct: 2,
+    explanation: "Com CL=ONE, Cassandra confirma operações após apenas 1 réplica responder. Durante uma partição, qualquer no disponível aceita leituras e escritas — priorizando Availability sobre Consistency (AP)."
+  },
+  {
+    question: "No modelo PACELC, DynamoDB e classificado como PA/EL. O que significa o 'EL'?",
+    options: [
+      "Else Linearizable — sem partição, garante linearizabilidade",
+      "Else Latency — sem partição, prioriza baixa latência sobre consistência",
+      "Eventually Lockfree — sem partição, opera sem locks",
+      "Else Lossless — sem partição, nenhum dado e perdido"
+    ],
+    correct: 1,
+    explanation: "EL significa que quando Não ha partição (Else), o sistema prioriza Latência (L) sobre Consistência. DynamoDB por padrão faz leituras eventualmente consistentes que são mais rápidas e baratas."
+  },
+  {
+    question: "Qual anomalia de isolamento ocorre quando uma transação le dados que outra transação AINDA Não commitou?",
+    options: [
+      "Phantom Read",
+      "Non-Repeatable Read",
+      "Dirty Read",
+      "Lost Update"
+    ],
+    correct: 2,
+    explanation: "Dirty Read ocorre quando uma transação le dados não commitados de outra. Se a outra fizer ROLLBACK, os dados lidos nunca existiram de verdade. Prevenido a partir do nível Read Committed."
+  },
+  {
+    question: "No PostgreSQL, qual é o nível de isolamento Padrão?",
+    options: [
+      "Read Uncommitted",
+      "Read Committed",
+      "Repeatable Read",
+      "Serializable"
+    ],
+    correct: 1,
+    explanation: "O padrão do PostgreSQL e Read Committed. Cada statement dentro da transação ve um snapshot dos dados commitados até aquele momento. Non-repeatable reads e phantom reads são possiveis."
+  },
+  {
+    question: "No algoritmo Raft com 5 nós, quantos nós precisam confirmar uma escrita para ela ser considerada committed?",
+    options: [
+      "1 (apenas o Leader)",
+      "2 (Leader + 1 Follower)",
+      "3 (maioria: Leader + 2 Followers)",
+      "5 (todos os nós)"
+    ],
+    correct: 2,
+    explanation: "Raft requer quorum (maioria) para commit. Com 5 nós, quorum = 3 (5/2 + 1). Isso permite tolerar 2 falhas simultâneas. O Leader envia AppendEntries e espera 2 Followers confirmarem."
+  },
+  {
+    question: "Qual é o principal problema do Two-Phase Commit (2PC)?",
+    options: [
+      "Não garante atomicidade — participantes podem commitar parcialmente",
+      "Blocking — se o Coordinator cai após Phase 1, participantes ficam travados",
+      "Não funciona com mais de 2 participantes",
+      "Requer que todos os participantes estejam na mesma rede local"
+    ],
+    correct: 1,
+    explanation: "O maior problema do 2PC e blocking. Se o Coordinator falha após receber todos os 'OK' na Phase 1 mas antes de enviar COMMIT na Phase 2, os participantes ficam em estado incerto — não sabem se devem commitar ou abortar, e mantém locks."
+  },
+  {
+    question: "O que é um CRDT (Conflict-free Replicated Data Type) é por que é útil para contadores distribuídos?",
+    options: [
+      "Um tipo de banco de dados NoSQL otimizado para contadores",
+      "Uma estrutura de dados que pode ser replicada e mergida sem conflitos, independente da ordem",
+      "Um protocolo de consensó mais rápido que Raft",
+      "Um tipo especial de transação ACID para sistemas distribuídos"
+    ],
+    correct: 1,
+    explanation: "CRDTs são estruturas de dados onde o merge e comutativo, associativo e idempotente. Isso significa que réplicas podem divergir é ser mergidas em qualquer ordem, sempre convergindo para o mesmo resultado — sem coordenação."
+  },
+  {
+    question: "Um usuário atualiza seu perfil no primário PostgreSQL e imediatamente le de uma réplica de leitura, vendo dados antigos. Qual modelo de consistência resolveria isso?",
+    options: [
+      "Eventual Consistency — esperar a réplica atualizar",
+      "Linearizability — usar transações Serializable",
+      "Read-Your-Writes — garantir que o usuário sempre ve suas próprias escritas",
+      "Monotonic Reads — garantir que leituras nunca voltam no tempo"
+    ],
+    correct: 2,
+    explanation: "Read-Your-Writes garante que após uma escrita, o MESMO cliente sempre vera seu dado atualizado. Implementação prática: após escrita, força próxima leitura para o primário (sticky connection) por alguns segundos."
+  },
+  {
+    question: "Qual afirmacao sobre BASE está CORRETA?",
+    options: [
+      "BASE garante que todas as leituras retornam o dado mais recente",
+      "BASE é usado apenas em bancos NoSQL e nunca em sistemas com SQL",
+      "BASE aceita inconsistência temporária em troca de disponibilidade e performance",
+      "BASE e incompatível com qualquer forma de transação"
+    ],
+    correct: 2,
+    explanation: "BASE (Basically Available, Soft State, Eventually Consistent) aceita que os dados podem estar temporáriamente inconsistentes entre réplicas, priorizando disponibilidade e performance. A consistência converge eventualmente."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina CAP, ACID, BASE e consistência distribuída.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

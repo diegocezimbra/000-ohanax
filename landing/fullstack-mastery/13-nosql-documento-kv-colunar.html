@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>13 — NoSQL - Documento, KV, Colunar | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="12-bancos-sql-relacional.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>13</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="14-grafos-vetorial-fulltext.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:19.7%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 13</span>
+<h2>NoSQL — Documento, KV, Colunar</h2>
+<div class="section-line"></div>
+
+<p>Bancos NoSQL não são uma alternativa ao SQL — são <strong>ferramentas complementares</strong> para problemas específicos. Enquanto bancos relacionais otimizam para consistência e queries arbitrarias, cada categoria NoSQL otimiza para um padrão de acesso diferente. A escolha certa depende de <strong>como você acessa os dados</strong>, não de como eles se relacionam.</p>
+
+<p>O erro mais comum e escolher NoSQL por moda ou porque "escala melhor". A verdade: PostgreSQL escala para a maioria dos casos. Você precisa de NoSQL quando tem um padrão de acesso que um banco relacional atende de forma ineficiente — schemas altamente variáveis, leituras por chave em microsegundos, volumes massivos de escrita temporal, ou caching em memória.</p>
+
+<!-- ═══ DOCUMENT DATABASES ═══ -->
+<h3>Document Databases (MongoDB, CouchDB, Firestore)</h3>
+
+<p>Bancos de documentos armazenam dados como <strong>documentos JSON/BSON</strong> — objetos auto-contidos com estrutura flexível. Cada documento pode ter campos diferentes dos demais na mesma coleção. Não existe schema rígido: o schema é definido pela aplicação, não pelo banco.</p>
+
+<h4>Conceitos Fundamentais</h4>
+<ul>
+<li><strong>Documento</strong> — unidade básica de armazenamento (JSON/BSON). Equivalente a uma "linha" no SQL, mas com estrutura aninhada</li>
+<li><strong>Coleção</strong> — agrupamento lógico de documentos. Equivalente a uma "tabela", mas sem schema fixo</li>
+<li><strong>Embedded Documents</strong> — documentos aninhados dentro de outros. Desnormalização intencional para evitar JOINs</li>
+<li><strong>References</strong> — links entre documentos via ObjectId. Similar a foreign keys, mas sem enforcement pelo banco</li>
+<li><strong>Aggregation Pipeline</strong> — framework de processamento de dados em estagios (<code>$match</code>, <code>$group</code>, <code>$lookup</code>, <code>$project</code>, <code>$unwind</code>)</li>
+<li><strong>Indexes</strong> — suporte a índices compostos, textuais, geoespaciais, TTL (auto-expiração), e parciais</li>
+</ul>
+
+<h4>Quando Usar Document DB</h4>
+<ul>
+<li><strong>Schema variável</strong> — cada item de um catálogo pode ter atributos diferentes (roupas vs eletrônicos vs livros)</li>
+<li><strong>Prototipagem rápida</strong> — sem migrations, schema evolui com a aplicação</li>
+<li><strong>Content Management</strong> — CMS, blogs, artigos com estrutura flexível</li>
+<li><strong>Dados hierárquicos</strong> — documentos aninhados representam árvores naturalmente</li>
+<li><strong>Event sourcing</strong> — cada evento como documento imutável</li>
+</ul>
+
+<h4>Embedding vs Referencing</h4>
+
+<div class="card">
+<div class="card-title">Regra de Ouro para Modelagem</div>
+<ul>
+<li><strong>Embed</strong> quando: dados são acessados juntos (1:1 ou 1:few), subdocumento não faz sentido sozinho, documento total &lt; 16MB</li>
+<li><strong>Reference</strong> quando: dados são acessados independentemente, relação 1:many com muitos, dados compartilhados entre documentos, precisa de queries independentes no subdocumento</li>
+</ul>
+</div>
+
+<pre data-lang="javascript"><code><span class="cm">// Embedding — dados do endereço vivem DENTRO do usuário</span>
+{
+  <span class="str">"_id"</span>: <span class="fn">ObjectId</span>(<span class="str">"65a1b2c3d4e5f6"</span>),
+  <span class="str">"nome"</span>: <span class="str">"Carlos Silva"</span>,
+  <span class="str">"email"</span>: <span class="str">"carlos@email.com"</span>,
+  <span class="str">"endereço"</span>: {
+    <span class="str">"rua"</span>: <span class="str">"Av Paulista 1000"</span>,
+    <span class="str">"cidade"</span>: <span class="str">"São Paulo"</span>,
+    <span class="str">"estado"</span>: <span class="str">"SP"</span>,
+    <span class="str">"cep"</span>: <span class="str">"01310-100"</span>
+  },
+  <span class="str">"pedidos"</span>: [
+    { <span class="str">"produto"</span>: <span class="str">"Teclado"</span>, <span class="str">"valor"</span>: <span class="num">299.90</span>, <span class="str">"data"</span>: <span class="str">"2024-01-15"</span> },
+    { <span class="str">"produto"</span>: <span class="str">"Mouse"</span>, <span class="str">"valor"</span>: <span class="num">149.90</span>, <span class="str">"data"</span>: <span class="str">"2024-02-20"</span> }
+  ]
+}
+
+<span class="cm">// Referencing — pedidos em coleção separada, referência por ID</span>
+<span class="cm">// Colecao: usuários</span>
+{ <span class="str">"_id"</span>: <span class="fn">ObjectId</span>(<span class="str">"65a1..."</span>), <span class="str">"nome"</span>: <span class="str">"Carlos Silva"</span> }
+
+<span class="cm">// Colecao: pedidos</span>
+{
+  <span class="str">"_id"</span>: <span class="fn">ObjectId</span>(<span class="str">"77b2..."</span>),
+  <span class="str">"userId"</span>: <span class="fn">ObjectId</span>(<span class="str">"65a1..."</span>),  <span class="cm">// referência ao usuário</span>
+  <span class="str">"produto"</span>: <span class="str">"Teclado"</span>,
+  <span class="str">"valor"</span>: <span class="num">299.90</span>
+}</code></pre>
+
+<!-- ═══ KEY-VALUE STORES ═══ -->
+<h3>Key-Value Stores (Redis, Memcached, DynamoDB, etcd)</h3>
+
+<p>O modelo mais simples possível: <strong>chave &rarr; valor</strong>. A chave é uma string única, o valor pode ser qualquer coisa (string, JSON, binário). A simplicidade é a força — operações em O(1), latência sub-milisegundo. Redis é o mais popular e vai além do KV básico, oferecendo estruturas de dados ricas.</p>
+
+<h4>Estruturas de Dados no Redis</h4>
+<ul>
+<li><strong>Strings</strong> — tipo mais básico. Contadores (<code>INCR</code>), flags, cache de JSON serializado</li>
+<li><strong>Lists</strong> — listas encadeadas. Filas (FIFO com <code>LPUSH</code>/<code>RPOP</code>), últimas N atividades</li>
+<li><strong>Sets</strong> — conjuntos sem duplicatas. Tags, membros online, interseção/união de conjuntos</li>
+<li><strong>Sorted Sets (ZSets)</strong> — sets com score numérico. Rankings, leaderboards, raté limiting por janela</li>
+<li><strong>Hashes</strong> — mapas chave-valor aninhados. Perfis de usuário, objetos com campos</li>
+<li><strong>Streams</strong> — log append-only com consumer groups. Event streaming leve, similar ao Kafka</li>
+<li><strong>Pub/Sub</strong> — mensageria em tempo real. Chat, notificações, invalidação de cache</li>
+</ul>
+
+<h4>Casos de Usó Clássicos</h4>
+<ul>
+<li><strong>Caching</strong> — cache de queries SQL, respostas de API, sessões de usuário</li>
+<li><strong>Raté Limiting</strong> — controlar requisições por IP/usuário com sorted sets ou <code>INCR</code> + <code>EXPIRE</code></li>
+<li><strong>Sessões</strong> — armazenar sessões web com TTL automático</li>
+<li><strong>Leaderboards</strong> — rankings em tempo real com sorted sets (<code>ZADD</code>, <code>ZRANGE</code>)</li>
+<li><strong>Distributed Locks</strong> — <code>SET key value NX EX 30</code> para locks com timeout</li>
+<li><strong>Queue</strong> — fila simples com lists ou Streams para consumer groups</li>
+</ul>
+
+<div class="card blue">
+<div class="card-title">DynamoDB — Key-Value na AWS</div>
+<ul>
+<li><strong>Partition Key (PK)</strong> — distribui dados entre partições. Escolha com alta cardinalidade</li>
+<li><strong>Sort Key (SK)</strong> — ordena itens dentro de uma partição. Permite range queries</li>
+<li><strong>Single-Table Design</strong> — padrão avançado: uma única tabela para múltiplas entidades, usando PK/SK genéricos</li>
+<li><strong>GSI (Global Secondary Index)</strong> — índice alternativo com PK/SK diferentes para outros padrões de acesso</li>
+<li><strong>On-Demand vs Provisioned</strong> — billing por requisição ou capacidade reservada</li>
+</ul>
+</div>
+
+<!-- ═══ WIDE-COLUMN / COLUMNAR ═══ -->
+<h3>Wide-Column / Colunar (Cassandra, HBase, ScyllaDB, ClickHouse)</h3>
+
+<p>Bancos colunares organizam dados por <strong>colunas ao inves de linhas</strong>. Existem dois subtipos distintos: <strong>wide-column stores</strong> (Cassandra, HBase) otimizados para escrita distribuída, e <strong>column-oriented OLAP</strong> (ClickHouse, Druid) otimizados para analytics. Ambos diferem radicalmente de bancos relacionais em como os dados são armazenados em disco.</p>
+
+<h4>Cassandra — Conceitos</h4>
+<ul>
+<li><strong>Keyspace</strong> — equivalente a um database. Define replication factor</li>
+<li><strong>Column Family / Table</strong> — agrupamento de linhas com colunas definidas</li>
+<li><strong>Partition Key</strong> — determina em qual node os dados ficam. <strong>Crítico</strong> para performance</li>
+<li><strong>Clustering Key</strong> — ordena dados DENTRO de uma partição. Permite range queries eficientes</li>
+<li><strong>Replication Factor</strong> — quantas cópias de cada dado existem no cluster (tipicamente 3)</li>
+<li><strong>Consistency Level</strong> — quantos nodes devem confirmar uma leitura/escrita (ONE, QUORUM, ALL)</li>
+<li><strong>Compaction</strong> — processo de merge de SSTables (arquivos imutaveis) em disco</li>
+</ul>
+
+<h4>ClickHouse — Analytics Colunar</h4>
+<ul>
+<li><strong>MergeTree Engine</strong> — engine principal, dados ordenados por primary key, otimizado para range queries</li>
+<li><strong>Compressão colunar</strong> — mesma coluna = mesmos tipos = compressão extrema (10x-100x)</li>
+<li><strong>Vectorized Execution</strong> — processa dados em blocos de colunas, não linha a linha</li>
+<li><strong>Materialized Views</strong> — pre-computam agregações em tempo de inserção</li>
+</ul>
+
+<h4>Quando Usar Wide-Column</h4>
+<ul>
+<li><strong>IoT / Sensores</strong> — milhões de dispositivos escrevendo dados continuamente</li>
+<li><strong>Logs em escala</strong> — ingestion de bilhões de eventos por dia</li>
+<li><strong>Analytics / BI</strong> — ClickHouse para dashboards com bilhões de linhas</li>
+<li><strong>Time-series</strong> — dados ordenados por tempo com partição por entidade</li>
+<li><strong>Write-heavy workloads</strong> — Cassandra escala writes linearmente com nodes</li>
+</ul>
+
+<!-- ═══ TIME-SERIES ═══ -->
+<h3>Time-Series Databases (InfluxDB, TimescaleDB, Prometheus, QuestDB)</h3>
+
+<p>Otimizados específicamente para <strong>dados indexados por tempo</strong>. Métricas, eventos, preços de ações, dados de sensores — qualquer coisa com timestamp como dimensão primária. Oferecem funcionalidades que bancos genéricos não tem nativamente.</p>
+
+<h4>Funcionalidades Específicas</h4>
+<ul>
+<li><strong>Retention Policies</strong> — deletar dados antigos automáticamente (ex: manter 30 dias de métricas raw, 1 ano de agregados)</li>
+<li><strong>Downsampling</strong> — comprimir dados antigos: 1 ponto/segundo &rarr; 1 ponto/minuto &rarr; 1 ponto/hora</li>
+<li><strong>Continuous Queries</strong> — agregações que rodam automáticamente conforme dados chegam</li>
+<li><strong>Compressão temporal</strong> — algoritmos específicos para timestamps e valores numéricos sequênciais (delta-of-delta, XOR)</li>
+<li><strong>Window Functions nativas</strong> — media movel, derivada, taxa de variação, percentis por janela de tempo</li>
+</ul>
+
+<div class="card purple">
+<div class="card-title">Comparação de Time-Series DBs</div>
+<ul>
+<li><strong>InfluxDB</strong> — standalone, linguagem própria (Flux), bom para métricas de infraestrutura</li>
+<li><strong>TimescaleDB</strong> — extensão do PostgreSQL (SQL completo!), hipertabelas com partição automática por tempo</li>
+<li><strong>Prometheus</strong> — pull-based, focado em métricas de aplicação/infra, PromQL para queries, integração nativa com Kubernetes</li>
+<li><strong>QuestDB</strong> — SQL compatível, performance extrema em inserção (milhões de linhas/segundo)</li>
+</ul>
+</div>
+
+<!-- ═══ DATA MODELING ═══ -->
+<h3>Modelagem de Dados em NoSQL</h3>
+
+<p>A regra fundamental e: <strong>modele para os padrões de acesso, não para as relações</strong>. Em SQL, você normaliza e depois faz JOINs. Em NoSQL, você desnormaliza e duplica dados para que cada query acesse uma única leitura. Isso inverte completamente o raciocinio.</p>
+
+<h4>Princípios de Modelagem NoSQL</h4>
+<ul>
+<li><strong>Query-Driven Design</strong> — liste TODAS as queries primeiro, depois modele os dados para atende-las. O schema e consequência dos padrões de acesso</li>
+<li><strong>Desnormalização intencional</strong> — duplicar dados e normal e esperado. O custo de storage e barato; o custo de JOINs distribuídos e caro</li>
+<li><strong>Precompute, não calcule</strong> — armazene totais, contadores, agregações. Atualize na escrita, não calcule na leitura</li>
+<li><strong>Evite scatter-gather</strong> — queries que precisam acessar múltiplos nodes/partições são caras. Modele para acesso a uma única partição</li>
+<li><strong>Aceite eventual consistency</strong> — em sistemas distribuídos, consistência forte tem custo de latência. Defina o nível de consistência por operação</li>
+</ul>
+
+<!-- ═══ COMPARISON TABLE ═══ -->
+<h4>Tabela Comparativa</h4>
+
+<div class="table-wrap">
+<table>
+<tr>
+<th>Categoria</th>
+<th>Melhor Para</th>
+<th>Trade-offs</th>
+<th>Consistência</th>
+<th>Escalabilidade</th>
+</tr>
+<tr>
+<td><strong>Document</strong><br><small>MongoDB, Firestore</small></td>
+<td>Schema flexível, dados hierárquicos, prototipagem</td>
+<td>Sem JOINs nativos eficientes, duplicação de dados</td>
+<td>Configurável (strong ou eventual)</td>
+<td>Horizontal (sharding por shard key)</td>
+</tr>
+<tr>
+<td><strong>Key-Value</strong><br><small>Redis, DynamoDB</small></td>
+<td>Cache, sessões, lookup por chave, baixa latência</td>
+<td>Sem queries complexas, sem relações</td>
+<td>Redis: strong (single node). DynamoDB: configurável</td>
+<td>Redis: vertical + cluster. DynamoDB: ilimitada</td>
+</tr>
+<tr>
+<td><strong>Wide-Column</strong><br><small>Cassandra, ClickHouse</small></td>
+<td>Write-heavy, IoT, logs, analytics em escala</td>
+<td>Modelagem complexa, sem UPDATE eficiente, queries limitadas a PK</td>
+<td>Cassandra: eventual (tunavel). ClickHouse: strong</td>
+<td>Linear com nodes adicionais</td>
+</tr>
+<tr>
+<td><strong>Time-Series</strong><br><small>InfluxDB, TimescaleDB</small></td>
+<td>Métricas, sensores, dados temporais, monitoramento</td>
+<td>Nicho específico, não serve para dados gerais</td>
+<td>Tipicamente strong</td>
+<td>Particionamento temporal automático</td>
+</tr>
+</table>
+</div>
+
+<!-- ═══ EXEMPLOS DE CODIGO ═══ -->
+<h3>Exemplos de Código</h3>
+
+<h4>MongoDB — CRUD + Aggregation Pipeline</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { <span class="tp">MongoClient</span>, <span class="tp">ObjectId</span> } <span class="kw">from</span> <span class="str">'mongodb'</span>;
+
+<span class="kw">const</span> client = <span class="kw">new</span> <span class="tp">MongoClient</span>(<span class="str">'mongodb://localhost:27017'</span>);
+<span class="kw">const</span> db = client.<span class="fn">db</span>(<span class="str">'ecommerce'</span>);
+<span class="kw">const</span> products = db.<span class="fn">collection</span>(<span class="str">'products'</span>);
+
+<span class="cm">// ── CREATE ──</span>
+<span class="kw">const</span> result = <span class="kw">await</span> products.<span class="fn">insertOne</span>({
+  nome: <span class="str">'Teclado Mecanico'</span>,
+  preço: <span class="num">449.90</span>,
+  categoria: <span class="str">'perifericos'</span>,
+  tags: [<span class="str">'gaming'</span>, <span class="str">'mecanico'</span>, <span class="str">'rgb'</span>],
+  specs: { switches: <span class="str">'Cherry MX Blue'</span>, layout: <span class="str">'ABNT2'</span> },
+  createdAt: <span class="kw">new</span> <span class="tp">Date</span>()
+});
+console.<span class="fn">log</span>(<span class="str">'ID inserido:'</span>, result.insertedId);
+
+<span class="cm">// ── READ com filtros ──</span>
+<span class="kw">const</span> baratos = <span class="kw">await</span> products.<span class="fn">find</span>({
+  preço: { <span class="op">$lte</span>: <span class="num">500</span> },
+  tags: <span class="str">'gaming'</span>           <span class="cm">// busca dentro de array</span>
+}).<span class="fn">sort</span>({ preço: <span class="num">1</span> }).<span class="fn">limit</span>(<span class="num">10</span>).<span class="fn">toArray</span>();
+
+<span class="cm">// ── UPDATE ──</span>
+<span class="kw">await</span> products.<span class="fn">updateOne</span>(
+  { _id: <span class="kw">new</span> <span class="tp">ObjectId</span>(<span class="str">'65a1b2c3...'</span>) },
+  {
+    <span class="op">$set</span>: { preço: <span class="num">399.90</span> },
+    <span class="op">$push</span>: { tags: <span class="str">'promocao'</span> },
+    <span class="op">$inc</span>: { vendas: <span class="num">1</span> }
+  }
+);
+
+<span class="cm">// ── DELETE ──</span>
+<span class="kw">await</span> products.<span class="fn">deleteMany</span>({ categoria: <span class="str">'descontinuado'</span> });
+
+<span class="cm">// ── AGGREGATION PIPELINE ──</span>
+<span class="cm">// Receita total por categoria, apenas categorias com > R$10k</span>
+<span class="kw">const</span> revenue = <span class="kw">await</span> products.<span class="fn">aggregate</span>([
+  { <span class="op">$match</span>: { createdAt: { <span class="op">$gte</span>: <span class="kw">new</span> <span class="tp">Date</span>(<span class="str">'2024-01-01'</span>) } } },
+  { <span class="op">$group</span>: {
+    _id: <span class="str">'$categoria'</span>,
+    totalReceita: { <span class="op">$sum</span>: { <span class="op">$multiply</span>: [<span class="str">'$preço'</span>, <span class="str">'$vendas'</span>] } },
+    qtdProdutos: { <span class="op">$sum</span>: <span class="num">1</span> },
+    preçoMedio: { <span class="op">$avg</span>: <span class="str">'$preço'</span> }
+  }},
+  { <span class="op">$match</span>: { totalReceita: { <span class="op">$gt</span>: <span class="num">10000</span> } } },
+  { <span class="op">$sort</span>: { totalReceita: <span class="num">-1</span> } }
+]).<span class="fn">toArray</span>();
+
+<span class="cm">// ── LOOKUP (equivalente a JOIN) ──</span>
+<span class="kw">const</span> pedidosComUsuario = <span class="kw">await</span> db.<span class="fn">collection</span>(<span class="str">'orders'</span>).<span class="fn">aggregate</span>([
+  { <span class="op">$lookup</span>: {
+    from: <span class="str">'users'</span>,
+    localField: <span class="str">'userId'</span>,
+    foreignField: <span class="str">'_id'</span>,
+    as: <span class="str">'usuário'</span>
+  }},
+  { <span class="op">$unwind</span>: <span class="str">'$usuário'</span> },
+  { <span class="op">$project</span>: {
+    total: <span class="num">1</span>,
+    <span class="str">'usuário.nome'</span>: <span class="num">1</span>,
+    <span class="str">'usuário.email'</span>: <span class="num">1</span>
+  }}
+]).<span class="fn">toArray</span>();
+
+<span class="cm">// ── INDEX CREATION ──</span>
+<span class="kw">await</span> products.<span class="fn">createIndex</span>({ categoria: <span class="num">1</span>, preço: <span class="num">-1</span> }); <span class="cm">// composto</span>
+<span class="kw">await</span> products.<span class="fn">createIndex</span>({ nome: <span class="str">'text'</span> });              <span class="cm">// full-text search</span>
+<span class="kw">await</span> products.<span class="fn">createIndex</span>(
+  { createdAt: <span class="num">1</span> },
+  { expireAfterSeconds: <span class="num">86400</span> * <span class="num">90</span> }  <span class="cm">// TTL: auto-deleta após 90 dias</span>
+);</code></pre>
+
+<h4>Redis — Caching, Raté Limiter, Pub/Sub</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> <span class="tp">Redis</span> <span class="kw">from</span> <span class="str">'ioredis'</span>;
+
+<span class="kw">const</span> redis = <span class="kw">new</span> <span class="tp">Redis</span>({ host: <span class="str">'localhost'</span>, port: <span class="num">6379</span> });
+
+<span class="cm">// ═══ PATTERN: Cache-Aside (Lazy Loading) ═══</span>
+<span class="kw">async function</span> <span class="fn">getProduct</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Product</span>&gt; {
+  <span class="kw">const</span> cacheKey = <span class="str">`product:</span>${id}<span class="str">`</span>;
+
+  <span class="cm">// 1. Tenta buscar no cache</span>
+  <span class="kw">const</span> cached = <span class="kw">await</span> redis.<span class="fn">get</span>(cacheKey);
+  <span class="kw">if</span> (cached) {
+    <span class="kw">return</span> JSON.<span class="fn">parse</span>(cached);  <span class="cm">// Cache HIT</span>
+  }
+
+  <span class="cm">// 2. Cache MISS — busca no banco</span>
+  <span class="kw">const</span> product = <span class="kw">await</span> db.<span class="fn">query</span>(<span class="str">'SELECT * FROM products WHERE id = $1'</span>, [id]);
+
+  <span class="cm">// 3. Armazena no cache com TTL de 1 hora</span>
+  <span class="kw">await</span> redis.<span class="fn">setex</span>(cacheKey, <span class="num">3600</span>, JSON.<span class="fn">stringify</span>(product));
+
+  <span class="kw">return</span> product;
+}
+
+<span class="cm">// ═══ PATTERN: Raté Limiter (Sliding Window) ═══</span>
+<span class="kw">async function</span> <span class="fn">isRateLimited</span>(userId: <span class="tp">string</span>, limit = <span class="num">100</span>, windowSec = <span class="num">60</span>): <span class="tp">Promise</span>&lt;<span class="tp">boolean</span>&gt; {
+  <span class="kw">const</span> key = <span class="str">`ratelimit:</span>${userId}<span class="str">`</span>;
+  <span class="kw">const</span> now = Date.<span class="fn">now</span>();
+  <span class="kw">const</span> windowStart = now - (windowSec * <span class="num">1000</span>);
+
+  <span class="cm">// Pipeline atomico</span>
+  <span class="kw">const</span> pipe = redis.<span class="fn">pipeline</span>();
+  pipe.<span class="fn">zremrangebyscore</span>(key, <span class="num">0</span>, windowStart);  <span class="cm">// remove expirados</span>
+  pipe.<span class="fn">zadd</span>(key, now, <span class="str">`</span>${now}<span class="str">-</span>${Math.<span class="fn">random</span>()}<span class="str">`</span>);  <span class="cm">// adiciona request atual</span>
+  pipe.<span class="fn">zcard</span>(key);                              <span class="cm">// conta total na janela</span>
+  pipe.<span class="fn">expire</span>(key, windowSec);                   <span class="cm">// TTL de segurança</span>
+
+  <span class="kw">const</span> results = <span class="kw">await</span> pipe.<span class="fn">exec</span>();
+  <span class="kw">const</span> count = results[<span class="num">2</span>][<span class="num">1</span>] <span class="kw">as</span> <span class="tp">number</span>;
+
+  <span class="kw">return</span> count > limit;
+}
+
+<span class="cm">// ═══ PATTERN: Pub/Sub ═══</span>
+<span class="cm">// Publisher (serviço A)</span>
+<span class="kw">await</span> redis.<span class="fn">publish</span>(<span class="str">'orders:created'</span>, JSON.<span class="fn">stringify</span>({
+  orderId: <span class="str">'abc123'</span>,
+  userId: <span class="str">'user456'</span>,
+  total: <span class="num">299.90</span>
+}));
+
+<span class="cm">// Subscriber (serviço B)</span>
+<span class="kw">const</span> sub = <span class="kw">new</span> <span class="tp">Redis</span>();
+sub.<span class="fn">subscribe</span>(<span class="str">'orders:created'</span>);
+sub.<span class="fn">on</span>(<span class="str">'message'</span>, (channel, message) => {
+  <span class="kw">const</span> order = JSON.<span class="fn">parse</span>(message);
+  console.<span class="fn">log</span>(<span class="str">`Novo pedido recebido: </span>${order.orderId}<span class="str">`</span>);
+  <span class="cm">// Processa: envia email, atualiza estoque, etc.</span>
+});
+
+<span class="cm">// ═══ Hashes — Perfil de usuário ═══</span>
+<span class="kw">await</span> redis.<span class="fn">hset</span>(<span class="str">'user:123'</span>, {
+  nome: <span class="str">'Carlos'</span>,
+  email: <span class="str">'carlos@email.com'</span>,
+  plano: <span class="str">'pro'</span>,
+  loginCount: <span class="str">'0'</span>
+});
+<span class="kw">await</span> redis.<span class="fn">hincrby</span>(<span class="str">'user:123'</span>, <span class="str">'loginCount'</span>, <span class="num">1</span>);
+<span class="kw">const</span> user = <span class="kw">await</span> redis.<span class="fn">hgetall</span>(<span class="str">'user:123'</span>);
+
+<span class="cm">// ═══ Leaderboard com Sorted Sets ═══</span>
+<span class="kw">await</span> redis.<span class="fn">zadd</span>(<span class="str">'leaderboard:game1'</span>, <span class="num">1500</span>, <span class="str">'player:alice'</span>);
+<span class="kw">await</span> redis.<span class="fn">zadd</span>(<span class="str">'leaderboard:game1'</span>, <span class="num">2300</span>, <span class="str">'player:bob'</span>);
+<span class="kw">await</span> redis.<span class="fn">zadd</span>(<span class="str">'leaderboard:game1'</span>, <span class="num">1800</span>, <span class="str">'player:carol'</span>);
+
+<span class="cm">// Top 10 (maior score primeiro)</span>
+<span class="kw">const</span> top10 = <span class="kw">await</span> redis.<span class="fn">zrevrange</span>(<span class="str">'leaderboard:game1'</span>, <span class="num">0</span>, <span class="num">9</span>, <span class="str">'WITHSCORES'</span>);
+<span class="cm">// ['player:bob', '2300', 'player:carol', '1800', 'player:alice', '1500']</span></code></pre>
+
+<h4>DynamoDB — Single-Table Design + GSI</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { <span class="tp">DynamoDBClient</span> } <span class="kw">from</span> <span class="str">'@aws-sdk/client-dynamodb'</span>;
+<span class="kw">import</span> {
+  <span class="tp">DynamoDBDocumentClient</span>, <span class="tp">PutCommand</span>, <span class="tp">QueryCommand</span>, <span class="tp">GetCommand</span>
+} <span class="kw">from</span> <span class="str">'@aws-sdk/lib-dynamodb'</span>;
+
+<span class="kw">const</span> client = <span class="tp">DynamoDBDocumentClient</span>.<span class="fn">from</span>(
+  <span class="kw">new</span> <span class="tp">DynamoDBClient</span>({ region: <span class="str">'us-east-1'</span> })
+);
+
+<span class="cm">// ═══ SINGLE-TABLE DESIGN ═══</span>
+<span class="cm">// Uma tabela para Users + Orders + Products</span>
+<span class="cm">// PK e SK genéricos permitem multiplas entidades</span>
+
+<span class="cm">// Inserir usuário</span>
+<span class="kw">await</span> client.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">PutCommand</span>({
+  TableName: <span class="str">'AppTable'</span>,
+  Item: {
+    PK: <span class="str">'USER#user123'</span>,
+    SK: <span class="str">'PROFILE'</span>,
+    nome: <span class="str">'Carlos Silva'</span>,
+    email: <span class="str">'carlos@email.com'</span>,
+    plano: <span class="str">'pro'</span>,
+    GSI1PK: <span class="str">'EMAIL#carlos@email.com'</span>,  <span class="cm">// GSI para busca por email</span>
+    GSI1SK: <span class="str">'USER#user123'</span>,
+    type: <span class="str">'USER'</span>
+  }
+}));
+
+<span class="cm">// Inserir pedido do mesmo usuário</span>
+<span class="kw">await</span> client.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">PutCommand</span>({
+  TableName: <span class="str">'AppTable'</span>,
+  Item: {
+    PK: <span class="str">'USER#user123'</span>,
+    SK: <span class="str">'ORDER#2024-01-15#ord789'</span>,  <span class="cm">// data no SK para ordenacao</span>
+    total: <span class="num">299.90</span>,
+    status: <span class="str">'delivered'</span>,
+    items: [{ nome: <span class="str">'Teclado'</span>, qty: <span class="num">1</span> }],
+    GSI1PK: <span class="str">'ORDER#ord789'</span>,
+    GSI1SK: <span class="str">'USER#user123'</span>,
+    type: <span class="str">'ORDER'</span>
+  }
+}));
+
+<span class="cm">// ── Query: Todos os pedidos de um usuário (ordenados por data) ──</span>
+<span class="kw">const</span> userOrders = <span class="kw">await</span> client.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">QueryCommand</span>({
+  TableName: <span class="str">'AppTable'</span>,
+  KeyConditionExpression: <span class="str">'PK = :pk AND begins_with(SK, :sk)'</span>,
+  ExpressionAttributeValues: {
+    <span class="str">':pk'</span>: <span class="str">'USER#user123'</span>,
+    <span class="str">':sk'</span>: <span class="str">'ORDER#'</span>
+  },
+  ScanIndexForward: <span class="kw">false</span>  <span class="cm">// mais recentes primeiro</span>
+}));
+
+<span class="cm">// ── Query via GSI: Buscar usuário por email ──</span>
+<span class="kw">const</span> byEmail = <span class="kw">await</span> client.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">QueryCommand</span>({
+  TableName: <span class="str">'AppTable'</span>,
+  IndexName: <span class="str">'GSI1'</span>,
+  KeyConditionExpression: <span class="str">'GSI1PK = :gsi1pk'</span>,
+  ExpressionAttributeValues: {
+    <span class="str">':gsi1pk'</span>: <span class="str">'EMAIL#carlos@email.com'</span>
+  }
+}));
+
+<span class="cm">// ── Get: Busca direta por PK + SK (mais rápida possível) ──</span>
+<span class="kw">const</span> profile = <span class="kw">await</span> client.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">GetCommand</span>({
+  TableName: <span class="str">'AppTable'</span>,
+  Key: { PK: <span class="str">'USER#user123'</span>, SK: <span class="str">'PROFILE'</span> }
+}));</code></pre>
+
+<h4>Cassandra — CQL (Cassandra Query Language)</h4>
+<pre data-lang="sql"><code><span class="cm">-- Criar keyspace com replicação</span>
+<span class="kw">CREATE KEYSPACE</span> iot_data
+  <span class="kw">WITH</span> replication = {
+    <span class="str">'class'</span>: <span class="str">'NetworkTopologyStrategy'</span>,
+    <span class="str">'datacenter1'</span>: <span class="num">3</span>
+  };
+
+<span class="kw">USE</span> iot_data;
+
+<span class="cm">-- Tabela de leituras de sensores</span>
+<span class="cm">-- Partition Key: sensor_id (agrupa dados do mesmo sensor)</span>
+<span class="cm">-- Clustering Key: timestamp DESC (ordena por tempo dentro da particao)</span>
+<span class="kw">CREATE TABLE</span> sensor_readings (
+  sensor_id   <span class="tp">UUID</span>,
+  timestamp   <span class="tp">TIMESTAMP</span>,
+  temperature <span class="tp">DOUBLE</span>,
+  humidity    <span class="tp">DOUBLE</span>,
+  pressure    <span class="tp">DOUBLE</span>,
+  location    <span class="tp">TEXT</span>,
+  <span class="kw">PRIMARY KEY</span> (sensor_id, timestamp)
+) <span class="kw">WITH</span> CLUSTERING <span class="kw">ORDER BY</span> (timestamp <span class="kw">DESC</span>)
+  <span class="kw">AND</span> default_time_to_live = <span class="num">7776000</span>  <span class="cm">-- TTL: 90 dias</span>
+  <span class="kw">AND</span> compaction = {
+    <span class="str">'class'</span>: <span class="str">'TimeWindowCompactionStrategy'</span>,
+    <span class="str">'compaction_window_unit'</span>: <span class="str">'DAYS'</span>,
+    <span class="str">'compaction_window_size'</span>: <span class="num">1</span>
+  };
+
+<span class="cm">-- Inserir leitura</span>
+<span class="kw">INSERT INTO</span> sensor_readings (sensor_id, timestamp, temperature, humidity, pressure, location)
+<span class="kw">VALUES</span> (
+  <span class="fn">uuid</span>(),
+  <span class="fn">toTimestamp</span>(<span class="fn">now</span>()),
+  <span class="num">23.5</span>,
+  <span class="num">65.2</span>,
+  <span class="num">1013.25</span>,
+  <span class="str">'sala-servidor-01'</span>
+);
+
+<span class="cm">-- Query: Ultimas 100 leituras de um sensor</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> sensor_readings
+<span class="kw">WHERE</span> sensor_id = <span class="str">550e8400-e29b-41d4-a716-446655440000</span>
+<span class="kw">LIMIT</span> <span class="num">100</span>;
+
+<span class="cm">-- Query: Leituras de um sensor em um periodo</span>
+<span class="kw">SELECT</span> timestamp, temperature, humidity
+<span class="kw">FROM</span> sensor_readings
+<span class="kw">WHERE</span> sensor_id = <span class="str">550e8400-e29b-41d4-a716-446655440000</span>
+  <span class="kw">AND</span> timestamp >= <span class="str">'2024-01-01'</span>
+  <span class="kw">AND</span> timestamp &lt; <span class="str">'2024-02-01'</span>;</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Dashboard de Analytics em Tempo Real</h3>
+
+<p><strong>Cenário:</strong> Você precisa construir um dashboard que mostra métricas em tempo real (usuários online, pageviews/segundo, top páginas) e permite consultas históricas (tendências dos últimos 30 dias, comparativos mensais). Volume: 50k eventos/segundo.</p>
+
+<div class="diagram">
+<div class="diagram-box green">App / SDK<br><small>Eventos (clicks, views)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Kafka / Queue<br><small>Buffer de eventos</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Consumer<br><small>Processa e roteia</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Redis<br><small>Contadores real-time</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box orange">Consumer<br><small>(mesmo de cima)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">ClickHouse<br><small>Histórico / Analytics</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box green">Dashboard API<br><small>Queries SQL</small></div>
+</div>
+
+<h4>Arquitetura</h4>
+<ul>
+<li><strong>Camada de Ingestion</strong> — Kafka recebe todos os eventos brutos, garante durabilidade e permite replay</li>
+<li><strong>Redis para real-time</strong> — contadores atômicos (<code>INCR pageviews:2024-01-15:14:30</code>), sorted sets para top páginas, sets para usuários online. TTL de 24h em dados granulares</li>
+<li><strong>ClickHouse para histórico</strong> — Consumer escreve em batch no ClickHouse a cada 5 segundos. Tabela com MergeTree engine, particionada por dia. Queries SQL para dashboards históricos</li>
+<li><strong>Dashboard API</strong> — endpoint <code>/realtime</code> le do Redis (latência &lt; 5ms), endpoint <code>/historical</code> le do ClickHouse (latência &lt; 200ms para bilhões de linhas)</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Redis — Contadores real-time no Consumer</span>
+<span class="kw">async function</span> <span class="fn">processEvent</span>(event: <span class="tp">AnalyticsEvent</span>) {
+  <span class="kw">const</span> minute = <span class="fn">formatMinute</span>(event.timestamp); <span class="cm">// "2024-01-15:14:30"</span>
+  <span class="kw">const</span> pipe = redis.<span class="fn">pipeline</span>();
+
+  <span class="cm">// Pageviews por minuto (TTL 24h)</span>
+  pipe.<span class="fn">incr</span>(<span class="str">`pv:</span>${minute}<span class="str">`</span>);
+  pipe.<span class="fn">expire</span>(<span class="str">`pv:</span>${minute}<span class="str">`</span>, <span class="num">86400</span>);
+
+  <span class="cm">// Top páginas (sorted set, score = contagem)</span>
+  pipe.<span class="fn">zincrby</span>(<span class="str">`top_pages:</span>${minute}<span class="str">`</span>, <span class="num">1</span>, event.page);
+
+  <span class="cm">// Usuarios online (set com TTL)</span>
+  pipe.<span class="fn">sadd</span>(<span class="str">'users:online'</span>, event.userId);
+  pipe.<span class="fn">expire</span>(<span class="str">'users:online'</span>, <span class="num">300</span>); <span class="cm">// 5 min</span>
+
+  <span class="kw">await</span> pipe.<span class="fn">exec</span>();
+}
+
+<span class="cm">// API — Endpoint real-time</span>
+app.<span class="fn">get</span>(<span class="str">'/api/realtime'</span>, <span class="kw">async</span> (req, res) => {
+  <span class="kw">const</span> minute = <span class="fn">formatMinute</span>(<span class="kw">new</span> <span class="tp">Date</span>());
+  <span class="kw">const</span> [pv, online, topPages] = <span class="kw">await</span> Promise.<span class="fn">all</span>([
+    redis.<span class="fn">get</span>(<span class="str">`pv:</span>${minute}<span class="str">`</span>),
+    redis.<span class="fn">scard</span>(<span class="str">'users:online'</span>),
+    redis.<span class="fn">zrevrange</span>(<span class="str">`top_pages:</span>${minute}<span class="str">`</span>, <span class="num">0</span>, <span class="num">9</span>, <span class="str">'WITHSCORES'</span>),
+  ]);
+  res.<span class="fn">json</span>({ pageviewsPerMinute: pv, usersOnline: online, topPages });
+});</code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Usar MongoDB como banco relacional:</strong> Normalizar tudo em coleções separadas é fazer <code>$lookup</code> em cada query é pior que usar PostgreSQL. Se seus dados são altamente relacionais, use um banco relacional. MongoDB brilha quando você <strong>desnormaliza</strong> é embute dados.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Redis como banco principal sem persistência:</strong> Redis e in-memory. Se o servidor reiniciar e você não configurou <code>AOF</code> (Append-Only File) ou <code>RDB</code> snapshots, você perde TUDO. Use Redis como cache ou complemento, nunca como única fonte de verdade sem persistência configurada.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>DynamoDB — Hot Partitions:</strong> Se você usa <code>status</code> como Partition Key (ex: "active", "inactive"), 95% dos dados vao para a mesma partição = throttling. Escolha PKs com <strong>alta cardinalidade</strong> (userId, orderId). Nunca use campos com poucos valores distintos como PK.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Ignorar eventual consistency:</strong> Em Cassandra com consistency level ONE, uma leitura logo após a escrita pode retornar dados antigos (a réplica que respondeu pode não ter recebido a escrita ainda). Para operações críticas, use <code>QUORUM</code> para leitura E escrita — garante consistência ao custo de maior latência.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Modelar Cassandra pensando em SQL:</strong> Em SQL você normaliza e faz JOINs. Em Cassandra, <strong>JOINs não existem</strong>. Você precisa duplicar dados em múltiplas tabelas — cada tabela otimizada para uma query específica. Isso é o design correto, não um hack.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática para escolher:</strong> (1) Dados relacionais com queries variáveis? <strong>PostgreSQL</strong>. (2) Cache, sessões, contadores? <strong>Redis</strong>. (3) Schema flexível, documentos? <strong>MongoDB</strong>. (4) Write-heavy, IoT, logs? <strong>Cassandra/ScyllaDB</strong>. (5) Analytics em bilhões de linhas? <strong>ClickHouse</strong>. (6) Métricas com timestamp? <strong>TimescaleDB/InfluxDB</strong>.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você está modelando um e-commerce no MongoDB. O catálogo tem 50k produtos com atributos variáveis (roupas tem tamanho/cor, eletrônicos tem voltagem/peso). Cada produto tem avaliações de usuários. Como modelar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use o padrão <strong>polymorphic pattern</strong>. Cada produto é um documento com campos comuns (nome, preço, categoria) e campos específicos variáveis (specs como subdocumento livre). Para avaliações: se cada produto tem poucas (até ~50), <strong>embed</strong> como array no documento do produto. Se tem centenas/milhares, crie uma coleção separada <code>reviews</code> com referência por <code>productId</code> é um campo <code>ratingAvg</code> pre-calculado no documento do produto (atualizado a cada nova review). Índice composto em <code>{ categoria: 1, preço: 1 }</code> para filtros de catálogo.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Sua API recebe 10k req/s e você precisa limitar cada usuário a 100 req/min. O sistema roda em 5 instâncias. Qual banco usar é como implementar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>Redis</strong> com o padrão <strong>sliding window</strong> usando sorted sets. Chave: <code>ratelimit:{userId}</code>. Cada request adiciona um membro com timestamp como score (<code>ZADD</code>). Antes de verificar, remove membros com score fora da janela (<code>ZREMRANGEBYSCORE</code>). Conta membros restantes (<code>ZCARD</code>). Se > 100, rejeita com HTTP 429. Use <code>MULTI/EXEC</code> ou pipeline para atomicidade. Redis e centralizado, então funciona com 5+ instâncias da API sem conflito. TTL na chave garante limpeza automática.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você tem 100k sensores IoT enviando dados a cada segundo. Precisa armazenar 90 dias de dados raw e 2 anós de dados agregados (media por hora). Qual stack usar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>Cassandra</strong> (ou ScyllaDB) para dados raw — partition key = <code>sensor_id</code>, clustering key = <code>timestamp DESC</code>, com TTL de 90 dias. Para agregados, use <strong>ClickHouse</strong> ou <strong>TimescaleDB</strong> com uma Materialized View que calcula media/hora automáticamente. Pipeline: sensores &rarr; Kafka (buffer) &rarr; Consumer que escreve no Cassandra (raw) e ClickHouse (batch a cada 5s). Retention policy deleta dados raw automáticamente. Downsampling no ClickHouse comprime 86.400 pontos/dia/sensor em 24 pontos/dia/sensor — redução de 3.600x no volume histórico.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — NoSQL: Documento, KV, Colunar</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="12-bancos-sql-relacional.html">&#8592; Bancos SQL / Relacional</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="14-grafos-vetorial-fulltext.html" class="primary">Próximo: Grafos, Vetorial, Full-Text &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 13: NoSQL Documento, KV, Colunar
+// ══════════════════════════════════════════
+const SECTION_NUM = 13;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a principal diferença entre embedding e referencing no MongoDB?",
+    options: [
+      "Embedding é mais rápido para escrita; referencing é mais rápido para leitura",
+      "Embedding armazena dados relacionados dentro do mesmo documento; referencing usa IDs para linkar documentos separados",
+      "Embedding é usado apenas para relações 1:1; referencing é usado para todas as relações",
+      "Não ha diferença prática — são sinônimos"
+    ],
+    correct: 1,
+    explanation: "Embedding coloca dados relacionados dentro do mesmo documento (desnormalização), evitando a necessidade de JOINs. Referencing usa ObjectIds para linkar documentos em coleções separadas, similar a foreign keys. A escolha depende do padrão de acesso."
+  },
+  {
+    question: "Você precisa implementar um raté limiter distribuído (5 instâncias da API). Qual banco e estrutura de dados do Redis é mais adequado?",
+    options: [
+      "Redis Strings com INCR e EXPIRE",
+      "Redis Lists com LPUSH e LLEN",
+      "Redis Sorted Sets com timestamp como score (sliding window)",
+      "Redis Hashes com HINCRBY"
+    ],
+    correct: 2,
+    explanation: "Sorted Sets com timestamp como score implementam um sliding window preciso. ZREMRANGEBYSCORE remove entradas expiradas, ZADD adiciona a nova request, ZCARD conta o total na janela. E atômico e funciona em múltiplas instâncias porque Redis e centralizado."
+  },
+  {
+    question: "No DynamoDB, o que causa 'hot partitions' é como evitar?",
+    options: [
+      "Muitas leituras simultâneas. Solução: aumentar o Read Capacity Units",
+      "Partition Key com baixa cardinalidade (ex: status: active/inactive). Solução: usar chaves com alta cardinalidade (userId, orderId)",
+      "Sort Key muito longa. Solução: encurtar o Sort Key",
+      "Tabela com muitos GSIs. Solução: remover índices desnecessários"
+    ],
+    correct: 1,
+    explanation: "Hot partitions ocorrem quando a Partition Key tem poucos valores distintos, concentrando dados em poucas partições. Se 95% dos registros tem status='active', todos vao para a mesma partição. Solução: usar chaves com alta cardinalidade como userId ou orderId."
+  },
+  {
+    question: "Qual é a função do Clustering Key no Cassandra?",
+    options: [
+      "Determina em qual node do cluster os dados são armazenados",
+      "Ordena os dados DENTRO de uma partição, permitindo range queries eficientes",
+      "Define o fator de replicação do keyspace",
+      "Cria um índice secundário automático para buscas"
+    ],
+    correct: 1,
+    explanation: "O Clustering Key ordena dados dentro de uma partição. Por exemplo, com Partition Key = sensor_id e Clustering Key = timestamp DESC, todos os dados de um sensor ficam juntos e ordenados por tempo — permitindo queries eficientes como 'últimas 100 leituras do sensor X'."
+  },
+  {
+    question: "Quando você deve escolher ClickHouse ao inves de PostgreSQL?",
+    options: [
+      "Sempre que tiver mais de 1 milhão de linhas",
+      "Quando precisa de transações ACID com rollback",
+      "Para queries analíticas (agregações, GROUP BY) em bilhões de linhas com baixa latência",
+      "Quando precisa de UPDATE e DELETE frequentes em registros individuais"
+    ],
+    correct: 2,
+    explanation: "ClickHouse e otimizado para OLAP: queries analíticas em volumes massivos (bilhões de linhas) com compressão colunar e execução vetorizada. PostgreSQL é melhor para OLTP (transações, updates, deletes). ClickHouse não suporta UPDATE/DELETE eficiente em registros individuais."
+  },
+  {
+    question: "Qual é o princípio fundamental da modelagem de dados em NoSQL?",
+    options: [
+      "Normalizar ao máximo para evitar duplicação de dados",
+      "Modelar para os padrões de acesso (query-driven design), não para as relações entre entidades",
+      "Usar sempre o menor número possível de tabelas/coleções",
+      "Aplicar as mesmas 3 formas normais do modelo relacional"
+    ],
+    correct: 1,
+    explanation: "Em NoSQL, você lista todos os padrões de acesso (queries) primeiro e modela os dados para atende-los de forma eficiente. Desnormalização e duplicação são esperadas e intencionais. O schema e consequência das queries, não das relações."
+  },
+  {
+    question: "Sobre Redis como cache, qual afirmacao está CORRETA?",
+    options: [
+      "Redis substitui completamente o banco de dados relacional em produção",
+      "O padrão Cache-Aside (lazy loading) busca no cache primeiro e, em caso de miss, busca no banco e atualiza o cache",
+      "Redis persiste dados em disco por padrão sem nenhuma configuração",
+      "TTL (Time-To-Live) no Redis é opcional e raramente usado em produção"
+    ],
+    correct: 1,
+    explanation: "No padrão Cache-Aside: (1) busca no cache, (2) se cache miss, busca no banco, (3) armazena no cache com TTL. Redis por padrão e in-memory e precisa de configuração explícita (AOF/RDB) para persistência. TTL é essencial para evitar dados stale."
+  },
+  {
+    question: "Você precisa armazenar métricas de 10k servidores com retenção de 30 dias (raw) e 1 ano (agregado por hora). Qual banco é mais adequado?",
+    options: [
+      "MongoDB com coleções separadas por período",
+      "Redis com TTL automático",
+      "TimescaleDB ou InfluxDB com retention policies e downsampling",
+      "DynamoDB com TTL nós itens"
+    ],
+    correct: 2,
+    explanation: "Time-series databases como TimescaleDB e InfluxDB tem funcionalidades nativas para isso: retention policies deletam dados antigos automáticamente, downsampling comprime dados granulares em agregados (1 ponto/segundo -> 1 ponto/hora), e continuous queries pre-calculam agregações."
+  },
+  {
+    question: "No padrão Single-Table Design do DynamoDB, qual é o benefício principal?",
+    options: [
+      "Reduz o custo de armazenamento em 50%",
+      "Permite recuperar múltiplas entidades relacionadas em uma única query (sem JOINs)",
+      "Elimina a necessidade de Global Secondary Indexes",
+      "Garante consistência forte entre todas as entidades"
+    ],
+    correct: 1,
+    explanation: "Single-Table Design coloca múltiplas entidades (Users, Orders, Products) na mesma tabela com PK/SK genéricos. Isso permite buscar um usuário E todos seus pedidos em uma única Query (mesma partition key), eliminando a necessidade de JOINs que não existem no DynamoDB."
+  },
+  {
+    question: "Qual armadilha é mais comum ao adotar MongoDB pela primeira vez?",
+    options: [
+      "Não usar índices",
+      "Usar documentos grandes demais (> 16MB)",
+      "Normalizar tudo como em um banco relacional é usar $lookup excessivamente",
+      "Armazenar dados em formato BSON ao inves de JSON"
+    ],
+    correct: 2,
+    explanation: "O erro mais comum é trazer a mentalidade relacional para o MongoDB: criar coleções separadas para tudo é usar $lookup (equivalente a JOIN) em cada query. Isso é mais lento que PostgreSQL com JOINs nativos. MongoDB brilha quando você desnormaliza e embute dados para eliminar JOINs."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina NoSQL — Documento, KV e Colunar.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

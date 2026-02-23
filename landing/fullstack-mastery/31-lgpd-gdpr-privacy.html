@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>31 — LGPD, GDPR & Privacy by Design | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="30-criptografia-app-security.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>31</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="32-cicd-pipelines.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:47%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 31</span>
+<h2>LGPD, GDPR & Privacy by Design</h2>
+<div class="section-line"></div>
+
+<p>Privacidade deixou de ser um "nice to have" e se tornou <strong>obrigação legal com multas milionarias</strong>. A LGPD no Brasil é a GDPR na Europa mudaram fundamentalmente como devemos pensar sobre dados pessoais. Para desenvolvedores full-stack, isso não é apenas assunto de juridico — e código, arquitetura e decisões técnicas que você toma todos os dias.</p>
+
+<p>Este capitulo cobre as duas leis mais impactantes (LGPD e GDPR), os 7 princípios de Privacy by Design, e — o mais importante — <strong>como implementar compliance na prática</strong> com exemplos reais em TypeScript/NestJS.</p>
+
+<!-- ═══ LGPD ═══ -->
+<h3>LGPD — Lei Geral de Proteção de Dados (Brasil)</h3>
+
+<p>A <strong>Lei 13.709/2018</strong> (LGPD) entrou em vigor em setembro de 2020, com sancoes aplicáveis desde agosto de 2021. Ela se aplica a qualquer operação de tratamento de dados pessoais realizada no Brasil, independentemente do pais sede da empresa. Mesmo uma startup no exterior que processa dados de brasileiros esta sujeita.</p>
+
+<h4>As 10 Bases Legais para Tratamento de Dados</h4>
+<p>Diferente de muitas leis, a LGPD oferece <strong>10 bases legais</strong> (a GDPR tem 6). Você deve escolher UMA base legal ANTES de coletar qualquer dado:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>#</th><th>Base Legal</th><th>Quando Usar</th><th>Exemplo</th></tr>
+<tr><td>1</td><td><strong>Consentimento</strong></td><td>Usuário autoriza explicitamente</td><td>Newsletter, cookies de marketing</td></tr>
+<tr><td>2</td><td><strong>Obrigação Legal</strong></td><td>Lei exige o tratamento</td><td>Nota fiscal (CPF obrigatório)</td></tr>
+<tr><td>3</td><td><strong>Execução de Politicas Públicas</strong></td><td>Administração pública</td><td>Programas governamentais</td></tr>
+<tr><td>4</td><td><strong>Estudos por Órgão de Pesquisa</strong></td><td>Pesquisa cientifica</td><td>IBGE, universidades</td></tr>
+<tr><td>5</td><td><strong>Execução de Contrato</strong></td><td>Necessário para cumprir contrato</td><td>Endereco para entrega de produto</td></tr>
+<tr><td>6</td><td><strong>Exercício Regular de Direitos</strong></td><td>Processó judicial/administrativo</td><td>Dados para defesa em processo</td></tr>
+<tr><td>7</td><td><strong>Proteção da Vida</strong></td><td>Emergência vital</td><td>Tipo sanguineo em acidente</td></tr>
+<tr><td>8</td><td><strong>Tutela da Saúde</strong></td><td>Profissionais/serviços de saúde</td><td>Prontuário medico</td></tr>
+<tr><td>9</td><td><strong>Interesse Legitimo</strong></td><td>Interesse real do controlador</td><td>Prevenção a fraude, segurança</td></tr>
+<tr><td>10</td><td><strong>Proteção de Credito</strong></td><td>Análise crediticia</td><td>Score de credito (Serasa)</td></tr>
+</table>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Consentimento não é a única base legal!</strong> Muitos devs colocam consent banner em tudo. Mas se você precisa do email para executar um contrato (ex: enviar recibo de compra), a base legal e "Execução de Contrato" — não precisa de consentimento extra para esse usó específico.</div>
+</div>
+
+<h4>Direitos do Titular dos Dados</h4>
+<p>O titular (pessoa dona dos dados) tem <strong>9 direitos fundamentais</strong> que sua aplicação DEVE suportar:</p>
+
+<ol>
+<li><strong>Confirmação</strong> — saber se seus dados são tratados</li>
+<li><strong>Acesso</strong> — obter copia de todos os dados</li>
+<li><strong>Correção</strong> — retificar dados incompletos ou incorretos</li>
+<li><strong>Anonimização/Bloqueio/Eliminação</strong> — dados desnecessários ou excessivos</li>
+<li><strong>Portabilidade</strong> — transferir dados para outro fornecedor</li>
+<li><strong>Eliminação</strong> — apagar dados tratados com consentimento</li>
+<li><strong>Informação sobre compartilhamento</strong> — saber com quem seus dados são compartilhados</li>
+<li><strong>Informação sobre negar consentimento</strong> — saber as consequências de não consentir</li>
+<li><strong>Revogação do consentimento</strong> — retirar consentimento a qualquer momento</li>
+</ol>
+
+<h4>DPO (Encarregado de Dados) e RIPD</h4>
+<p>O <strong>DPO</strong> (Data Protection Officer / Encarregado) é a pessoa responsável por garantir compliance. A ANPD (Autoridade Nacional de Proteção de Dados) pode dispensar a nomeação para empresas de pequeno porte, mas toda empresa deve ter um canal de comunicação com titulares.</p>
+
+<p>O <strong>RIPD</strong> (Relatório de Impacto a Proteção de Dados Pessoais) é o equivalente brasileiro do DPIA europeu. E obrigatório quando o tratamento pode gerar riscos as liberdades civis — ex: decisões automatizadas, dados sensíveis em larga escala, monitoramento sistemático.</p>
+
+<h4>Sancoes</h4>
+<ul>
+<li><strong>Advertência</strong> com prazo para correção</li>
+<li><strong>Multa simples</strong>: até 2% do faturamento (limitada a R$ 50 milhões por infração)</li>
+<li><strong>Multa diária</strong></li>
+<li><strong>Publicização da infração</strong> (dano reputacional)</li>
+<li><strong>Bloqueio/eliminação dos dados</strong></li>
+<li><strong>Suspensao do banco de dados</strong> por 6 meses</li>
+<li><strong>Proibicao parcial ou total do tratamento</strong></li>
+</ul>
+
+<h4>Implementação Prática: Consent Banner</h4>
+<pre data-lang="typescript"><code><span class="cm">// consent.service.ts — Gerenciamento de consentimento</span>
+<span class="kw">interface</span> <span class="tp">ConsentRecord</span> {
+  userId: <span class="tp">string</span>;
+  purpose: <span class="str">'marketing'</span> | <span class="str">'analytics'</span> | <span class="str">'personalization'</span> | <span class="str">'essential'</span>;
+  granted: <span class="tp">boolean</span>;
+  grantedAt: <span class="tp">Date</span>;
+  revokedAt?: <span class="tp">Date</span>;
+  ipAddress: <span class="tp">string</span>;
+  userAgent: <span class="tp">string</span>;
+  version: <span class="tp">string</span>; <span class="cm">// versão da politica de privacidade aceita</span>
+}
+
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">ConsentService</span> {
+  <span class="kw">constructor</span>(
+    <span class="ann">@InjectRepository</span>(<span class="tp">ConsentRecord</span>)
+    <span class="kw">private</span> repo: <span class="tp">Repository</span>&lt;<span class="tp">ConsentRecord</span>&gt;,
+  ) {}
+
+  <span class="cm">// Registrar consentimento com trilha de auditoria completa</span>
+  <span class="kw">async</span> <span class="fn">grantConsent</span>(
+    userId: <span class="tp">string</span>,
+    purposes: <span class="tp">string</span>[],
+    metadata: { ip: <span class="tp">string</span>; userAgent: <span class="tp">string</span>; policyVersion: <span class="tp">string</span> }
+  ): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">const</span> records = purposes.<span class="fn">map</span>(purpose => ({
+      userId,
+      purpose,
+      granted: <span class="kw">true</span>,
+      grantedAt: <span class="kw">new</span> <span class="tp">Date</span>(),
+      ipAddress: metadata.ip,
+      userAgent: metadata.userAgent,
+      version: metadata.policyVersion,
+    }));
+
+    <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">save</span>(records);
+  }
+
+  <span class="cm">// Revogar consentimento — NUNCA deletar o registro, apenas marcar</span>
+  <span class="kw">async</span> <span class="fn">revokeConsent</span>(userId: <span class="tp">string</span>, purpose: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">update</span>(
+      { userId, purpose, granted: <span class="kw">true</span> },
+      { granted: <span class="kw">false</span>, revokedAt: <span class="kw">new</span> <span class="tp">Date</span>() }
+    );
+  }
+
+  <span class="cm">// Verificar se usuário consentiu para finalidade específica</span>
+  <span class="kw">async</span> <span class="fn">hasConsent</span>(userId: <span class="tp">string</span>, purpose: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">boolean</span>&gt; {
+    <span class="kw">const</span> record = <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">findOne</span>({
+      where: { userId, purpose, granted: <span class="kw">true</span> },
+      order: { grantedAt: <span class="str">'DESC'</span> },
+    });
+    <span class="kw">return</span> !!record;
+  }
+}</code></pre>
+
+<h4>Implementação Prática: Data Export API (Direito de Portabilidade)</h4>
+<pre data-lang="typescript"><code><span class="cm">// user-data-export.service.ts — Exportação de dados do titular</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">UserDataExportService</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> userRepo: <span class="tp">Repository</span>&lt;<span class="tp">User</span>&gt;,
+    <span class="kw">private</span> orderRepo: <span class="tp">Repository</span>&lt;<span class="tp">Order</span>&gt;,
+    <span class="kw">private</span> consentRepo: <span class="tp">Repository</span>&lt;<span class="tp">ConsentRecord</span>&gt;,
+    <span class="kw">private</span> activityRepo: <span class="tp">Repository</span>&lt;<span class="tp">ActivityLog</span>&gt;,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">exportUserData</span>(userId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">UserDataPackage</span>&gt; {
+    <span class="cm">// Coletar TODOS os dados do usuário de TODAS as tabelas</span>
+    <span class="kw">const</span> [user, orders, consents, activities] = <span class="kw">await</span> Promise.<span class="fn">all</span>([
+      <span class="kw">this</span>.userRepo.<span class="fn">findOne</span>({ where: { id: userId } }),
+      <span class="kw">this</span>.orderRepo.<span class="fn">find</span>({ where: { userId } }),
+      <span class="kw">this</span>.consentRepo.<span class="fn">find</span>({ where: { userId } }),
+      <span class="kw">this</span>.activityRepo.<span class="fn">find</span>({ where: { userId } }),
+    ]);
+
+    <span class="kw">return</span> {
+      exportedAt: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">toISOString</span>(),
+      dataSubject: {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        createdAt: user.createdAt,
+      },
+      orders: orders.<span class="fn">map</span>(o => ({
+        id: o.id, total: o.total, status: o.status, createdAt: o.createdAt,
+      })),
+      consentHistory: consents,
+      activityLog: activities.<span class="fn">map</span>(a => ({
+        action: a.action, timestamp: a.createdAt, ipAddress: a.ip,
+      })),
+    };
+  }
+}
+
+<span class="cm">// user-data.controller.ts — Endpoint LGPD</span>
+<span class="ann">@Controller</span>(<span class="str">'user/data'</span>)
+<span class="kw">class</span> <span class="tp">UserDataController</span> {
+  <span class="ann">@Get</span>(<span class="str">'export'</span>)
+  <span class="ann">@UseGuards</span>(<span class="tp">AuthGuard</span>)
+  <span class="kw">async</span> <span class="fn">exportMyData</span>(<span class="ann">@CurrentUser</span>() user: <span class="tp">AuthUser</span>): <span class="tp">Promise</span>&lt;<span class="tp">UserDataPackage</span>&gt; {
+    <span class="cm">// Titular só pode exportar seus próprios dados</span>
+    <span class="kw">return</span> <span class="kw">this</span>.exportService.<span class="fn">exportUserData</span>(user.id);
+  }
+
+  <span class="ann">@Delete</span>(<span class="str">'delete-account'</span>)
+  <span class="ann">@UseGuards</span>(<span class="tp">AuthGuard</span>)
+  <span class="kw">async</span> <span class="fn">requestDeletion</span>(<span class="ann">@CurrentUser</span>() user: <span class="tp">AuthUser</span>): <span class="tp">Promise</span>&lt;{ message: <span class="tp">string</span> }&gt; {
+    <span class="cm">// Inicia processo de exclusão (30 dias para execução)</span>
+    <span class="kw">await</span> <span class="kw">this</span>.deletionService.<span class="fn">scheduleAccountDeletion</span>(user.id);
+    <span class="kw">return</span> { message: <span class="str">'Sua conta será excluida em até 30 dias.'</span> };
+  }
+}</code></pre>
+
+<!-- ═══ GDPR ═══ -->
+<h3>GDPR — General Data Protection Regulation (EU)</h3>
+
+<p>O <strong>Regulamento (UE) 2016/679</strong> (GDPR) é a legislação mais influente do mundo em proteção de dados. Entrou em vigor em maio de 2018 e serviu de modelo para a LGPD e dezenas de outras leis ao redor do mundo. Se sua aplicação processa dados de residentes da UE — mesmo se sua empresa não está na Europa — você está sujeito.</p>
+
+<h4>As 6 Bases Legais (Lawful Bases)</h4>
+<div class="table-wrap">
+<table>
+<tr><th>#</th><th>Base Legal</th><th>Descrição</th></tr>
+<tr><td>1</td><td><strong>Consent</strong></td><td>Consentimento livre, específico, informado e inequivoco</td></tr>
+<tr><td>2</td><td><strong>Contract</strong></td><td>Necessário para execução de contrato com o titular</td></tr>
+<tr><td>3</td><td><strong>Legal Obligation</strong></td><td>Cumprimento de obrigação legal do controlador</td></tr>
+<tr><td>4</td><td><strong>Vital Interests</strong></td><td>Proteção de interesses vitais do titular ou terceiro</td></tr>
+<tr><td>5</td><td><strong>Public Task</strong></td><td>Execução de tarefa de interesse público</td></tr>
+<tr><td>6</td><td><strong>Legitimaté Interests</strong></td><td>Interesse legitimo do controlador (requer balanceamento)</td></tr>
+</table>
+</div>
+
+<h4>Direitos Chave do GDPR</h4>
+<ul>
+<li><strong>Right to be Forgotten (Art. 17)</strong> — O titular pode exigir a exclusão completa de seus dados. O controlador deve notificar todos os processadores que também possuem copias</li>
+<li><strong>Right to Data Portability (Art. 20)</strong> — Dados devem ser exportados em formato estruturado, de usó comum e leitura por máquina (JSON, CSV)</li>
+<li><strong>Right to Restriction of Processing (Art. 18)</strong> — Titular pode exigir que o processamento pare enquanto uma disputa e resolvida</li>
+<li><strong>Right to Object (Art. 21)</strong> — Titular pode se opor ao tratamento baseado em interesse legitimo ou marketing direto</li>
+<li><strong>Automated Decision Making (Art. 22)</strong> — Titular tem direito a não estar sujeito a decisões puramente automatizadas com efeitos significativos (ex: negação de credito por algoritmo)</li>
+</ul>
+
+<h4>Privacy by Design (Artigo 25)</h4>
+<p>O GDPR <strong>obriga legalmente</strong> Privacy by Design no Artigo 25. Não e sugestão — e requisito legal. O controlador deve implementar medidas técnicas e organizacionais apropriadas <strong>tanto no momento da determinação dos meios de tratamento quanto no momento do próprio tratamento</strong>.</p>
+
+<h4>DPO — Quando e Obrigatório</h4>
+<p>O GDPR exige um DPO quando:</p>
+<ul>
+<li>O controlador é uma autoridade/órgão público</li>
+<li>As atividades principais consistem em monitoramento regular e sistemático de titulares em larga escala</li>
+<li>As atividades principais consistem em processamento em larga escala de dados sensíveis ou criminais</li>
+</ul>
+
+<h4>Notificação de Breach — 72 Horas</h4>
+<p>Em caso de violação de dados, o controlador deve notificar a autoridade supervisora em <strong>no máximo 72 horas</strong> após tomar conhecimento. Se a violação apresentar alto risco para os direitos dos titulares, eles também devem ser notificados <strong>sem atrasó indevido</strong>.</p>
+
+<h4>Multas — As Mais Pesadas do Mundo</h4>
+<ul>
+<li><strong>Nível 1 (infraccoes menores)</strong>: até EUR 10 milhões ou 2% do faturamento anual global (o que for maior)</li>
+<li><strong>Nível 2 (infraccoes graves)</strong>: até EUR 20 milhões ou 4% do faturamento anual global (o que for maior)</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Exemplos reais de multas GDPR:</strong> Meta (EUR 1.2 bilhao, 2023 — transferência de dados EUA/UE), Amazon (EUR 746 milhões, 2021 — publicidade direcionada sem consentimento), Google (EUR 150 milhões, 2022 — cookies sem consentimento fácil de recusar).</div>
+</div>
+
+<h4>Transferência Internacional de Dados</h4>
+<p>Dados pessoais de residentes da UE só podem ser transferidos para paises com "decisão de adequação" da Comissao Europeia. Para outros paises:</p>
+<ul>
+<li><strong>SCCs (Standard Contractual Clauses)</strong> — clausulas contratuais padrão aprovadas pela UE</li>
+<li><strong>BCRs (Binding Corporaté Rules)</strong> — regras vinculantes para grupos empresariais</li>
+<li><strong>EU-US Data Privacy Framework</strong> — substituiu o Privacy Shield (inválidado no caso Schrems II)</li>
+<li><strong>Consentimento explicito</strong> — como último recurso, com ciência dos riscos</li>
+</ul>
+
+<!-- ═══ PRIVACY BY DESIGN ═══ -->
+<h3>Privacy by Design — 7 Princípios Fundamentais</h3>
+
+<p>Conceito criado pela Dra. <strong>Ann Cavoukian</strong>, ex-Comissaria de Privacidade de Ontario, Canada. Os 7 princípios se tornarám referência global e foram incorporados ao GDPR (Artigo 25).</p>
+
+<div class="card">
+<div class="card-title">Os 7 Princípios de Privacy by Design</div>
+<ol>
+<li><strong>Proativo, não Reativo; Preventivo, não Corretivo</strong> — Antecipe riscos antes que acontecam. Não espere uma violação para agir. Faca threat modeling antes de escrever código</li>
+<li><strong>Privacidade como Configuração Padrão</strong> — O usuário não deve precisar fazer nada para ter privacidade. Opt-in para coleta, não opt-out. Perfil privado por padrão, não público</li>
+<li><strong>Privacidade Incorporada ao Design</strong> — Privacidade não é um add-on ou plugin. E parte da arquitetura. Criptografia, minimização de dados e controle de acesso fazem parte do design desde o dia 1</li>
+<li><strong>Funcionalidade Total (Positive-Sum)</strong> — Privacidade não deve sacrificar funcionalidade. Evite falsos dilemas como "segurança vs usabilidade". Busque win-win</li>
+<li><strong>Segurança de Ponta a Ponta</strong> — Proteção durante todo o ciclo de vida do dado: coleta, armazenamento, processamento, compartilhamento e exclusão. Criptografia at rest e in transit</li>
+<li><strong>Visibilidade e Transparência</strong> — Processos devem ser verificáveis. Audit logs, politicas claras, código aberto quando possível. O usuário deve saber exatamente o que acontece com seus dados</li>
+<li><strong>Respeito pela Privacidade do Usuário</strong> — O usuário é o centro. Interfaces amigáveis, linguagem clara, opções granulares de consentimento. Nunca use dark patterns</li>
+</ol>
+</div>
+
+<div class="diagram">
+<div class="diagram-box green">1. Proativo<br><small>Threat Modeling</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">2. Padrão<br><small>Opt-in, não Opt-out</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">3. Incorporado<br><small>Arquitetura</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">4. Positive-Sum<br><small>Win-Win</small></div>
+</div>
+<div class="diagram">
+<div class="diagram-box cyan">5. End-to-End<br><small>Ciclo de Vida</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">6. Transparência<br><small>Audit Logs</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">7. Respeito<br><small>Sem Dark Patterns</small></div>
+</div>
+
+<!-- ═══ DEVELOPER IMPLEMENTATION GUIDE ═══ -->
+<h3>Guia de Implementação para Desenvolvedores</h3>
+
+<h4>1. Data Minimization — Colete Apenas o Necessário</h4>
+<p>Cada campo que você adiciona ao banco de dados é um passivo legal. Pergunte sempre: <strong>"Precisó mesmo deste dado para entregar o serviço?"</strong> Se não precisa, não colete.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; ERRADO — Coletando dados desnecessários</span>
+<span class="kw">class</span> <span class="tp">CreateUserDto</span> {
+  name: <span class="tp">string</span>;
+  email: <span class="tp">string</span>;
+  cpf: <span class="tp">string</span>;         <span class="cm">// Precisa pra que? Login não exige CPF</span>
+  birthDate: <span class="tp">Date</span>;    <span class="cm">// Precisa pra que? Não e site de idade restrita</span>
+  gender: <span class="tp">string</span>;     <span class="cm">// Dado sensível. Realmente precisa?</span>
+  address: <span class="tp">string</span>;    <span class="cm">// Só coleta quando fizer primeiro pedido</span>
+  phone: <span class="tp">string</span>;      <span class="cm">// Opcional ou obrigatório? Justifique</span>
+}
+
+<span class="cm">// &#9989; CORRETO — Apenas o essencial para o serviço</span>
+<span class="kw">class</span> <span class="tp">CreateUserDto</span> {
+  <span class="ann">@IsString</span>()
+  <span class="ann">@MinLength</span>(<span class="num">2</span>)
+  name: <span class="tp">string</span>;
+
+  <span class="ann">@IsEmail</span>()
+  email: <span class="tp">string</span>;
+
+  <span class="ann">@IsString</span>()
+  <span class="ann">@MinLength</span>(<span class="num">8</span>)
+  password: <span class="tp">string</span>;
+  <span class="cm">// CPF, endereço, telefone — colete apenas quando necessário</span>
+  <span class="cm">// (ex: checkout, emissão de NF)</span>
+}</code></pre>
+
+<h4>2. Purpose Limitation — Rastreie PORQUE Coletou</h4>
+<p>Cada dado coletado deve ter uma <strong>finalidade explicita</strong>. Se coletou email para enviar recibo, não pode usar para marketing sem novo consentimento.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Tabela de finalidades — rastreia para que cada dado foi coletado</span>
+<span class="ann">@Entity</span>(<span class="str">'data_purpose_registry'</span>)
+<span class="kw">class</span> <span class="tp">DataPurposeRegistry</span> {
+  <span class="ann">@PrimaryGeneratedColumn</span>(<span class="str">'uuid'</span>)
+  id: <span class="tp">string</span>;
+
+  <span class="ann">@Column</span>()
+  userId: <span class="tp">string</span>;
+
+  <span class="ann">@Column</span>()
+  dataField: <span class="tp">string</span>; <span class="cm">// ex: 'email', 'cpf', 'address'</span>
+
+  <span class="ann">@Column</span>()
+  purpose: <span class="tp">string</span>; <span class="cm">// ex: 'order_delivery', 'tax_invoice', 'marketing'</span>
+
+  <span class="ann">@Column</span>()
+  legalBasis: <span class="tp">string</span>; <span class="cm">// ex: 'contract', 'consent', 'legal_obligation'</span>
+
+  <span class="ann">@Column</span>()
+  collectedAt: <span class="tp">Date</span>;
+
+  <span class="ann">@Column</span>({ nullable: <span class="kw">true</span> })
+  retentionDays: <span class="tp">number</span>; <span class="cm">// Quantos dias manter após fim da finalidade</span>
+}</code></pre>
+
+<h4>3. Anonimização e Pseudonimização</h4>
+<p><strong>Anonimização</strong> é irreversível — o dado não pode mais ser associado ao titular. <strong>Pseudonimização</strong> é reversível com uma chave — o dado e substituído por um identificador, mas pode ser reconstruido.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Técnica</th><th>Tipo</th><th>Descrição</th><th>Exemplo</th></tr>
+<tr><td><strong>Hashing (SHA-256)</strong></td><td>Pseudo</td><td>Função unidirecional, mas vulnerável a rainbow tables</td><td>email &rarr; <code>a1b2c3...</code></td></tr>
+<tr><td><strong>Hashing + Salt</strong></td><td>Pseudo</td><td>Hash com valor aleatório único por registro</td><td>email + salt &rarr; <code>x9y8z7...</code></td></tr>
+<tr><td><strong>Tokenização</strong></td><td>Pseudo</td><td>Substitui dado por token, mapeamento em vault separado</td><td>CPF &rarr; <code>tok_abc123</code></td></tr>
+<tr><td><strong>k-Anonymity</strong></td><td>Anon</td><td>Cada registro e indistinguível de pelo menós k-1 outros</td><td>Idade 25-30, Cidade SP</td></tr>
+<tr><td><strong>Differential Privacy</strong></td><td>Anon</td><td>Adiciona ruido estatistico aos dados</td><td>Contagem real 150 &rarr; reporta 147-153</td></tr>
+<tr><td><strong>Data Masking</strong></td><td>Pseudo</td><td>Oculta parcialmente o dado</td><td>CPF: ***.456.***-**</td></tr>
+<tr><td><strong>Generalização</strong></td><td>Anon</td><td>Reduz precisão do dado</td><td>Idade 27 &rarr; Faixa 25-30</td></tr>
+</table>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// pseudonymization.service.ts — Pseudonimização de dados do usuário</span>
+<span class="kw">import</span> * <span class="kw">as</span> crypto <span class="kw">from</span> <span class="str">'crypto'</span>;
+
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">PseudonymizationService</span> {
+  <span class="kw">privaté readonly</span> algorithm = <span class="str">'aes-256-gcm'</span>;
+  <span class="kw">privaté readonly</span> key: <span class="tp">Buffer</span>;
+
+  <span class="kw">constructor</span>(<span class="kw">private</span> configService: <span class="tp">ConfigService</span>) {
+    <span class="cm">// Chave armazenada em vault separado (AWS KMS, HashiCorp Vault)</span>
+    <span class="kw">this</span>.key = Buffer.<span class="fn">from</span>(configService.<span class="fn">get</span>(<span class="str">'PSEUDONYM_KEY'</span>), <span class="str">'hex'</span>);
+  }
+
+  <span class="cm">// Pseudonimizar — reversível com a chave</span>
+  <span class="fn">pseudonymize</span>(data: <span class="tp">string</span>): { encrypted: <span class="tp">string</span>; iv: <span class="tp">string</span>; tag: <span class="tp">string</span> } {
+    <span class="kw">const</span> iv = crypto.<span class="fn">randomBytes</span>(<span class="num">16</span>);
+    <span class="kw">const</span> cipher = crypto.<span class="fn">createCipheriv</span>(<span class="kw">this</span>.algorithm, <span class="kw">this</span>.key, iv);
+    <span class="kw">let</span> encrypted = cipher.<span class="fn">update</span>(data, <span class="str">'utf8'</span>, <span class="str">'hex'</span>);
+    encrypted += cipher.<span class="fn">final</span>(<span class="str">'hex'</span>);
+    <span class="kw">return</span> {
+      encrypted,
+      iv: iv.<span class="fn">toString</span>(<span class="str">'hex'</span>),
+      tag: cipher.<span class="fn">getAuthTag</span>().<span class="fn">toString</span>(<span class="str">'hex'</span>),
+    };
+  }
+
+  <span class="cm">// Reverter pseudonimização (apenas com a chave)</span>
+  <span class="fn">depseudonymize</span>(encrypted: <span class="tp">string</span>, iv: <span class="tp">string</span>, tag: <span class="tp">string</span>): <span class="tp">string</span> {
+    <span class="kw">const</span> decipher = crypto.<span class="fn">createDecipheriv</span>(
+      <span class="kw">this</span>.algorithm, <span class="kw">this</span>.key, Buffer.<span class="fn">from</span>(iv, <span class="str">'hex'</span>)
+    );
+    decipher.<span class="fn">setAuthTag</span>(Buffer.<span class="fn">from</span>(tag, <span class="str">'hex'</span>));
+    <span class="kw">let</span> decrypted = decipher.<span class="fn">update</span>(encrypted, <span class="str">'hex'</span>, <span class="str">'utf8'</span>);
+    decrypted += decipher.<span class="fn">final</span>(<span class="str">'utf8'</span>);
+    <span class="kw">return</span> decrypted;
+  }
+
+  <span class="cm">// Anonimizar — irreversível (para analytics)</span>
+  <span class="fn">anonymize</span>(email: <span class="tp">string</span>): <span class="tp">string</span> {
+    <span class="kw">return</span> crypto.<span class="fn">createHash</span>(<span class="str">'sha256'</span>)
+      .<span class="fn">update</span>(email + <span class="kw">this</span>.configService.<span class="fn">get</span>(<span class="str">'ANON_SALT'</span>))
+      .<span class="fn">digest</span>(<span class="str">'hex'</span>)
+      .<span class="fn">substring</span>(<span class="num">0</span>, <span class="num">16</span>);
+  }
+}</code></pre>
+
+<h4>4. Data Retention — Politicas de Retenção Automática</h4>
+<p>Dados não devem existir para sempre. Defina politicas claras de retenção e implemente <strong>exclusão automática</strong>.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// data-retention.job.ts — Cron job de retenção de dados</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">DataRetentionJob</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> userRepo: <span class="tp">Repository</span>&lt;<span class="tp">User</span>&gt;,
+    <span class="kw">private</span> logRepo: <span class="tp">Repository</span>&lt;<span class="tp">ActivityLog</span>&gt;,
+    <span class="kw">private</span> auditService: <span class="tp">AuditService</span>,
+  ) {}
+
+  <span class="cm">// Executa diariamente as 3h da manha</span>
+  <span class="ann">@Cron</span>(<span class="str">'0 3 * * *'</span>)
+  <span class="kw">async</span> <span class="fn">enforceRetentionPolicies</span>(): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="cm">// 1. Soft-deleted users: hard-delete após 30 dias</span>
+    <span class="kw">const</span> thirtyDaysAgo = <span class="kw">new</span> <span class="tp">Date</span>();
+    thirtyDaysAgo.<span class="fn">setDate</span>(thirtyDaysAgo.<span class="fn">getDate</span>() - <span class="num">30</span>);
+
+    <span class="kw">const</span> usersToDelete = <span class="kw">await</span> <span class="kw">this</span>.userRepo.<span class="fn">find</span>({
+      where: {
+        deletedAt: <span class="fn">LessThan</span>(thirtyDaysAgo),
+      },
+      withDeleted: <span class="kw">true</span>,
+    });
+
+    <span class="kw">for</span> (<span class="kw">const</span> user <span class="kw">of</span> usersToDelete) {
+      <span class="cm">// Hard-delete: remove permanentemente do banco</span>
+      <span class="kw">await</span> <span class="kw">this</span>.userRepo.<span class="fn">remove</span>(user);
+      <span class="kw">await</span> <span class="kw">this</span>.auditService.<span class="fn">log</span>({
+        action: <span class="str">'HARD_DELETE_USER'</span>,
+        entityId: user.id,
+        reason: <span class="str">'retention_policy_30d'</span>,
+      });
+    }
+
+    <span class="cm">// 2. Activity logs: deletar após 90 dias</span>
+    <span class="kw">const</span> ninetyDaysAgo = <span class="kw">new</span> <span class="tp">Date</span>();
+    ninetyDaysAgo.<span class="fn">setDate</span>(ninetyDaysAgo.<span class="fn">getDate</span>() - <span class="num">90</span>);
+
+    <span class="kw">await</span> <span class="kw">this</span>.logRepo
+      .<span class="fn">createQueryBuilder</span>()
+      .<span class="fn">delete</span>()
+      .<span class="fn">where</span>(<span class="str">'createdAt &lt; :date'</span>, { date: ninetyDaysAgo })
+      .<span class="fn">execute</span>();
+
+    <span class="cm">// 3. Sessões expiradas: limpar diariamente</span>
+    <span class="cm">// 4. Tokens de reset de senha: limpar após usó ou expiração</span>
+  }
+}</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Soft-delete primeiro, hard-delete depois.</strong> Sempre use soft-delete (coluna <code>deletedAt</code>) para a primeira exclusão. Isso permite que o usuário reverta a decisão dentro do prazo. O hard-delete real acontece via cron job após o período de retenção.</div>
+</div>
+
+<h4>5. Consent Management — Consentimento Granular</h4>
+<pre data-lang="typescript"><code><span class="cm">// consent.controller.ts — API de gerenciamento de consentimento</span>
+<span class="ann">@Controller</span>(<span class="str">'consent'</span>)
+<span class="kw">class</span> <span class="tp">ConsentController</span> {
+  <span class="ann">@Get</span>()
+  <span class="ann">@UseGuards</span>(<span class="tp">AuthGuard</span>)
+  <span class="kw">async</span> <span class="fn">getMyConsents</span>(
+    <span class="ann">@CurrentUser</span>() user: <span class="tp">AuthUser</span>
+  ): <span class="tp">Promise</span>&lt;<span class="tp">ConsentStatus</span>[]&gt; {
+    <span class="cm">// Retorna status atual de cada tipo de consentimento</span>
+    <span class="kw">return</span> <span class="kw">this</span>.consentService.<span class="fn">getUserConsents</span>(user.id);
+    <span class="cm">// [</span>
+    <span class="cm">//   { purpose: 'essential', granted: true, required: true },</span>
+    <span class="cm">//   { purpose: 'analytics', granted: true, required: false },</span>
+    <span class="cm">//   { purpose: 'marketing', granted: false, required: false },</span>
+    <span class="cm">//   { purpose: 'personalization', granted: true, required: false },</span>
+    <span class="cm">// ]</span>
+  }
+
+  <span class="ann">@Put</span>()
+  <span class="ann">@UseGuards</span>(<span class="tp">AuthGuard</span>)
+  <span class="kw">async</span> <span class="fn">updateConsents</span>(
+    <span class="ann">@CurrentUser</span>() user: <span class="tp">AuthUser</span>,
+    <span class="ann">@Body</span>() dto: <span class="tp">UpdateConsentDto</span>,
+    <span class="ann">@Req</span>() req: <span class="tp">Request</span>,
+  ): <span class="tp">Promise</span>&lt;{ updated: <span class="tp">boolean</span> }&gt; {
+    <span class="kw">await</span> <span class="kw">this</span>.consentService.<span class="fn">updateConsents</span>(user.id, dto.consents, {
+      ip: req.ip,
+      userAgent: req.headers[<span class="str">'user-agent'</span>],
+      policyVersion: dto.policyVersion,
+    });
+    <span class="kw">return</span> { updated: <span class="kw">true</span> };
+  }
+}
+
+<span class="cm">// update-consent.dto.ts</span>
+<span class="kw">class</span> <span class="tp">UpdateConsentDto</span> {
+  <span class="ann">@IsArray</span>()
+  <span class="ann">@ValidateNested</span>({ each: <span class="kw">true</span> })
+  consents: { purpose: <span class="tp">string</span>; granted: <span class="tp">boolean</span> }[];
+
+  <span class="ann">@IsString</span>()
+  policyVersion: <span class="tp">string</span>;
+}</code></pre>
+
+<h4>6. Data Breach — Plano de Resposta a Incidentes</h4>
+
+<div class="card blue">
+<div class="card-title">Checklist de Resposta a Data Breach</div>
+<ol>
+<li><strong>Detecção e Contenamento</strong> (0-4h) — Identificar escopo, isolar sistemas afetados, preservar evidências</li>
+<li><strong>Avaliação de Impacto</strong> (4-24h) — Quantos titulares afetados? Que tipos de dados vazaram? Qual o risco?</li>
+<li><strong>Notificação a Autoridade</strong> (até 72h no GDPR) — Relatório formal com tipo de breach, número de afetados, dados comprometidos, medidas tomadas</li>
+<li><strong>Notificação aos Titulares</strong> (se alto risco) — Linguagem clara, sem jargao técnico. O que aconteceu, que dados foram expostos, o que fazer</li>
+<li><strong>Remediação</strong> — Corrigir vulnerabilidade, resetar credenciais afetadas, monitorar usó indevido</li>
+<li><strong>Pos-incidente</strong> — Root cause analysis, atualizar RIPD/DPIA, treinar equipe, documentar licoes aprendidas</li>
+</ol>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// breach-notification.service.ts — Workflow automatizado</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">BreachNotificationService</span> {
+  <span class="kw">async</span> <span class="fn">handleBreach</span>(incident: <span class="tp">SecurityIncident</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="cm">// 1. Registrar incidente com timestamp</span>
+    <span class="kw">const</span> breach = <span class="kw">await</span> <span class="kw">this</span>.breachRepo.<span class="fn">save</span>({
+      detectedAt: <span class="kw">new</span> <span class="tp">Date</span>(),
+      type: incident.type,
+      affectedUsers: incident.affectedUserIds.length,
+      dataTypes: incident.dataTypesExposed,
+      severity: incident.severity,
+      status: <span class="str">'investigating'</span>,
+    });
+
+    <span class="cm">// 2. Notificar equipe de segurança imediatamente</span>
+    <span class="kw">await</span> <span class="kw">this</span>.alertService.<span class="fn">sendCritical</span>({
+      channel: <span class="str">'#security-incidents'</span>,
+      message: <span class="str">`DATA BREACH DETECTED - ID: ${breach.id}`</span>,
+    });
+
+    <span class="cm">// 3. Iniciar timer de 72h para notificação a autoridade</span>
+    <span class="kw">await</span> <span class="kw">this</span>.scheduler.<span class="fn">schedule</span>({
+      action: <span class="str">'BREACH_AUTHORITY_NOTIFICATION_DEADLINE'</span>,
+      breachId: breach.id,
+      deadline: <span class="kw">new</span> <span class="tp">Date</span>(Date.<span class="fn">now</span>() + <span class="num">72</span> * <span class="num">60</span> * <span class="num">60</span> * <span class="num">1000</span>),
+    });
+
+    <span class="cm">// 4. Se alta severidade, notificar titulares afetados</span>
+    <span class="kw">if</span> (incident.severity === <span class="str">'high'</span> || incident.severity === <span class="str">'critical'</span>) {
+      <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">notifyAffectedUsers</span>(incident.affectedUserIds, breach);
+    }
+  }
+}</code></pre>
+
+<!-- ═══ OTHER FRAMEWORKS ═══ -->
+<h3>Outros Frameworks de Compliance</h3>
+
+<p>Dependendo do seu setor e clientes, você pode precisar cumprir com frameworks adicionais além da LGPD/GDPR:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Framework</th><th>Setor</th><th>Foco Principal</th><th>Multas/Consequências</th></tr>
+<tr><td><strong>PCI DSS</strong></td><td>Pagamentos</td><td>Dados de cartao de credito (PAN, CVV, expiração). 12 requisitos de segurança</td><td>Multas de USD 5k-100k/mes. Perda da licenca de processamento</td></tr>
+<tr><td><strong>HIPAA</strong></td><td>Saúde (EUA)</td><td>PHI (Protected Health Information). Dados medicos e de saúde</td><td>USD 100-50k por violação. Até USD 1.5M/ano. Pena criminal possível</td></tr>
+<tr><td><strong>SOC 2</strong></td><td>SaaS / Cloud</td><td>5 Trust Service Criteria: Security, Availability, Processing Integrity, Confidentiality, Privacy</td><td>Sem multas legais, mas exigido por clientes enterprise. Perda de contratos</td></tr>
+<tr><td><strong>ISO 27001</strong></td><td>Qualquer</td><td>Sistema de Gestão de Segurança da Informação (SGSI). 114 controles em 14 domínios</td><td>Sem multas. Certificação voluntária mas diferencial competitivo</td></tr>
+<tr><td><strong>CCPA/CPRA</strong></td><td>California (EUA)</td><td>Similar ao GDPR para residentes da California. Right to opt-out of sale of data</td><td>USD 2.5k-7.5k por violação intencional. Direito privado de ação</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Dica prática:</strong> Se você cumpre GDPR, já tem ~80% do caminho para LGPD. Se precisa de SOC 2, considere ISO 27001 como base. PCI DSS é o mais rígido — se processa pagamentos, considere usar um provider (Stripe, PagSeguro) que já é PCI-compliant para reduzir seu escopo.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Compliance LGPD para SaaS</h3>
+
+<p><strong>Cenário:</strong> Você precisa implementar compliance LGPD para uma plataforma SaaS que processa dados de clientes brasileiros. O sistema precisa suportar: consentimento granular, exportação/exclusão de dados, audit logging, criptografia e politicas de retenção.</p>
+
+<div class="diagram">
+<div class="diagram-box green">API Gateway<br><small>Raté Limit + Auth</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Privacy Service<br><small>Consent, Export, Delete</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Audit Logger<br><small>Imutável</small></div>
+</div>
+<div class="diagram">
+<div class="diagram-box orange">Data Store<br><small>Encrypted at Rest</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box cyan">KMS / Vault<br><small>Chaves de Criptografia</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Retention Cron<br><small>Hard-delete Scheduler</small></div>
+</div>
+
+<p><strong>Componentes da arquitetura:</strong></p>
+<ul>
+<li><strong>Privacy Service</strong> — Microserviço centralizado que gerência consentimento, exportação e exclusão. Toda operação sobre dados pessoais passa por ele</li>
+<li><strong>Consent Store</strong> — Tabela imutável (append-only) que registra cada grant/revoke com timestamp, IP e versão da politica</li>
+<li><strong>Data Export Pipeline</strong> — Coleta dados de todos os microsserviços, gera pacote JSON/CSV, disponibiliza para download seguro com link temporário (pré-signed URL)</li>
+<li><strong>Deletion Pipeline</strong> — Orquestra exclusão em cascata em todos os serviços. Usa saga pattern para garantir consistência. Soft-delete imediato + hard-delete agendado</li>
+<li><strong>Audit Logger</strong> — Write-once (append-only). Registra toda operação sobre dados pessoais. Não pode ser editado/deletado. Retenção de 5 anós (exigência legal)</li>
+<li><strong>KMS (Key Management Service)</strong> — Gerência chaves de criptografia. Rotação automática. Separação entre chaves de pseudonimização e criptografia at rest</li>
+<li><strong>Retention Cron</strong> — Job agendado que verifica politicas de retenção e executa hard-delete de dados expirados. Gera relatório de execução para auditoria</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// privacy.module.ts — Módulo central de privacidade</span>
+<span class="ann">@Module</span>({
+  imports: [
+    <span class="tp">TypeOrmModule</span>.<span class="fn">forFeature</span>([
+      <span class="tp">ConsentRecord</span>,
+      <span class="tp">DataPurposeRegistry</span>,
+      <span class="tp">AuditLog</span>,
+      <span class="tp">DeletionRequest</span>,
+    ]),
+    <span class="tp">ScheduleModule</span>.<span class="fn">forRoot</span>(),
+  ],
+  controllers: [
+    <span class="tp">ConsentController</span>,      <span class="cm">// GET/PUT /consent</span>
+    <span class="tp">UserDataController</span>,     <span class="cm">// GET /user/data/export, DELETE /user/data</span>
+    <span class="tp">PrivacyPolicyController</span>, <span class="cm">// GET /privacy-policy (versionada)</span>
+  ],
+  providers: [
+    <span class="tp">ConsentService</span>,
+    <span class="tp">UserDataExportService</span>,
+    <span class="tp">DataDeletionService</span>,
+    <span class="tp">PseudonymizationService</span>,
+    <span class="tp">DataRetentionJob</span>,
+    <span class="tp">AuditService</span>,
+    <span class="tp">BreachNotificationService</span>,
+  ],
+})
+<span class="kw">export class</span> <span class="tp">PrivacyModule</span> {}</code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Tratar compliance como checkbox:</strong> "Colocamos um cookie banner, estamos compliant." LGPD/GDPR são processos continuos, não um deploy único. Exigem revisão periodica, atualização de politicas, treinamento, e adaptação a novas interpretações da lei.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Coletar dados "por precaucao":</strong> "Vamos coletar o CPF — pode ser útil no futuro." Dados pessoais são passivos legais. Cada campo coletado sem finalidade clara é uma violação do princípio de minimização é um risco desnecessário em caso de breach.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Não ter audit trail:</strong> Se a ANPD ou uma autoridade europeia pedir para provar como é quando um consentimento foi dado, você precisa do registro completo (timestamp, IP, versão da politica, user agent). "O usuário clicou aceitar" sem evidência documentada não é suficiente.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Não criptografar PII at rest:</strong> Dados pessoais armazenados em plain text no banco de dados são uma bomba-relogio. Se houver um breach (SQL injection, backup vazado, acesso indevido), todos os dados estão imediatamente expostos. Use criptografia at rest (TDE, column-level encryption) e criptografia de backups.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Dark patterns no consentimento:</strong> Botao "Aceitar Tudo" grande e verde vs "Gerenciar Preferências" pequeno e cinza é um dark pattern. A CNIL (Franca) multou Google e Facebook exatamente por isso. O botao de recusar deve ser tao fácil quanto o de aceitar.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Antes de coletar qualquer dado pessoal, responda 3 perguntas: (1) PORQUE precisó deste dado? (2) Qual a base legal? (3) Por quanto tempo vou manter? Se não consegue responder claramente, não colete.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Seu SaaS coleta email, nome, CPF, endereço, telefone e data de nascimento no cadastro. O serviço é um marketplace de roupas. Aplique o princípio de minimização — quais campos são realmente necessários no cadastro e quais devem ser coletados depois?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> No cadastro, apenas <strong>nome, email e senha</strong> são necessários para criar a conta e autenticar o usuário. <strong>CPF e endereço</strong> só devem ser coletados no momento do checkout (base legal: execução de contrato + obrigação legal para nota fiscal). <strong>Telefone</strong> pode ser opcional e coletado depois para notificações de entrega (com consentimento). <strong>Data de nascimento</strong> só se houver restricao de idade legal — caso contrário, não coletar. Cada campo adiado é um risco a menós em caso de breach.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Um usuário pede exclusão de conta (Right to be Forgotten). Mas ele tem uma compra de 3 meses atras com nota fiscal emitida. Você pode deletar tudo?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Não. A LGPD permite manter dados quando ha obrigação legal (base legal #2). Notas fiscais devem ser mantidas por <strong>5 anos</strong> (legislação tributaria). O que você deve fazer: (1) Deletar dados não necessários (foto, preferências, histórico de navegação). (2) Anonimizar o que for possível nós registros fiscais (ex: remover telefone, manter apenas CPF e nome por exigência fiscal). (3) Informar ao titular quais dados serão mantidos e por que. (4) Definir data de exclusão futura automática para os dados retidos por obrigação legal.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você descobre as 14h de sexta-feira que houve um breach no banco de dados. Dados de 50.000 usuários (email, nome, senha com hash) foram potencialmente acessados. Descreva o plano de ação nas próximas 72 horas.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>Imediato (0-4h):</strong> Conter o ataque — revogar acessos comprometidos, isolar o servidor, preservar logs como evidência forense. Ativar equipe de resposta a incidentes. <strong>Avaliação (4-24h):</strong> Determinar escopo exato — quais dados, quantos usuários, como ocorreu. Verificar se senhas (com hash) são quebráveis (bcrypt com salt alto é mais seguro que MD5). <strong>Notificação a ANPD (até 72h):</strong> Relatar tipo de breach, dados expostos, número de afetados, medidas de contenamento. <strong>Notificação aos usuários (se alto risco):</strong> Email claro explicando o que aconteceu, recomendando troca de senha, oferecendo suporte. <strong>Pos-incidente:</strong> Root cause analysis, corrigir vulnerabilidade, atualizar RIPD, considerar monitoramento de credenciais vazadas.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — LGPD, GDPR & Privacy by Design</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="30-criptografia-app-security.html">&#8592; Anterior</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="32-cicd-pipelines.html" class="primary">Próximo: CI/CD - Pipelines & Automação &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 31: LGPD, GDPR & Privacy by Design
+// ══════════════════════════════════════════
+const SECTION_NUM = 31;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Quantas bases legais a LGPD preve para o tratamento de dados pessoais?",
+    options: [
+      "4 bases legais",
+      "6 bases legais (mesmo que o GDPR)",
+      "10 bases legais",
+      "8 bases legais"
+    ],
+    correct: 2,
+    explanation: "A LGPD preve 10 bases legais para tratamento de dados pessoais — mais que as 6 do GDPR. As bases incluem consentimento, obrigação legal, execução de contrato, interesse legitimo, entre outras."
+  },
+  {
+    question: "Qual é o prazo máximo para notificar a autoridade supervisora sobre um data breach segundo o GDPR?",
+    options: [
+      "24 horas após a detecção",
+      "48 horas após a detecção",
+      "72 horas após tomar conhecimento",
+      "7 dias úteis após a detecção"
+    ],
+    correct: 2,
+    explanation: "O GDPR exige notificação a autoridade supervisora em no máximo 72 horas após o controlador tomar conhecimento da violação (Artigo 33). Se não for possível notificar dentro do prazo, deve-se explicar o motivo do atraso."
+  },
+  {
+    question: "Um usuário pede exclusão total da conta, mas tem uma nota fiscal emitida ha 2 meses. O que a empresa deve fazer?",
+    options: [
+      "Deletar tudo — o direito de exclusão e absoluto",
+      "Recusar a exclusão até a nota fiscal expirar em 5 anos",
+      "Deletar dados não obrigatórios é manter apenas os exigidos por lei (NF), informando o titular",
+      "Anonimizar tudo incluindo a nota fiscal"
+    ],
+    correct: 2,
+    explanation: "O direito de exclusão NÃO e absoluto. A LGPD permite manter dados quando ha obrigação legal (base legal #2). Notas fiscais devem ser mantidas por 5 anos. A empresa deve deletar o que pode, manter o que a lei exige, e informar o titular sobre o que foi mantido e por que."
+  },
+  {
+    question: "Qual a multa máxima prevista na LGPD por infração?",
+    options: [
+      "Até 4% do faturamento global ou EUR 20 milhões",
+      "Até 2% do faturamento no Brasil, limitada a R$ 50 milhões por infração",
+      "Até R$ 100 milhões por infração sem limite percentual",
+      "Até 10% do faturamento global"
+    ],
+    correct: 1,
+    explanation: "A LGPD preve multa de até 2% do faturamento da pessoa juridica no Brasil, limitada a R$ 50 milhões por infração. A multa de 4%/EUR20M e do GDPR, não da LGPD."
+  },
+  {
+    question: "Qual princípio de Privacy by Design afirma que privacidade não deve sacrificar funcionalidade?",
+    options: [
+      "Proativo, não Reativo",
+      "Privacidade como Configuração Padrão",
+      "Funcionalidade Total (Positive-Sum)",
+      "Visibilidade e Transparência"
+    ],
+    correct: 2,
+    explanation: "O princípio 4 — Funcionalidade Total (Positive-Sum, não Zero-Sum) — afirma que privacidade e funcionalidade não devem ser tratadas como mutuamente exclusivas. Busca-se soluções win-win."
+  },
+  {
+    question: "Qual a diferença entre anonimização e pseudonimização?",
+    options: [
+      "São a mesma coisa — ambas removem identificadores",
+      "Anonimização e reversível; pseudonimização e irreversível",
+      "Anonimização e irreversível; pseudonimização e reversível com uma chave",
+      "Anonimização usa hashing; pseudonimização usa criptografia simétrica exclusivamente"
+    ],
+    correct: 2,
+    explanation: "Anonimização e IRREVERSÍVEL — o dado não pode mais ser associado ao titular (ex: k-anonymity, differential privacy). Pseudonimização e REVERSÍVEL com uma chave — o dado e substituído por identificador que pode ser revertido (ex: tokenização, criptografia)."
+  },
+  {
+    question: "O que é o RIPD na LGPD?",
+    options: [
+      "Registro de Incidentes de Proteção de Dados — log de breaches",
+      "Relatório de Impacto a Proteção de Dados Pessoais — equivalente ao DPIA europeu",
+      "Regulamento Interno de Politicas de Dados — documento de compliance interno",
+      "Rede Integrada de Proteção de Dados — sistema da ANPD"
+    ],
+    correct: 1,
+    explanation: "O RIPD (Relatório de Impacto a Proteção de Dados Pessoais) é o equivalente brasileiro do DPIA (Data Protection Impact Assessment) do GDPR. E obrigatório quando o tratamento pode gerar riscos as liberdades civis dos titulares."
+  },
+  {
+    question: "Seu SaaS coleta CPF, data de nascimento, genero e endereço no formulário de cadastro de um marketplace de roupas. O que o princípio de minimização de dados recomenda?",
+    options: [
+      "Coletar tudo no cadastro para não precisar pedir depois",
+      "Coletar apenas nome, email e senha no cadastro; CPF e endereço apenas no checkout",
+      "Coletar tudo mas criptografar os campos opcionais",
+      "Não coletar nenhum dado além do email"
+    ],
+    correct: 1,
+    explanation: "Data minimization significa coletar APENAS o necessário para a finalidade específica. No cadastro, só precisa de nome, email e senha. CPF e endereço só são necessários no checkout (execução de contrato + obrigação fiscal). Genero e data de nascimento não são necessários para um marketplace de roupas."
+  },
+  {
+    question: "Qual framework de compliance e específico para dados de cartao de credito e exige 12 requisitos de segurança?",
+    options: [
+      "SOC 2",
+      "ISO 27001",
+      "PCI DSS",
+      "HIPAA"
+    ],
+    correct: 2,
+    explanation: "PCI DSS (Payment Card Industry Data Security Standard) é o framework específico para proteção de dados de cartao de credito (PAN, CVV, data de expiração). Exige 12 requisitos de segurança e é mantido pelo PCI Security Standards Council."
+  },
+  {
+    question: "No consentimento LGPD/GDPR, qual prática é considerada um 'dark pattern' e pode resultar em multa?",
+    options: [
+      "Oferecer opção de aceitar ou recusar cookies",
+      "Ter botao 'Aceitar Tudo' grande e verde, e 'Recusar' pequeno e cinza escondido",
+      "Exigir consentimento para cookies essenciais",
+      "Mostrar politica de privacidade antes do consentimento"
+    ],
+    correct: 1,
+    explanation: "Tornar a opção de aceitar visualmente muito mais atrativa/acessível que a de recusar é um dark pattern. A CNIL (autoridade francesa) multou Google e Facebook exatamente por isso. O botao de recusar deve ser tao fácil de encontrar é usar quanto o de aceitar."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina LGPD, GDPR e Privacy by Design.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

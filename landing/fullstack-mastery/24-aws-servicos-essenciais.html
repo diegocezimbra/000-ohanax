@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>24 — AWS - Serviços Essenciais | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="23-api-design-versionamento.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>24</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="25-containers-kubernetes.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:36.4%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 24</span>
+<h2>AWS — Serviços Essenciais</h2>
+<div class="section-line"></div>
+
+<p>A Amazon Web Services oferece mais de 200 serviços. Você não precisa conhecer todos — precisa dominar os <strong>20-30 serviços essenciais</strong> que cobrem 95% dos cenários de um desenvolvedor full-stack. Esta seção mapeia cada serviço, quando usa-lo, quanto custa, é como eles se conectam para formar arquiteturas de produção.</p>
+
+<p>A filosofia da AWS e <strong>"building blocks"</strong>: serviços pequenós e especializados que você combina como LEGO. Isso da flexibilidade máxima, mas também exige que você entenda o <strong>trade-off entre controle e complexidade</strong>. EC2 da controle total mas exige gerenciamento; Lambda elimina gerenciamento mas limita controle. Saber escolher é a habilidade que separa juniors de seniors.</p>
+
+<!-- ═══ COMPUTE ═══ -->
+<h3>Compute — Serviços de Processamento</h3>
+<p>O pilar de compute da AWS oferece um espectro que vai de <strong>controle total</strong> (EC2) até <strong>zero gerenciamento</strong> (Lambda). A escolha depende do tipo de workload, padrão de tráfego, e nível de controle que você precisa.</p>
+
+<h4>EC2 — Elastic Compute Cloud</h4>
+<p>Máquinas virtuais (instâncias) na nuvem. Você escolhe o sistema operacional, tipo de instância, e tem acesso root completo. É o serviço mais flexível — é também o que exige mais gerenciamento.</p>
+
+<ul>
+<li><strong>Familias de instância:</strong> <code>t3</code> (burstable, dev/staging), <code>m6i</code> (general purpose), <code>c6i</code> (compute-intensive), <code>r6i</code> (memory-intensive), <code>g5</code> (GPU/ML)</li>
+<li><strong>On-Demand:</strong> pague por hora/segundo, sem compromisso. Ideal para workloads imprevisiveis</li>
+<li><strong>Reserved Instances:</strong> 1-3 anós de compromisso, até 72% de desconto. Para workloads estáveis</li>
+<li><strong>Spot Instances:</strong> capacidade ociosa da AWS com até 90% de desconto. Pode ser interrompida com 2 min de aviso. Ideal para batch processing, CI/CD runners</li>
+<li><strong>Savings Plans:</strong> compromisso de gasto ($/hora) em vez de instância específica. Mais flexível que Reserved</li>
+</ul>
+
+<h4>Lambda — Serverless Functions</h4>
+<p>Execute código sem gerenciar servidores. Pague apenas pelo tempo de execução (por ms). Escala automáticamente de 0 a milhares de execuções concorrentes.</p>
+
+<ul>
+<li><strong>Cold Start:</strong> primeira invocação após período de inatividade leva mais tempo (100ms-10s dependendo do runtime). Node.js/Python são rápidos; Java/C# são mais lentos</li>
+<li><strong>Layers:</strong> bibliotecas compartilhadas entre funções (ex: SDK comum, dependências). Reduz tamanho do deploy</li>
+<li><strong>Provisioned Concurrency:</strong> mantém N instâncias "quentes" para eliminar cold start. Custa mais, mas garante latência consistente</li>
+<li><strong>Limites:</strong> 15 min de timeout máximo, 10GB de memória, 250MB de pacote (descompactado)</li>
+</ul>
+
+<h4>Fargaté — Serverless Containers</h4>
+<p>Rode containers Docker sem gerenciar servidores. Você define CPU/memória é a AWS cuida da infraestrutura. Combina a flexibilidade de containers com a simplicidade de serverless.</p>
+
+<h4>ECS — Elastic Container Service</h4>
+<p>Orquestrador de containers nativo da AWS. Define <strong>Task Definitions</strong> (o que rodar) e <strong>Services</strong> (quantos rodar, como escalar). Pode rodar em EC2 (você gerência hosts) ou Fargaté (AWS gerência).</p>
+
+<h4>App Runner — PaaS Simplificado</h4>
+<p>O serviço mais simples da AWS para deploy de web apps e APIs. Aponte para um repositório ou imagem Docker e ele faz build, deploy, TLS, auto-scaling. Ideal para MVPs e apps simples.</p>
+
+<h4>Árvore de Decisão: Qual Compute Usar?</h4>
+
+<div class="diagram">
+<div class="diagram-box green">Precisa de<br>servidor?</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Sim: EC2<br><small>Controle total</small></div>
+</div>
+<div class="diagram">
+<div class="diagram-box green">Função curta<br>&lt; 15 min?</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Sim: Lambda<br><small>Zero gerenciamento</small></div>
+</div>
+<div class="diagram">
+<div class="diagram-box green">Container sem<br>gerenciar hosts?</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Sim: Fargate<br><small>Container serverless</small></div>
+</div>
+<div class="diagram">
+<div class="diagram-box green">Deploy rápido<br>sem config?</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Sim: App Runner<br><small>PaaS mais simples</small></div>
+</div>
+
+<div class="table-wrap">
+<table>
+<tr><th>Serviço</th><th>Gerenciamento</th><th>Escala</th><th>Custo Base</th><th>Ideal Para</th></tr>
+<tr><td><strong>EC2</strong></td><td>Alto (OS, patches, rede)</td><td>Manual / Auto Scaling</td><td>~$8/mês (t3.micro)</td><td>Apps legacy, GPU, controle total</td></tr>
+<tr><td><strong>Lambda</strong></td><td>Zero</td><td>Automática (0 a N)</td><td>Free tier generoso</td><td>APIs, event processing, cron jobs</td></tr>
+<tr><td><strong>Fargate</strong></td><td>Baixo (só container)</td><td>Auto Scaling por service</td><td>~$30/mês (0.25 vCPU)</td><td>Microservices, APIs containerizadas</td></tr>
+<tr><td><strong>ECS + EC2</strong></td><td>Medio (hosts + containers)</td><td>Cluster + Service scaling</td><td>Custo do EC2 base</td><td>Workloads pesados, custo otimizado</td></tr>
+<tr><td><strong>App Runner</strong></td><td>Zero</td><td>Automática</td><td>~$5/mês mínimo</td><td>MVPs, APIs simples, startups</td></tr>
+</table>
+</div>
+
+<!-- ═══ STORAGE ═══ -->
+<h3>Storage — Armazenamento</h3>
+
+<h4>S3 — Simple Storage Service</h4>
+<p>Armazenamento de objetos virtualmente ilimitado. É o serviço mais fundamental da AWS — quase tudo se integra com S3. Durabilidade de <strong>99.999999999% (11 noves)</strong>.</p>
+
+<ul>
+<li><strong>S3 Standard:</strong> acesso frequente, baixa latência. Para assets, uploads de usuários, backups ativos</li>
+<li><strong>S3 Infrequent Access (IA):</strong> 45% mais barato, custo por acesso. Para backups mensais, logs antigos</li>
+<li><strong>S3 Glacier Instant Retrieval:</strong> 68% mais barato que Standard, acesso em milissegundos. Para arquivos acessados 1x/trimestre</li>
+<li><strong>S3 Glacier Flexible:</strong> minutos a horas de retrieval. Para compliance, dados legais</li>
+<li><strong>S3 Glacier Deep Archive:</strong> o mais barato (~$1/TB/mês), 12h de retrieval. Para backups de longo prazo</li>
+</ul>
+
+<p><strong>Lifecycle Policies:</strong> regras automáticas para mover objetos entre classes. Ex: após 30 dias mova para IA, após 90 dias mova para Glacier, após 365 dias delete.</p>
+
+<p><strong>Versioning:</strong> mantém todas as versões de um objeto. Protege contra deleção acidental. Combinado com lifecycle policies, pode deletar versões antigas automáticamente.</p>
+
+<p><strong>Pre-signed URLs:</strong> gere URLs temporárias que permitem upload/download direto ao S3 sem expor credenciais. Essencial para upload de arquivos em apps web.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Upload seguro com Pre-Signed URL</span>
+<span class="kw">import</span> { S3Client, PutObjectCommand } <span class="kw">from</span> <span class="str">'@aws-sdk/client-s3'</span>;
+<span class="kw">import</span> { getSignedUrl } <span class="kw">from</span> <span class="str">'@aws-sdk/s3-request-presigner'</span>;
+
+<span class="kw">const</span> s3 = <span class="kw">new</span> <span class="tp">S3Client</span>({ region: <span class="str">'us-east-1'</span> });
+
+<span class="cm">// Backend: gera URL de upload temporária (expira em 5 min)</span>
+<span class="kw">async function</span> <span class="fn">generateUploadUrl</span>(
+  fileName: <span class="tp">string</span>,
+  contentType: <span class="tp">string</span>,
+): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+  <span class="kw">const</span> command = <span class="kw">new</span> <span class="tp">PutObjectCommand</span>({
+    Bucket: <span class="str">'my-app-uploads'</span>,
+    Key: <span class="str">`uploads/${</span><span class="fn">Date</span>.<span class="fn">now</span>()<span class="str">}-${fileName}`</span>,
+    ContentType: contentType,
+    <span class="cm">// Metadata para rastreamento</span>
+    Metadata: { <span class="str">'uploaded-by'</span>: <span class="str">'api'</span> },
+  });
+
+  <span class="kw">return</span> <span class="fn">getSignedUrl</span>(s3, command, { expiresIn: <span class="num">300</span> });
+}
+
+<span class="cm">// Frontend: usa a URL para upload direto (sem passar pelo backend)</span>
+<span class="kw">async function</span> <span class="fn">uploadFile</span>(file: <span class="tp">File</span>) {
+  <span class="cm">// 1. Pede URL ao backend</span>
+  <span class="kw">const</span> { uploadUrl } = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/upload-url'</span>, {
+    method: <span class="str">'POST'</span>,
+    body: JSON.<span class="fn">stringify</span>({
+      fileName: file.name,
+      contentType: file.type,
+    }),
+  }).<span class="fn">then</span>(r => r.<span class="fn">json</span>());
+
+  <span class="cm">// 2. Upload direto ao S3 (sem trafegar pelo backend)</span>
+  <span class="kw">await</span> <span class="fn">fetch</span>(uploadUrl, {
+    method: <span class="str">'PUT'</span>,
+    body: file,
+    headers: { <span class="str">'Content-Type'</span>: file.type },
+  });
+}</code></pre>
+
+<h4>EBS — Elastic Block Store</h4>
+<p>Discos persistentes para EC2. Como um HD/SSD virtual que você anexa a uma instância.</p>
+<ul>
+<li><strong>gp3:</strong> SSD de usó geral, 3000 IOPS baseline, 125 MB/s. Para maioria dos workloads</li>
+<li><strong>io2:</strong> SSD de alta performance, até 64000 IOPS. Para bancos de dados de alta demanda</li>
+</ul>
+
+<h4>EFS — Elastic File System</h4>
+<p>Sistema de arquivos NFS compartilhado entre múltiplas instâncias EC2 ou containers. Auto-escala automáticamente. Ideal para CMS, processamento de midias, shared configs.</p>
+
+<!-- ═══ DATABASE ═══ -->
+<h3>Database — Bancos de Dados Gerenciados</h3>
+
+<h4>RDS — Relational Database Service</h4>
+<p>Bancos de dados relacionais gerenciados: PostgreSQL, MySQL, MariaDB, Oracle, SQL Server. A AWS cuida de patches, backups, failover.</p>
+
+<ul>
+<li><strong>Multi-AZ:</strong> réplica síncrona em outra Availability Zone. Failover automático em &lt;60s. Para produção</li>
+<li><strong>Read Réplicas:</strong> até 5 réplicas assíncronas para distribuir leitura. Cross-region possível</li>
+<li><strong>Parameter Groups:</strong> configuração do engine (ex: max_connections, shared_buffers do PostgreSQL)</li>
+</ul>
+
+<h4>Aurora — MySQL/PostgreSQL Turbinados</h4>
+<p>Engine proprietário da AWS, compatível com MySQL e PostgreSQL. <strong>Até 5x mais rápido que MySQL e 3x mais rápido que PostgreSQL</strong> standard. Storage auto-escala até 128TB.</p>
+
+<ul>
+<li><strong>Aurora Serverless v2:</strong> escala automáticamente de 0.5 a 128 ACUs (Aurora Capacity Units). Ideal para workloads imprevisiveis — você paga pelo que usa</li>
+<li><strong>Global Database:</strong> réplica cross-region com &lt;1s de latência. Para apps globais com RPO de ~1s</li>
+</ul>
+
+<h4>DynamoDB — NoSQL Serverless</h4>
+<p>Banco de dados key-value e document store totalmente gerenciado. Latência single-digit milissegundos em qualquer escala. É o banco NoSQL mais popular da AWS.</p>
+
+<ul>
+<li><strong>Single-Table Design:</strong> padrão recomendado — armazenar múltiplas entidades na mesma tabela usando PK/SK compostos. Ex: <code>PK=USER#123</code> <code>SK=ORDER#456</code></li>
+<li><strong>GSI (Global Secondary Index):</strong> índice com PK/SK diferentes, permite queries por outros atributos. Custa armazenamento e WCU adicionais</li>
+<li><strong>LSI (Local Secondary Index):</strong> mesmo PK da tabela, SK diferente. Deve ser criado na criação da tabela</li>
+<li><strong>On-Demand:</strong> pague por request ($1.25 por milhão de writes). Para tráfego imprevisível</li>
+<li><strong>Provisioned:</strong> defina RCU/WCU. Mais barato para tráfego previsível, com auto-scaling</li>
+<li><strong>DAX (DynamoDB Accelerator):</strong> cache in-memory na frente do DynamoDB. Latência de microsegundos. Para leituras intensivas</li>
+</ul>
+
+<h4>ElastiCache</h4>
+<ul>
+<li><strong>Redis:</strong> estruturas de dados ricas (strings, hashes, lists, sets, sorted sets), pub/sub, persistência. Para caching, sessions, leaderboards, raté limiting</li>
+<li><strong>Memcached:</strong> cache simples key-value, multi-thread. Para caching puro sem persistência</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<tr><th>Serviço</th><th>Tipo</th><th>Latência</th><th>Escala Max</th><th>Ideal Para</th></tr>
+<tr><td><strong>RDS PostgreSQL</strong></td><td>Relacional</td><td>~5ms</td><td>64 vCPU, 512GB RAM</td><td>CRUD apps, joins complexos, ACID</td></tr>
+<tr><td><strong>Aurora Serverless</strong></td><td>Relacional</td><td>~3ms</td><td>128 ACUs, 128TB</td><td>Tráfego variável, auto-scale</td></tr>
+<tr><td><strong>DynamoDB</strong></td><td>NoSQL (KV/Doc)</td><td>&lt;5ms</td><td>Virtualmente ilimitado</td><td>Alta escala, access patterns definidos</td></tr>
+<tr><td><strong>ElastiCache Redis</strong></td><td>In-Memory</td><td>&lt;1ms</td><td>500 nodes cluster</td><td>Cache, sessions, real-time</td></tr>
+<tr><td><strong>Neptune</strong></td><td>Graph</td><td>~10ms</td><td>64 vCPU</td><td>Social networks, fraud detection</td></tr>
+</table>
+</div>
+
+<!-- ═══ MESSAGING ═══ -->
+<h3>Messaging — Filas e Eventos</h3>
+<p>Serviços de mensageria são a cola que conecta microservices. Eles <strong>desacoplam</strong> produtores de consumidores, permitindo que cada parte escale independentemente e tolerem falhas.</p>
+
+<h4>SQS — Simple Queue Service</h4>
+<p>Fila de mensagens totalmente gerenciada. O serviço de mensageria mais simples e confiável da AWS.</p>
+
+<ul>
+<li><strong>Standard Queue:</strong> throughput quase ilimitado, best-effort ordering, at-least-once delivery. Pode duplicar mensagens (design para idempotência)</li>
+<li><strong>FIFO Queue:</strong> exatamente-uma-vez, ordem garantida. Limite de 300 msg/s (3000 com batching). Para transações financeiras, pipelines ordenados</li>
+<li><strong>Visibility Timeout:</strong> quando um consumidor pega uma mensagem, ela fica "invisível" por N segundos. Se não for deletada (processada), volta a fila. Default: 30s</li>
+<li><strong>Dead Letter Queue (DLQ):</strong> mensagens que falharam N vezes são movidas para uma fila separada para análise. Configure <code>maxReceiveCount</code></li>
+</ul>
+
+<h4>SNS — Simple Notification Service</h4>
+<p>Pub/Sub gerenciado. Um tópico recebe mensagens é as distribui para <strong>múltiplos subscribers</strong> simultaneamente.</p>
+
+<ul>
+<li><strong>Fan-out Pattern:</strong> SNS tópico &rarr; múltiplas SQS queues. Cada queue processa independentemente. Ex: pedido criado &rarr; notifica estoque, financeiro, email</li>
+<li><strong>Message Filtering:</strong> cada subscriber recebe apenas mensagens que correspondem ao seu filtro. Evita processamento desnecessário</li>
+</ul>
+
+<h4>EventBridge — Event Bus</h4>
+<p>Bus de eventos serverless com roteamento baseado em regras. Mais poderosó que SNS para integração entre serviços e SaaS.</p>
+
+<ul>
+<li><strong>Event Rules:</strong> roteie eventos baseado em pattern matching do JSON. Ex: quando <code>source=orders</code> é <code>status=completed</code> é <code>total>100</code>, envie para Lambda</li>
+<li><strong>Schema Registry:</strong> descobre e registra automáticamente o schema dos eventos que trafegam no bus</li>
+<li><strong>Integrações:</strong> 35+ targets nativos (Lambda, SQS, Step Functions, API Gateway, etc)</li>
+</ul>
+
+<h4>Kinesis — Streaming de Dados</h4>
+<p>Processamento de streams de dados em tempo real. Para cenários de <strong>alta vazao e baixa latência</strong> onde SQS não é suficiente.</p>
+
+<ul>
+<li><strong>Shards:</strong> cada shard processa 1MB/s de input e 2MB/s de output. Escale adicionando shards</li>
+<li><strong>Kinesis Data Streams:</strong> stream customizavel, até 7 dias de retenção</li>
+<li><strong>Kinesis Data Firehose:</strong> entrega automática para S3, Redshift, OpenSearch. Zero código</li>
+</ul>
+
+<h4>Padrão: Fan-Out com SNS + SQS</h4>
+<div class="diagram">
+<div class="diagram-box green">Produtor<br><small>(API/Lambda)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">SNS Topic<br><small>(Pedido Criado)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">SQS Estoque<br>SQS Financeiro<br>SQS Email</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Consumers<br><small>(Lambda/ECS)</small></div>
+</div>
+
+<!-- ═══ NETWORKING ═══ -->
+<h3>Networking — Rede e Conectividade</h3>
+
+<h4>VPC — Virtual Privaté Cloud</h4>
+<p>Sua rede privada isolada dentro da AWS. Todo recursó que você cria (EC2, RDS, Lambda em VPC) vive dentro de uma VPC. É o alicerce da segurança de rede.</p>
+
+<ul>
+<li><strong>Public Subnet:</strong> tem rota para Internet Gateway. Para ALBs, bastion hosts, NAT Gateways</li>
+<li><strong>Privaté Subnet:</strong> sem acesso direto a internet. Para RDS, ECS tasks, Lambda. Acessa internet via NAT Gateway</li>
+<li><strong>NAT Gateway:</strong> permite que recursos em privaté subnets acessem a internet (ex: baixar pacotes npm) sem serem acessíveis de fora. Custa ~$32/mês + tráfego</li>
+<li><strong>Internet Gateway:</strong> porta de entrada/saída da internet para a VPC. Gratuito (paga só tráfego)</li>
+<li><strong>VPC Peering:</strong> conecta duas VPCs diretamente (mesmo ou diferente account/region). Sem transitive routing</li>
+<li><strong>Transit Gateway:</strong> hub central que conecta múltiplas VPCs e redes on-premises. Para arquiteturas complexas</li>
+</ul>
+
+<h4>Diagrama: VPC com Public e Privaté Subnets</h4>
+<div class="diagram">
+<div class="diagram-box cyan">Internet</div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box green">Internet Gateway</div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box blue">Public Subnet<br><small>ALB / NAT GW</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box purple">Privaté Subnet<br><small>ECS / RDS / Lambda</small></div>
+</div>
+
+<h4>Route 53 — DNS Gerenciado</h4>
+<p>Serviço de DNS com 100% de SLA de disponibilidade. Não é apenas DNS — é também health checker e traffic router.</p>
+
+<ul>
+<li><strong>Simple Routing:</strong> um domínio &rarr; um recursó (IP/ALB). Para apps simples</li>
+<li><strong>Weighted Routing:</strong> distribui tráfego por peso. Ex: 90% para v1, 10% para v2. Para canary deploys</li>
+<li><strong>Latency Routing:</strong> envia usuário para a região com menor latência. Para apps globais</li>
+<li><strong>Failover Routing:</strong> redireciona para secondary se primary falhar (health check). Para DR</li>
+<li><strong>Geolocation Routing:</strong> direciona por localização geografica. Para compliance (dados na UE ficam na UE)</li>
+</ul>
+
+<h4>CloudFront — CDN</h4>
+<p>Content Delivery Network global com 450+ pontos de presença. Acelera a entrega de conteúdo estático e dinâmico.</p>
+
+<ul>
+<li><strong>Behaviors:</strong> regras por path pattern. Ex: <code>/api/*</code> &rarr; origin ALB, <code>/static/*</code> &rarr; origin S3, <code>/*</code> &rarr; origin S3 (SPA)</li>
+<li><strong>Origins:</strong> S3, ALB, API Gateway, Lambda@Edge, custom HTTP server</li>
+<li><strong>Cache Inválidation:</strong> force a atualização de conteúdo no cache. <code>/*</code> inválida tudo (custa $0.005/path)</li>
+</ul>
+
+<h4>ALB vs NLB</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Caracteristica</th><th>ALB (Application)</th><th>NLB (Network)</th></tr>
+<tr><td><strong>Camada OSI</strong></td><td>Layer 7 (HTTP/HTTPS)</td><td>Layer 4 (TCP/UDP)</td></tr>
+<tr><td><strong>Roteamento</strong></td><td>Path, host, headers, query</td><td>IP, porta</td></tr>
+<tr><td><strong>Latência</strong></td><td>~100ms adicionais</td><td>~microsegundos adicionais</td></tr>
+<tr><td><strong>Custo</strong></td><td>~$20/mês + LCU</td><td>~$20/mês + NLCU</td></tr>
+<tr><td><strong>Ideal Para</strong></td><td>APIs REST, microservices, WebSocket</td><td>Gaming, IoT, gRPC, IP fixo</td></tr>
+</table>
+</div>
+
+<!-- ═══ SECURITY ═══ -->
+<h3>Security — Segurança e Identidade</h3>
+
+<h4>IAM — Identity and Access Management</h4>
+<p>O sistema de controle de acesso da AWS. <strong>Todo request a AWS passa pelo IAM</strong>. Entender IAM e pre-requisito para usar qualquer serviço AWS com segurança.</p>
+
+<ul>
+<li><strong>Users:</strong> identidades humanas com credenciais. Use MFA sempre. Nunca use o root account no dia a dia</li>
+<li><strong>Roles:</strong> identidades para serviços AWS (EC2, Lambda, ECS). Credenciais temporárias automáticas. <strong>Prefira roles a access keys</strong></li>
+<li><strong>Policies:</strong> documentos JSON que definem permissões. Efeito (Allow/Deny), Ação (s3:GetObject), Recursó (arn:aws:s3:::bucket/*)</li>
+<li><strong>Assume Role:</strong> um serviço ou usuário assume temporáriamente as permissões de outro role. Ex: Lambda assume role com acesso ao S3</li>
+<li><strong>Least Privilege:</strong> de apenas as permissões mínimas necessárias. Comece com zero e adicione conforme precisa</li>
+</ul>
+
+<pre data-lang="json"><code><span class="cm">// Exemplo: IAM Policy — mínimo privilégio para Lambda acessar S3 e DynamoDB</span>
+{
+  <span class="str">"Version"</span>: <span class="str">"2012-10-17"</span>,
+  <span class="str">"Statement"</span>: [
+    {
+      <span class="str">"Effect"</span>: <span class="str">"Allow"</span>,
+      <span class="str">"Action"</span>: [
+        <span class="str">"s3:GetObject"</span>,
+        <span class="str">"s3:PutObject"</span>
+      ],
+      <span class="str">"Resource"</span>: <span class="str">"arn:aws:s3:::my-app-uploads/*"</span>
+    },
+    {
+      <span class="str">"Effect"</span>: <span class="str">"Allow"</span>,
+      <span class="str">"Action"</span>: [
+        <span class="str">"dynamodb:GetItem"</span>,
+        <span class="str">"dynamodb:PutItem"</span>,
+        <span class="str">"dynamodb:Query"</span>
+      ],
+      <span class="str">"Resource"</span>: <span class="str">"arn:aws:dynamodb:us-east-1:123456:table/Orders"</span>
+    }
+  ]
+}</code></pre>
+
+<h4>Cognito</h4>
+<ul>
+<li><strong>User Pools:</strong> serviço de autenticação completo (sign-up, sign-in, MFA, OAuth2/OIDC). Substitui o "auth from scratch". Gera JWTs</li>
+<li><strong>Identity Pools:</strong> troca tokens de User Pools (ou Google/Facebook) por credenciais AWS temporárias. Permite frontend acessar S3/DynamoDB diretamente</li>
+</ul>
+
+<h4>KMS — Key Management Service</h4>
+<ul>
+<li><strong>Customer Managed Keys (CMK):</strong> chaves de criptografia que você controla. Rotação automática anual</li>
+<li><strong>Envelope Encryption:</strong> KMS gera uma Data Key &rarr; Data Key encripta seus dados &rarr; KMS encripta a Data Key. Assim, dados grandes não passam pelo KMS (limite de 4KB)</li>
+</ul>
+
+<h4>Secrets Manager</h4>
+<p>Armazena e rotaciona segredos (senhas de DB, API keys, tokens). Rotação automática a cada N dias para RDS. <strong>Nunca hardcode credenciais — use Secrets Manager.</strong></p>
+
+<h4>WAF e Shield</h4>
+<ul>
+<li><strong>WAF (Web Application Firewall):</strong> filtra tráfego HTTP na frente de CloudFront/ALB. Regras para bloquear SQL injection, XSS, raté limiting por IP</li>
+<li><strong>Shield Standard:</strong> proteção DDoS gratuita e automática para CloudFront e Route 53</li>
+<li><strong>Shield Advanced:</strong> proteção DDoS premium com equipe de resposta 24/7 ($3000/mês)</li>
+</ul>
+
+<!-- ═══ MONITORING ═══ -->
+<h3>Monitoring — Observabilidade</h3>
+
+<h4>CloudWatch</h4>
+<p>O hub central de observabilidade da AWS. Coleta métricas, logs, e permite criar alarmes e dashboards.</p>
+
+<ul>
+<li><strong>Metrics:</strong> dados numéricos ao longo do tempo. Métricas built-in (CPU, rede, erros) + custom metrics (business KPIs)</li>
+<li><strong>Logs:</strong> log groups/streams para centralizar logs de Lambda, ECS, EC2. Insights permite queries com SQL-like syntax</li>
+<li><strong>Alarms:</strong> dispara ações quando métricas cruzam thresholds. Ex: CPU &gt; 80% por 5 min &rarr; SNS &rarr; Slack + Auto Scaling</li>
+<li><strong>Dashboards:</strong> visualização customizada de métricas. Para NOC (Network Operations Center)</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Publicando custom metric no CloudWatch</span>
+<span class="kw">import</span> {
+  CloudWatchClient,
+  PutMetricDataCommand,
+} <span class="kw">from</span> <span class="str">'@aws-sdk/client-cloudwatch'</span>;
+
+<span class="kw">const</span> cw = <span class="kw">new</span> <span class="tp">CloudWatchClient</span>({ region: <span class="str">'us-east-1'</span> });
+
+<span class="kw">async function</span> <span class="fn">trackOrderCreated</span>(total: <span class="tp">number</span>) {
+  <span class="kw">await</span> cw.<span class="fn">send</span>(<span class="kw">new</span> <span class="tp">PutMetricDataCommand</span>({
+    Namespace: <span class="str">'MyApp/Orders'</span>,
+    MetricData: [
+      {
+        MetricName: <span class="str">'OrdersCreated'</span>,
+        Value: <span class="num">1</span>,
+        Unit: <span class="str">'Count'</span>,
+        Dimensions: [
+          { Name: <span class="str">'Environment'</span>, Value: <span class="str">'production'</span> },
+        ],
+      },
+      {
+        MetricName: <span class="str">'OrderTotal'</span>,
+        Value: total,
+        Unit: <span class="str">'None'</span>,
+        Dimensions: [
+          { Name: <span class="str">'Environment'</span>, Value: <span class="str">'production'</span> },
+        ],
+      },
+    ],
+  }));
+}
+
+<span class="cm">// Uso: a cada pedido criado</span>
+<span class="kw">await</span> <span class="fn">trackOrderCreated</span>(<span class="num">149.90</span>);
+<span class="cm">// Agora pode criar alarm: se OrdersCreated < 10 em 1h → alerta</span></code></pre>
+
+<h4>X-Ray — Distributed Tracing</h4>
+<p>Rastreamento de requests entre microservices. Mostra o caminho completo de um request (API Gateway &rarr; Lambda &rarr; DynamoDB) com latência de cada segmento. Essencial para debugar sistemas distribuídos.</p>
+
+<h4>CloudTrail — Audit Log</h4>
+<p>Registra <strong>toda chamada de API feita na sua conta AWS</strong>. Quem fez o que, quando, de onde. Para compliance, segurança, e forense. Ativado por padrão para management events.</p>
+
+<!-- ═══ AI/ML ═══ -->
+<h3>AI/ML — Inteligência Artificial</h3>
+
+<h4>Bedrock</h4>
+<p>Plataforma para acessar modelos fundacionais (Foundation Models) via API gerenciada. <strong>Claude (Anthropic), Llama (Meta), Titan (Amazon), Mistral</strong> — tudo acessível sem gerenciar infraestrutura de GPU.</p>
+
+<ul>
+<li>Pay-per-token pricing (sem instâncias)</li>
+<li>Knowledge Bases para RAG (Retrieval Augmented Generation)</li>
+<li>Guardrails para filtrar conteúdo toxico/sensível</li>
+<li>Fine-tuning de modelos com seus dados</li>
+</ul>
+
+<h4>Outros Serviços de AI</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Serviço</th><th>Função</th><th>Exemplo de Uso</th></tr>
+<tr><td><strong>SageMaker</strong></td><td>Plataforma completa de ML (treinar, deploy, monitorar modelos)</td><td>Treinar modelo de recomendação customizado</td></tr>
+<tr><td><strong>Comprehend</strong></td><td>NLP: sentimento, entidades, idioma, PII detection</td><td>Analisar sentimento de reviews de produto</td></tr>
+<tr><td><strong>Rekognition</strong></td><td>Visao computacional: faces, objetos, texto em imagens</td><td>Moderar imagens de upload de usuários</td></tr>
+<tr><td><strong>Textract</strong></td><td>OCR inteligente: extrai texto e tabelas de documentos</td><td>Processar notas fiscais automáticamente</td></tr>
+<tr><td><strong>Transcribe</strong></td><td>Speech-to-text</td><td>Transcrever calls de atendimento</td></tr>
+<tr><td><strong>Polly</strong></td><td>Text-to-speech com vozes naturais</td><td>Gerar audio de artigos para acessibilidade</td></tr>
+</table>
+</div>
+
+<!-- ═══ COST ═══ -->
+<h3>Cost Optimization — Otimização de Custos</h3>
+<p>A AWS e pay-as-you-go — mas sem controle, a conta cresce rápido. Otimização de custos é uma skill que todo dev deveria ter.</p>
+
+<div class="card">
+<div class="card-title">Estratégias de Economia</div>
+<ul>
+<li><strong>Reserved Instances / Savings Plans:</strong> compromisso de 1-3 anós para workloads estáveis. Savings Plans são mais flexíveis (aplicam a EC2, Fargate, Lambda)</li>
+<li><strong>Spot Instances:</strong> até 90% de desconto para workloads tolerantes a interrupção. CI/CD runners, batch processing, training de ML</li>
+<li><strong>Right-Sizing:</strong> use Cost Explorer para identificar instâncias subútilizadas. Uma t3.large rodando a 5% de CPU deveria ser t3.small</li>
+<li><strong>S3 Lifecycle Policies:</strong> mova dados antigos para classes mais baratas automáticamente</li>
+<li><strong>NAT Gateway:</strong> um dos custos mais sorrateiros (~$32/mês + $0.045/GB). Use VPC Endpoints para S3/DynamoDB (gratis) ao inves de trafegar pelo NAT</li>
+<li><strong>Reserved Capacity:</strong> DynamoDB, ElastiCache, RDS — tudo oferece desconto por compromisso</li>
+</ul>
+</div>
+
+<div class="card blue">
+<div class="card-title">Ferramentas de Controle</div>
+<ul>
+<li><strong>Cost Explorer:</strong> dashboard visual de gastos. Filtre por serviço, tag, region. Mostra projecao do mês</li>
+<li><strong>Budgets:</strong> defina limites de gasto. Alerta quando atingir 50%, 80%, 100% do budget</li>
+<li><strong>Trusted Advisor:</strong> recomendações automáticas de economia, segurança, performance. Versão free: checks básicos; Business/Enterprise: checks completos</li>
+<li><strong>Cost Allocation Tags:</strong> tagueie recursos por projeto/equipe/ambiente. Essencial para saber QUEM está gastando o que</li>
+</ul>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> configure um AWS Budget com alerta por email no PRIMEIRO DIA. Defina $50 para ambiente de estudo. Muita gente só descobre o gasto na fatura — é a surpresa vem em dolar.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Web App de Produção na AWS</h3>
+<p><strong>Cenário:</strong> Arquitete uma aplicação web full-stack para produção — frontend React, backend API (Node.js), banco relacional, cache, storage de arquivos. Precisa ser segura, escalável, e com custo controlado.</p>
+
+<h4>Diagrama da Arquitetura</h4>
+<div class="diagram">
+<div class="diagram-box cyan">Route 53<br><small>DNS + Health Check</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box green">CloudFront<br><small>CDN + S3 (React SPA)</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box blue">ALB<br><small>Public Subnet</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box purple">ECS Fargate<br><small>Privaté Subnet</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box orange">Aurora PostgreSQL<br><small>Privaté Subnet</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box purple">ECS Fargate</div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box red">ElastiCache Redis<br><small>Session + Cache</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box purple">ECS Fargate</div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box green">S3 Bucket<br><small>Uploads de usuários</small></div>
+</div>
+
+<p><strong>Decisões arquiteturais:</strong></p>
+<ul>
+<li><strong>Frontend:</strong> React SPA no S3 + CloudFront. Cache global, inválidation no deploy. Custo quase zero</li>
+<li><strong>Backend:</strong> ECS Fargaté em privaté subnet. Auto-scaling por CPU (target 70%). Sem gerenciar EC2</li>
+<li><strong>Database:</strong> Aurora PostgreSQL Serverless v2 para escala automática. Multi-AZ para alta disponibilidade</li>
+<li><strong>Cache:</strong> ElastiCache Redis para sessions (evita sticky sessions no ALB) e cache de queries frequentes</li>
+<li><strong>Storage:</strong> S3 com pre-signed URLs. Frontend faz upload direto (não passa pelo backend)</li>
+<li><strong>Rede:</strong> VPC com public subnets (ALB, NAT Gateway) e privaté subnets (Fargate, RDS, Redis)</li>
+<li><strong>DNS:</strong> Route 53 com failover routing + health checks no ALB</li>
+<li><strong>Segurança:</strong> WAF no CloudFront, IAM roles por serviço (least privilege), Secrets Manager para credenciais de DB</li>
+</ul>
+
+<div class="card orange">
+<div class="card-title">Estimativa de Custo Mensal (região us-east-1)</div>
+<ul>
+<li>CloudFront + S3: ~$5 (para tráfego moderado)</li>
+<li>ALB: ~$20 + LCU</li>
+<li>Fargaté (2 tasks, 0.5 vCPU, 1GB): ~$30</li>
+<li>Aurora Serverless v2 (mínimo): ~$45</li>
+<li>ElastiCache (cache.t3.micro): ~$13</li>
+<li>NAT Gateway: ~$32 + tráfego</li>
+<li>Route 53: ~$1 por hosted zone</li>
+<li><strong>Total estimado: ~$150-200/mês</strong></li>
+</ul>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Over-provisioning:</strong> rodar t3.xlarge para um CRUD com 10 usuários. Comece pequeno (t3.micro ou Fargaté mínimo) e escale sob demanda. A beleza da cloud é que você pode escalar em minutos.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Sem alertas de custo:</strong> "Descobri que gastei $2000 quando veio a fatura." Configure AWS Budgets no primeiro dia. Alerta em 50%, 80%, e 100% do limite. Custa $0 configurar.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>S3 Bucket público:</strong> expor dados sensíveis por configuração incorreta de ACL/policy. Use block public access por padrão. Se precisa servir conteúdo público, use CloudFront + OAI (Origin Access Identity).</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>IAM Policy com Action: * e Resource: *:</strong> dar permissão total a um serviço porque "e mais fácil". Isso é o equivalente a dar a chave do cofre para todo mundo. Use least privilege — especifique exatamente as ações e recursos.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Sem Multi-AZ em produção:</strong> rodar RDS em single-AZ para "economizar". Quando a AZ cair (e vai cair), seu banco fica offline. Multi-AZ custa ~2x mas garante failover automático em menós de 60 segundos.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>NAT Gateway esquecido:</strong> um dos custos mais sorrateiros da AWS. $32/mês fixo + $0.045 por GB de tráfego. Se seus serviços em privaté subnet fazem muitas chamadas externas, o custo de NAT pode superar o custo do compute. Use VPC Endpoints para S3/DynamoDB.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Checklist de produção AWS:</strong> Multi-AZ habilitado, backups automáticos configurados, alertas de custo ativos, IAM com least privilege, encryption at rest habilitada, VPC com privaté subnets, WAF ativo, CloudTrail ligado.</div>
+</div>
+
+<!-- ═══ EXERCICIOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Sua API recebe tráfego muito variável — 10 req/s durante o dia e 0 a noite. Você precisa de banco relacional. Qual combinação de compute + database você escolheria é por que?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> <strong>Lambda (ou App Runner) + Aurora Serverless v2.</strong> Lambda escala automáticamente para 0 quando sem tráfego (custo zero a noite). Aurora Serverless v2 reduz até 0.5 ACU quando ocioso. Alternativa: Fargaté com escala mínima de 0 tasks (auto-scaling por request count). Essa combinação minimiza custo em períodos de ociosidade sem sacrificar performance durante picos. Evite EC2 + RDS provisionado — você pagaria 24/7 por capacidade usada apenas 12h/dia.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu e-commerce processa pedidos e precisa notificar simultaneamente: o serviço de estoque, o serviço financeiro, é o serviço de email. Como você arquitetaria isso?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> <strong>Fan-out com SNS + SQS.</strong> O serviço de pedidos pública no SNS topic "OrderCreated". Três SQS queues subscritas no topic: sqs-estoque, sqs-financeiro, sqs-email. Cada consumer processa independentemente. Se o serviço de email falhar, os outros não são afetados. Cada fila tem sua DLQ para mensagens que falham repetidamente. Use SQS FIFO se a ordem de processamento importar (ex: financeiro). Não use chamadas HTTP diretas entre serviços — acoplamento forte e falha em cascata.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você tem uma IAM Policy com Action: "s3:*" e Resource: "*". Quais são os riscos é como você corrigiria?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> <strong>Riscos:</strong> o serviço pode ler/deletar QUALQUER bucket na conta, incluindo backups, logs, e dados de outros projetos. Se comprometido, atacante tem acesso total ao S3. <strong>Correcao:</strong> (1) Especifique apenas as ações necessárias: <code>"Action": ["s3:GetObject", "s3:PutObject"]</code>. (2) Restrinjá ao bucket específico: <code>"Resource": "arn:aws:s3:::my-app-uploads/*"</code>. (3) Adicione condições se possível: <code>"Condition": {"StringEquals": {"s3:prefix": "uploads/"}}</code>. O princípio e <strong>least privilege</strong> — o mínimo necessário para funcionar.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — AWS Serviços Essenciais</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="23-api-design-versionamento.html">&#8592; API Design e Versionamento</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="25-containers-kubernetes.html" class="primary">Próximo: Containers e Kubernetes &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 24: AWS Serviços Essenciais
+// ══════════════════════════════════════════
+const SECTION_NUM = 24;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual serviço de compute da AWS é ideal para funções curtas (< 15 min) com tráfego imprevisível é que escala automáticamente para zero?",
+    options: [
+      "EC2 com Auto Scaling",
+      "Lambda",
+      "ECS com Fargate",
+      "App Runner"
+    ],
+    correct: 1,
+    explanation: "Lambda é o serviço serverless que escala automáticamente de 0 a milhares de execuções, cobra por milissegundo de execução, e tem limite de 15 minutos por invocação. Ideal para event-driven workloads."
+  },
+  {
+    question: "Você precisa armazenar backups que são acessados apenas uma vez por ano para compliance. Qual classe de storage S3 oferece o menor custo?",
+    options: [
+      "S3 Standard",
+      "S3 Infrequent Access",
+      "S3 Glacier Flexible Retrieval",
+      "S3 Glacier Deep Archive"
+    ],
+    correct: 3,
+    explanation: "S3 Glacier Deep Archive é a classe mais barata (~$1/TB/mês), com tempo de retrieval de até 12 horas. Ideal para dados que raramente são acessados e podem esperar horas para restauracao."
+  },
+  {
+    question: "Qual padrão arquitetural permite que um evento (ex: pedido criado) notifique múltiplos consumidores simultaneamente e de forma desacoplada?",
+    options: [
+      "SQS Standard Queue com multiple consumers",
+      "SNS Fan-Out com SQS subscribers",
+      "Kinesis Data Streams com shards",
+      "EventBridge com schema registry"
+    ],
+    correct: 1,
+    explanation: "O padrão Fan-Out usa SNS para publicar o evento e múltiplas SQS queues como subscribers. Cada queue recebe uma cópia da mensagem e processa independentemente. Se um consumer falhar, os outros não são afetados."
+  },
+  {
+    question: "Qual é a diferença principal entre SQS Standard e SQS FIFO?",
+    options: [
+      "Standard tem limite de 300 msg/s, FIFO e ilimitado",
+      "FIFO garante exatamente-uma-vez e ordem, Standard oferece at-least-once e best-effort ordering",
+      "Standard armazena por 4 dias, FIFO por 14 dias",
+      "FIFO suporta Dead Letter Queue, Standard não"
+    ],
+    correct: 1,
+    explanation: "SQS Standard oferece throughput quase ilimitado com at-least-once delivery e best-effort ordering. FIFO garante exatamente-uma-vez (exactly-once) e ordem estrita, mas limitado a 300 msg/s (3000 com batching)."
+  },
+  {
+    question: "Em uma VPC, onde devem ficar os bancos de dados RDS é os containers ECS de uma aplicação de produção?",
+    options: [
+      "Public subnet com Security Group restritivo",
+      "Privaté subnet, acessíveis apenas via ALB na public subnet",
+      "Fora da VPC, usando endpoints públicos com IAM",
+      "Public subnet com NAT Gateway na frente"
+    ],
+    correct: 1,
+    explanation: "Bancos de dados e containers de aplicação devem ficar em privaté subnets (sem rota direta para internet). O ALB fica na public subnet e roteia tráfego para os containers. RDS nunca deve ser exposto a internet diretamente."
+  },
+  {
+    question: "Qual serviço da AWS registra TODA chamada de API feita na sua conta para auditoria e compliance?",
+    options: [
+      "CloudWatch Logs",
+      "X-Ray",
+      "CloudTrail",
+      "Config"
+    ],
+    correct: 2,
+    explanation: "CloudTrail registra cada chamada de API na sua conta AWS — quem fez, quando, de qual IP, qual recursó foi afetado. É o serviço de auditoria. CloudWatch Logs armazena logs de aplicação, não de API calls da AWS."
+  },
+  {
+    question: "Qual abordagem de IAM segue o princípio de least privilege?",
+    options: [
+      "Action: 's3:*', Resource: '*' — cobertura total",
+      "Action: ['s3:GetObject', 's3:PutObject'], Resource: 'arn:aws:s3:::my-bucket/*'",
+      "Usar o root account com MFA habilitado",
+      "Criar um admin user para cada desenvolvedor"
+    ],
+    correct: 1,
+    explanation: "Least privilege significa conceder apenas as permissões mínimas necessárias. Especificar exatamente as ações (GetObject, PutObject) é o recursó específico (bucket/path) garante que o serviço só pode fazer o que realmente precisa."
+  },
+  {
+    question: "Você tem uma Lambda que sofre com cold starts de 3 segundos em horarios de pico. Qual feature da AWS resolve isso?",
+    options: [
+      "Lambda Layers",
+      "Lambda@Edge",
+      "Provisioned Concurrency",
+      "Reserved Concurrency"
+    ],
+    correct: 2,
+    explanation: "Provisioned Concurrency mantém N instâncias da Lambda 'quentes' (pre-inicializadas), eliminando cold starts. Lambda Layers são para compartilhar bibliotecas. Reserved Concurrency limita concorrência máxima, não previne cold start."
+  },
+  {
+    question: "Qual serviço da AWS permite acessar modelos de IA como Claude (Anthropic) e Llama (Meta) via API gerenciada, sem gerenciar GPUs?",
+    options: [
+      "SageMaker",
+      "Comprehend",
+      "Bedrock",
+      "Rekognition"
+    ],
+    correct: 2,
+    explanation: "Amazon Bedrock é a plataforma que oferece acesso a Foundation Models (Claude, Llama, Titan, Mistral) via API pay-per-token. SageMaker e para treinar e hospedar seus próprios modelos. Comprehend e para NLP específico (sentimento, entidades)."
+  },
+  {
+    question: "Qual é o custo mais sorrateiro (frequentemente esquecido) em arquiteturas AWS com privaté subnets?",
+    options: [
+      "CloudFront inválidation fees",
+      "NAT Gateway ($32/mês fixo + $0.045/GB de tráfego)",
+      "Route 53 health checks",
+      "S3 PUT request charges"
+    ],
+    correct: 1,
+    explanation: "NAT Gateway tem custo fixo de ~$32/mês MAIS $0.045 por GB de tráfego que passa por ele. Em arquiteturas com muitas chamadas externas de privaté subnets, o custo pode superar o compute. Use VPC Endpoints para S3/DynamoDB para evitar tráfego pelo NAT."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina os serviços essenciais da AWS.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>58 — Mobile Development | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="57-acessibilidade-a11y.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>58</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="59-low-level-systems-wasm.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:87.9%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 58</span>
+<h2>Mobile Development</h2>
+<div class="section-line"></div>
+
+<p>Desenvolvimento mobile moderno vai muito além de "fazer um app". Com React Native e Flutter dominando o mercado cross-platform, um dev full-stack precisa entender <strong>arquiteturas mobile-first</strong>, <strong>offline-first</strong>, <strong>push notifications</strong>, <strong>lifecycle de apps</strong> é as diferenças fundamentais entre desenvolver para web vs mobile. O ecossistema mobile tem suas proprias regras — e ignora-las custa caro (literálmente: Apple e Google podem rejeitar seu app).</p>
+
+<p>Nesta seção cobrimos as duas principais plataformas cross-platform (React Native e Flutter), padrões arquiteturais específicos para mobile, estratégias offline-first com sync, push notifications, e o pipeline completo de deploy até as app stores.</p>
+
+<!-- ═══ REACT NATIVE ═══ -->
+<h3>1. React Native</h3>
+
+<p>React Native permite construir apps nativos usando React e JavaScript/TypeScript. A grande mudança recente é a <strong>New Architecture</strong>, que elimina o antigo Bridge assíncrono e introduz comunicação síncrona entre JS e nativo.</p>
+
+<h4>1.1 New Architecture (Fabric + TurboModules + JSI)</h4>
+
+<p>A arquitetura antiga do React Native usava um <strong>Bridge</strong> — uma ponte assíncrona que serializava dados em JSON entre o thread JavaScript é o thread nativo. Isso causava gargalos de performance, especialmente em animacoes e listas longas.</p>
+
+<ul>
+<li><strong>JSI (JavaScript Interface):</strong> Substitui o Bridge. Permite que JavaScript chame funções C++ diretamente, sem serializar JSON. Comúnicação síncrona e ~10x mais rápida</li>
+<li><strong>Fabric:</strong> Novo sistema de renderizacao. Permite renderizacao concorrente (inspirado no React 18 Concurrent Mode) e criação síncrona de shadow nodes</li>
+<li><strong>TurboModules:</strong> Substituem os Native Modules antigos. São lazy-loaded (só carregam quando usados) e usam JSI para comunicação direta com código nativo</li>
+<li><strong>Codegen:</strong> Gera interfaces tipadas automáticamente a partir de specs TypeScript, garantindo type-safety entre JS e nativo</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box red">Old Architecture<br><small>JS → Bridge (JSON) → Native</small></div>
+<div class="diagram-arrow">→</div>
+<div class="diagram-box green">New Architecture<br><small>JS → JSI (C++) → Native</small></div>
+</div>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Bridge (Antigo)</th><th>JSI (Novo)</th></tr>
+<tr><td>Comúnicação</td><td>Assíncrona, JSON serializado</td><td>Sincrona, chamadas C++ diretas</td></tr>
+<tr><td>Performance</td><td>Overhead de serialization</td><td>~10x mais rápido</td></tr>
+<tr><td>Inicializacao</td><td>Todos os modules carregados no startup</td><td>Lazy loading (TurboModules)</td></tr>
+<tr><td>Renderizacao</td><td>Sequencial</td><td>Concorrente (Fabric)</td></tr>
+<tr><td>Type Safety</td><td>Manual, propensó a erros</td><td>Codegen automático</td></tr>
+</table>
+</div>
+
+<h4>1.2 Hermes Engine</h4>
+
+<p>Hermes é o engine JavaScript otimizado para React Native. Diferente do V8 (Chrome) ou JavaScriptCore (Safari), Hermes compila JS para <strong>bytecode em build time</strong>, reduzindo drasticamente o tempo de startup.</p>
+
+<ul>
+<li><strong>AOT Compilation:</strong> JavaScript e compilado para bytecode durante o build, não em runtime</li>
+<li><strong>Startup ~2x mais rápido</strong> comparado com JSC</li>
+<li><strong>Menor usó de memória</strong> — crítico para dispositivos low-end</li>
+<li><strong>Garbage collector otimizado</strong> para mobile (coleta incremental)</li>
+<li>Habilitado por padrão em novos projetos React Native</li>
+</ul>
+
+<h4>1.3 Navigation (React Navigation)</h4>
+
+<p>React Navigation é a biblioteca padrão para navegação em React Native. Oferece diferentes tipos de navigators que podem ser combinados:</p>
+
+<pre data-lang="tsx"><code><span class="cm">// Estrutura tipica de navegação com React Navigation</span>
+<span class="kw">import</span> { <span class="fn">NavigationContainer</span> } <span class="kw">from</span> <span class="str">'@react-navigation/native'</span>;
+<span class="kw">import</span> { <span class="fn">createNativeStackNavigator</span> } <span class="kw">from</span> <span class="str">'@react-navigation/native-stack'</span>;
+<span class="kw">import</span> { <span class="fn">createBottomTabNavigator</span> } <span class="kw">from</span> <span class="str">'@react-navigation/bottom-tabs'</span>;
+
+<span class="cm">// Definir tipos das rotas (type-safe navigation)</span>
+<span class="kw">type</span> <span class="tp">RootStackParamList</span> = {
+  <span class="fn">Home</span>: <span class="tp">undefined</span>;
+  <span class="fn">Profile</span>: { <span class="fn">userId</span>: <span class="tp">string</span> };
+  <span class="fn">Settings</span>: <span class="tp">undefined</span>;
+};
+
+<span class="kw">type</span> <span class="tp">TabParamList</span> = {
+  <span class="fn">Feed</span>: <span class="tp">undefined</span>;
+  <span class="fn">Search</span>: <span class="tp">undefined</span>;
+  <span class="fn">Notifications</span>: <span class="tp">undefined</span>;
+};
+
+<span class="kw">const</span> Stack = <span class="fn">createNativeStackNavigator</span>&lt;<span class="tp">RootStackParamList</span>&gt;();
+<span class="kw">const</span> Tab = <span class="fn">createBottomTabNavigator</span>&lt;<span class="tp">TabParamList</span>&gt;();
+
+<span class="kw">function</span> <span class="fn">TabNavigator</span>() {
+  <span class="kw">return</span> (
+    &lt;<span class="tp">Tab.Navigator</span>
+      <span class="fn">screenOptions</span>={{ <span class="fn">headerShown</span>: <span class="num">false</span> }}
+    &gt;
+      &lt;<span class="tp">Tab.Screen</span> <span class="fn">name</span>=<span class="str">"Feed"</span> <span class="fn">component</span>={<span class="fn">FeedScreen</span>} /&gt;
+      &lt;<span class="tp">Tab.Screen</span> <span class="fn">name</span>=<span class="str">"Search"</span> <span class="fn">component</span>={<span class="fn">SearchScreen</span>} /&gt;
+      &lt;<span class="tp">Tab.Screen</span> <span class="fn">name</span>=<span class="str">"Notifications"</span> <span class="fn">component</span>={<span class="fn">NotificationsScreen</span>} /&gt;
+    &lt;/<span class="tp">Tab.Navigator</span>&gt;
+  );
+}
+
+<span class="kw">export default function</span> <span class="fn">App</span>() {
+  <span class="kw">return</span> (
+    &lt;<span class="tp">NavigationContainer</span>&gt;
+      &lt;<span class="tp">Stack.Navigator</span>&gt;
+        &lt;<span class="tp">Stack.Screen</span> <span class="fn">name</span>=<span class="str">"Home"</span> <span class="fn">component</span>={<span class="fn">TabNavigator</span>} /&gt;
+        &lt;<span class="tp">Stack.Screen</span> <span class="fn">name</span>=<span class="str">"Profile"</span> <span class="fn">component</span>={<span class="fn">ProfileScreen</span>} /&gt;
+        &lt;<span class="tp">Stack.Screen</span> <span class="fn">name</span>=<span class="str">"Settings"</span> <span class="fn">component</span>={<span class="fn">SettingsScreen</span>} /&gt;
+      &lt;/<span class="tp">Stack.Navigator</span>&gt;
+    &lt;/<span class="tp">NavigationContainer</span>&gt;
+  );
+}</code></pre>
+
+<h4>1.4 Componente React Native com Hooks</h4>
+
+<pre data-lang="tsx"><code><span class="cm">// Componente tipico com FlatList performática</span>
+<span class="kw">import</span> { <span class="fn">FlatList</span>, <span class="fn">StyleSheet</span>, <span class="fn">View</span>, <span class="fn">Text</span> } <span class="kw">from</span> <span class="str">'react-native'</span>;
+<span class="kw">import</span> { <span class="fn">useQuery</span> } <span class="kw">from</span> <span class="str">'@tanstack/react-query'</span>;
+<span class="kw">import</span> { <span class="fn">useCallback</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">interface</span> <span class="tp">Product</span> {
+  <span class="fn">id</span>: <span class="tp">string</span>;
+  <span class="fn">name</span>: <span class="tp">string</span>;
+  <span class="fn">price</span>: <span class="tp">number</span>;
+}
+
+<span class="kw">export function</span> <span class="fn">ProductList</span>() {
+  <span class="kw">const</span> { <span class="fn">data</span>, <span class="fn">isLoading</span>, <span class="fn">refetch</span> } = <span class="fn">useQuery</span>({
+    <span class="fn">queryKey</span>: [<span class="str">'products'</span>],
+    <span class="fn">queryFn</span>: () =&gt; <span class="fn">fetch</span>(<span class="str">'/api/products'</span>).<span class="fn">then</span>(<span class="fn">r</span> =&gt; r.<span class="fn">json</span>()),
+  });
+
+  <span class="kw">const</span> <span class="fn">renderItem</span> = <span class="fn">useCallback</span>(
+    ({ <span class="fn">item</span> }: { <span class="fn">item</span>: <span class="tp">Product</span> }) =&gt; (
+      &lt;<span class="tp">View</span> <span class="fn">style</span>={styles.<span class="fn">card</span>}&gt;
+        &lt;<span class="tp">Text</span> <span class="fn">style</span>={styles.<span class="fn">name</span>}&gt;{item.<span class="fn">name</span>}&lt;/<span class="tp">Text</span>&gt;
+        &lt;<span class="tp">Text</span> <span class="fn">style</span>={styles.<span class="fn">price</span>}&gt;R$ {item.<span class="fn">price</span>.<span class="fn">toFixed</span>(<span class="num">2</span>)}&lt;/<span class="tp">Text</span>&gt;
+      &lt;/<span class="tp">View</span>&gt;
+    ), []
+  );
+
+  <span class="kw">return</span> (
+    &lt;<span class="tp">FlatList</span>
+      <span class="fn">data</span>={data}
+      <span class="fn">renderItem</span>={renderItem}
+      <span class="fn">keyExtractor</span>={(<span class="fn">item</span>) =&gt; item.<span class="fn">id</span>}
+      <span class="fn">onRefresh</span>={refetch}
+      <span class="fn">refreshing</span>={isLoading}
+      <span class="fn">initialNumToRender</span>={<span class="num">10</span>}
+      <span class="fn">maxToRenderPerBatch</span>={<span class="num">5</span>}
+      <span class="fn">windowSize</span>={<span class="num">5</span>}
+    /&gt;
+  );
+}
+
+<span class="kw">const</span> styles = <span class="fn">StyleSheet</span>.<span class="fn">create</span>({
+  <span class="fn">card</span>: { <span class="fn">padding</span>: <span class="num">16</span>, <span class="fn">borderBottomWidth</span>: <span class="num">1</span>, <span class="fn">borderColor</span>: <span class="str">'#eee'</span> },
+  <span class="fn">name</span>: { <span class="fn">fontSize</span>: <span class="num">16</span>, <span class="fn">fontWeight</span>: <span class="str">'600'</span> },
+  <span class="fn">price</span>: { <span class="fn">fontSize</span>: <span class="num">14</span>, <span class="fn">color</span>: <span class="str">'#666'</span>, <span class="fn">marginTop</span>: <span class="num">4</span> },
+});</code></pre>
+
+<!-- ═══ FLUTTER ═══ -->
+<h3>2. Flutter</h3>
+
+<p>Flutter é o framework da Google para construir apps nativos compilados a partir de uma única base de código Dart. Diferente do React Native (que renderiza componentes nativos da plataforma), Flutter <strong>desenha cada pixel na tela</strong> usando seu proprio engine de renderizacao (Skia/Impeller), o que garante UI identica em todas as plataformas.</p>
+
+<h4>2.1 Dart Language — Essenciais</h4>
+
+<ul>
+<li><strong>Strongly typed</strong> com inferencia de tipos (<code>var</code>, <code>final</code>, <code>const</code>)</li>
+<li><strong>Null safety</strong> nativo — tipos não-nulaveis por padrão, use <code>?</code> para nullable</li>
+<li><strong>async/await</strong> com <code>Future</code> é <code>Stream</code> (equivalentes a Promise e Observable)</li>
+<li><strong>Records e Patterns</strong> (Dart 3) — destructuring nativo</li>
+<li><strong>Compilacao AOT</strong> para mobile (performance nativa) e JIT para development (hot reload)</li>
+</ul>
+
+<pre data-lang="dart"><code><span class="cm">// Dart: null safety, records, pattern matching</span>
+<span class="kw">class</span> <span class="tp">User</span> {
+  <span class="kw">final</span> <span class="tp">String</span> <span class="fn">name</span>;
+  <span class="kw">final</span> <span class="tp">int</span> <span class="fn">age</span>;
+  <span class="kw">final</span> <span class="tp">String</span>? <span class="fn">email</span>; <span class="cm">// nullable</span>
+
+  <span class="kw">const</span> <span class="tp">User</span>({
+    <span class="kw">required</span> <span class="kw">this</span>.<span class="fn">name</span>,
+    <span class="kw">required</span> <span class="kw">this</span>.<span class="fn">age</span>,
+    <span class="kw">this</span>.<span class="fn">email</span>,
+  });
+}
+
+<span class="cm">// Pattern matching (Dart 3)</span>
+<span class="tp">String</span> <span class="fn">describeUser</span>(<span class="tp">User</span> <span class="fn">user</span>) =&gt; <span class="kw">switch</span> (user) {
+  <span class="tp">User</span>(<span class="fn">age</span>: &lt; <span class="num">18</span>) =&gt; <span class="str">'Menor de idade'</span>,
+  <span class="tp">User</span>(<span class="fn">age</span>: &gt;= <span class="num">18</span>, <span class="fn">email</span>: <span class="kw">final</span> <span class="fn">e</span>?) =&gt; <span class="str">'Adulto: $e'</span>,
+  _ =&gt; <span class="str">'Adulto sem email'</span>,
+};
+
+<span class="cm">// Async com Future e Stream</span>
+<span class="tp">Future</span>&lt;<span class="tp">List</span>&lt;<span class="tp">User</span>&gt;&gt; <span class="fn">fetchUsers</span>() <span class="kw">async</span> {
+  <span class="kw">final</span> <span class="fn">response</span> = <span class="kw">await</span> <span class="fn">http</span>.<span class="fn">get</span>(<span class="tp">Uri</span>.<span class="fn">parse</span>(<span class="str">'https://api.example.com/users'</span>));
+  <span class="kw">final</span> <span class="fn">data</span> = <span class="fn">jsonDecode</span>(response.<span class="fn">body</span>) <span class="kw">as</span> <span class="tp">List</span>;
+  <span class="kw">return</span> data.<span class="fn">map</span>((<span class="fn">json</span>) =&gt; <span class="tp">User</span>.<span class="fn">fromJson</span>(json)).<span class="fn">toList</span>();
+}</code></pre>
+
+<h4>2.2 Widget Tree (StatelessWidget vs StatefulWidget)</h4>
+
+<p>Em Flutter, <strong>tudo é um Widget</strong>. A UI e construida como uma árvore de widgets compostos. Existem dois tipos fundamentais:</p>
+
+<ul>
+<li><strong>StatelessWidget:</strong> Imutável. Recebe dados via construtor e nunca muda. Ideal para UI estática (labels, icones, layouts fixos)</li>
+<li><strong>StatefulWidget:</strong> Possui estado mutável interno. Usa <code>setState()</code> para triggerar rebuild. Usado quando a UI reage a interáções do usuário</li>
+</ul>
+
+<pre data-lang="dart"><code><span class="cm">// StatelessWidget — exibe dados, sem estado interno</span>
+<span class="kw">class</span> <span class="tp">ProductCard</span> <span class="kw">extends</span> <span class="tp">StatelessWidget</span> {
+  <span class="kw">final</span> <span class="tp">String</span> <span class="fn">name</span>;
+  <span class="kw">final</span> <span class="tp">double</span> <span class="fn">price</span>;
+
+  <span class="kw">const</span> <span class="tp">ProductCard</span>({<span class="kw">required</span> <span class="kw">this</span>.<span class="fn">name</span>, <span class="kw">required</span> <span class="kw">this</span>.<span class="fn">price</span>});
+
+  <span class="ann">@override</span>
+  <span class="tp">Widget</span> <span class="fn">build</span>(<span class="tp">BuildContext</span> <span class="fn">context</span>) {
+    <span class="kw">return</span> <span class="tp">Card</span>(
+      <span class="fn">child</span>: <span class="tp">ListTile</span>(
+        <span class="fn">title</span>: <span class="tp">Text</span>(name),
+        <span class="fn">subtitle</span>: <span class="tp">Text</span>(<span class="str">'R\$ ${price.toStringAsFixed(2)}'</span>),
+        <span class="fn">trailing</span>: <span class="kw">const</span> <span class="tp">Icon</span>(<span class="tp">Icons</span>.<span class="fn">arrow_forward_ios</span>),
+      ),
+    );
+  }
+}
+
+<span class="cm">// StatefulWidget — estado mutável com contador</span>
+<span class="kw">class</span> <span class="tp">CartCounter</span> <span class="kw">extends</span> <span class="tp">StatefulWidget</span> {
+  <span class="kw">const</span> <span class="tp">CartCounter</span>({<span class="kw">super</span>.<span class="fn">key</span>});
+
+  <span class="ann">@override</span>
+  <span class="tp">State</span>&lt;<span class="tp">CartCounter</span>&gt; <span class="fn">createState</span>() =&gt; <span class="tp">_CartCounterState</span>();
+}
+
+<span class="kw">class</span> <span class="tp">_CartCounterState</span> <span class="kw">extends</span> <span class="tp">State</span>&lt;<span class="tp">CartCounter</span>&gt; {
+  <span class="tp">int</span> <span class="fn">_count</span> = <span class="num">0</span>;
+
+  <span class="ann">@override</span>
+  <span class="tp">Widget</span> <span class="fn">build</span>(<span class="tp">BuildContext</span> <span class="fn">context</span>) {
+    <span class="kw">return</span> <span class="tp">Row</span>(
+      <span class="fn">children</span>: [
+        <span class="tp">IconButton</span>(
+          <span class="fn">onPressed</span>: () =&gt; <span class="fn">setState</span>(() =&gt; <span class="fn">_count</span>--),
+          <span class="fn">icon</span>: <span class="kw">const</span> <span class="tp">Icon</span>(<span class="tp">Icons</span>.<span class="fn">remove</span>),
+        ),
+        <span class="tp">Text</span>(<span class="str">'$_count'</span>, <span class="fn">style</span>: <span class="kw">const</span> <span class="tp">TextStyle</span>(<span class="fn">fontSize</span>: <span class="num">20</span>)),
+        <span class="tp">IconButton</span>(
+          <span class="fn">onPressed</span>: () =&gt; <span class="fn">setState</span>(() =&gt; <span class="fn">_count</span>++),
+          <span class="fn">icon</span>: <span class="kw">const</span> <span class="tp">Icon</span>(<span class="tp">Icons</span>.<span class="fn">add</span>),
+        ),
+      ],
+    );
+  }
+}</code></pre>
+
+<h4>2.3 Staté Management (Riverpod, BLoC, Provider)</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Solucao</th><th>Paradigma</th><th>Complexidade</th><th>Quando usar</th></tr>
+<tr><td><strong>Provider</strong></td><td>InheritedWidget wrapper</td><td>Baixa</td><td>Apps simples, prototipagem</td></tr>
+<tr><td><strong>Riverpod</strong></td><td>Reativo, compile-safe</td><td>Media</td><td>Apps medios/grandes, recomendado atual</td></tr>
+<tr><td><strong>BLoC</strong></td><td>Streams (Event → State)</td><td>Alta</td><td>Apps enterprise, times grandes</td></tr>
+<tr><td><strong>GetX</strong></td><td>Reativo simplificado</td><td>Baixa</td><td>Prototipagem rápida (controverso)</td></tr>
+</table>
+</div>
+
+<pre data-lang="dart"><code><span class="cm">// Riverpod — state management recomendado</span>
+<span class="kw">import</span> <span class="str">'package:flutter_riverpod/flutter_riverpod.dart'</span>;
+
+<span class="cm">// Provider simples (read-only)</span>
+<span class="kw">final</span> <span class="fn">greetingProvider</span> = <span class="tp">Provider</span>((<span class="fn">ref</span>) =&gt; <span class="str">'Ola, Mundo!'</span>);
+
+<span class="cm">// StateNotifier para estado mutável</span>
+<span class="kw">class</span> <span class="tp">CartNotifier</span> <span class="kw">extends</span> <span class="tp">StateNotifier</span>&lt;<span class="tp">List</span>&lt;<span class="tp">Product</span>&gt;&gt; {
+  <span class="tp">CartNotifier</span>() : <span class="kw">super</span>([]);
+
+  <span class="kw">void</span> <span class="fn">add</span>(<span class="tp">Product</span> <span class="fn">product</span>) {
+    <span class="fn">state</span> = [...state, product];
+  }
+
+  <span class="kw">void</span> <span class="fn">remove</span>(<span class="tp">String</span> <span class="fn">id</span>) {
+    <span class="fn">state</span> = state.<span class="fn">where</span>((<span class="fn">p</span>) =&gt; p.<span class="fn">id</span> != id).<span class="fn">toList</span>();
+  }
+
+  <span class="tp">double</span> <span class="kw">get</span> <span class="fn">total</span> =&gt;
+    state.<span class="fn">fold</span>(<span class="num">0</span>, (<span class="fn">sum</span>, <span class="fn">p</span>) =&gt; sum + p.<span class="fn">price</span>);
+}
+
+<span class="kw">final</span> <span class="fn">cartProvider</span> =
+  <span class="tp">StateNotifierProvider</span>&lt;<span class="tp">CartNotifier</span>, <span class="tp">List</span>&lt;<span class="tp">Product</span>&gt;&gt;(
+    (<span class="fn">ref</span>) =&gt; <span class="tp">CartNotifier</span>(),
+  );
+
+<span class="cm">// AsyncNotifier para dados da API</span>
+<span class="kw">final</span> <span class="fn">productsProvider</span> = <span class="tp">FutureProvider</span>((<span class="fn">ref</span>) <span class="kw">async</span> {
+  <span class="kw">final</span> <span class="fn">repo</span> = ref.<span class="fn">read</span>(productRepositoryProvider);
+  <span class="kw">return</span> repo.<span class="fn">fetchAll</span>();
+});
+
+<span class="cm">// Consumir no Widget</span>
+<span class="kw">class</span> <span class="tp">CartPage</span> <span class="kw">extends</span> <span class="tp">ConsumerWidget</span> {
+  <span class="ann">@override</span>
+  <span class="tp">Widget</span> <span class="fn">build</span>(<span class="tp">BuildContext</span> <span class="fn">context</span>, <span class="tp">WidgetRef</span> <span class="fn">ref</span>) {
+    <span class="kw">final</span> <span class="fn">cart</span> = ref.<span class="fn">watch</span>(cartProvider);
+    <span class="kw">final</span> <span class="fn">notifier</span> = ref.<span class="fn">read</span>(cartProvider.<span class="fn">notifier</span>);
+
+    <span class="kw">return</span> <span class="tp">Column</span>(
+      <span class="fn">children</span>: [
+        ...cart.<span class="fn">map</span>((<span class="fn">p</span>) =&gt; <span class="tp">Text</span>(p.<span class="fn">name</span>)),
+        <span class="tp">Text</span>(<span class="str">'Total: R\$ ${notifier.total}'</span>),
+      ],
+    );
+  }
+}</code></pre>
+
+<h4>2.4 Platform Channels (Comúnicação com Código Nativo)</h4>
+
+<p>Quando você precisa acessar APIs nativas que Flutter não suporta (sensores específicos, SDKs nativos, etc.), usa-se <strong>Platform Channels</strong> — um mecanismo de message passing entre Dart e código nativo (Kotlin/Swift).</p>
+
+<pre data-lang="dart"><code><span class="cm">// Dart — chamar código nativo via MethodChannel</span>
+<span class="kw">import</span> <span class="str">'package:flutter/services.dart'</span>;
+
+<span class="kw">class</span> <span class="tp">BatteryService</span> {
+  <span class="kw">static const</span> <span class="fn">_channel</span> =
+    <span class="tp">MethodChannel</span>(<span class="str">'com.myapp/battery'</span>);
+
+  <span class="tp">Future</span>&lt;<span class="tp">int</span>&gt; <span class="fn">getBatteryLevel</span>() <span class="kw">async</span> {
+    <span class="kw">try</span> {
+      <span class="kw">final</span> <span class="fn">level</span> = <span class="kw">await</span> <span class="fn">_channel</span>.<span class="fn">invokeMethod</span>&lt;<span class="tp">int</span>&gt;(<span class="str">'getBatteryLevel'</span>);
+      <span class="kw">return</span> level ?? <span class="num">-1</span>;
+    } <span class="kw">on</span> <span class="tp">PlatformException</span> <span class="kw">catch</span> (<span class="fn">e</span>) {
+      <span class="kw">throw</span> <span class="tp">Exception</span>(<span class="str">'Falha ao obter bateria: ${e.message}'</span>);
+    }
+  }
+}
+
+<span class="cm">// Kotlin (Android) — responder ao channel</span>
+<span class="cm">// class MainActivity : FlutterActivity() {</span>
+<span class="cm">//   override fun configureFlutterEngine(engine: FlutterEngine) {</span>
+<span class="cm">//     MethodChannel(engine.dartExecutor, "com.myapp/battery")</span>
+<span class="cm">//       .setMethodCallHandler { call, result -></span>
+<span class="cm">//         if (call.method == "getBatteryLevel") {</span>
+<span class="cm">//           val level = getBatteryLevel()</span>
+<span class="cm">//           result.success(level)</span>
+<span class="cm">//         } else result.notImplemented()</span>
+<span class="cm">//       }</span>
+<span class="cm">//   }</span>
+<span class="cm">// }</span></code></pre>
+
+<!-- ═══ MOBILE ARCHITECTURE ═══ -->
+<h3>3. Arquitetura Mobile</h3>
+
+<p>Apps mobile bem estruturados seguem os mesmos princípios de Clean Architecture do backend, mas adaptados para as restricoes mobile: <strong>offline-first</strong>, <strong>lifecycle do app</strong>, <strong>recursos limitados</strong> é <strong>dependência de APIs externas</strong>.</p>
+
+<h4>3.1 MVVM (Model-View-ViewModel)</h4>
+
+<p>O padrão mais usado em mobile moderno. A <strong>View</strong> observa o <strong>ViewModel</strong>, que expoe estado reativo. O ViewModel não conhece a View — comunicação unidirecional.</p>
+
+<div class="diagram">
+<div class="diagram-box blue">View<br><small>(UI / Widgets)</small></div>
+<div class="diagram-arrow">observes →</div>
+<div class="diagram-box purple">ViewModel<br><small>(Staté + Logic)</small></div>
+<div class="diagram-arrow">uses →</div>
+<div class="diagram-box green">Model<br><small>(Data / Repository)</small></div>
+</div>
+
+<ul>
+<li><strong>View:</strong> Apenas renderiza UI baseada no estado. Zero lógica de negócio. Em Flutter: Widgets. Em React Native: Components</li>
+<li><strong>ViewModel:</strong> Gerencia estado da tela, válida inputs, orquestra use cases. Expoe <code>StateNotifier</code> (Flutter) ou hooks (RN)</li>
+<li><strong>Model:</strong> Entidades de domínio + Repositories que abstraem a fonte de dados (API, banco local, cache)</li>
+</ul>
+
+<h4>3.2 Clean Architecture Mobile</h4>
+
+<p>Clean Architecture adaptada para mobile segue 3 camadas com a <strong>Dependency Rule</strong>: camadas internas nunca dependem de camadas externas.</p>
+
+<div class="diagram">
+<div class="diagram-box orange">Presentation<br><small>Widgets, ViewModels</small></div>
+<div class="diagram-arrow">→</div>
+<div class="diagram-box green">Domain<br><small>Entities, Use Cases</small></div>
+<div class="diagram-arrow">←</div>
+<div class="diagram-box blue">Data<br><small>Repos, API, DB Local</small></div>
+</div>
+
+<pre data-lang="dart"><code><span class="cm">// Domain Layer — Use Case (puro, sem dependências externas)</span>
+<span class="kw">abstract class</span> <span class="tp">ProductRepository</span> {
+  <span class="tp">Future</span>&lt;<span class="tp">List</span>&lt;<span class="tp">Product</span>&gt;&gt; <span class="fn">getAll</span>();
+  <span class="tp">Future</span>&lt;<span class="tp">Product</span>&gt; <span class="fn">getById</span>(<span class="tp">String</span> <span class="fn">id</span>);
+}
+
+<span class="kw">class</span> <span class="tp">GetProductsUseCase</span> {
+  <span class="kw">final</span> <span class="tp">ProductRepository</span> <span class="fn">_repo</span>;
+  <span class="tp">GetProductsUseCase</span>(<span class="kw">this</span>.<span class="fn">_repo</span>);
+
+  <span class="tp">Future</span>&lt;<span class="tp">List</span>&lt;<span class="tp">Product</span>&gt;&gt; <span class="fn">execute</span>() =&gt; <span class="fn">_repo</span>.<span class="fn">getAll</span>();
+}
+
+<span class="cm">// Data Layer — Implementação do Repository</span>
+<span class="kw">class</span> <span class="tp">ProductRepositoryImpl</span> <span class="kw">implements</span> <span class="tp">ProductRepository</span> {
+  <span class="kw">final</span> <span class="tp">ApiClient</span> <span class="fn">_api</span>;
+  <span class="kw">final</span> <span class="tp">LocalDatabase</span> <span class="fn">_db</span>;
+
+  <span class="tp">ProductRepositoryImpl</span>(<span class="kw">this</span>.<span class="fn">_api</span>, <span class="kw">this</span>.<span class="fn">_db</span>);
+
+  <span class="ann">@override</span>
+  <span class="tp">Future</span>&lt;<span class="tp">List</span>&lt;<span class="tp">Product</span>&gt;&gt; <span class="fn">getAll</span>() <span class="kw">async</span> {
+    <span class="kw">try</span> {
+      <span class="cm">// Tenta buscar da API</span>
+      <span class="kw">final</span> <span class="fn">products</span> = <span class="kw">await</span> <span class="fn">_api</span>.<span class="fn">fetchProducts</span>();
+      <span class="kw">await</span> <span class="fn">_db</span>.<span class="fn">cacheProducts</span>(products); <span class="cm">// salva localmente</span>
+      <span class="kw">return</span> products;
+    } <span class="kw">catch</span> (<span class="fn">_</span>) {
+      <span class="cm">// Sem internet: retorna cache local</span>
+      <span class="kw">return</span> <span class="fn">_db</span>.<span class="fn">getCachedProducts</span>();
+    }
+  }
+}
+
+<span class="cm">// Dependency Injection com Riverpod</span>
+<span class="kw">final</span> <span class="fn">productRepositoryProvider</span> = <span class="tp">Provider</span>((<span class="fn">ref</span>) {
+  <span class="kw">return</span> <span class="tp">ProductRepositoryImpl</span>(
+    ref.<span class="fn">read</span>(apiClientProvider),
+    ref.<span class="fn">read</span>(localDatabaseProvider),
+  );
+});
+
+<span class="kw">final</span> <span class="fn">getProductsUseCaseProvider</span> = <span class="tp">Provider</span>((<span class="fn">ref</span>) {
+  <span class="kw">return</span> <span class="tp">GetProductsUseCase</span>(ref.<span class="fn">read</span>(productRepositoryProvider));
+});</code></pre>
+
+<h4>3.3 Dependency Injection</h4>
+
+<ul>
+<li><strong>Flutter:</strong> <code>get_it</code> (service locator) ou <code>Riverpod</code> (providers com DI built-in). Riverpod e preferido por ser compile-safe e testável</li>
+<li><strong>React Native:</strong> Context API do React, ou bibliotecas como <code>tsyringe</code> / <code>inversify</code>. Na prática, hooks + React Query substituem DI tradicional</li>
+</ul>
+
+<!-- ═══ PUSH NOTIFICATIONS ═══ -->
+<h3>4. Push Notifications</h3>
+
+<p>Push notifications são mensagens enviadas pelo servidor para o dispositivo do usuário, mesmo quando o app esta fechado. Existem dois sistemas principais: <strong>APNs</strong> (Apple) e <strong>FCM</strong> (Google), e ambos usam tokens únicos por dispositivo.</p>
+
+<h4>4.1 APNs vs FCM</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>APNs (Apple)</th><th>FCM (Google/Firebase)</th></tr>
+<tr><td>Plataforma</td><td>iOS, macOS, watchOS</td><td>Android, iOS, Web</td></tr>
+<tr><td>Protocolo</td><td>HTTP/2 com JWT ou certificado</td><td>HTTP v1 com OAuth 2.0</td></tr>
+<tr><td>Payload máximo</td><td>4 KB</td><td>4 KB (notification), 4 KB (data)</td></tr>
+<tr><td>Entrega</td><td>Best-effort (não garantida)</td><td>Best-effort (não garantida)</td></tr>
+<tr><td>Topics</td><td>Sim (broadcast)</td><td>Sim (topics + conditions)</td></tr>
+<tr><td>Raté limiting</td><td>Sem limite documentado</td><td>~240 msg/min por dispositivo</td></tr>
+</table>
+</div>
+
+<h4>4.2 Fluxo de Push Notification</h4>
+
+<div class="diagram">
+<div class="diagram-box green">App Registra<br><small>Obtem device token</small></div>
+<div class="diagram-arrow">→</div>
+<div class="diagram-box blue">Backend Salva<br><small>Token no DB</small></div>
+<div class="diagram-arrow">→</div>
+<div class="diagram-box purple">Backend Envia<br><small>via APNs/FCM</small></div>
+<div class="diagram-arrow">→</div>
+<div class="diagram-box orange">Dispositivo<br><small>Recebe notificação</small></div>
+</div>
+
+<h4>4.3 Token Management</h4>
+
+<pre data-lang="tsx"><code><span class="cm">// React Native — Firebase Cloud Messaging</span>
+<span class="kw">import</span> <span class="fn">messaging</span> <span class="kw">from</span> <span class="str">'@react-native-firebase/messaging'</span>;
+
+<span class="kw">async function</span> <span class="fn">requestPermissionAndGetToken</span>(): <span class="tp">Promise</span>&lt;<span class="tp">string</span> | <span class="tp">null</span>&gt; {
+  <span class="cm">// 1. Solicitar permissão (obrigatório no iOS)</span>
+  <span class="kw">const</span> <span class="fn">authStatus</span> = <span class="kw">await</span> <span class="fn">messaging</span>().<span class="fn">requestPermission</span>();
+  <span class="kw">const</span> <span class="fn">enabled</span> =
+    authStatus === messaging.<span class="fn">AuthorizationStatus</span>.<span class="fn">AUTHORIZED</span> ||
+    authStatus === messaging.<span class="fn">AuthorizationStatus</span>.<span class="fn">PROVISIONAL</span>;
+
+  <span class="kw">if</span> (!enabled) <span class="kw">return null</span>;
+
+  <span class="cm">// 2. Obter token do dispositivo</span>
+  <span class="kw">const</span> <span class="fn">token</span> = <span class="kw">await</span> <span class="fn">messaging</span>().<span class="fn">getToken</span>();
+
+  <span class="cm">// 3. Enviar token para o backend</span>
+  <span class="kw">await</span> <span class="fn">api</span>.<span class="fn">post</span>(<span class="str">'/devices/register'</span>, {
+    <span class="fn">token</span>,
+    <span class="fn">platform</span>: <span class="fn">Platform</span>.<span class="fn">OS</span>, <span class="cm">// 'ios' ou 'android'</span>
+  });
+
+  <span class="kw">return</span> token;
+}
+
+<span class="cm">// 4. Listener para refresh de token (tokens expiram!)</span>
+<span class="fn">messaging</span>().<span class="fn">onTokenRefresh</span>(<span class="kw">async</span> (<span class="fn">newToken</span>) =&gt; {
+  <span class="kw">await</span> <span class="fn">api</span>.<span class="fn">put</span>(<span class="str">'/devices/token'</span>, { <span class="fn">token</span>: newToken });
+});
+
+<span class="cm">// 5. Receber notificações em foreground</span>
+<span class="fn">messaging</span>().<span class="fn">onMessage</span>((<span class="fn">remoteMessage</span>) =&gt; {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'Notificacao recebida:'</span>, remoteMessage.<span class="fn">notification</span>);
+  <span class="cm">// Exibir in-app notification (o sistema NAO exibe automáticamente em foreground)</span>
+});
+
+<span class="cm">// 6. Handler para notificações em background</span>
+<span class="fn">messaging</span>().<span class="fn">setBackgroundMessageHandler</span>(<span class="kw">async</span> (<span class="fn">msg</span>) =&gt; {
+  <span class="cm">// Processar silenciosamente (sync dados, atualizar badge, etc.)</span>
+  <span class="kw">await</span> <span class="fn">syncLocalDatabase</span>(msg.<span class="fn">data</span>);
+});</code></pre>
+
+<h4>4.4 Silent Notifications vs Alert Notifications</h4>
+
+<ul>
+<li><strong>Alert notifications:</strong> Exibem banner/som para o usuário. Usadas para mensagens, promocoes, updates importantes</li>
+<li><strong>Silent notifications (data-only):</strong> Não exibem nada ao usuário. Usadas para sincronizar dados em background, invalidar cache, triggerar fetches. No iOS, o sistema pode <strong>throttle ou ignorar</strong> silent notifications se abusadas</li>
+<li><strong>Provisional notifications (iOS):</strong> Aparecem silenciosamente no centro de notificações sem pedir permissão. O usuário decide se quer continuar recebendo</li>
+</ul>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Token refresh e crítico:</strong> Tokens de push expiram e mudam sem aviso. Se você não implementar <code>onTokenRefresh</code> é atualizar no backend, notificações param de chegar silenciosamente — o usuário não recebe nada é você não sabe por que.</div>
+</div>
+
+<!-- ═══ OFFLINE-FIRST ═══ -->
+<h3>5. Offline-First</h3>
+
+<p>Uma estratégia offline-first significa que o app <strong>funciona completamente sem internet</strong> é sincroniza quando a conexão volta. Isso exige um banco de dados local, queue de operações pendentes, e estratégia de resolução de conflitos.</p>
+
+<h4>5.1 Bancos de Dados Locais</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Solucao</th><th>Framework</th><th>Tipo</th><th>Melhor para</th></tr>
+<tr><td><strong>WatermelonDB</strong></td><td>React Native</td><td>SQLite wrapper, lazy-loading</td><td>Apps com muitos dados (1000+ registros)</td></tr>
+<tr><td><strong>MMKV</strong></td><td>React Native</td><td>Key-Value (C++)</td><td>Dados simples, config, tokens (~30x mais rápido que AsyncStorage)</td></tr>
+<tr><td><strong>SQLite (sqflite)</strong></td><td>Flutter</td><td>SQL relacional</td><td>Queries complexas, dados estruturados</td></tr>
+<tr><td><strong>Hive</strong></td><td>Flutter</td><td>NoSQL, key-value</td><td>Dados simples, alta performance, zero config</td></tr>
+<tr><td><strong>Isar</strong></td><td>Flutter</td><td>NoSQL, object-oriented</td><td>Substituicao moderna do Hive, queries poderosas</td></tr>
+<tr><td><strong>Realm</strong></td><td>Ambos</td><td>Object DB com sync</td><td>Sync built-in com MongoDB Atlas</td></tr>
+</table>
+</div>
+
+<h4>5.2 Sync Strategies</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// Queue de operações offline (React Native)</span>
+<span class="kw">interface</span> <span class="tp">PendingOperation</span> {
+  <span class="fn">id</span>: <span class="tp">string</span>;
+  <span class="fn">method</span>: <span class="str">'POST'</span> | <span class="str">'PUT'</span> | <span class="str">'DELETE'</span>;
+  <span class="fn">url</span>: <span class="tp">string</span>;
+  <span class="fn">body</span>: <span class="tp">unknown</span>;
+  <span class="fn">timestamp</span>: <span class="tp">number</span>;
+  <span class="fn">retryCount</span>: <span class="tp">number</span>;
+}
+
+<span class="kw">class</span> <span class="tp">OfflineQueue</span> {
+  <span class="kw">private</span> <span class="fn">queue</span>: <span class="tp">PendingOperation</span>[] = [];
+
+  <span class="kw">async</span> <span class="fn">enqueue</span>(<span class="fn">op</span>: <span class="tp">Omit</span>&lt;<span class="tp">PendingOperation</span>, <span class="str">'id'</span> | <span class="str">'retryCount'</span>&gt;) {
+    <span class="kw">const</span> <span class="fn">pending</span>: <span class="tp">PendingOperation</span> = {
+      ...<span class="fn">op</span>,
+      <span class="fn">id</span>: <span class="fn">uuid</span>(),
+      <span class="fn">retryCount</span>: <span class="num">0</span>,
+    };
+    <span class="kw">this</span>.<span class="fn">queue</span>.<span class="fn">push</span>(pending);
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">persist</span>(); <span class="cm">// salvar no MMKV/AsyncStorage</span>
+  }
+
+  <span class="kw">async</span> <span class="fn">processQueue</span>() {
+    <span class="kw">const</span> <span class="fn">pending</span> = [...<span class="kw">this</span>.<span class="fn">queue</span>];
+
+    <span class="kw">for</span> (<span class="kw">const</span> <span class="fn">op</span> <span class="kw">of</span> pending) {
+      <span class="kw">try</span> {
+        <span class="kw">await</span> <span class="fn">api</span>.<span class="fn">request</span>({
+          <span class="fn">method</span>: op.<span class="fn">method</span>,
+          <span class="fn">url</span>: op.<span class="fn">url</span>,
+          <span class="fn">data</span>: op.<span class="fn">body</span>,
+          <span class="fn">headers</span>: { <span class="str">'X-Idempotency-Key'</span>: op.<span class="fn">id</span> },
+        });
+        <span class="cm">// Sucesso: remover da queue</span>
+        <span class="kw">this</span>.<span class="fn">queue</span> = <span class="kw">this</span>.<span class="fn">queue</span>.<span class="fn">filter</span>(<span class="fn">q</span> =&gt; q.<span class="fn">id</span> !== op.<span class="fn">id</span>);
+      } <span class="kw">catch</span> (<span class="fn">err</span>) {
+        op.<span class="fn">retryCount</span>++;
+        <span class="kw">if</span> (op.<span class="fn">retryCount</span> &gt;= <span class="num">5</span>) {
+          <span class="cm">// Mover para dead letter queue</span>
+          <span class="kw">this</span>.<span class="fn">moveToDeadLetter</span>(op);
+        }
+      }
+    }
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">persist</span>();
+  }
+}</code></pre>
+
+<h4>5.3 Resolução de Conflitos</h4>
+
+<ul>
+<li><strong>Last-Write-Wins (LWW):</strong> O registro mais recente sobrescreve. Simples, mas pode perder dados. Use timestamps do servidor</li>
+<li><strong>Server-Wins:</strong> Em caso de conflito, o dado do servidor sempre prevalece. Seguro para dados financeiros</li>
+<li><strong>Client-Wins:</strong> O dado do cliente prevalece. Raramente usado, exceto para rascunhos/drafts</li>
+<li><strong>CRDTs (Conflict-free Replicated Data Types):</strong> Estruturas de dados que automáticamente convergem sem conflitos. Usados em apps colaborativos (Google Docs, Figma). Complexos de implementar</li>
+<li><strong>Merge manual:</strong> Apresentar conflito ao usuário para resolver (como git merge conflicts). Usado em apps como Notion</li>
+</ul>
+
+<div class="card blue">
+<div class="card-title">Sync Architecture Tipica</div>
+<p style="color:var(--text2);font-size:.88rem">1. App faz mudanças locais e registra na <strong>change log table</strong> com timestamps<br>
+2. Quando online, envia changes para <code>POST /sync/push</code> com <code>lastSyncTimestamp</code><br>
+3. Backend aplica changes, resolve conflitos, retorna server changes via <code>GET /sync/pull?since=timestamp</code><br>
+4. App aplica server changes no banco local e atualiza <code>lastSyncTimestamp</code><br>
+5. Usar <strong>idempotency keys</strong> em cada operação para evitar duplicatas se a sync for interrompida</p>
+</div>
+
+<!-- ═══ APP LIFECYCLE & DEPLOYMENT ═══ -->
+<h3>6. App Lifecycle e Deployment</h3>
+
+<p>Publicar um app mobile envolve um pipeline muito diferente do deploy web. Você precisa lidar com <strong>code signing</strong>, <strong>review de app stores</strong>, <strong>versionamento semântico</strong> é <strong>OTA updates</strong>.</p>
+
+<h4>6.1 App Store Review Guidelines</h4>
+
+<ul>
+<li><strong>Apple (App Store):</strong> Review rigorosa (1-3 dias). Rejeicoes comuns: bugs óbvios, links para compras fora do app (anti-steering), usó de APIs privadas, falta de privacy policy, monetizacao sem In-App Purchase</li>
+<li><strong>Google (Play Store):</strong> Review mais rápida (horas-1 dia). Foco em malware, politicas de dados, target API level atualizado</li>
+<li><strong>Ambas exigem:</strong> Privacy policy, descricao precisa, screenshots reais, funcionalidade completa (nada de "em breve")</li>
+</ul>
+
+<h4>6.2 CI/CD Mobile</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Framework</th><th>Funcionalidade</th></tr>
+<tr><td><strong>Fastlane</strong></td><td>Ambos</td><td>Automacao de builds, screenshots, signing, upload para stores</td></tr>
+<tr><td><strong>EAS Build</strong></td><td>React Native (Expo)</td><td>Build na nuvem, sem necessidade de macOS local</td></tr>
+<tr><td><strong>Codemagic</strong></td><td>Flutter (principal)</td><td>CI/CD otimizado para Flutter, builds iOS sem Mac</td></tr>
+<tr><td><strong>Bitrise</strong></td><td>Ambos</td><td>CI/CD genérico para mobile, muitas integrações</td></tr>
+<tr><td><strong>GitHub Actions</strong></td><td>Ambos</td><td>CI/CD genérico, runners macOS disponíveis</td></tr>
+</table>
+</div>
+
+<h4>6.3 Code Signing</h4>
+
+<p>Code signing garante que o app vem de um desenvolvedor verificado e não foi alterádo. E <strong>obrigatório</strong> para publicar em ambas as stores.</p>
+
+<ul>
+<li><strong>iOS:</strong> Requer <strong>Apple Developer Certificate</strong> ($99/ano) + <strong>Provisioning Profile</strong> (vincula app ID + dispositivos + certificado). Tipos: Development (debug), Ad Hoc (teste interno), App Store (produção)</li>
+<li><strong>Android:</strong> Requer <strong>Keystore</strong> (.jks ou .keystore) com chave privada. A partir de 2021, Google Play App Signing gerencia a chave de assinatura — você só tem a upload key</li>
+<li><strong>Cuidado:</strong> Perder a signing key do Android significa que você <strong>nunca mais pode atualizar o app</strong> existente na Play Store</li>
+</ul>
+
+<h4>6.4 OTA Updates (Over-The-Air)</h4>
+
+<p>OTA updates permitem atualizar o código JavaScript/Dart sem passar pela review da app store. Uteis para hotfixes urgentes.</p>
+
+<ul>
+<li><strong>EAS Updaté (Expo):</strong> Substituiu o CodePush para projetos Expo. Envia JS bundle atualizado. O app baixa automáticamente na próxima abertura</li>
+<li><strong>CodePush (Microsoft):</strong> Para React Native bare workflow. Funciona com AppCenter (sendo descontinuado — migrar para EAS)</li>
+<li><strong>Shorebird (Flutter):</strong> OTA updates para apps Flutter. Atualiza código Dart compilado sem rebuild completo</li>
+</ul>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Limitacoes de OTA:</strong> Você só pode atualizar código JavaScript/Dart. Mudancas em código nativo (novas dependências nativas, alterácoes em AndroidManifest, Info.plist) exigem build completo + review da store. Apple <strong>pode rejeitar</strong> apps que usam OTA para mudar funcionalidade substancial.</div>
+</div>
+
+<pre data-lang="yaml"><code><span class="cm"># eas.json — configuração EAS Build + Update</span>
+{
+  <span class="str">"build"</span>: {
+    <span class="str">"preview"</span>: {
+      <span class="str">"distribution"</span>: <span class="str">"internal"</span>,
+      <span class="str">"ios"</span>: { <span class="str">"simulator"</span>: <span class="num">true</span> },
+      <span class="str">"channel"</span>: <span class="str">"preview"</span>
+    },
+    <span class="str">"production"</span>: {
+      <span class="str">"autoIncrement"</span>: <span class="num">true</span>,
+      <span class="str">"channel"</span>: <span class="str">"production"</span>
+    }
+  },
+  <span class="str">"submit"</span>: {
+    <span class="str">"production"</span>: {
+      <span class="str">"ios"</span>: { <span class="str">"appleId"</span>: <span class="str">"seu@email.com"</span> },
+      <span class="str">"android"</span>: { <span class="str">"track"</span>: <span class="str">"internal"</span> }
+    }
+  }
+}
+
+<span class="cm"># CI/CD Pipeline mobile tipico</span>
+<span class="cm"># 1. git push → triggers CI</span>
+<span class="cm"># 2. Lint + Type check + Unit tests</span>
+<span class="cm"># 3. Build (EAS Build / Codemagic)</span>
+<span class="cm"># 4. E2E tests (Detox / Maestro)</span>
+<span class="cm"># 5. Upload para TestFlight / Internal Testing</span>
+<span class="cm"># 6. Manual approval → Submit para stores</span></code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: App Offline-First com Sync</h3>
+
+<p><strong>Cenário:</strong> Você esta projetando um app de gestão de tarefas para equipes de campo (obras, manutenção) que trabalham frequentemente sem internet. Requisitos: criar/editar tarefas offline, fotos anexadas, sync automático quando online, resolução de conflitos.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Mobile App<br><small>SQLite + Queue</small></div>
+<div class="diagram-arrow">sync ↔</div>
+<div class="diagram-box blue">Sync API<br><small>NestJS/Express</small></div>
+<div class="diagram-arrow">→</div>
+<div class="diagram-box purple">PostgreSQL<br><small>Server of Record</small></div>
+</div>
+
+<p><strong>Arquitetura proposta:</strong></p>
+<ol>
+<li><strong>Banco local (SQLite/WatermelonDB):</strong> Espelha as tabelas do servidor. Cada registro tem <code>updated_at</code>, <code>sync_status</code> (synced/pending/conflict), e <code>device_id</code></li>
+<li><strong>Change tracking:</strong> Tabela <code>sync_changelog</code> registra toda operação (INSERT/UPDATE/DELETE) com timestamp e payload completo</li>
+<li><strong>Queue de uploads:</strong> Fotos são salvas localmente e enfileiradas para upload. Cada foto tem um UUID local que persiste após upload (idempotency)</li>
+<li><strong>Sync bidirecional:</strong>
+  <ul>
+    <li><strong>Push:</strong> App envia <code>POST /sync</code> com array de changes desde <code>lastSyncAt</code></li>
+    <li><strong>Pull:</strong> Backend retorna changes do servidor desde <code>lastSyncAt</code></li>
+    <li><strong>Conflitos:</strong> Se o mesmo registro foi editado em ambos, usar <strong>field-level merge</strong> (merge campos individualmente, não o registro inteiro)</li>
+  </ul>
+</li>
+<li><strong>Connectivity listener:</strong> <code>NetInfo</code> (React Native) ou <code>connectivity_plus</code> (Flutter) detecta quando fica online e dispara sync automático</li>
+<li><strong>Retry com backoff exponencial:</strong> Se o sync falha, retry em 1s → 2s → 4s → 8s → max 60s</li>
+</ol>
+
+<pre data-lang="typescript"><code><span class="cm">// Sync service simplificado</span>
+<span class="kw">class</span> <span class="tp">SyncService</span> {
+  <span class="kw">async</span> <span class="fn">performSync</span>(): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">const</span> <span class="fn">lastSync</span> = <span class="kw">await</span> <span class="fn">storage</span>.<span class="fn">get</span>(<span class="str">'lastSyncAt'</span>);
+
+    <span class="cm">// 1. Push local changes</span>
+    <span class="kw">const</span> <span class="fn">localChanges</span> = <span class="kw">await</span> <span class="fn">db</span>.<span class="fn">getChangesSince</span>(lastSync);
+    <span class="kw">const</span> <span class="fn">pushResult</span> = <span class="kw">await</span> <span class="fn">api</span>.<span class="fn">post</span>(<span class="str">'/sync/push'</span>, {
+      <span class="fn">changes</span>: localChanges,
+      <span class="fn">deviceId</span>: <span class="fn">DEVICE_ID</span>,
+      <span class="fn">lastSyncAt</span>: lastSync,
+    });
+
+    <span class="cm">// 2. Pull server changes</span>
+    <span class="kw">const</span> <span class="fn">serverChanges</span> = <span class="kw">await</span> <span class="fn">api</span>.<span class="fn">get</span>(
+      <span class="str">`/sync/pull?since=${lastSync}`</span>
+    );
+
+    <span class="cm">// 3. Aplicar changes do servidor no banco local</span>
+    <span class="kw">await</span> <span class="fn">db</span>.<span class="fn">applyServerChanges</span>(serverChanges.<span class="fn">data</span>);
+
+    <span class="cm">// 4. Resolver conflitos (se houver)</span>
+    <span class="kw">for</span> (<span class="kw">const</span> <span class="fn">conflict</span> <span class="kw">of</span> pushResult.<span class="fn">conflicts</span>) {
+      <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">resolveConflict</span>(conflict);
+    }
+
+    <span class="cm">// 5. Atualizar timestamp</span>
+    <span class="kw">await</span> <span class="fn">storage</span>.<span class="fn">set</span>(<span class="str">'lastSyncAt'</span>, pushResult.<span class="fn">serverTimestamp</span>);
+  }
+
+  <span class="kw">privaté async</span> <span class="fn">resolveConflict</span>(<span class="fn">conflict</span>: <span class="tp">SyncConflict</span>) {
+    <span class="cm">// Field-level merge: usar o valor mais recente de cada campo</span>
+    <span class="kw">const</span> <span class="fn">merged</span> = {};
+    <span class="kw">for</span> (<span class="kw">const</span> <span class="fn">field</span> <span class="kw">of</span> <span class="fn">Object</span>.<span class="fn">keys</span>(conflict.<span class="fn">server</span>)) {
+      <span class="fn">merged</span>[field] =
+        conflict.<span class="fn">server</span>[<span class="str">`${field}_at`</span>] &gt; conflict.<span class="fn">local</span>[<span class="str">`${field}_at`</span>]
+          ? conflict.<span class="fn">server</span>[field]
+          : conflict.<span class="fn">local</span>[field];
+    }
+    <span class="kw">await</span> <span class="fn">db</span>.<span class="fn">update</span>(conflict.<span class="fn">table</span>, conflict.<span class="fn">id</span>, merged);
+  }
+}</code></pre>
+
+<!-- ═══ RESUMO COMPARATIVO ═══ -->
+<h3>Resumo: React Native vs Flutter</h3>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>React Native</th><th>Flutter</th></tr>
+<tr><td>Linguagem</td><td>TypeScript/JavaScript</td><td>Dart</td></tr>
+<tr><td>Renderizacao</td><td>Componentes nativos da plataforma</td><td>Engine proprio (Skia/Impeller)</td></tr>
+<tr><td>Hot Reload</td><td>Fast Refresh (bom)</td><td>Hot Reload (excelente)</td></tr>
+<tr><td>UI Consistency</td><td>Pode variar entre iOS/Android</td><td>Identica em todas as plataformas</td></tr>
+<tr><td>Performance</td><td>Boa (JSI + Hermes)</td><td>Excelente (AOT compiled)</td></tr>
+<tr><td>Curva de aprendizado</td><td>Menor (se já sabe React)</td><td>Maior (Dart e novo para muitos)</td></tr>
+<tr><td>Ecossistema</td><td>Enorme (npm)</td><td>Grande e crescendo (pub.dev)</td></tr>
+<tr><td>Empresas</td><td>Meta, Microsoft, Shopify</td><td>Google, BMW, Alibaba</td></tr>
+<tr><td>Web support</td><td>React Native Web</td><td>Flutter Web (nativo)</td></tr>
+<tr><td>Desktop</td><td>Limitado</td><td>Nativo (Windows, macOS, Linux)</td></tr>
+</table>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Não testar em dispositivos reais:</strong> Emuladores mentem. Performance, comportamento de rede, notificações, permissões — tudo funciona diferente em dispositivos fisicos. Sempre teste em pelo menós 2-3 dispositivos reais (incluindo um low-end Android) antes de cada release.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Ignorar o lifecycle do app:</strong> Quando o usuário minimiza ou volta para o app, o estado pode estar inconsistente. Dados podem estar stale, tokens expirados, conexões de WebSocket desconectadas. Sempre implemente <code>AppState</code> listeners para re-sincronizar quando o app volta ao foreground.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Sync sem idempotency:</strong> Se o app perde conexão no meio de um sync, o retry pode criar duplicatas no servidor. Toda operação de sync DEVE ter um <code>X-Idempotency-Key</code> para que o servidor identifique retries e não processe duas vezes.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Abusar de OTA updates:</strong> OTA e para hotfixes e ajustes de UI, não para features novas. Apple pode rejeitar seu app se detectar que você esta usando OTA para mudar funcionalidade substancial sem review. Use OTA com moderação é sempre para benefício do usuário.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática para escolher RN vs Flutter:</strong> Se o time já sabe React é o app precisa parecer nativo em cada plataforma → React Native. Se quer UI identica, performance máxima e suporte desktop/web built-in → Flutter. Se é um app simples → React Native (ecossistema maior). Se é um app com animacoes complexas → Flutter.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você esta construindo um app de delivery. O motorista precisa funcionar sem internet em areas rurais. Descreva a arquitetura offline-first para tracking de entregas.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> (1) <strong>Banco local (SQLite/WatermelonDB):</strong> Armazena lista de entregas, endereços, status, fotos de comprovante. (2) <strong>GPS tracking local:</strong> Salva coordenadas a cada 30s em tabela local, mesmo sem internet. (3) <strong>Queue de updates:</strong> Mudancas de status (coletado → em rota → entregue) vao para uma fila local com timestamp e idempotency key. (4) <strong>Sync quando online:</strong> Envia todas as coordenadas e status updates pendentes via <code>POST /sync/deliveries</code>. Backend processa em batch, resolve conflitos por timestamp do servidor. (5) <strong>Fotos:</strong> Comprimidas localmente (max 500KB), enfileiradas para upload com retry. UUID da foto vinculada a entrega mesmo antes do upload. (6) <strong>Fallback:</strong> Se offline por mais de 24h, alertar motorista para buscar conexão e sincronizar.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Explique a diferença entre Fabric (React Native) é o engine de renderizacao do Flutter (Skia/Impeller). Quais as implicacoes práticas?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>Fabric (React Native)</strong> renderiza usando componentes nativos da plataforma — um <code>&lt;Text&gt;</code> no RN vira um <code>UILabel</code> no iOS e um <code>TextView</code> no Android. Vantagem: o app <strong>parece nativo</strong> automáticamente (segue guidelines da plataforma). Desvantagem: comportamento pode <strong>variar entre iOS e Android</strong>, e bugs de renderizacao nativos afetam o app. <strong>Flutter (Skia/Impeller)</strong> desenha cada pixel na tela diretamente, sem usar componentes nativos. Vantagem: UI <strong>100% identica</strong> em todas as plataformas, performance de animacao superior. Desvantagem: não segue automáticamente as convencoes visuais da plataforma (precisa do <code>Cupertino</code> package para "parecer iOS"). <strong>Impeller</strong> é o novo engine que substitui Skia no Flutter 3.10+, eliminando jank em animacoes via pre-compilação de shaders.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Seu app foi rejeitado pela App Store Review com a mensagem "Guideline 2.1 - Performance: App Completeness". O que provavelmente aconteceu é como resolver?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>Guideline 2.1</strong> significa que o app tem funcionalidade incompleta, placeholders, ou bugs óbvios. Causas mais comuns: (1) Telas com "Em construção" ou "Coming soon" visível. (2) Botoes que não fazem nada ou levam a telas vazias. (3) Crash durante o review (o reviewer testa em dispositivos reais). (4) Login/cadastro com campos que não funcionam. (5) URLs quebradas na app (links para termos de uso, privacy policy). <strong>Solução:</strong> (1) Remova TODA funcionalidade incompleta — se não esta pronta, não deve existir na UI. (2) Fornecer conta demo no campo "Notes for Reviewer" para que o reviewer consiga acessar o app. (3) Testar exaustivamente em dispositivos fisicos antes de submeter. (4) Se tem feature flags, garantir que features desabilitadas não aparecam na UI. (5) Resolver todos os crashes e verificar logs de crash (Crashlytics) antes de resubmeter.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Mobile Development</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="57-acessibilidade-a11y.html">&#8592; Anterior: Acessibilidade (a11y)</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="59-low-level-systems-wasm.html" class="primary">Próximo: Low-Level & Systems Programming &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 58: Mobile Development
+// ══════════════════════════════════════════
+const SECTION_NUM = 58;
+const STORAGE_KEY = 'fsm_quiz_58';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a principal vantagem do JSI sobre o Bridge antigo no React Native?",
+    options: [
+      "JSI usa WebSockets ao inves de HTTP",
+      "JSI permite comunicação síncrona e direta entre JS e código nativo via C++, sem serializar JSON",
+      "JSI remove a necessidade de código nativo completamente",
+      "JSI compila JavaScript para código nativo automáticamente"
+    ],
+    correct: 1,
+    explanation: "O JSI (JavaScript Interface) substitui o Bridge eliminando a serialização JSON. JavaScript chama funções C++ diretamente de forma síncrona, resultando em ~10x mais performance comparado ao Bridge antigo que era assíncrono."
+  },
+  {
+    question: "Qual a diferença fundamental de renderizacao entre React Native e Flutter?",
+    options: [
+      "React Native usa WebView; Flutter usa canvas nativo",
+      "React Native renderiza componentes nativos da plataforma; Flutter desenha cada pixel com seu proprio engine (Skia/Impeller)",
+      "React Native é mais rápido em renderizacao que Flutter",
+      "Ambos usam o mesmo engine de renderizacao"
+    ],
+    correct: 1,
+    explanation: "React Native mapeia componentes React para componentes nativos (UILabel, TextView). Flutter ignora componentes nativos e desenha tudo diretamente na tela usando Skia/Impeller, garantindo UI identica em todas as plataformas."
+  },
+  {
+    question: "O que é o Hermes no contexto do React Native?",
+    options: [
+      "Um framework de testes para mobile",
+      "Um sistema de push notifications",
+      "Um engine JavaScript otimizado que compila JS para bytecode em build time, reduzindo startup",
+      "Uma ferramenta de CI/CD para apps mobile"
+    ],
+    correct: 2,
+    explanation: "Hermes é o engine JavaScript otimizado para React Native. Ele faz compilação AOT (Ahead-of-Time) do JavaScript para bytecode durante o build, resultando em startup ~2x mais rápido é menor usó de memória comparado ao JavaScriptCore."
+  },
+  {
+    question: "Em Flutter, qual a diferença entre StatelessWidget e StatefulWidget?",
+    options: [
+      "StatelessWidget é mais rápido; StatefulWidget é mais lento",
+      "StatelessWidget e imutável e recebe dados via construtor; StatefulWidget possui estado mutável interno com setState()",
+      "StatelessWidget não pode ter filhos; StatefulWidget pode",
+      "StatelessWidget e para Android; StatefulWidget e para iOS"
+    ],
+    correct: 1,
+    explanation: "StatelessWidget e imutável — recebe dados pelo construtor e nunca muda. Ideal para UI estática. StatefulWidget possui um objeto Staté mutável que pode ser alterádo com setState(), triggerando rebuild. Usado quando a UI reage a interáções."
+  },
+  {
+    question: "Qual estratégia de state management é recomendada atualmente para Flutter em apps medios/grandes?",
+    options: [
+      "setState() direto em todos os widgets",
+      "Provider (InheritedWidget wrapper)",
+      "Riverpod (reativo, compile-safe, testável)",
+      "GetX (reativo simplificado)"
+    ],
+    correct: 2,
+    explanation: "Riverpod é a evolução do Provider, criado pelo mesmo autor. E compile-safe (erros de tipo são pegos em compilação), não depende de BuildContext para ler providers, é altamente testável. BLoC e alternativa para times enterprise."
+  },
+  {
+    question: "Por que é crítico implementar onTokenRefresh para push notifications?",
+    options: [
+      "Para melhorar a performance do app",
+      "Porque tokens de push expiram e mudam sem avisó — sem refresh, notificações param silenciosamente",
+      "Para cumprir requisitos da LGPD",
+      "Para permitir notificações em modo aviao"
+    ],
+    correct: 1,
+    explanation: "Tokens de dispositivo (FCM/APNs) podem mudar a qualquer momento — reinstalacao, restore de backup, ou expiracao. Se o backend tem um token antigo, as notificações são enviadas para o void. onTokenRefresh garante que o backend sempre tem o token correto."
+  },
+  {
+    question: "O que são CRDTs é quando são usados em apps mobile?",
+    options: [
+      "São certificados de segurança para code signing",
+      "São tipos de dados que convergem automáticamente sem conflitos, usados em apps colaborativos offline-first",
+      "São um tipo de banco de dados NoSQL para mobile",
+      "São um protocolo de comunicação entre app e servidor"
+    ],
+    correct: 1,
+    explanation: "CRDTs (Conflict-free Replicated Data Types) são estruturas de dados matematicamente garantidas de convergir para o mesmo estado em todos os dispositivos, sem necessidade de resolução manual de conflitos. Usados em apps como Google Docs e Figma."
+  },
+  {
+    question: "Qual é a limitação principal de OTA updates (como EAS Updaté ou CodePush)?",
+    options: [
+      "Não funcionam sem internet",
+      "So atualizam código JavaScript/Dart — mudanças em código nativo exigem build completo e review da store",
+      "São bloqueados em todos os paises",
+      "So funcionam em Android, não iOS"
+    ],
+    correct: 1,
+    explanation: "OTA updates só podem atualizar o bundle JavaScript/Dart. Qualquer mudança em código nativo (nova dependência nativa, alterácoes em AndroidManifest/Info.plist, novos platform channels) exige build completo e re-submissao para review da app store."
+  },
+  {
+    question: "O que acontece se você perder a signing key (keystore) do seu app Android publicado na Play Store?",
+    options: [
+      "Você pode solicitar uma nova key para o Google",
+      "O app continua funcionando normalmente sem a key",
+      "Você nunca mais pode atualizar aquele app existente na Play Store",
+      "O Google gera uma nova key automáticamente"
+    ],
+    correct: 2,
+    explanation: "Se você usava o modelo antigo de app signing e perdia a keystore, o app nunca mais podia ser atualizado. Com Google Play App Signing (post-2021), o Google gerencia a signing key e você tem apenas a upload key — se perder a upload key, pode solicitar reset."
+  },
+  {
+    question: "Em uma arquitetura offline-first com sync bidirecional, qual é o papel do idempotency key?",
+    options: [
+      "Criptografar os dados durante a transmissao",
+      "Identificar o dispositivo que fez a requisição",
+      "Evitar que operações duplicadas sejam processadas quando o sync e interrompido e retentado",
+      "Autenticar o usuário no servidor"
+    ],
+    correct: 2,
+    explanation: "Se a conexão cai durante o sync, o retry reenvia as mesmas operações. O idempotency key (UUID único por operação) permite que o servidor identifique que já processou aquela operação e retorne o resultado anterior ao inves de criar duplicatas."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Mobile Development.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

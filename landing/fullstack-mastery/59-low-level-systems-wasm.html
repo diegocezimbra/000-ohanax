@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>59 — Low-Level & Systems Programming | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="58-mobile-development.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>59</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="60-gestao-produto-metricas.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:89.4%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 59</span>
+<h2>Low-Level & Systems Programming</h2>
+<div class="section-line"></div>
+
+<p>A maioria dos desenvolvedores full-stack trabalha em camadas de alta abstração — JavaScript, Python, frameworks. Mas entender o que acontece <strong>por baixo</strong> é o que separa um dev senior de um pleno. Quando o garbage collector pausa sua aplicação por 200ms, quando um buffer overflow causa um security breach, quando você precisa processar 1 bilhao de registros em segundos — você precisa descer ao nível do sistema.</p>
+
+<p>Esta seção cobre <strong>Rust</strong> (a linguagem que substitui C/C++ com segurança de memória), <strong>WebAssembly</strong> (performance nativa no browser), <strong>gerenciamento de memória</strong> (stack, heap, allocators) é como conectar tudo isso ao ecossistema JavaScript/TypeScript via interop e FFI.</p>
+
+<p>Não e sobre abandonar TypeScript — e sobre saber <strong>quando é como</strong> descer um nível de abstração para resolver problemas que linguagens de alto nível não conseguem.</p>
+
+<!-- ═══ RUST FUNDAMENTALS ═══ -->
+<h3>1. Rust Fundamentals</h3>
+
+<p>Rust é uma linguagem de sistemas que garante <strong>segurança de memória em tempo de compilação</strong>, sem garbage collector. Isso significa zero overhead em runtime — performance equivalente a C/C++, mas sem as classes inteiras de bugs que atormentam essas linguagens ha decadas.</p>
+
+<h4>Ownership System — O Coracao do Rust</h4>
+<p>Em Rust, cada valor tem exatamente <strong>um dono (owner)</strong>. Quando o dono sai de escopo, o valor e destruido automáticamente. Não existe GC, não existe manual free — o compilador insere o <code>drop()</code> automáticamente.</p>
+
+<p><strong>As 3 regras de ownership:</strong></p>
+<ol>
+<li><strong>Cada valor tem exatamente um owner</strong></li>
+<li><strong>So pode existir um owner por vez</strong></li>
+<li><strong>Quando o owner sai de escopo, o valor e dropado</strong></li>
+</ol>
+
+<pre data-lang="rust"><code><span class="kw">fn</span> <span class="fn">main</span>() {
+    <span class="kw">let</span> s1 = <span class="tp">String</span>::<span class="fn">from</span>(<span class="str">"hello"</span>);  <span class="cm">// s1 e o owner</span>
+    <span class="kw">let</span> s2 = s1;                         <span class="cm">// ownership MOVE para s2</span>
+    <span class="cm">// println!("{}", s1);               // ERRO! s1 não é mais válido</span>
+    <span class="fn">println!</span>(<span class="str">"{}"</span>, s2);                   <span class="cm">// OK — s2 e o owner agora</span>
+}  <span class="cm">// s2 sai de escopo, memória liberada automáticamente</span></code></pre>
+
+<h4>Move Semantics vs Copy</h4>
+<p>Tipos na stack (inteiros, floats, bools) implementam o trait <code>Copy</code> — são copiados automáticamente. Tipos na heap (<code>String</code>, <code>Vec</code>) usam <strong>move semantics</strong> — transferem ownership.</p>
+
+<pre data-lang="rust"><code><span class="kw">let</span> x = <span class="num">42</span>;       <span class="cm">// i32 implementa Copy</span>
+<span class="kw">let</span> y = x;         <span class="cm">// copia o valor — x ainda e válido</span>
+<span class="fn">println!</span>(<span class="str">"{} {}"</span>, x, y);  <span class="cm">// OK: 42 42</span>
+
+<span class="kw">let</span> v1 = <span class="kw">vec!</span>[<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>];  <span class="cm">// Vec NAO implementa Copy</span>
+<span class="kw">let</span> v2 = v1;                <span class="cm">// MOVE — v1 inválido</span>
+<span class="cm">// println!("{:?}", v1);    // ERRO de compilação!</span></code></pre>
+
+<h4>Borrowing — References (&amp;T e &amp;mut T)</h4>
+<p>Em vez de transferir ownership, você pode <strong>emprestar</strong> um valor via referências. O borrow checker garante em tempo de compilação que não existam data races.</p>
+
+<p><strong>Regras do borrow checker:</strong></p>
+<ul>
+<li>Você pode ter <strong>N referências imutaveis (&amp;T)</strong> ao mesmo tempo, OU</li>
+<li><strong>Exatamente 1 referência mutável (&amp;mut T)</strong> — nunca ambas simultaneamente</li>
+<li>Referencias nunca podem ser <strong>dangling</strong> (apontar para memória inválida)</li>
+</ul>
+
+<pre data-lang="rust"><code><span class="kw">fn</span> <span class="fn">calculate_length</span>(s: &amp;<span class="tp">String</span>) -&gt; <span class="tp">usize</span> {
+    s.<span class="fn">len</span>()  <span class="cm">// s e uma referência imutável — apenas le</span>
+}  <span class="cm">// s sai de escopo, mas NAO faz drop (não e owner)</span>
+
+<span class="kw">fn</span> <span class="fn">append_world</span>(s: &amp;<span class="kw">mut</span> <span class="tp">String</span>) {
+    s.<span class="fn">push_str</span>(<span class="str">", world"</span>);  <span class="cm">// referência mutável — pode modificar</span>
+}
+
+<span class="kw">fn</span> <span class="fn">main</span>() {
+    <span class="kw">let mut</span> msg = <span class="tp">String</span>::<span class="fn">from</span>(<span class="str">"hello"</span>);
+
+    <span class="cm">// Multiplas refs imutaveis — OK</span>
+    <span class="kw">let</span> r1 = &amp;msg;
+    <span class="kw">let</span> r2 = &amp;msg;
+    <span class="fn">println!</span>(<span class="str">"{} {}"</span>, r1, r2);
+
+    <span class="cm">// Ref mutável — OK (r1 e r2 já não são usadas)</span>
+    <span class="fn">append_world</span>(&amp;<span class="kw">mut</span> msg);
+    <span class="fn">println!</span>(<span class="str">"{}"</span>, msg);  <span class="cm">// "hello, world"</span>
+}</code></pre>
+
+<h4>Lifetimes ('a)</h4>
+<p>Lifetimes dizem ao compilador <strong>quanto tempo uma referência e válida</strong>. Na maioria dos casos, o compilador infere automáticamente (lifetime elision). Mas em funções que retornam referências, você precisa ser explicito.</p>
+
+<pre data-lang="rust"><code><span class="cm">// O compilador precisa saber: o retorno vive tanto quanto x ou y?</span>
+<span class="kw">fn</span> <span class="fn">longest</span>&lt;<span class="tp">'a</span>&gt;(x: &amp;<span class="tp">'a</span> <span class="tp">str</span>, y: &amp;<span class="tp">'a</span> <span class="tp">str</span>) -&gt; &amp;<span class="tp">'a</span> <span class="tp">str</span> {
+    <span class="kw">if</span> x.<span class="fn">len</span>() &gt; y.<span class="fn">len</span>() { x } <span class="kw">else</span> { y }
+}
+
+<span class="kw">fn</span> <span class="fn">main</span>() {
+    <span class="kw">let</span> s1 = <span class="tp">String</span>::<span class="fn">from</span>(<span class="str">"longa string"</span>);
+    <span class="kw">let</span> result;
+    {
+        <span class="kw">let</span> s2 = <span class="tp">String</span>::<span class="fn">from</span>(<span class="str">"xyz"</span>);
+        result = <span class="fn">longest</span>(s1.<span class="fn">as_str</span>(), s2.<span class="fn">as_str</span>());
+        <span class="fn">println!</span>(<span class="str">"Maior: {}"</span>, result);  <span class="cm">// OK — s2 ainda viva</span>
+    }
+    <span class="cm">// println!("{}", result);  // ERRO se result apontar para s2 (já dropada)</span>
+}</code></pre>
+
+<p><strong>Lifetime Elision Rules</strong> (quando o compilador infere automáticamente):</p>
+<ol>
+<li>Cada parametro de referência recebe seu proprio lifetime</li>
+<li>Se ha exatamente 1 input lifetime, ele é atribuido a todos os outputs</li>
+<li>Se um dos parametros e <code>&amp;self</code> ou <code>&amp;mut self</code>, o lifetime de self e atribuido ao output</li>
+</ol>
+
+<!-- ═══ WEBASSEMBLY ═══ -->
+<h3>2. WebAssembly (WASM)</h3>
+
+<p>WebAssembly é um <strong>formato binário de instruções</strong> que roda no browser com performance próxima a nativa. Não substitui JavaScript — complementa. Use WASM para as partes <strong>computacionalmente intensivas</strong> (image processing, criptografia, physics engines, compressão) e JS para o restante (DOM, UI, networking).</p>
+
+<h4>Por que WASM importa</h4>
+<ul>
+<li><strong>Performance:</strong> 10-20x mais rápido que JS em computação pura (sem JIT warmup)</li>
+<li><strong>Portabilidade:</strong> Roda em todos os browsers modernós + Node.js + runtimes standalone</li>
+<li><strong>Segurança:</strong> Executa em sandbox isolada com modelo de memória linear</li>
+<li><strong>Multilinguagem:</strong> Compile Rust, C, C++, Go, AssemblyScript para WASM</li>
+</ul>
+
+<h4>Compilation Targets</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Linguagem Fonte</th><th>Usó Principal</th></tr>
+<tr><td><strong>wasm-pack</strong></td><td>Rust</td><td>Melhor DX para Rust → WASM. Gera bindings JS automáticamente</td></tr>
+<tr><td><strong>Emscripten</strong></td><td>C / C++</td><td>Portar codebases C/C++ existentes para o browser</td></tr>
+<tr><td><strong>AssemblyScript</strong></td><td>TypeScript-like</td><td>Sintaxe similar a TS, compila direto para WASM. Curva de aprendizado baixa</td></tr>
+<tr><td><strong>TinyGo</strong></td><td>Go</td><td>Subset de Go otimizado para WASM (binários menores)</td></tr>
+</table>
+</div>
+
+<h4>Module Instantiation e Memory Model</h4>
+<p>Um módulo WASM tem <strong>memória linear</strong> — um array contiguo de bytes que cresce sob demanda. JS e WASM compartilham esse buffer via <code>WebAssembly.Memory</code>.</p>
+
+<pre data-lang="javascript"><code><span class="cm">// Carregando e instanciando um módulo WASM</span>
+<span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'optimized.wasm'</span>);
+<span class="kw">const</span> bytes = <span class="kw">await</span> response.<span class="fn">arrayBuffer</span>();
+<span class="kw">const</span> { instance } = <span class="kw">await</span> WebAssembly.<span class="fn">instantiate</span>(bytes, {
+  env: {
+    <span class="cm">// Importacoes que o WASM pode chamar</span>
+    <span class="fn">log</span>: (ptr, len) =&gt; {
+      <span class="kw">const</span> mem = <span class="kw">new</span> <span class="tp">Uint8Array</span>(instance.exports.memory.buffer);
+      <span class="kw">const</span> str = <span class="kw">new</span> <span class="tp">TextDecoder</span>().<span class="fn">decode</span>(mem.<span class="fn">slice</span>(ptr, ptr + len));
+      console.<span class="fn">log</span>(str);
+    }
+  }
+});
+
+<span class="cm">// Chamando função exportada pelo WASM</span>
+<span class="kw">const</span> result = instance.exports.<span class="fn">fibonacci</span>(<span class="num">40</span>);
+console.<span class="fn">log</span>(<span class="str">`Resultado: ${result}`</span>);</code></pre>
+
+<h4>WASI — WebAssembly System Interface</h4>
+<p><strong>WASI</strong> leva o WASM para fora do browser. E uma interface padrão que permite módulos WASM acessarem recursos do sistema (filesystem, network, clocks) de forma segura e portavel. Runtimes como <strong>Wasmtime</strong>, <strong>Wasmer</strong> é <strong>WasmEdge</strong> implementam WASI.</p>
+
+<ul>
+<li><strong>Casó de uso:</strong> Plugins extensiveis (Envoy proxy, Figma plugins, Shopify Functions)</li>
+<li><strong>Vantagem:</strong> "Write once, run anywhere" — de verdade, diferente do Java</li>
+<li><strong>Segurança:</strong> Capability-based security — o módulo só acessa o que você permitir explicitamente</li>
+</ul>
+
+<pre data-lang="rust"><code><span class="cm">// Rust com WASI — le um arquivo do filesystem</span>
+<span class="kw">use</span> std::fs;
+
+<span class="kw">fn</span> <span class="fn">main</span>() {
+    <span class="kw">let</span> content = fs::<span class="fn">read_to_string</span>(<span class="str">"/data/config.json"</span>)
+        .<span class="fn">expect</span>(<span class="str">"Falha ao ler arquivo"</span>);
+    <span class="fn">println!</span>(<span class="str">"Config: {}"</span>, content);
+}
+
+<span class="cm">// Compilar: cargo build --target wasm32-wasi</span>
+<span class="cm">// Executar: wasmtime --dir=/data app.wasm</span></code></pre>
+
+<!-- ═══ MEMORY MANAGEMENT ═══ -->
+<h3>3. Memory Management</h3>
+
+<p>Todo programa usa memória. A diferença entre um sistema que escala é um que crasha as 3h da manha e <strong>como essa memória é gerenciada</strong>. Entender stack vs heap, allocators e os bugs clássicos é fundamental.</p>
+
+<h4>Stack vs Heap — Detalhado</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Stack</th><th>Heap</th></tr>
+<tr><td><strong>Alocacao</strong></td><td>Automatica (push/pop), O(1)</td><td>Manual ou via GC, O(n) no pior caso</td></tr>
+<tr><td><strong>Velocidade</strong></td><td>Extremamente rápida (ponteiro move)</td><td>Mais lenta (busca por bloco livre)</td></tr>
+<tr><td><strong>Tamanho</strong></td><td>Fixo por thread (tipicamente 1-8MB)</td><td>Limitado pela RAM disponível</td></tr>
+<tr><td><strong>Lifetime</strong></td><td>Escopo da função (LIFO)</td><td>Ate free() ou GC coletar</td></tr>
+<tr><td><strong>O que vive aqui</strong></td><td>Variaveis locais, parametros, return addresses</td><td>Objetos dinâmicos, strings, arrays grandes</td></tr>
+<tr><td><strong>Cache friendly</strong></td><td>Sim (dados contiguos)</td><td>Não necessariamente (fragmentação)</td></tr>
+<tr><td><strong>Thread safety</strong></td><td>Cada thread tem sua stack</td><td>Compartilhada — precisa sincronização</td></tr>
+</table>
+</div>
+
+<pre data-lang="rust"><code><span class="kw">fn</span> <span class="fn">stack_vs_heap</span>() {
+    <span class="cm">// Stack — tamanho conhecido em compile time</span>
+    <span class="kw">let</span> x: <span class="tp">i32</span> = <span class="num">42</span>;           <span class="cm">// 4 bytes na stack</span>
+    <span class="kw">let</span> arr: [<span class="tp">i32</span>; <span class="num">4</span>] = [<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>]; <span class="cm">// 16 bytes na stack</span>
+
+    <span class="cm">// Heap — tamanho dinâmico, alocado em runtime</span>
+    <span class="kw">let</span> v: <span class="tp">Vec</span>&lt;<span class="tp">i32</span>&gt; = <span class="kw">vec!</span>[<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>]; <span class="cm">// ponteiro na stack, dados na heap</span>
+    <span class="kw">let</span> s: <span class="tp">String</span> = <span class="tp">String</span>::<span class="fn">from</span>(<span class="str">"hello"</span>); <span class="cm">// 3 words na stack (ptr, len, cap)</span>
+                                               <span class="cm">// + bytes na heap</span>
+}  <span class="cm">// tudo dropado automáticamente (stack unwind + heap dealloc)</span></code></pre>
+
+<h4>Allocators</h4>
+<p>O allocator é o algoritmo que gerencia blocos livres na heap. O padrão (glibc malloc) funciona para a maioria dos casos, mas aplicações de alta performance usam allocators especializados.</p>
+
+<ul>
+<li><strong>jemalloc:</strong> Otimizado para multithreading (arenas por thread). Usado pelo Firefox e Redis. Reduz contencao de lock</li>
+<li><strong>mimalloc:</strong> Da Microsoft. Otimizado para alocacoes pequenas e frequentes. Ate 2x mais rápido que malloc padrão</li>
+<li><strong>Arena allocators:</strong> Alocam tudo em um bloco grande e liberam tudo de uma vez. Perfeito para requests HTTP (aloca durante o request, libera tudo no final)</li>
+<li><strong>Bump allocators:</strong> O mais simples — um ponteiro que só avança. Alocacao O(1). Liberacao: tudo ou nada</li>
+</ul>
+
+<pre data-lang="rust"><code><span class="cm">// Trocando o allocator global em Rust</span>
+<span class="kw">use</span> mimalloc::<span class="tp">MiMalloc</span>;
+
+<span class="ann">#[global_allocator]</span>
+<span class="kw">static</span> GLOBAL: <span class="tp">MiMalloc</span> = <span class="tp">MiMalloc</span>;
+
+<span class="kw">fn</span> <span class="fn">main</span>() {
+    <span class="cm">// Todas as alocacoes agora usam mimalloc</span>
+    <span class="kw">let</span> data: <span class="tp">Vec</span>&lt;<span class="tp">u8</span>&gt; = <span class="kw">vec!</span>[<span class="num">0</span>; <span class="num">1_000_000</span>]; <span class="cm">// 1MB via mimalloc</span>
+    <span class="fn">println!</span>(<span class="str">"Alocado {} bytes"</span>, data.<span class="fn">len</span>());
+}</code></pre>
+
+<h4>Memory Fragmentation</h4>
+<p><strong>Fragmentacao</strong> acontece quando blocos livres na heap ficam espalhados entre blocos usados. Existem dois tipos:</p>
+<ul>
+<li><strong>Externa:</strong> Memória livre total é suficiente, mas nenhum bloco contiguo e grande o bastante. Solução: compactacao ou arena allocators</li>
+<li><strong>Interna:</strong> Bloco alocado é maior que o necessário (overhead de alinhamento). Solução: allocators com size classes (jemalloc)</li>
+</ul>
+
+<h4>Comparativo: Manual vs GC vs Ownership</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Manual (C/C++)</th><th>Garbage Collector (JS/Java/Go)</th><th>Ownership (Rust)</th></tr>
+<tr><td><strong>Performance</strong></td><td>Maxima (sem overhead)</td><td>Pausas do GC (latency spikes)</td><td>Maxima (sem overhead runtime)</td></tr>
+<tr><td><strong>Segurança</strong></td><td>Baixa (bugs em runtime)</td><td>Alta (GC previne leaks)</td><td>Maxima (compile-time checks)</td></tr>
+<tr><td><strong>Bugs comuns</strong></td><td>Use-after-free, double-free, leaks</td><td>Memory leaks (closures, listeners)</td><td>Nenhum (compile error)</td></tr>
+<tr><td><strong>Complexidade</strong></td><td>Alta (dev gerencia tudo)</td><td>Baixa (GC cuida)</td><td>Media (borrow checker tem curva)</td></tr>
+<tr><td><strong>Previsibilidade</strong></td><td>Alta (sem pausas)</td><td>Baixa (GC pode pausar a qualquer momento)</td><td>Alta (sem pausas, deterministico)</td></tr>
+</table>
+</div>
+
+<h4>Common Memory Bugs</h4>
+<ul>
+<li><strong>Use-after-free:</strong> Acessar memória já liberada. Em C: crash ou dados corrompidos. Em Rust: <strong>impossível</strong> (borrow checker impede)</li>
+<li><strong>Double-free:</strong> Liberar o mesmo bloco duas vezes. Corrompe o allocator. Em Rust: ownership garante um único drop</li>
+<li><strong>Memory leak:</strong> Alocar sem nunca liberar. Em Rust: possível com <code>std::mem::forget</code> ou ciclos de <code>Rc</code>, mas raro</li>
+<li><strong>Buffer overflow:</strong> Escrever além dos limites de um array. Causa de 70% das CVEs em C/C++. Em Rust: bounds checking em runtime (panic ao inves de undefined behavior)</li>
+<li><strong>Dangling pointer:</strong> Ponteiro para memória já liberada. Em Rust: lifetimes impedem em compile time</li>
+</ul>
+
+<!-- ═══ JS/WASM INTEROP ═══ -->
+<h3>4. JS/WASM Interop</h3>
+
+<p>A parte mais prática para full-stack devs: como conectar <strong>Rust (compilado para WASM)</strong> com seu código JavaScript/TypeScript. A ferramenta principal é o <code>wasm-bindgen</code>.</p>
+
+<h4>wasm-bindgen — Rust para JS</h4>
+<p><code>wasm-bindgen</code> gera automáticamente o código "glue" entre Rust e JavaScript. Você anota funções Rust com <code>#[wasm_bindgen]</code> é elas ficam disponíveis no JS como funções normais.</p>
+
+<pre data-lang="rust"><code><span class="cm">// src/lib.rs</span>
+<span class="kw">use</span> wasm_bindgen::prelude::*;
+
+<span class="cm">// Exportar função para JS</span>
+<span class="ann">#[wasm_bindgen]</span>
+<span class="kw">pub fn</span> <span class="fn">fibonacci</span>(n: <span class="tp">u32</span>) -&gt; <span class="tp">u64</span> {
+    <span class="kw">if</span> n &lt;= <span class="num">1</span> { <span class="kw">return</span> n <span class="kw">as</span> <span class="tp">u64</span>; }
+    <span class="kw">let</span> (<span class="kw">mut</span> a, <span class="kw">mut</span> b) = (<span class="num">0u64</span>, <span class="num">1u64</span>);
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="num">2</span>..=n {
+        <span class="kw">let</span> temp = a + b;
+        a = b;
+        b = temp;
+    }
+    b
+}
+
+<span class="cm">// Receber e retornar strings</span>
+<span class="ann">#[wasm_bindgen]</span>
+<span class="kw">pub fn</span> <span class="fn">to_uppercase</span>(input: &amp;<span class="tp">str</span>) -&gt; <span class="tp">String</span> {
+    input.<span class="fn">to_uppercase</span>()
+}
+
+<span class="cm">// Chamar função JS a partir do Rust</span>
+<span class="ann">#[wasm_bindgen]</span>
+<span class="kw">extern</span> <span class="str">"C"</span> {
+    <span class="ann">#[wasm_bindgen(js_namespace = console)]</span>
+    <span class="kw">fn</span> <span class="fn">log</span>(s: &amp;<span class="tp">str</span>);
+}
+
+<span class="ann">#[wasm_bindgen]</span>
+<span class="kw">pub fn</span> <span class="fn">greet</span>(name: &amp;<span class="tp">str</span>) {
+    <span class="fn">log</span>(&amp;<span class="fn">format!</span>(<span class="str">"Ola, {}!"</span>, name));
+}</code></pre>
+
+<pre data-lang="typescript"><code><span class="cm">// Usando no TypeScript (após wasm-pack build)</span>
+<span class="kw">import</span> init, { fibonacci, to_uppercase, greet } <span class="kw">from</span> <span class="str">'./pkg/my_wasm_lib'</span>;
+
+<span class="kw">async function</span> <span class="fn">main</span>() {
+  <span class="kw">await</span> <span class="fn">init</span>();  <span class="cm">// Inicializar o módulo WASM</span>
+
+  <span class="kw">const</span> result = <span class="fn">fibonacci</span>(<span class="num">40</span>);
+  console.<span class="fn">log</span>(<span class="str">`Fibonacci(40) = ${result}`</span>);  <span class="cm">// ~100x mais rápido que JS puro</span>
+
+  <span class="kw">const</span> upper = <span class="fn">to_uppercase</span>(<span class="str">"hello world"</span>);
+  console.<span class="fn">log</span>(upper);  <span class="cm">// "HELLO WORLD"</span>
+
+  <span class="fn">greet</span>(<span class="str">"Developer"</span>);  <span class="cm">// Console: "Ola, Developer!"</span>
+}
+
+<span class="fn">main</span>();</code></pre>
+
+<h4>Passing Data — Shared Memory vs Serialization</h4>
+<p>WASM tem memória linear isolada. Para trocar dados com JS, existem duas abordagens:</p>
+
+<ul>
+<li><strong>Shared Memory (via ArrayBuffer):</strong> JS e WASM acessam o mesmo buffer de bytes. Mais rápido, mas você gerencia ponteiros manualmente</li>
+<li><strong>Serialization (via wasm-bindgen):</strong> Converte objetos complexos para bytes e vice-versa. Mais seguro e ergonomico, mas com overhead</li>
+</ul>
+
+<pre data-lang="rust"><code><span class="cm">// Processamento de imagem em WASM com shared memory</span>
+<span class="kw">use</span> wasm_bindgen::prelude::*;
+<span class="kw">use</span> wasm_bindgen::<span class="tp">Clamped</span>;
+
+<span class="ann">#[wasm_bindgen]</span>
+<span class="kw">pub fn</span> <span class="fn">grayscale</span>(pixels: <span class="tp">Clamped</span>&lt;&amp;<span class="kw">mut</span> [<span class="tp">u8</span>]&gt;, width: <span class="tp">u32</span>, height: <span class="tp">u32</span>) {
+    <span class="kw">for</span> i <span class="kw">in</span> (<span class="num">0</span>..pixels.<span class="fn">len</span>()).<span class="fn">step_by</span>(<span class="num">4</span>) {
+        <span class="kw">let</span> r = pixels[i] <span class="kw">as</span> <span class="tp">f32</span>;
+        <span class="kw">let</span> g = pixels[i + <span class="num">1</span>] <span class="kw">as</span> <span class="tp">f32</span>;
+        <span class="kw">let</span> b = pixels[i + <span class="num">2</span>] <span class="kw">as</span> <span class="tp">f32</span>;
+        <span class="kw">let</span> gray = (<span class="num">0.299</span> * r + <span class="num">0.587</span> * g + <span class="num">0.114</span> * b) <span class="kw">as</span> <span class="tp">u8</span>;
+        pixels[i] = gray;
+        pixels[i + <span class="num">1</span>] = gray;
+        pixels[i + <span class="num">2</span>] = gray;
+        <span class="cm">// pixels[i + 3] = alpha (manter)</span>
+    }
+}</code></pre>
+
+<pre data-lang="typescript"><code><span class="cm">// Chamando do JS — zero copia (shared memory)</span>
+<span class="kw">import</span> { grayscale } <span class="kw">from</span> <span class="str">'./pkg/image_processor'</span>;
+
+<span class="kw">const</span> canvas = document.<span class="fn">getElementById</span>(<span class="str">'canvas'</span>) <span class="kw">as</span> <span class="tp">HTMLCanvasElement</span>;
+<span class="kw">const</span> ctx = canvas.<span class="fn">getContext</span>(<span class="str">'2d'</span>)!;
+<span class="kw">const</span> imageData = ctx.<span class="fn">getImageData</span>(<span class="num">0</span>, <span class="num">0</span>, canvas.width, canvas.height);
+
+<span class="cm">// WASM modifica os pixels diretamente — sem copia!</span>
+<span class="fn">grayscale</span>(imageData.data, canvas.width, canvas.height);
+ctx.<span class="fn">putImageData</span>(imageData, <span class="num">0</span>, <span class="num">0</span>);</code></pre>
+
+<h4>Performance Considerations</h4>
+
+<div class="card orange">
+<div class="card-title">Regra de Ouro do WASM Interop</div>
+<p style="color:var(--text2);font-size:.88rem"><strong>Minimize boundary crossings.</strong> Cada chamada JS → WASM tem overhead (~100ns). Se você chama WASM 1 milhão de vezes em um loop, o overhead domina. Ao inves disso, passe os dados de uma vez e processe tudo dentro do WASM.</p>
+</div>
+
+<ul>
+<li><strong>Ruim:</strong> <code>for (let i = 0; i &lt; 1_000_000; i++) wasm.process(data[i])</code> — 1M boundary crossings</li>
+<li><strong>Bom:</strong> <code>wasm.processAll(dataBuffer, length)</code> — 1 boundary crossing, loop interno no WASM</li>
+<li><strong>Strings:</strong> Enviar/receber strings requer encode/decode UTF-8. Prefira buffers de bytes quando possível</li>
+<li><strong>Objetos JS:</strong> Não podem ser passados diretamente. Serialize com <code>serde_json</code> ou use <code>wasm-bindgen</code> com <code>JsValue</code></li>
+</ul>
+
+<!-- ═══ UNSAFE & FFI ═══ -->
+<h3>5. Unsafe Operations & FFI</h3>
+
+<p>Rust garante segurança de memória — mas as vezes você <strong>precisa</strong> sair dessa garantia. O bloco <code>unsafe</code> desativa verificacoes específicas do compilador. E um contrato: "Eu, desenvolvedor, garanto que este código e seguro".</p>
+
+<h4>Quando usar unsafe</h4>
+<ul>
+<li><strong>Derreferênciar raw pointers</strong> (<code>*const T</code>, <code>*mut T</code>)</li>
+<li><strong>Chamar funções unsafe</strong> (FFI, intrinsics)</li>
+<li><strong>Acessar ou modificar variáveis static mutaveis</strong></li>
+<li><strong>Implementar unsafe traits</strong> (como <code>Send</code> é <code>Sync</code>)</li>
+<li><strong>Acessar campos de unions</strong></li>
+</ul>
+
+<pre data-lang="rust"><code><span class="cm">// Raw pointer — unsafe necessário para derreferênciar</span>
+<span class="kw">fn</span> <span class="fn">main</span>() {
+    <span class="kw">let mut</span> num = <span class="num">42</span>;
+    <span class="kw">let</span> r1 = &amp;num <span class="kw">as</span> *<span class="kw">const</span> <span class="tp">i32</span>;     <span class="cm">// raw pointer (criar e safe)</span>
+    <span class="kw">let</span> r2 = &amp;<span class="kw">mut</span> num <span class="kw">as</span> *<span class="kw">mut</span> <span class="tp">i32</span>;   <span class="cm">// raw mut pointer</span>
+
+    <span class="kw">unsafe</span> {
+        <span class="fn">println!</span>(<span class="str">"r1: {}"</span>, *r1);   <span class="cm">// derreferênciar e unsafe</span>
+        *r2 = <span class="num">100</span>;                   <span class="cm">// modificar via raw ptr e unsafe</span>
+        <span class="fn">println!</span>(<span class="str">"r2: {}"</span>, *r2);   <span class="cm">// 100</span>
+    }
+}
+
+<span class="cm">// Safe wrapper em torno de unsafe — padrão idiomatico</span>
+<span class="kw">fn</span> <span class="fn">split_at_mut</span>(slice: &amp;<span class="kw">mut</span> [<span class="tp">i32</span>], mid: <span class="tp">usize</span>) -&gt; (&amp;<span class="kw">mut</span> [<span class="tp">i32</span>], &amp;<span class="kw">mut</span> [<span class="tp">i32</span>]) {
+    <span class="kw">let</span> len = slice.<span class="fn">len</span>();
+    <span class="kw">let</span> ptr = slice.<span class="fn">as_mut_ptr</span>();
+    <span class="kw">assert!</span>(mid &lt;= len);  <span class="cm">// validação ANTES do unsafe</span>
+
+    <span class="kw">unsafe</span> {
+        (
+            std::slice::<span class="fn">from_raw_parts_mut</span>(ptr, mid),
+            std::slice::<span class="fn">from_raw_parts_mut</span>(ptr.<span class="fn">add</span>(mid), len - mid),
+        )
+    }
+}</code></pre>
+
+<h4>FFI — Foreign Function Interface (Chamando C a partir de Rust)</h4>
+<p>FFI permite que Rust chame funções escritas em C (ou qualquer linguagem com ABI C). Essencial para usar bibliotecas nativas existentes.</p>
+
+<pre data-lang="rust"><code><span class="cm">// Chamando a libc (funções C padrão)</span>
+<span class="kw">extern</span> <span class="str">"C"</span> {
+    <span class="kw">fn</span> <span class="fn">abs</span>(input: <span class="tp">i32</span>) -&gt; <span class="tp">i32</span>;
+    <span class="kw">fn</span> <span class="fn">strlen</span>(s: *<span class="kw">const</span> <span class="tp">u8</span>) -&gt; <span class="tp">usize</span>;
+}
+
+<span class="kw">fn</span> <span class="fn">main</span>() {
+    <span class="kw">unsafe</span> {
+        <span class="fn">println!</span>(<span class="str">"abs(-5) = {}"</span>, <span class="fn">abs</span>(-<span class="num">5</span>));  <span class="cm">// 5</span>
+
+        <span class="kw">let</span> s = <span class="str">b"hello\0"</span>;  <span class="cm">// null-terminated string (convencao C)</span>
+        <span class="fn">println!</span>(<span class="str">"strlen = {}"</span>, <span class="fn">strlen</span>(s.<span class="fn">as_ptr</span>()));  <span class="cm">// 5</span>
+    }
+}
+
+<span class="cm">// Exportar função Rust para ser chamada por C</span>
+<span class="ann">#[no_mangle]</span>
+<span class="kw">pub extern</span> <span class="str">"C"</span> <span class="kw">fn</span> <span class="fn">rust_add</span>(a: <span class="tp">i32</span>, b: <span class="tp">i32</span>) -&gt; <span class="tp">i32</span> {
+    a + b
+}</code></pre>
+
+<h4>N-API / napi-rs — Node.js Native Addons em Rust</h4>
+<p><code>napi-rs</code> permite criar <strong>módulos nativos para Node.js em Rust</strong>. Ideal para operações CPU-intensive que não podem rodar em WASM (acesso a filesystem, syscalls, etc).</p>
+
+<pre data-lang="rust"><code><span class="cm">// Modulo nativo Node.js em Rust via napi-rs</span>
+<span class="kw">use</span> napi_derive::napi;
+
+<span class="ann">#[napi]</span>
+<span class="kw">pub fn</span> <span class="fn">hash_password</span>(password: <span class="tp">String</span>, rounds: <span class="tp">u32</span>) -&gt; <span class="tp">String</span> {
+    <span class="cm">// bcrypt em Rust — 5x mais rápido que bcryptjs</span>
+    bcrypt::<span class="fn">hash</span>(password, rounds).<span class="fn">unwrap</span>()
+}
+
+<span class="ann">#[napi]</span>
+<span class="kw">pub fn</span> <span class="fn">compress</span>(input: <span class="tp">Buffer</span>) -&gt; <span class="tp">Buffer</span> {
+    <span class="cm">// zstd compression em Rust — 3x mais rápido que zlib JS</span>
+    zstd::<span class="fn">encode_all</span>(&amp;input[..], <span class="num">3</span>).<span class="fn">unwrap</span>().<span class="fn">into</span>()
+}</code></pre>
+
+<pre data-lang="typescript"><code><span class="cm">// Usando no Node.js / TypeScript</span>
+<span class="kw">import</span> { hashPassword, compress } <span class="kw">from</span> <span class="str">'./native-addon'</span>;
+
+<span class="kw">const</span> hash = <span class="fn">hashPassword</span>(<span class="str">'my-secret-password'</span>, <span class="num">12</span>);
+console.<span class="fn">log</span>(hash);  <span class="cm">// $2b$12$...</span>
+
+<span class="kw">const</span> compressed = <span class="fn">compress</span>(Buffer.<span class="fn">from</span>(<span class="str">'dados repetidos '.repeat(10000)</span>));
+console.<span class="fn">log</span>(<span class="str">`Comprimido: ${compressed.length} bytes`</span>);</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>6. Mini System Design: Otimizando Funcao Critica com WASM</h3>
+
+<p><strong>Cenário:</strong> Seu SaaS tem uma feature de <strong>image processing</strong> no browser (crop, resize, filtros, watermark). Atualmente implementado em JS puro e leva 3-5 segundos para processar uma imagem de 4K. O PM quer que demore menós de 500ms. Como resolver?</p>
+
+<div class="diagram">
+<div class="diagram-box blue">Upload (JS)<br><small>File API</small></div>
+<div class="diagram-arrow">→</div>
+<div class="diagram-box green">Decode (WASM)<br><small>image crate</small></div>
+<div class="diagram-arrow">→</div>
+<div class="diagram-box purple">Process (WASM)<br><small>crop/resize/filter</small></div>
+<div class="diagram-arrow">→</div>
+<div class="diagram-box orange">Encode (WASM)<br><small>WebP output</small></div>
+<div class="diagram-arrow">→</div>
+<div class="diagram-box cyan">Display (JS)<br><small>Canvas/Blob URL</small></div>
+</div>
+
+<p><strong>Decisoes arquiteturais:</strong></p>
+<ol>
+<li><strong>Boundary minimization:</strong> Enviar o buffer inteiro da imagem para WASM uma vez. Todo o pipeline (decode → process → encode) roda dentro do WASM. So retorna o resultado final</li>
+<li><strong>Web Workers:</strong> Executar o WASM em um Web Worker para não bloquear a UI thread. O usuário continua interágindo enquanto a imagem é processada</li>
+<li><strong>Memory management:</strong> Pre-alocar um buffer grande no WASM (ex: 64MB) e reútilizar entre operações. Evitar alocacoes frequentes</li>
+<li><strong>Streaming:</strong> Para imagens muito grandes, processar em tiles (blocos de 512x512) e compor no final. Reduz pico de memória</li>
+</ol>
+
+<pre data-lang="rust"><code><span class="cm">// Pipeline completo de image processing em Rust/WASM</span>
+<span class="kw">use</span> wasm_bindgen::prelude::*;
+<span class="kw">use</span> image::{<span class="tp">DynamicImage</span>, <span class="tp">ImageOutputFormat</span>, <span class="tp">GenericImageView</span>};
+
+<span class="ann">#[wasm_bindgen]</span>
+<span class="kw">pub fn</span> <span class="fn">process_image</span>(
+    input: &amp;[<span class="tp">u8</span>],
+    target_width: <span class="tp">u32</span>,
+    target_height: <span class="tp">u32</span>,
+    apply_grayscale: <span class="tp">bool</span>,
+) -&gt; <span class="tp">Vec</span>&lt;<span class="tp">u8</span>&gt; {
+    <span class="cm">// Decode (PNG, JPEG, WebP...)</span>
+    <span class="kw">let</span> img = image::<span class="fn">load_from_memory</span>(input)
+        .<span class="fn">expect</span>(<span class="str">"Formato de imagem inválido"</span>);
+
+    <span class="cm">// Resize com Lanczos3 (alta qualidade)</span>
+    <span class="kw">let mut</span> img = img.<span class="fn">resize_exact</span>(
+        target_width, target_height,
+        image::imageops::<span class="tp">FilterType</span>::<span class="tp">Lanczos3</span>
+    );
+
+    <span class="cm">// Filtro opcional</span>
+    <span class="kw">if</span> apply_grayscale {
+        img = <span class="tp">DynamicImage</span>::<span class="tp">ImageLuma8</span>(img.<span class="fn">to_luma8</span>())
+              .<span class="fn">into</span>();
+    }
+
+    <span class="cm">// Encode para WebP (menor tamanho)</span>
+    <span class="kw">let mut</span> output = <span class="tp">Vec</span>::<span class="fn">new</span>();
+    img.<span class="fn">write_to</span>(&amp;<span class="kw">mut</span> std::io::<span class="tp">Cursor</span>::<span class="fn">new</span>(&amp;<span class="kw">mut</span> output),
+        <span class="tp">ImageOutputFormat</span>::<span class="tp">WebP</span>)
+        .<span class="fn">expect</span>(<span class="str">"Falha ao encodar"</span>);
+
+    output
+}</code></pre>
+
+<pre data-lang="typescript"><code><span class="cm">// Worker thread — não bloqueia a UI</span>
+<span class="cm">// image-worker.ts</span>
+<span class="kw">import</span> init, { process_image } <span class="kw">from</span> <span class="str">'./pkg/image_processor'</span>;
+
+self.<span class="fn">onmessage</span> = <span class="kw">async</span> (e: <span class="tp">MessageEvent</span>) =&gt; {
+  <span class="kw">await</span> <span class="fn">init</span>();
+  <span class="kw">const</span> { buffer, width, height, grayscale } = e.data;
+
+  <span class="kw">const</span> start = performance.<span class="fn">now</span>();
+  <span class="kw">const</span> result = <span class="fn">process_image</span>(
+    <span class="kw">new</span> <span class="tp">Uint8Array</span>(buffer), width, height, grayscale
+  );
+  <span class="kw">const</span> elapsed = performance.<span class="fn">now</span>() - start;
+
+  self.<span class="fn">postMessage</span>({ result, elapsed });
+};
+
+<span class="cm">// main.ts — UI thread</span>
+<span class="kw">const</span> worker = <span class="kw">new</span> <span class="tp">Worker</span>(<span class="str">'./image-worker.ts'</span>);
+worker.<span class="fn">postMessage</span>({ buffer: fileBuffer, width: <span class="num">1920</span>, height: <span class="num">1080</span>, grayscale: <span class="kw">false</span> });
+worker.<span class="fn">onmessage</span> = (e) =&gt; {
+  console.<span class="fn">log</span>(<span class="str">`Processado em ${e.data.elapsed.toFixed(0)}ms`</span>);  <span class="cm">// ~300ms vs 4000ms em JS</span>
+};</code></pre>
+
+<p><strong>Resultado esperado:</strong> De 3-5s (JS puro) para 200-500ms (WASM) — <strong>melhoria de 10-15x</strong>. O investimento em Rust/WASM se paga quando a feature e critica para UX.</p>
+
+<!-- ═══ ARMADILHAS COMUNS ═══ -->
+<h3>7. Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Usar WASM para tudo:</strong> WASM não é mais rápido que JS para DOM manipulation, I/O ou operações simples. O overhead de serialization + boundary crossing pode tornar WASM MAIS LENTO que JS puro para operações triviais. Use WASM apenas para computação intensiva (crypto, image/video processing, parsing, compression).</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Ignorar o tamanho do bundle WASM:</strong> Um .wasm file de 2MB no browser é um problema serio de loading time. Use <code>wasm-opt -Oz</code> para otimizar, habilite tree-shaking com <code>wasm-pack</code>, e considere lazy loading do módulo WASM apenas quando necessário.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Lutar contra o borrow checker:</strong> Se você esta usando <code>clone()</code> em todo lugar ou <code>unsafe</code> para "silenciar" o compilador, você esta fazendo errado. O borrow checker esta te dizendo que seu design de dados tem um problema. Reestruture seus tipos antes de recorrer a hacks.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Chamar WASM em loop do JS:</strong> Cada chamada JS → WASM tem overhead. Se você chama <code>wasm.processPixel()</code> 1 milhão de vezes, a maior parte do tempo será gasta cruzando a boundary. Passe o array inteiro e itere dentro do WASM.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Abusar de unsafe em Rust:</strong> Cada bloco <code>unsafe</code> é um contrato que VOCE garante a segurança. Um <code>unsafe</code> errado pode causar undefined behavior — exatamente os bugs que Rust existe para prevenir. Sempre crie safe wrappers em torno de unsafe, e valide inputs ANTES do bloco unsafe.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática para WASM:</strong> Se a operação leva menós de 1ms em JS, não vale a pena mover para WASM. Se leva mais de 100ms e e CPU-bound, WASM pode dar 5-20x de speedup. Profile primeiro, otimize depois.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>8. Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Explique por que este código Rust NAO compila é como corrigir sem usar clone().</div>
+<div class="qa-a">
+<pre data-lang="rust"><code><span class="kw">fn</span> <span class="fn">main</span>() {
+    <span class="kw">let mut</span> data = <span class="kw">vec!</span>[<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>];
+    <span class="kw">let</span> first = &amp;data[<span class="num">0</span>];     <span class="cm">// referência imutável</span>
+    data.<span class="fn">push</span>(<span class="num">4</span>);              <span class="cm">// mutacao</span>
+    <span class="fn">println!</span>(<span class="str">"{}"</span>, first);    <span class="cm">// usa referência imutável</span>
+}</code></pre>
+<p><strong>Resposta:</strong> O borrow checker impede isso porque <code>first</code> é uma referência imutável para <code>data[0]</code>, mas <code>data.push(4)</code> precisa de uma referência mutável ao Vec inteiro. Alem disso, <code>push()</code> pode causar reallocation do Vec na heap, inválidando a referência <code>first</code> (seria um dangling pointer). Correcao: use <code>first</code> ANTES do push, ou salve o índice (<code>let idx = 0</code>) e acesse depois do push.</p>
+<pre data-lang="rust"><code><span class="kw">fn</span> <span class="fn">main</span>() {
+    <span class="kw">let mut</span> data = <span class="kw">vec!</span>[<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>];
+    <span class="fn">println!</span>(<span class="str">"{}"</span>, data[<span class="num">0</span>]);  <span class="cm">// usa ANTES da mutacao</span>
+    data.<span class="fn">push</span>(<span class="num">4</span>);              <span class="cm">// agora pode mutar</span>
+}</code></pre>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Você precisa processar 10GB de logs em Node.js. O processamento atual em JS puro leva 45 minutos. Que abordagem WASM/native você usaria?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Para processamento de dados em Node.js (não browser), use <strong>napi-rs</strong> (native addon em Rust), não WASM. Razoes:</p>
+<ul>
+<li><strong>WASM no Node:</strong> Limitado a 4GB de memória linear (32-bit address space). 10GB não cabe</li>
+<li><strong>napi-rs:</strong> Acessó direto ao filesystem e memória do sistema, sem limite de 4GB. Pode usar memory-mapped files (<code>mmap</code>) para processar o arquivo sem carregar tudo na RAM</li>
+<li><strong>Estrategia:</strong> (1) Use <code>memmap2</code> para mapear o arquivo, (2) Parse com <code>nom</code> ou regex em Rust (10-50x mais rápido que JS regex), (3) Retorne resultados agregados via napi-rs. Resultado esperado: de 45 min para 2-5 min</li>
+<li><strong>Alternativa:</strong> Se não quer Rust, use Streams do Node.js com <code>readline</code> — não resolve performance mas resolve o problema de memória</li>
+</ul>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Projete a arquitetura de um módulo WASM para validação de schemas JSON no browser que precisa validar 100K documentos por segundo.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong></p>
+<ol>
+<li><strong>Linguagem:</strong> Rust com <code>serde_json</code> + <code>jsonschema</code> crate, compilado para WASM via <code>wasm-pack</code></li>
+<li><strong>Arquitetura:</strong>
+<ul>
+<li>Compilar o schema uma vez (<code>compile_schema()</code>) é manter o válidador compilado em memória WASM como <code>static</code></li>
+<li>Enviar documentos em batch (array de JSON como um único buffer, não um por um)</li>
+<li>Retornar array de resultados (valid/invalid + errors) como buffer serializado</li>
+</ul>
+</li>
+<li><strong>Memory:</strong> Pre-alocar 32MB de memória linear. Reútilizar buffers entre chamadas (object pool pattern)</li>
+<li><strong>Threading:</strong> Se o browser suporta SharedArrayBuffer, usar múltiplos Web Workers com WASM threads (1 worker por CPU core). Cada worker válida um subset dos documentos</li>
+<li><strong>Métricas esperadas:</strong> <code>jsonschema</code> em Rust válida ~500K docs/s single-threaded. Com 4 workers: ~1.5M docs/s. JS (<code>ajv</code>): ~50K docs/s. Speedup: ~10-30x</li>
+</ol>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Low-Level & Systems Programming</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="58-mobile-development.html">&#8592; Anterior: Mobile Development</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="60-gestao-produto-metricas.html" class="primary">Próximo: Gestão de Produto & Métricas &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 59: Low-Level & Systems Programming
+// ══════════════════════════════════════════
+const SECTION_NUM = 59;
+const STORAGE_KEY = 'fsm_quiz_59';
+
+const QUIZ_DATA = [
+  {
+    question: "Quais são as 3 regras fundamentais do ownership system em Rust?",
+    options: [
+      "Cada valor tem um owner, só um owner por vez, o owner pode ser copiado automáticamente",
+      "Cada valor tem um owner, só um owner por vez, quando o owner sai de escopo o valor e dropado",
+      "Valores são compartilhados entre owners, o GC resolve conflitos, ownership é opcional",
+      "Cada valor tem múltiplos owners, o último owner faz o drop, referências são sempre mutaveis"
+    ],
+    correct: 1,
+    explanation: "As 3 regras: (1) Cada valor tem exatamente um owner. (2) So pode existir um owner por vez. (3) Quando o owner sai de escopo, o valor e automáticamente dropado (destruido). Isso elimina GC e previne memory leaks."
+  },
+  {
+    question: "Qual a diferença entre Move semantics e Copy em Rust?",
+    options: [
+      "Não ha diferença — todos os tipos usam Move",
+      "Copy e para tipos na heap, Move e para tipos na stack",
+      "Tipos na stack com trait Copy são copiados automáticamente; tipos na heap usam Move (transferem ownership)",
+      "Move é mais rápido que Copy porque não duplica dados"
+    ],
+    correct: 2,
+    explanation: "Tipos que implementam Copy (i32, f64, bool — dados na stack com tamanho fixo) são copiados bit-a-bit automáticamente. Tipos na heap (String, Vec) usam Move semantics — o ownership e transferido é o original se torna inválido."
+  },
+  {
+    question: "O que o borrow checker impede em relacao a referências imutaveis e mutaveis?",
+    options: [
+      "Não permite nenhum tipo de referência",
+      "Permite N &T OU 1 &mut T, mas nunca ambas simultaneamente",
+      "Permite 1 &T e 1 &mut T ao mesmo tempo",
+      "So permite &mut T, nunca &T"
+    ],
+    correct: 1,
+    explanation: "O borrow checker garante: você pode ter N referências imutaveis (&T) OU exatamente 1 referência mutável (&mut T) — NUNCA ambas ao mesmo tempo. Isso previne data races em compile time, sem necessidade de locks."
+  },
+  {
+    question: "O que é WebAssembly (WASM) é quando faz sentido usa-lo?",
+    options: [
+      "Uma linguagem de programacao que substitui JavaScript no browser",
+      "Um formato binário que roda no browser com performance nativa, ideal para computação intensiva (image processing, crypto, parsing)",
+      "Uma extensão do JavaScript que adiciona tipagem estática",
+      "Um runtime server-side alternativo ao Node.js"
+    ],
+    correct: 1,
+    explanation: "WASM é um formato binário de instruções (não uma linguagem) que roda no browser com performance próxima a nativa. Não substitui JS — complementa. Use para partes computacionalmente intensivas onde JS e lento."
+  },
+  {
+    question: "O que é WASI e qual seu proposito?",
+    options: [
+      "Uma biblioteca JavaScript para interágir com WASM",
+      "Um compilador de Rust para WASM",
+      "Uma interface que permite WASM acessar recursos do sistema (filesystem, network) fora do browser de forma segura",
+      "Um debugger para módulos WASM"
+    ],
+    correct: 2,
+    explanation: "WASI (WebAssembly System Interface) é uma interface padrão que permite módulos WASM acessarem recursos do SO (filesystem, network, clocks) de forma segura e portavel. Usa capability-based security — o módulo só acessa o que você permitir."
+  },
+  {
+    question: "Qual a principal diferença entre Stack e Heap em termos de performance?",
+    options: [
+      "Heap é mais rápida porque tem mais espaço",
+      "Stack é mais rápida (O(1) push/pop, cache-friendly); Heap é mais lenta (busca por bloco livre, fragmentação)",
+      "Não ha diferença de performance significativa",
+      "Stack é mais lenta porque tem tamanho fixo"
+    ],
+    correct: 1,
+    explanation: "Stack: alocação O(1) (basta mover o ponteiro), dados contiguos (cache-friendly). Heap: alocação O(n) no pior caso (busca por bloco livre), dados espalhados (cache misses), sujeita a fragmentação. Stack e ordens de magnitude mais rápida."
+  },
+  {
+    question: "Qual a 'regra de ouro' do JS/WASM interop em termos de performance?",
+    options: [
+      "Sempre usar SharedArrayBuffer para comunicação",
+      "Minimizar boundary crossings — enviar dados de uma vez, processar dentro do WASM, retornar resultado",
+      "Chamar WASM funções individualmente para cada item para maximizar granularidade",
+      "Usar JSON.stringify para serializar todos os dados"
+    ],
+    correct: 1,
+    explanation: "Cada chamada JS → WASM tem overhead (~100ns). Se você chama WASM 1M vezes em um loop, o overhead domina. A regra e: passe os dados de uma vez (buffer) e itere dentro do WASM, retornando o resultado agregado."
+  },
+  {
+    question: "Quando e justificavel usar 'unsafe' em Rust?",
+    options: [
+      "Sempre que o borrow checker reclamar — e só uma sugestão",
+      "Para derreferênciar raw pointers, FFI, acessar static mut — sempre com validação ANTES e safe wrapper em volta",
+      "Nunca — código Rust nunca deve ter unsafe",
+      "Apenas em testes unitários"
+    ],
+    correct: 1,
+    explanation: "unsafe é necessário para: derreferênciar raw pointers, chamar funções FFI, acessar static mutaveis, implementar unsafe traits. O padrão idiomatico e: validar inputs ANTES do bloco unsafe e encapsular em uma função safe (safe wrapper)."
+  },
+  {
+    question: "Qual a vantagem de napi-rs (native addon Rust) sobre WASM no Node.js?",
+    options: [
+      "napi-rs é mais lento mas mais fácil de usar",
+      "WASM no Node não tem limite de memória",
+      "napi-rs tem acesso direto ao filesystem e sistema sem limite de 4GB de memória linear do WASM",
+      "Não ha diferença prática — ambos tem o mesmo acesso"
+    ],
+    correct: 2,
+    explanation: "WASM no Node tem limitação de 4GB de memória linear (32-bit address space) e acesso restrito ao sistema. napi-rs (native addon) tem acesso direto ao filesystem, syscalls, memória do sistema sem limite de 4GB. Para processar 10GB de dados, napi-rs é a escolha certa."
+  },
+  {
+    question: "Qual bug de memória o ownership system de Rust previne em compile time que é a causa de ~70% dos CVEs em C/C++?",
+    options: [
+      "Stack overflow",
+      "Integer overflow",
+      "Buffer overflow e use-after-free",
+      "Memory fragmentation"
+    ],
+    correct: 2,
+    explanation: "Buffer overflow (escrever além dos limites) e use-after-free (acessar memória liberada) são responsaveis por ~70% das CVEs em C/C++ (dados da Microsoft e Google). Rust previne ambos: bounds checking em runtime (panic vs undefined behavior) e ownership/lifetimes impedem use-after-free em compile time."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Systems Programming.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

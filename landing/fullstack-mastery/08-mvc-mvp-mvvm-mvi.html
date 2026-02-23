@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>08 — MVC, MVP, MVVM, MVI | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="07-clean-hexagonal-onion.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>08</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="09-microservices-vs-monolito.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:12.1%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 08</span>
+<h2>MVC, MVP, MVVM, MVI</h2>
+<div class="section-line"></div>
+
+<p>Os quatro padrões de apresentacao mais influentes da história do software. Todos resolvem o mesmo problema fundamental: <strong>como separar a lógica de negócio da interface do usuário</strong>. A diferença esta em como cada um organiza a comunicação entre as camadas. Entender essas diferenças e crucial para escolher a arquitetura certa para cada tipo de aplicação.</p>
+
+<p>Nenhum desses padrões e universalmente melhor que o outro. Cada um foi criado para resolver problemas específicos de um contexto. MVC nasceu em 1979 no Smalltalk. MVI chegou com o React/Redux em 2015. A evolução reflete como a complexidade das interfaces mudou ao longo das decadas.</p>
+
+<!-- ═══ MVC ═══ -->
+<h3>MVC — Model-View-Controller</h3>
+<p><strong>O padrão original, criado por Trygve Reenskaug em 1979 no Smalltalk.</strong> E o mais antigo é mais amplamente adotado dos quatro. A ideia central é simples: separar dados (Model), apresentacao (View) e lógica de controle (Controller) em três componentes distintos.</p>
+
+<p><strong>Como funciona no contexto web:</strong></p>
+<ul>
+<li><strong>Model</strong> — Representa os dados e as regras de negócio. Não sabe nada sobre a View ou o Controller. E a "verdade" do sistema</li>
+<li><strong>View</strong> — Renderiza os dados do Model para o usuário. Pode observar o Model diretamente (MVC clássico) ou receber dados do Controller (web MVC)</li>
+<li><strong>Controller</strong> — Recebe input do usuário (requisições HTTP no web), interpreta a intencao, manipula o Model e seleciona a View adequada</li>
+</ul>
+
+<h4>Fluxo de uma requisição em Web MVC</h4>
+<div class="diagram">
+<div class="diagram-box cyan">Usuario<br><small>(HTTP Request)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Controller<br><small>(Recebe input)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Model<br><small>(Logica + Dados)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">View<br><small>(Renderiza HTML)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Usuario<br><small>(HTTP Response)</small></div>
+</div>
+
+<p><strong>Frameworks que usam MVC:</strong> Ruby on Rails, Laravel (PHP), Spring MVC (Java), ASP.NET MVC, NestJS (com templates), Django (chamam de MTV — Model-Template-View, mas é a mesma ideia).</p>
+
+<h4>Exemplo: NestJS Controller + Service</h4>
+<pre data-lang="typescript"><code><span class="cm">// ── MODEL: Entidade + Service com lógica de negócio ──</span>
+<span class="ann">@Entity</span>()
+<span class="kw">class</span> <span class="tp">Product</span> {
+  <span class="ann">@PrimaryGeneratedColumn</span>(<span class="str">'uuid'</span>)
+  id: <span class="tp">string</span>;
+
+  <span class="ann">@Column</span>()
+  name: <span class="tp">string</span>;
+
+  <span class="ann">@Column</span>(<span class="str">'decimal'</span>)
+  price: <span class="tp">number</span>;
+
+  <span class="ann">@Column</span>({ default: <span class="kw">true</span> })
+  active: <span class="tp">boolean</span>;
+}
+
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">ProductService</span> {
+  <span class="kw">constructor</span>(
+    <span class="ann">@InjectRepository</span>(<span class="tp">Product</span>)
+    <span class="kw">private</span> repo: <span class="tp">Repository</span>&lt;<span class="tp">Product</span>&gt;,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">findAll</span>(): <span class="tp">Promise</span>&lt;<span class="tp">Product</span>[]&gt; {
+    <span class="kw">return</span> <span class="kw">this</span>.repo.<span class="fn">find</span>({ where: { active: <span class="kw">true</span> } });
+  }
+
+  <span class="kw">async</span> <span class="fn">create</span>(dto: <span class="tp">CreateProductDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">Product</span>&gt; {
+    <span class="kw">const</span> product = <span class="kw">this</span>.repo.<span class="fn">create</span>(dto);
+    <span class="kw">return</span> <span class="kw">this</span>.repo.<span class="fn">save</span>(product);
+  }
+}
+
+<span class="cm">// ── CONTROLLER: Recebe input, delega ao Model ──</span>
+<span class="ann">@Controller</span>(<span class="str">'products'</span>)
+<span class="kw">class</span> <span class="tp">ProductController</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> productService: <span class="tp">ProductService</span>) {}
+
+  <span class="ann">@Get</span>()
+  <span class="kw">async</span> <span class="fn">list</span>() {
+    <span class="cm">// Controller e FINO — apenas delega</span>
+    <span class="kw">return</span> <span class="kw">this</span>.productService.<span class="fn">findAll</span>();
+  }
+
+  <span class="ann">@Post</span>()
+  <span class="kw">async</span> <span class="fn">create</span>(<span class="ann">@Body</span>() dto: <span class="tp">CreateProductDto</span>) {
+    <span class="kw">return</span> <span class="kw">this</span>.productService.<span class="fn">create</span>(dto);
+  }
+}
+
+<span class="cm">// ── VIEW: Templaté renderizado (server-side) ──</span>
+<span class="cm">// Em APIs REST, a "View" e o JSON serializado.</span>
+<span class="cm">// Em server-rendered: Handlebars, EJS, Blade, ERB, etc.</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>MVC no web moderno:</strong> Na maioria das SPAs (React, Angular, Vue), o "MVC clássico" não se aplica diretamente porque a View é o Controller vivem no client. O backend vira uma API REST/GraphQL — o Model puro. O padrão MVC ainda domina em aplicações server-rendered (Rails, Laravel, NestJS com templates).</div>
+</div>
+
+<!-- ═══ MVP ═══ -->
+<h3>MVP — Model-View-Presenter</h3>
+<p><strong>Evolucao do MVC para interfaces ricas.</strong> A diferença fundamental: no MVP, a <strong>View é completamente passiva</strong> (chamada de "dumb view"). Ela não conhece o Model. Toda a lógica de apresentacao fica no Presenter, que atua como intermediário.</p>
+
+<p><strong>Caracteristicas do MVP:</strong></p>
+<ul>
+<li><strong>View</strong> — Apenas exibe dados e encaminha eventos do usuário para o Presenter. Implementa uma interface (ex: <code>IProductView</code>) para que o Presenter possa atualiza-la</li>
+<li><strong>Presenter</strong> — Contem toda a lógica de apresentacao. Recebe eventos da View, manipula o Model, e atualiza a View via interface. Testavel sem UI real</li>
+<li><strong>Model</strong> — Igual ao MVC: dados e regras de negócio</li>
+</ul>
+
+<h4>Fluxo do MVP</h4>
+<div class="diagram">
+<div class="diagram-box purple">View<br><small>(Passiva / Dumb)</small></div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box green">Presenter<br><small>(Toda a lógica)</small></div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box blue">Model<br><small>(Dados)</small></div>
+</div>
+
+<p><strong>Ponto chave:</strong> A View <strong>nunca</strong> acessa o Model diretamente. Toda comunicação passa pelo Presenter. Isso fácilita testes unitários — você substitui a View por um mock.</p>
+
+<h4>Exemplo: MVP com TypeScript</h4>
+<pre data-lang="typescript"><code><span class="cm">// ── Interface da View (contrato) ──</span>
+<span class="kw">interface</span> <span class="tp">IProductListView</span> {
+  <span class="fn">showProducts</span>(products: <span class="tp">Product</span>[]): <span class="tp">void</span>;
+  <span class="fn">showLoading</span>(): <span class="tp">void</span>;
+  <span class="fn">showError</span>(message: <span class="tp">string</span>): <span class="tp">void</span>;
+  <span class="fn">showEmpty</span>(): <span class="tp">void</span>;
+}
+
+<span class="cm">// ── Presenter: toda a lógica de apresentacao ──</span>
+<span class="kw">class</span> <span class="tp">ProductListPresenter</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> view: <span class="tp">IProductListView</span>,
+    <span class="kw">private</span> productService: <span class="tp">ProductService</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">onViewReady</span>() {
+    <span class="kw">this</span>.view.<span class="fn">showLoading</span>();
+    <span class="kw">try</span> {
+      <span class="kw">const</span> products = <span class="kw">await</span> <span class="kw">this</span>.productService.<span class="fn">getAll</span>();
+      <span class="kw">if</span> (products.length === <span class="num">0</span>) {
+        <span class="kw">this</span>.view.<span class="fn">showEmpty</span>();
+      } <span class="kw">else</span> {
+        <span class="kw">this</span>.view.<span class="fn">showProducts</span>(products);
+      }
+    } <span class="kw">catch</span> (err) {
+      <span class="kw">this</span>.view.<span class="fn">showError</span>(<span class="str">'Falha ao carregar produtos'</span>);
+    }
+  }
+
+  <span class="kw">async</span> <span class="fn">onDeleteClicked</span>(productId: <span class="tp">string</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.productService.<span class="fn">delete</span>(productId);
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">onViewReady</span>(); <span class="cm">// Recarrega a lista</span>
+  }
+}
+
+<span class="cm">// ── View: apenas implementa a interface, sem lógica ──</span>
+<span class="kw">class</span> <span class="tp">ProductListPage</span> <span class="kw">implements</span> <span class="tp">IProductListView</span> {
+  <span class="kw">private</span> presenter: <span class="tp">ProductListPresenter</span>;
+
+  <span class="kw">constructor</span>() {
+    <span class="kw">this</span>.presenter = <span class="kw">new</span> <span class="tp">ProductListPresenter</span>(<span class="kw">this</span>, <span class="kw">new</span> <span class="tp">ProductService</span>());
+    <span class="kw">this</span>.presenter.<span class="fn">onViewReady</span>();
+  }
+
+  <span class="fn">showProducts</span>(products: <span class="tp">Product</span>[]) {
+    <span class="cm">// Renderiza a lista no DOM — sem lógica de decisão</span>
+  }
+
+  <span class="fn">showLoading</span>() { <span class="cm">/* Mostra spinner */</span> }
+  <span class="fn">showError</span>(msg: <span class="tp">string</span>) { <span class="cm">/* Mostra mensagem de erro */</span> }
+  <span class="fn">showEmpty</span>() { <span class="cm">/* Mostra estado vazio */</span> }
+}</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Onde MVP ainda vive:</strong> MVP foi extremamente popular no Android com Java (antes do Jetpack/Compose). Também é usado em aplicações desktop (WinForms). No web moderno, foi amplamente substituido por MVVM e MVI.</div>
+</div>
+
+<!-- ═══ MVVM ═══ -->
+<h3>MVVM — Model-View-ViewModel</h3>
+<p><strong>Criado por John Gossman na Microsoft em 2005 para WPF/Silverlight.</strong> O conceito central é o <strong>two-way data binding</strong> — a View se liga (binds) ao ViewModel, e mudanças em qualquer lado se propagam automáticamente para o outro.</p>
+
+<p><strong>Caracteristicas do MVVM:</strong></p>
+<ul>
+<li><strong>Model</strong> — Dados e regras de negócio (igual aos outros padrões)</li>
+<li><strong>View</strong> — Templaté declarativo que se liga ao ViewModel. Não contém lógica de negócio</li>
+<li><strong>ViewModel</strong> — Expoe dados observaveis (reactive state) e comandos (actions). E a "representacao da View em dados". A View observa o ViewModel e reage a mudanças</li>
+</ul>
+
+<h4>Fluxo do MVVM</h4>
+<div class="diagram">
+<div class="diagram-box purple">View<br><small>(Templaté declarativo)</small></div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box orange">ViewModel<br><small>(Estado observável)</small></div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box blue">Model<br><small>(Dados + Regras)</small></div>
+</div>
+
+<p><strong>O "two-way binding":</strong> Quando o usuário digita em um input, o ViewModel atualiza automáticamente. Quando o ViewModel muda um valor, a View re-renderiza automáticamente. Não ha chamada manual de <code>view.showProducts()</code> como no MVP.</p>
+
+<p><strong>Frameworks que usam MVVM:</strong> Angular, Vue.js, SwiftUI, WPF/MAUI (.NET), Knockout.js.</p>
+
+<h4>Exemplo: Vue 3 Composition API</h4>
+<pre data-lang="vue"><code><span class="cm">&lt;!-- ── VIEW: Templaté declarativo com binding ── --&gt;</span>
+&lt;template&gt;
+  &lt;div&gt;
+    &lt;input <span class="ann">v-model</span>=<span class="str">"searchTerm"</span> placeholder=<span class="str">"Buscar..."</span> /&gt;
+
+    &lt;div <span class="ann">v-if</span>=<span class="str">"loading"</span>&gt;Carregando...&lt;/div&gt;
+
+    &lt;ul <span class="ann">v-else</span>&gt;
+      &lt;li <span class="ann">v-for</span>=<span class="str">"product in filteredProducts"</span> <span class="ann">:key</span>=<span class="str">"product.id"</span>&gt;
+        {{ product.name }} — R$ {{ product.price }}
+        &lt;button <span class="ann">@click</span>=<span class="str">"removeProduct(product.id)"</span>&gt;Remover&lt;/button&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;p&gt;Total: {{ totalPrice }}&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+<span class="cm">&lt;!-- ── VIEWMODEL: Estado reativo + lógica de apresentacao ── --&gt;</span>
+&lt;script setup lang=<span class="str">"ts"</span>&gt;
+<span class="kw">import</span> { ref, computed, onMounted } <span class="kw">from</span> <span class="str">'vue'</span>;
+<span class="kw">import</span> { productApi } <span class="kw">from</span> <span class="str">'../services/api'</span>;
+
+<span class="cm">// Estado reativo (observável)</span>
+<span class="kw">const</span> products = <span class="fn">ref</span>&lt;<span class="tp">Product</span>[]&gt;([]);
+<span class="kw">const</span> searchTerm = <span class="fn">ref</span>(<span class="str">''</span>);
+<span class="kw">const</span> loading = <span class="fn">ref</span>(<span class="kw">false</span>);
+
+<span class="cm">// Computed: derivado automáticamente do estado</span>
+<span class="kw">const</span> filteredProducts = <span class="fn">computed</span>(() =>
+  products.value.<span class="fn">filter</span>(p =>
+    p.name.<span class="fn">toLowerCase</span>().<span class="fn">includes</span>(searchTerm.value.<span class="fn">toLowerCase</span>())
+  )
+);
+
+<span class="kw">const</span> totalPrice = <span class="fn">computed</span>(() =>
+  filteredProducts.value.<span class="fn">reduce</span>((sum, p) => sum + p.price, <span class="num">0</span>)
+);
+
+<span class="cm">// Comandos (actions)</span>
+<span class="kw">async function</span> <span class="fn">loadProducts</span>() {
+  loading.value = <span class="kw">true</span>;
+  products.value = <span class="kw">await</span> productApi.<span class="fn">getAll</span>();
+  loading.value = <span class="kw">false</span>;
+}
+
+<span class="kw">async function</span> <span class="fn">removeProduct</span>(id: <span class="tp">string</span>) {
+  <span class="kw">await</span> productApi.<span class="fn">delete</span>(id);
+  products.value = products.value.<span class="fn">filter</span>(p => p.id !== id);
+}
+
+<span class="fn">onMounted</span>(<span class="fn">loadProducts</span>);
+&lt;/script&gt;</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Vantagem do MVVM:</strong> A View é puramente declarativa — descreve "o que" mostrar, não "como" atualizar. O framework cuida da sincronização. Isso reduz drasticamente bugs de estado inconsistente entre View e dados.</div>
+</div>
+
+<!-- ═══ MVI ═══ -->
+<h3>MVI — Model-View-Intent</h3>
+<p><strong>O padrão mais recente, inspirado pela Elm Architecture (2012) e popularizado pelo Redux (2015).</strong> A ideia central é o <strong>fluxo unidirecional de dados</strong>: toda mudança no estado segue um caminho único e previsível. Não ha two-way binding — só ha uma direcao.</p>
+
+<p><strong>Componentes do MVI:</strong></p>
+<ul>
+<li><strong>Intent</strong> — Representa a intencao do usuário (clique, digitacao, scroll). E um evento puro, sem lógica. Ex: <code>{ type: 'ADD_TO_CART', productId: '123' }</code></li>
+<li><strong>Model</strong> — O estado completo e imutável da aplicação. Cada Intent gera um NOVO estado (nunca muta o anterior). Um reducer/processor transforma <code>(estadoAtual, intent) => novoEstado</code></li>
+<li><strong>View</strong> — Funcao pura do estado: <code>View = f(State)</code>. Dado o mesmo estado, sempre renderiza a mesma coisa. Sem side-effects</li>
+</ul>
+
+<h4>Fluxo do MVI (Unidirecional)</h4>
+<div class="diagram">
+<div class="diagram-box orange">Intent<br><small>(Acao do usuário)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Reducer<br><small>(Processa intent)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Model/State<br><small>(Estado imutável)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">View<br><small>f(State)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Intent<br><small>(Novo evento)</small></div>
+</div>
+
+<p><strong>Frameworks/libs que usam MVI:</strong> React + Redux, React + useReducer, Elm, Jetpack Compose + MVI, NgRx (Angular), Vuex/Pinia (Vue — com nuances).</p>
+
+<h4>Exemplo: React + useReducer</h4>
+<pre data-lang="typescript"><code><span class="cm">// ── TYPES: Estado e Intents (Actions) ──</span>
+<span class="kw">interface</span> <span class="tp">CartState</span> {
+  items: <span class="tp">CartItem</span>[];
+  loading: <span class="tp">boolean</span>;
+  error: <span class="tp">string</span> | <span class="kw">null</span>;
+}
+
+<span class="kw">type</span> <span class="tp">CartIntent</span> =
+  | { type: <span class="str">'ADD_ITEM'</span>; product: <span class="tp">Product</span> }
+  | { type: <span class="str">'REMOVE_ITEM'</span>; productId: <span class="tp">string</span> }
+  | { type: <span class="str">'SET_LOADING'</span>; loading: <span class="tp">boolean</span> }
+  | { type: <span class="str">'SET_ERROR'</span>; error: <span class="tp">string</span> }
+  | { type: <span class="str">'CLEAR_CART'</span> };
+
+<span class="cm">// ── REDUCER: (State, Intent) => Staté — função PURA ──</span>
+<span class="kw">function</span> <span class="fn">cartReducer</span>(state: <span class="tp">CartState</span>, intent: <span class="tp">CartIntent</span>): <span class="tp">CartState</span> {
+  <span class="kw">switch</span> (intent.type) {
+    <span class="kw">case</span> <span class="str">'ADD_ITEM'</span>: {
+      <span class="kw">const</span> exists = state.items.<span class="fn">find</span>(i => i.productId === intent.product.id);
+      <span class="kw">if</span> (exists) {
+        <span class="kw">return</span> {
+          ...state,
+          items: state.items.<span class="fn">map</span>(i =>
+            i.productId === intent.product.id
+              ? { ...i, quantity: i.quantity + <span class="num">1</span> }
+              : i
+          ),
+        };
+      }
+      <span class="kw">return</span> {
+        ...state,
+        items: [...state.items, { productId: intent.product.id,
+          name: intent.product.name, price: intent.product.price, quantity: <span class="num">1</span> }],
+      };
+    }
+    <span class="kw">case</span> <span class="str">'REMOVE_ITEM'</span>:
+      <span class="kw">return</span> { ...state, items: state.items.<span class="fn">filter</span>(i => i.productId !== intent.productId) };
+    <span class="kw">case</span> <span class="str">'SET_LOADING'</span>:
+      <span class="kw">return</span> { ...state, loading: intent.loading };
+    <span class="kw">case</span> <span class="str">'SET_ERROR'</span>:
+      <span class="kw">return</span> { ...state, error: intent.error, loading: <span class="kw">false</span> };
+    <span class="kw">case</span> <span class="str">'CLEAR_CART'</span>:
+      <span class="kw">return</span> { ...state, items: [], error: <span class="kw">null</span> };
+    <span class="kw">default</span>:
+      <span class="kw">return</span> state;
+  }
+}
+
+<span class="cm">// ── VIEW: Funcao pura do estado ──</span>
+<span class="kw">function</span> <span class="fn">Cart</span>() {
+  <span class="kw">const</span> [state, dispatch] = <span class="fn">useReducer</span>(cartReducer, {
+    items: [], loading: <span class="kw">false</span>, error: <span class="kw">null</span>,
+  });
+
+  <span class="kw">const</span> total = state.items.<span class="fn">reduce</span>(
+    (sum, i) => sum + i.price * i.quantity, <span class="num">0</span>
+  );
+
+  <span class="kw">return</span> (
+    &lt;div&gt;
+      {state.loading &amp;&amp; &lt;p&gt;Carregando...&lt;/p&gt;}
+      {state.error &amp;&amp; &lt;p className=<span class="str">"error"</span>&gt;{state.error}&lt;/p&gt;}
+
+      {state.items.<span class="fn">map</span>(item =&gt; (
+        &lt;div key={item.productId}&gt;
+          {item.name} x{item.quantity} — R$ {item.price * item.quantity}
+          &lt;button onClick={() =&gt; <span class="fn">dispatch</span>({
+            type: <span class="str">'REMOVE_ITEM'</span>, productId: item.productId
+          })}&gt;Remover&lt;/button&gt;
+        &lt;/div&gt;
+      ))}
+
+      &lt;p&gt;Total: R$ {total}&lt;/p&gt;
+      &lt;button onClick={() =&gt; <span class="fn">dispatch</span>({ type: <span class="str">'CLEAR_CART'</span> })}&gt;
+        Limpar Carrinho
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Vantagem do MVI:</strong> Estado completamente previsível. Você pode fazer "time-travel debugging" (voltar a estados anteriores), serializar o estado inteiro, e reproduzir bugs com precisão. Cada transição de estado e rastreável.</div>
+</div>
+
+<!-- ═══ TABELA COMPARATIVA ═══ -->
+<h3>Tabela Comparativa</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Padrão</th>
+<th>Fluxo de Dados</th>
+<th>Papel da View</th>
+<th>Melhor Para</th>
+<th>Frameworks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MVC</strong></td>
+<td>Bidirecional (View pode observar Model)</td>
+<td>Ativa — pode ler dados do Model</td>
+<td>Server-side rendering, CRUD apps, APIs REST</td>
+<td>Rails, Laravel, Spring MVC, NestJS, Django</td>
+</tr>
+<tr>
+<td><strong>MVP</strong></td>
+<td>Bidirecional via Presenter</td>
+<td>Passiva — só implementa interface</td>
+<td>Apps desktop, Android legado, alta testabilidade</td>
+<td>Android (Java), WinForms, GWT</td>
+</tr>
+<tr>
+<td><strong>MVVM</strong></td>
+<td>Two-way data binding</td>
+<td>Declarativa — binding automático</td>
+<td>Rich clients, formulários complexos, SPAs</td>
+<td>Angular, Vue, SwiftUI, WPF, Knockout</td>
+</tr>
+<tr>
+<td><strong>MVI</strong></td>
+<td>Unidirecional (Intent &rarr; Staté &rarr; View)</td>
+<td>Funcao pura — f(State)</td>
+<td>Estado complexo, muitas transicoes, debug</td>
+<td>React+Redux, Elm, Jetpack Compose, NgRx</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Escolhendo o Padrão Certo</h3>
+<p><strong>Cenário:</strong> Você precisa construir um dashboard administrativo com gráficos, filtros, tabelas de dados e acoes em tempo real. Qual padrão de apresentacao escolher?</p>
+
+<div class="card">
+<div class="card-title">Arvore de Decisao</div>
+<ul>
+<li><strong>E server-rendered (SSR)?</strong> Paginas geradas no servidor com formulários simples? &rarr; <strong>MVC</strong> (Rails, Laravel, NestJS + templates)</li>
+<li><strong>E um rich client com formulários complexos e binding bidirecional?</strong> Muitos inputs, edicao inline, auto-save? &rarr; <strong>MVVM</strong> (Angular, Vue)</li>
+<li><strong>Tem transicoes de estado complexas?</strong> Multiplos loading states, undo/redo, estado compartilhado entre muitos componentes? &rarr; <strong>MVI</strong> (React + Redux/useReducer)</li>
+<li><strong>Precisa de altissima testabilidade da lógica de UI?</strong> Cada interáção precisa de teste unitário sem DOM? &rarr; <strong>MVP</strong> (via interface mockavel)</li>
+</ul>
+</div>
+
+<h4>Para o Dashboard: MVI + MVVM Hibrido</h4>
+<p>Na prática, dashboards modernós usam uma <strong>abordagem hibrida</strong>:</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Estado global com MVI (Redux/Zustand) para dados compartilhados</span>
+<span class="kw">interface</span> <span class="tp">DashboardState</span> {
+  filters: <span class="tp">FilterConfig</span>;
+  dateRange: <span class="tp">DateRange</span>;
+  metrics: <span class="tp">Metric</span>[];
+  selectedChart: <span class="tp">string</span>;
+  loading: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">boolean</span>&gt;;
+}
+
+<span class="cm">// Reducer para transicoes de estado previsiveis</span>
+<span class="kw">function</span> <span class="fn">dashboardReducer</span>(state: <span class="tp">DashboardState</span>, action: <span class="tp">DashboardAction</span>) {
+  <span class="kw">switch</span> (action.type) {
+    <span class="kw">case</span> <span class="str">'SET_DATE_RANGE'</span>:
+      <span class="kw">return</span> { ...state, dateRange: action.range };
+    <span class="kw">case</span> <span class="str">'METRICS_LOADED'</span>:
+      <span class="kw">return</span> { ...state, metrics: action.data, loading: { ...state.loading, metrics: <span class="kw">false</span> } };
+    <span class="cm">// ...</span>
+  }
+}
+
+<span class="cm">// Componentes individuais com MVVM (reactive local state)</span>
+<span class="kw">function</span> <span class="fn">ChartWidget</span>({ metrics }: { metrics: <span class="tp">Metric</span>[] }) {
+  <span class="cm">// Estado local reativo — MVVM dentro do componente</span>
+  <span class="kw">const</span> [chartType, setChartType] = <span class="fn">useState</span>(<span class="str">'line'</span>);
+  <span class="kw">const</span> [zoom, setZoom] = <span class="fn">useState</span>(<span class="num">1</span>);
+
+  <span class="cm">// View e função pura do estado (MVI no nível global)</span>
+  <span class="kw">return</span> &lt;<span class="tp">Chart</span> type={chartType} data={metrics} zoom={zoom} /&gt;;
+}</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Na prática:</strong> Aplicacoes modernas raramente usam UM único padrão puro. O React com hooks e naturalmente MVI no nível de estado global (useReducer/Redux) e MVVM no nível de componente (useStaté + binding). A chave e entender os trade-offs e aplicar o padrão certo em cada camada.</div>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Fat Controllers no MVC:</strong> O Controller deve ser FINO — apenas recebe input, delega ao Service/Model e retorna resposta. Se seu Controller tem 200 linhas com lógica de negócio, validação e queries SQL, você não tem MVC — você tem um monolito disfarçado. Regra: Controller com mais de 10 linhas por método esta errado.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Two-way binding causando loops infinitos (MVVM):</strong> Quando A observa B e B observa A, uma mudança em A atualiza B, que atualiza A, que atualiza B... infinitamente. Frameworks como Angular e Vue tem protecoes, mas em implementações customizadas isso é um bug comum. Solução: evite binding circular e use <code>computed</code> (derivados) ao inves de watchers bidirecionais.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Confundir MVC com "pastas chamadas Model, View, Controller":</strong> Criar pastas <code>/models</code>, <code>/views</code>, <code>/controllers</code> não significa que você esta usando MVC. MVC e sobre o FLUXO de comunicação entre camadas, não sobre a estrutura de pastas. Você pode ter a pasta <code>/controllers</code> com um Controller que acessa o banco diretamente — isso não é MVC.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Usar MVI/Redux para CRUD simples (overkill):</strong> Se sua aplicação é um formulário que salva dados no backend, você NAO precisa de Redux, reducers, actions é um store global. Um simples <code>useState</code> + <code>fetch</code> resolve. MVI brilha quando ha estado complexo, multiplas fontes de verdade, ou necessidade de time-travel debugging. Para um TODO app, MVI é um canhão matando formiga.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática de decisão:</strong> Comece simples (useState/MVVM local). Quando sentir dor (estado compartilhado entre 3+ componentes, bugs de sincronização, transicoes complexas), evolua para MVI. Não comece com a solução mais complexa — deixe a complexidade justificar a arquitetura.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você esta construindo um app de e-commerce com carrinho de compras, filtros de produto e checkout multi-step. Qual padrão de apresentacao você escolheria e por que?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>MVI (unidirecional)</strong> para o estado global do carrinho e checkout, combinado com <strong>MVVM</strong> para componentes individuais (filtros, formulários). O carrinho e compartilhado entre muitas páginas e tem transicoes complexas (adicionar, remover, aplicar cupom, calcular frete). O checkout multi-step tem um fluxo linear de estados. Isso justifica um reducer centralizado. Ja os filtros de produto são estado local do componente — MVVM com <code>useState</code> é suficiente.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu colega criou um Controller em NestJS com 300 linhas que busca dados no banco, aplica regras de negócio, envia emails e retorna HTML. Identifique todos os problemas usando os padrões desta seção.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Multiplas violações: (1) <strong>Fat Controller</strong> — o Controller deve ser fino, delegando para Services. (2) <strong>Model no Controller</strong> — queries e regras de negócio pertencem ao Service/Repository, não ao Controller. (3) <strong>Violacao de SRP</strong> — buscar dados, aplicar regras, enviar email e renderizar HTML são 4 responsabilidades diferentes. Solução: extrair <code>ProductService</code> (negócio), <code>EmailService</code> (notificação), é usar um templaté engine para a View. O Controller fica com ~5 linhas por rota.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Em um projeto MVVM com Vue, você tem um watcher que observa uma propriedade computada, e essa computada depende de outra propriedade que o watcher modifica. O que acontece é como resolver?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Isso cria um <strong>loop infinito de reatividade</strong>. A muda B (via watcher), B recalcula C (computed), C trigger o watcher novamente que muda A... Solução: (1) Use <code>computed</code> para derivar valores, nunca para causar efeitos colateráis. (2) Se precisa reagir a mudanças, use <code>watchEffect</code> com cuidado para não criar dependências circulares. (3) Repense a estrutura — se A depende de B e B depende de A, provavelmente precisa de um único estado fonte (single source of truth).</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — MVC, MVP, MVVM, MVI</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="07-clean-hexagonal-onion.html">&#8592; Clean/Hexagonal/Onion</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="09-microservices-vs-monolito.html" class="primary">Próximo: Microservices vs Monolito &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 08: MVC, MVP, MVVM, MVI
+// ══════════════════════════════════════════
+const SECTION_NUM = 8;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "No padrão MVC clássico para web, qual componente recebe a requisição HTTP do usuário?",
+    options: [
+      "Model",
+      "View",
+      "Controller",
+      "Router"
+    ],
+    correct: 2,
+    explanation: "No MVC web, o Controller é responsável por receber o input do usuário (requisição HTTP), interpretar a intencao, manipular o Model e selecionar a View adequada para a resposta."
+  },
+  {
+    question: "Qual é a principal diferença entre MVP e MVC?",
+    options: [
+      "MVP não usa Model",
+      "No MVP, a View e passiva e não conhece o Model diretamente",
+      "MVP usa two-way data binding",
+      "No MVP, o Controller e substituido por um ViewModel"
+    ],
+    correct: 1,
+    explanation: "No MVP, a View é completamente passiva (dumb view) e não conhece o Model. Toda comunicação entre View e Model passa pelo Presenter, que contém toda a lógica de apresentacao."
+  },
+  {
+    question: "Qual padrão de apresentacao útiliza two-way data binding como mecanismo central?",
+    options: [
+      "MVC",
+      "MVP",
+      "MVVM",
+      "MVI"
+    ],
+    correct: 2,
+    explanation: "O MVVM (Model-View-ViewModel) usa two-way data binding como mecanismo central. A View se liga ao ViewModel, e mudanças em qualquer lado se propagam automáticamente para o outro."
+  },
+  {
+    question: "No MVI, o que representa o 'Intent'?",
+    options: [
+      "O estado completo da aplicação",
+      "A intencao/acao do usuário (evento puro, sem lógica)",
+      "O templaté declarativo da View",
+      "A classe que conecta Model e View"
+    ],
+    correct: 1,
+    explanation: "No MVI, Intent representa a intencao do usuário — um evento puro como { type: 'ADD_TO_CART', productId: '123' }. E apenas a descricao da acao, sem lógica de processamento."
+  },
+  {
+    question: "Em um projeto React + useReducer, qual padrão de apresentacao esta sendo útilizado?",
+    options: [
+      "MVC — porque React separa componentes",
+      "MVP — porque useReducer é o Presenter",
+      "MVVM — porque hooks são ViewModels",
+      "MVI — porque useReducer implementa fluxo unidirecional (Intent -> Staté -> View)"
+    ],
+    correct: 3,
+    explanation: "useReducer implementa o padrão MVI: actions (Intents) são despachadas para o reducer, que produz um novo estado (Model), e o componente re-renderiza (View) como função pura desse estado. Fluxo unidirecional."
+  },
+  {
+    question: "Qual problema o two-way binding do MVVM pode causar se implementado incorretamente?",
+    options: [
+      "Memory leaks por falta de garbage collection",
+      "Loops infinitos de atualização quando A observa B e B observa A",
+      "SQL injection no backend",
+      "Race conditions em chamadas HTTP"
+    ],
+    correct: 1,
+    explanation: "Quando A observa B e B observa A (binding circular), uma mudança em A atualiza B, que atualiza A, que atualiza B... criando um loop infinito. Frameworks modernós tem protecoes, mas é uma armadilha clássica."
+  },
+  {
+    question: "O que é um 'Fat Controller' no contexto MVC e por que é um problema?",
+    options: [
+      "Um Controller com muitos endpoints — e normal em APIs grandes",
+      "Um Controller com lógica de negócio, queries SQL e formatacao — viola a separacao de camadas",
+      "Um Controller que usa muitos middlewares",
+      "Um Controller que retorna respostas grandes em JSON"
+    ],
+    correct: 1,
+    explanation: "Fat Controller é quando o Controller contém lógica de negócio, queries ao banco, envio de emails, etc. O Controller deve ser FINO — apenas recebe input, delega ao Service/Model e retorna resposta. Fat Controllers violam SRP e tornam o código intestável."
+  },
+  {
+    question: "Para uma aplicação de CRUD simples (cadastro de clientes), qual abordagem é mais adequada?",
+    options: [
+      "MVI com Redux, middleware de saga e estado global centralizado",
+      "MVP com interfaces para cada View e Presenters dedicados",
+      "MVC server-side ou MVVM com estado local (useState/ref)",
+      "Microservices com Event Sourcing e CQRS"
+    ],
+    correct: 2,
+    explanation: "Para CRUD simples, MVC server-side (Rails, Laravel) ou MVVM com estado local (useStaté no React, ref no Vue) é suficiente. Usar Redux/MVI para um formulário simples e overkill — adiciona complexidade sem benefício."
+  },
+  {
+    question: "Qual vantagem exclusiva do MVI sobre os outros padrões?",
+    options: [
+      "Melhor performance de renderizacao",
+      "Time-travel debugging e estado completamente previsível e rastreável",
+      "Menor quantidade de código necessário",
+      "Suporte nativo a TypeScript"
+    ],
+    correct: 1,
+    explanation: "O MVI, por usar estado imutável e fluxo unidirecional, permite time-travel debugging (voltar a estados anteriores), serializar o estado inteiro e reproduzir bugs com precisão. Cada transição de estado e rastreável."
+  },
+  {
+    question: "Qual afirmacao sobre a escolha de padrões de apresentacao esta CORRETA?",
+    options: [
+      "MVI é sempre superior porque é o mais moderno",
+      "MVVM deve ser evitado por causa dos loops de binding",
+      "Aplicacoes modernas frequentemente combinam padrões — MVI global + MVVM local",
+      "MVP é o melhor padrão para aplicações web modernas"
+    ],
+    correct: 2,
+    explanation: "Na prática, aplicações modernas combinam padrões. React com hooks e MVI no nível global (useReducer/Redux para estado compartilhado) e MVVM no nível de componente (useStaté + binding). A chave é usar o padrão certo em cada camada."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina os padrões de apresentacao.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

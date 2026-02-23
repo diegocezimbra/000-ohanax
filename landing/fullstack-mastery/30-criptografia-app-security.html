@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30 — Criptografia & Application Security | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="29-auth-oauth-jwt-rbac.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>30</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="31-lgpd-gdpr-privacy.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:45.5%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 30</span>
+<h2>Criptografia & Application Security</h2>
+<div class="section-line"></div>
+
+<p>Criptografia não é um diferencial — é um <strong>requisito básico</strong>. Qualquer aplicação que armazene dados de usuários, processe pagamentos ou trafegue informações sensíveis precisa dominar os fundamentos de encriptação, hashing e segurança de transporte. Nesta seção, cobrimos desde criptografia simétrica até um checklist completo de segurança aplicada, com exemplos práticos em TypeScript e NestJS.</p>
+
+<p>A regra de ouro: <strong>nunca implemente criptografia do zero</strong>. Use bibliotecas auditadas e algoritmos padronizados pelo NIST. "Rolling your own crypto" é o caminho mais rápido para uma brecha de segurança catastrofica.</p>
+
+<!-- ═══ 1. SYMMETRIC ENCRYPTION ═══ -->
+<h3>1. Criptografia Simétrica — AES-256-GCM</h3>
+
+<p>Na criptografia simétrica, a <strong>mesma chave</strong> é usada para encriptar e desencriptar. O algoritmo padrão da industria é o <strong>AES (Advanced Encryption Standard)</strong> com chave de 256 bits. O modo <strong>GCM (Galois/Counter Mode)</strong> é preferido porque além de encriptar, ele fornece <strong>autenticação da integridade</strong> dos dados (AEAD — Authenticated Encryption with Associated Data).</p>
+
+<p><strong>Como funciona o AES-GCM:</strong></p>
+<ol>
+<li>Uma <strong>chave de 256 bits</strong> (32 bytes) e gerada ou derivada de uma senha</li>
+<li>Um <strong>IV (Initialization Vector)</strong> de 12 bytes é gerado aleatóriamente para cada operação — nunca reútilize o IV com a mesma chave</li>
+<li>O plaintext e encriptado em blocos de 128 bits usando a chave + IV</li>
+<li>O GCM gera uma <strong>auth tag</strong> de 16 bytes que garante que os dados não foram adulterádos</li>
+<li>O resultado final: <code>IV + ciphertext + authTag</code></li>
+</ol>
+
+<p><strong>Casos de uso:</strong> dados em repousó (database column encryption), encriptação de arquivos, backups, tokens sensíveis armazenados.</p>
+
+<h4>Exemplo: AES-256-GCM com Node.js crypto</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { randomBytes, createCipheriv, createDecipheriv } <span class="kw">from</span> <span class="str">'crypto'</span>;
+
+<span class="kw">const</span> ALGORITHM = <span class="str">'aes-256-gcm'</span>;
+<span class="kw">const</span> IV_LENGTH = <span class="num">12</span>;
+<span class="kw">const</span> TAG_LENGTH = <span class="num">16</span>;
+
+<span class="cm">// Chave de 256 bits — em produção, vem de KMS ou env var</span>
+<span class="kw">const</span> ENCRYPTION_KEY = <span class="fn">randomBytes</span>(<span class="num">32</span>);
+
+<span class="kw">function</span> <span class="fn">encrypt</span>(plaintext: <span class="tp">string</span>): <span class="tp">string</span> {
+  <span class="kw">const</span> iv = <span class="fn">randomBytes</span>(IV_LENGTH);
+  <span class="kw">const</span> cipher = <span class="fn">createCipheriv</span>(ALGORITHM, ENCRYPTION_KEY, iv);
+
+  <span class="kw">let</span> encrypted = cipher.<span class="fn">update</span>(plaintext, <span class="str">'utf8'</span>);
+  encrypted = Buffer.<span class="fn">concat</span>([encrypted, cipher.<span class="fn">final</span>()]);
+
+  <span class="kw">const</span> authTag = cipher.<span class="fn">getAuthTag</span>(); <span class="cm">// 16 bytes — integridade</span>
+
+  <span class="cm">// Formato: IV (12) + ciphertext (N) + authTag (16)</span>
+  <span class="kw">const</span> result = Buffer.<span class="fn">concat</span>([iv, encrypted, authTag]);
+  <span class="kw">return</span> result.<span class="fn">toString</span>(<span class="str">'base64'</span>);
+}
+
+<span class="kw">function</span> <span class="fn">decrypt</span>(encryptedBase64: <span class="tp">string</span>): <span class="tp">string</span> {
+  <span class="kw">const</span> buffer = Buffer.<span class="fn">from</span>(encryptedBase64, <span class="str">'base64'</span>);
+
+  <span class="kw">const</span> iv = buffer.<span class="fn">subarray</span>(<span class="num">0</span>, IV_LENGTH);
+  <span class="kw">const</span> authTag = buffer.<span class="fn">subarray</span>(buffer.length - TAG_LENGTH);
+  <span class="kw">const</span> ciphertext = buffer.<span class="fn">subarray</span>(IV_LENGTH, buffer.length - TAG_LENGTH);
+
+  <span class="kw">const</span> decipher = <span class="fn">createDecipheriv</span>(ALGORITHM, ENCRYPTION_KEY, iv);
+  decipher.<span class="fn">setAuthTag</span>(authTag);
+
+  <span class="kw">let</span> decrypted = decipher.<span class="fn">update</span>(ciphertext);
+  decrypted = Buffer.<span class="fn">concat</span>([decrypted, decipher.<span class="fn">final</span>()]);
+
+  <span class="kw">return</span> decrypted.<span class="fn">toString</span>(<span class="str">'utf8'</span>);
+}
+
+<span class="cm">// Uso</span>
+<span class="kw">const</span> secret = <span class="str">'CPF: 123.456.789-00'</span>;
+<span class="kw">const</span> encrypted = <span class="fn">encrypt</span>(secret);
+console.<span class="fn">log</span>(<span class="str">'Encrypted:'</span>, encrypted); <span class="cm">// base64 string</span>
+console.<span class="fn">log</span>(<span class="str">'Decrypted:'</span>, <span class="fn">decrypt</span>(encrypted)); <span class="cm">// CPF: 123.456.789-00</span></code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Nunca reútilize o IV com a mesma chave.</strong> O AES-GCM perde todas as garantias de segurança se o par (key, IV) for repetido. Sempre gere um IV aleatório por operação com <code>randomBytes(12)</code>.</div>
+</div>
+
+<!-- ═══ 2. ASYMMETRIC ENCRYPTION ═══ -->
+<h3>2. Criptografia Assimétrica — RSA & ECDSA</h3>
+
+<p>Na criptografia assimétrica, existem <strong>duas chaves matematicamente relacionadas</strong>: uma <strong>pública</strong> (distribua livremente) é uma <strong>privada</strong> (guarde com sua vida). O que uma encripta, só a outra desencripta.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Algoritmo</th><th>Usó Principal</th><th>Tamanho de Chave</th><th>Performance</th></tr>
+<tr><td><strong>RSA</strong></td><td>Encriptação, assinaturas digitais</td><td>2048-4096 bits</td><td>Mais lento</td></tr>
+<tr><td><strong>ECDSA</strong></td><td>Assinaturas digitais (curvas elipticas)</td><td>256-384 bits</td><td>Muito mais rápido</td></tr>
+<tr><td><strong>Ed25519</strong></td><td>Assinaturas digitais (moderna)</td><td>256 bits</td><td>Rápido, seguro</td></tr>
+<tr><td><strong>X25519</strong></td><td>Key exchange (Diffie-Hellman)</td><td>256 bits</td><td>Rápido, seguro</td></tr>
+</table>
+</div>
+
+<p><strong>Casos de uso:</strong></p>
+<ul>
+<li><strong>Assinaturas digitais</strong> — provar autenticidade e integridade (JWT RS256, commits Git)</li>
+<li><strong>Key exchange</strong> — trocar chaves simétricas de forma segura (TLS handshake)</li>
+<li><strong>Encriptação de dados pequenos</strong> — encriptar chave AES com RSA (envelope encryption)</li>
+</ul>
+
+<h4>Exemplo: Gerar par de chaves e assinar com Ed25519</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { generateKeyPairSync, sign, verify } <span class="kw">from</span> <span class="str">'crypto'</span>;
+
+<span class="cm">// Gerar par de chaves Ed25519</span>
+<span class="kw">const</span> { publicKey, privateKey } = <span class="fn">generateKeyPairSync</span>(<span class="str">'ed25519'</span>);
+
+<span class="cm">// Assinar uma mensagem</span>
+<span class="kw">const</span> message = Buffer.<span class="fn">from</span>(<span class="str">'Transação: R$ 1.500,00 para conta 12345'</span>);
+<span class="kw">const</span> signature = <span class="fn">sign</span>(<span class="kw">null</span>, message, privateKey);
+
+<span class="cm">// Verificar assinatura (qualquer um com a chave pública pode verificar)</span>
+<span class="kw">const</span> isValid = <span class="fn">verify</span>(<span class="kw">null</span>, message, publicKey, signature);
+console.<span class="fn">log</span>(<span class="str">'Assinatura válida:'</span>, isValid); <span class="cm">// true</span>
+
+<span class="cm">// Se a mensagem for alteráda, a verificação falha</span>
+<span class="kw">const</span> tampered = Buffer.<span class="fn">from</span>(<span class="str">'Transação: R$ 15.000,00 para conta 99999'</span>);
+console.<span class="fn">log</span>(<span class="str">'Adulteráda:'</span>, <span class="fn">verify</span>(<span class="kw">null</span>, tampered, publicKey, signature)); <span class="cm">// false</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>RSA não é para encriptar dados grandes.</strong> RSA e limitado pelo tamanho da chave (ex: RSA-2048 encripta no máximo ~245 bytes). Para dados grandes, use <strong>envelope encryption</strong>: encripte os dados com AES, depois encripte a chave AES com RSA.</div>
+</div>
+
+<!-- ═══ 3. HASHING ═══ -->
+<h3>3. Hashing — SHA-256, bcrypt, Argon2</h3>
+
+<p>Hashing é uma função <strong>unidirecional</strong>: transforma dados de qualquer tamanho em um digest de tamanho fixo. Não é possível "desencriptar" um hash — só é possível verificar se um input produz o mesmo hash.</p>
+
+<div class="card">
+<div class="card-title">Dois tipos de hashing — não confunda</div>
+<ul>
+<li><strong>Hashing de dados (SHA-256, SHA-3)</strong> — rápido, determinisico. Uso: verificar integridade de arquivos, checksums, deduplicação. <strong>NÃO use para senhas</strong></li>
+<li><strong>Hashing de senhas (bcrypt, scrypt, Argon2)</strong> — intencionalmente lento, com salt automático. Projetado para resistir a brute force e rainbow tables</li>
+</ul>
+</div>
+
+<h4>Por que MD5 e SHA1 estão quebrados?</h4>
+<p><strong>MD5</strong> é vulnerável a collision attacks desde 2004 — dois inputs diferentes podem gerar o mesmo hash. <strong>SHA-1</strong> teve sua primeira colisão prática em 2017 (Google SHAttered). Ambos são rápidos demais para senhas — um GPU moderno calcula bilhoes de MD5 por segundo. <strong>Nunca use MD5 ou SHA-1 para nenhum propósito de segurança.</strong></p>
+
+<h4>bcrypt, scrypt e Argon2 — Hash de senhas</h4>
+<p>Esses algoritmos são projetados para serem <strong>lentos de propósito</strong>:</p>
+<ul>
+<li><strong>bcrypt</strong> — o mais estabelecido. Usa salt automático de 16 bytes. O parametro <code>rounds</code> (cost factor) controla a lentidao. Mínimo recomendado: <strong>12 rounds</strong> (2024+)</li>
+<li><strong>scrypt</strong> — além de ser lento em CPU, também é lento em <strong>memória</strong>, dificultando ataques com GPUs</li>
+<li><strong>Argon2</strong> — vencedor da Password Hashing Competition (2015). Parametros: tempo, memória e paralelismo. <strong>Recomendação atual do OWASP</strong></li>
+</ul>
+
+<p><strong>Salt e Pepper:</strong></p>
+<ul>
+<li><strong>Salt</strong> — valor aleatório único por senha, armazenado junto ao hash. Impede rainbow tables. bcrypt/Argon2 geram salt automáticamente</li>
+<li><strong>Pepper</strong> — valor secreto global (não armazenado no banco, vem de env var). Adicionado antes do hash. Se o banco vazar, o pepper impede brute force offline</li>
+</ul>
+
+<h4>Exemplo: bcrypt com Node.js</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> * <span class="kw">as</span> bcrypt <span class="kw">from</span> <span class="str">'bcrypt'</span>;
+
+<span class="kw">const</span> SALT_ROUNDS = <span class="num">12</span>; <span class="cm">// Mínimo recomendado. 12 = ~250ms por hash</span>
+<span class="kw">const</span> PEPPER = process.env.PASSWORD_PEPPER || <span class="str">''</span>;
+
+<span class="cm">// Criar hash de senha (registro do usuário)</span>
+<span class="kw">async function</span> <span class="fn">hashPassword</span>(plaintext: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+  <span class="kw">const</span> peppered = plaintext + PEPPER;
+  <span class="kw">return</span> bcrypt.<span class="fn">hash</span>(peppered, SALT_ROUNDS);
+}
+
+<span class="cm">// Verificar senha (login)</span>
+<span class="kw">async function</span> <span class="fn">verifyPassword</span>(plaintext: <span class="tp">string</span>, hash: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">boolean</span>&gt; {
+  <span class="kw">const</span> peppered = plaintext + PEPPER;
+  <span class="kw">return</span> bcrypt.<span class="fn">compare</span>(peppered, hash);
+}
+
+<span class="cm">// Uso</span>
+<span class="kw">const</span> hash = <span class="kw">await</span> <span class="fn">hashPassword</span>(<span class="str">'minhaSenhaForte123!'</span>);
+console.<span class="fn">log</span>(hash);
+<span class="cm">// $2b$12$LJ3m4ys3Lg5Fqk.../... (60 chars, inclui salt + rounds)</span>
+
+<span class="kw">const</span> match = <span class="kw">await</span> <span class="fn">verifyPassword</span>(<span class="str">'minhaSenhaForte123!'</span>, hash);
+console.<span class="fn">log</span>(<span class="str">'Senha correta:'</span>, match); <span class="cm">// true</span>
+
+<span class="kw">const</span> wrong = <span class="kw">await</span> <span class="fn">verifyPassword</span>(<span class="str">'senhaErrada'</span>, hash);
+console.<span class="fn">log</span>(<span class="str">'Senha errada:'</span>, wrong); <span class="cm">// false</span></code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra para cost factor:</strong> O hash deve levar entre 200ms e 500ms. Se estiver muito rápido, aumente os rounds. Se estiver muito lento (>1s), esta afetando a UX. Em 2024+, bcrypt com 12 rounds ou Argon2id com <code>m=19456, t=2, p=1</code> são boas configurações.</div>
+</div>
+
+<!-- ═══ 4. HMAC ═══ -->
+<h3>4. HMAC — Hash-based Message Authentication Code</h3>
+
+<p>HMAC combina uma <strong>função hash</strong> com uma <strong>chave secreta</strong> para produzir um código de autenticação. Diferente de um hash simples, HMAC garante tanto a <strong>integridade</strong> quanto a <strong>autenticidade</strong> da mensagem — só quem tem a chave secreta pode gerar e verificar o HMAC.</p>
+
+<p><strong>Casos de uso:</strong></p>
+<ul>
+<li><strong>Verificação de webhooks</strong> — Stripe, GitHub, Twilio assinam payloads com HMAC-SHA256</li>
+<li><strong>Assinatura de requisições API</strong> — AWS Signature V4 usa HMAC para assinar cada request</li>
+<li><strong>Tokens de sessão</strong> — JWT com HS256 e básicamente HMAC-SHA256</li>
+</ul>
+
+<h4>Exemplo: Verificação de webhook do Stripe</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { createHmac, timingSafeEqual } <span class="kw">from</span> <span class="str">'crypto'</span>;
+
+<span class="kw">function</span> <span class="fn">verifyStripeWebhook</span>(
+  payload: <span class="tp">string</span>,
+  signatureHeader: <span class="tp">string</span>,
+  secret: <span class="tp">string</span>,
+): <span class="tp">boolean</span> {
+  <span class="cm">// Stripe envia: t=timestamp,v1=signature</span>
+  <span class="kw">const</span> parts = signatureHeader.<span class="fn">split</span>(<span class="str">','</span>);
+  <span class="kw">const</span> timestamp = parts.<span class="fn">find</span>(p => p.<span class="fn">startsWith</span>(<span class="str">'t='</span>))!.<span class="fn">slice</span>(<span class="num">2</span>);
+  <span class="kw">const</span> receivedSig = parts.<span class="fn">find</span>(p => p.<span class="fn">startsWith</span>(<span class="str">'v1='</span>))!.<span class="fn">slice</span>(<span class="num">3</span>);
+
+  <span class="cm">// Recalcular a assinatura com o segredo compartilhado</span>
+  <span class="kw">const</span> signedPayload = <span class="str">`${timestamp}.${payload}`</span>;
+  <span class="kw">const</span> expectedSig = <span class="fn">createHmac</span>(<span class="str">'sha256'</span>, secret)
+    .<span class="fn">update</span>(signedPayload)
+    .<span class="fn">digest</span>(<span class="str">'hex'</span>);
+
+  <span class="cm">// IMPORTANTE: usar timingSafeEqual para evitar timing attacks</span>
+  <span class="kw">const</span> a = Buffer.<span class="fn">from</span>(receivedSig, <span class="str">'hex'</span>);
+  <span class="kw">const</span> b = Buffer.<span class="fn">from</span>(expectedSig, <span class="str">'hex'</span>);
+
+  <span class="kw">if</span> (a.length !== b.length) <span class="kw">return false</span>;
+  <span class="kw">return</span> <span class="fn">timingSafeEqual</span>(a, b);
+}
+
+<span class="cm">// Usó em um controller NestJS</span>
+<span class="ann">@Post</span>(<span class="str">'webhooks/stripe'</span>)
+<span class="kw">async</span> <span class="fn">handleStripeWebhook</span>(
+  <span class="ann">@Body</span>() body: <span class="tp">any</span>,
+  <span class="ann">@Headers</span>(<span class="str">'stripe-signature'</span>) signature: <span class="tp">string</span>,
+  <span class="ann">@Req</span>() req: <span class="tp">RawBodyRequest</span>,
+) {
+  <span class="kw">const</span> rawBody = req.rawBody.<span class="fn">toString</span>();
+  <span class="kw">const</span> isValid = <span class="fn">verifyStripeWebhook</span>(rawBody, signature, STRIPE_WEBHOOK_SECRET);
+
+  <span class="kw">if</span> (!isValid) <span class="kw">throw new</span> <span class="tp">UnauthorizedException</span>(<span class="str">'Invalid webhook signature'</span>);
+
+  <span class="cm">// Processar evento com segurança...</span>
+}</code></pre>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Nunca compare assinaturas com <code>===</code>.</strong> Use <code>timingSafeEqual()</code>. Comparação normal "curto-circuita" no primeiro byte diferente — um atacante pode medir o tempo de resposta para adivinhar byte por byte (timing attack).</div>
+</div>
+
+<!-- ═══ 5. TLS / mTLS ═══ -->
+<h3>5. TLS & mTLS — Segurança de Transporte</h3>
+
+<p><strong>TLS (Transport Layer Security)</strong> é o protocolo que protege dados em transito. Quando você acessa <code>https://</code>, o TLS esta encriptando toda comunicação entre seu navegador é o servidor. A versão atual e <strong>TLS 1.3</strong> (mais rápida e segura que 1.2).</p>
+
+<h4>TLS 1.3 Handshake — Passó a passo</h4>
+<div class="diagram">
+<div class="diagram-box blue">Cliente<br><small>(Browser)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">ClientHello<br><small>+ key share</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Servidor</div>
+</div>
+<div class="diagram">
+<div class="diagram-box purple">Servidor</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">ServerHello + cert<br><small>+ key share + Finished</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Cliente</div>
+</div>
+
+<ol>
+<li><strong>ClientHello</strong> — Cliente envia: versões TLS suportadas, cipher suites, e sua key share (Diffie-Hellman)</li>
+<li><strong>ServerHello</strong> — Servidor responde: cipher suite escolhida, certificado digital, key share do servidor, e já envia dados encriptados</li>
+<li><strong>Verificação</strong> — Cliente verifica o certificado na cadeia de CAs, calcula a chave de sessão compartilhada</li>
+<li><strong>Finished</strong> — Cliente confirma. A partir daqui, tudo é encriptado com a chave de sessão (AES-256-GCM tipicamente)</li>
+</ol>
+
+<p><strong>TLS 1.3 vs 1.2:</strong> O handshake do TLS 1.3 completa em <strong>1 round-trip</strong> (1-RTT), versus 2 no TLS 1.2. Removeu cipher suites inseguras (RC4, DES, SHA-1). Suporta <strong>0-RTT</strong> para reconexões (com cuidado — vulnerável a replay attacks).</p>
+
+<h4>mTLS — Mutual TLS</h4>
+<p>No TLS normal, apenas o servidor prova sua identidade. No <strong>mTLS</strong>, o <strong>cliente também apresenta um certificado</strong>. Usado em:</p>
+<ul>
+<li><strong>Comúnicação service-to-service</strong> em microsserviços (service mesh como Istio)</li>
+<li><strong>APIs B2B</strong> onde ambos os lados precisam se autenticar</li>
+<li><strong>Zero trust networks</strong> — cada serviço verifica a identidade do outro</li>
+</ul>
+
+<div class="card blue">
+<div class="card-title">Let's Encrypt & Certificaté Pinning</div>
+<ul>
+<li><strong>Let's Encrypt</strong> — CA gratuita e automatizada. Renova certificados automáticamente a cada 90 dias via ACME protocol. Use <code>certbot</code> ou integração nativa do cloud provider</li>
+<li><strong>Certificaté Pinning</strong> — fixar o certificado ou public key esperado no cliente (mobile apps). Se o certificado mudar inesperadamente (MITM), a conexão e recusada. Cuidado: pinning rígido pode causar problemas em rotações de certificado</li>
+</ul>
+</div>
+
+<!-- ═══ 6. PKI ═══ -->
+<h3>6. PKI — Public Key Infrastructure</h3>
+
+<p>PKI é o ecossistema de <strong>confiança</strong> que faz HTTPS funcionar. Sem PKI, qualquer servidor poderia alegar ser <code>google.com</code>.</p>
+
+<p><strong>Componentes da PKI:</strong></p>
+<ul>
+<li><strong>Certificaté Authority (CA)</strong> — entidade confiável que emite e assina certificados digitais (DigiCert, Let's Encrypt, Comodo)</li>
+<li><strong>Certificado Digital (X.509)</strong> — documento que associa uma chave pública a uma identidade (domínio). Contém: subject, issuer, válidade, public key, assinatura da CA</li>
+<li><strong>Certificaté Chain</strong> — Root CA (pre-instalada no OS/browser) &rarr; Intermediaté CA &rarr; End-entity certificaté (seu servidor)</li>
+<li><strong>CRL/OCSP</strong> — mecanismos para revogar certificados comprometidos</li>
+</ul>
+
+<h4>Como o browser verifica HTTPS</h4>
+<ol>
+<li>O servidor envia seu certificado + intermediários</li>
+<li>O browser verifica a <strong>assinatura de cada certificado na cadeia</strong>, subindo até uma Root CA confiável (pre-instalada)</li>
+<li>Verifica se o certificado <strong>não expirou</strong> é <strong>não foi revogado</strong> (via OCSP stapling)</li>
+<li>Verifica se o <strong>domínio</strong> no certificado corresponde ao domínio acessado (Subject Alternative Name)</li>
+<li>Se tudo passar, o cadeado verde aparece é o handshake TLS continua</li>
+</ol>
+
+<div class="diagram">
+<div class="diagram-box orange">Root CA<br><small>(Pre-instalada no OS)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Intermediaté CA<br><small>(Assinada pela Root)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Seu Certificado<br><small>(Assinado pela Intermediate)</small></div>
+</div>
+
+<!-- ═══ 7. KEY MANAGEMENT ═══ -->
+<h3>7. Key Management — Gerenciamento de Chaves</h3>
+
+<p>A criptografia e tao forte quanto o gerenciamento das chaves. Uma chave AES-256 perfeita armazenada em texto puro no <code>git</code> é inútil.</p>
+
+<h4>Princípios fundamentais</h4>
+<ul>
+<li><strong>Nunca hardcode chaves no código-fonte</strong> — nem em comentários, nem em testes, nem em "configs de dev"</li>
+<li><strong>Rotação de chaves</strong> — troque chaves periodicamente (ex: a cada 90 dias). Sistemas devem suportar múltiplas versões de chave simultaneamente (key versioning)</li>
+<li><strong>Envelope Encryption</strong> — encripte dados com uma Data Encryption Key (DEK), depois encripte a DEK com uma Key Encryption Key (KEK) armazenada em KMS. Se precisar rotar a KEK, só precisa re-encriptar as DEKs, não todos os dados</li>
+<li><strong>Princípio do menor privilégio</strong> — nem todo serviço precisa de acesso a todas as chaves</li>
+</ul>
+
+<h4>Onde armazenar chaves (do pior ao melhor)</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Método</th><th>Segurança</th><th>Quando usar</th></tr>
+<tr><td>Hardcoded no código</td><td style="color:var(--red)">NUNCA</td><td>Nunca. Jamais. Em hipotese alguma.</td></tr>
+<tr><td><code>.env</code> local</td><td style="color:var(--yellow)">Dev only</td><td>Desenvolvimento local. Nunca commitar</td></tr>
+<tr><td>Environment variables (CI/CD)</td><td style="color:var(--yellow)">Aceitável</td><td>Deploy simples, secrets no CI/CD (GitHub Secrets, etc.)</td></tr>
+<tr><td>AWS Secrets Manager / Vault</td><td style="color:var(--accent)">Bom</td><td>Produção. Rotação automática, audit log</td></tr>
+<tr><td>AWS KMS / GCP KMS / Azure Key Vault</td><td style="color:var(--accent)">Excelente</td><td>Envelope encryption. Chave nunca sai do HSM</td></tr>
+</table>
+</div>
+
+<div class="diagram">
+<div class="diagram-box blue">Dados (plaintext)</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">AES encrypt<br><small>com DEK</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">KMS encrypt<br><small>DEK com KEK</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Armazenar<br><small>ciphertext + encrypted DEK</small></div>
+</div>
+
+<!-- ═══ 8. APPLICATION SECURITY CHECKLIST ═══ -->
+<h3>8. Application Security Checklist</h3>
+
+<p>Segurança de aplicação não é um único mecanismo — é uma <strong>defesa em profundidade</strong> (defense in depth). Cada camada protege contra ameaças diferentes.</p>
+
+<h4>8.1 CORS — Cross-Origin Resource Sharing</h4>
+<p>Controla quais origens podem acessar sua API. Um CORS mal configurado é uma porta aberta para ataques.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; ERRADO — aceita qualquer origem com credentials</span>
+app.<span class="fn">enableCors</span>({
+  origin: <span class="str">'*'</span>,           <span class="cm">// Wildcard</span>
+  credentials: <span class="kw">true</span>,     <span class="cm">// + credentials = VULNERÁVEL</span>
+});
+
+<span class="cm">// &#9989; CORRETO — NestJS CORS config</span>
+app.<span class="fn">enableCors</span>({
+  origin: [
+    <span class="str">'https://app.seudomínio.com'</span>,
+    <span class="str">'https://admin.seudomínio.com'</span>,
+  ],
+  credentials: <span class="kw">true</span>,
+  methods: [<span class="str">'GET'</span>, <span class="str">'POST'</span>, <span class="str">'PUT'</span>, <span class="str">'DELETE'</span>, <span class="str">'PATCH'</span>],
+  allowedHeaders: [<span class="str">'Content-Type'</span>, <span class="str">'Authorization'</span>],
+  maxAge: <span class="num">86400</span>, <span class="cm">// Cache preflight por 24h</span>
+});</code></pre>
+
+<h4>8.2 CSP — Content Security Policy</h4>
+<p>Header HTTP que define quais recursos o browser pode carregar. Previne XSS, injeção de scripts maliciosos e data exfiltration.</p>
+
+<pre data-lang="text"><code><span class="cm"># Exemplo de politica CSP rigorosa</span>
+Content-Security-Policy:
+  default-src 'self';
+  script-src 'self' 'nonce-abc123';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data: https://cdn.seudomínio.com;
+  font-src 'self' https://fonts.googleapis.com;
+  connect-src 'self' https://api.seudomínio.com;
+  frame-ancestors 'none';
+  base-uri 'self';
+  form-action 'self';</code></pre>
+
+<h4>8.3 CSRF — Cross-Site Request Forgery</h4>
+<p>Ataque onde um site maliciosó envia requests "em nome" do usuário autenticado. Defesas:</p>
+<ul>
+<li><strong>SameSite cookies</strong> — <code>SameSite=Strict</code> ou <code>SameSite=Lax</code> no cookie de sessão</li>
+<li><strong>CSRF tokens</strong> — token único por sessão, enviado em forms e verificado no backend</li>
+<li><strong>Double submit cookie</strong> — alternativa stateless ao CSRF token</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// NestJS — Cookie seguro com proteção CSRF</span>
+<span class="kw">import</span> * <span class="kw">as</span> cookieParser <span class="kw">from</span> <span class="str">'cookie-parser'</span>;
+
+app.<span class="fn">use</span>(<span class="fn">cookieParser</span>());
+
+<span class="cm">// Configurar cookie httpOnly com SameSite</span>
+response.<span class="fn">cookie</span>(<span class="str">'access_token'</span>, token, {
+  httpOnly: <span class="kw">true</span>,         <span class="cm">// JS não acessa (previne XSS roubo)</span>
+  secure: <span class="kw">true</span>,           <span class="cm">// Apenas HTTPS</span>
+  sameSite: <span class="str">'strict'</span>,     <span class="cm">// Não envia em requests cross-site</span>
+  maxAge: <span class="num">3600000</span>,        <span class="cm">// 1 hora</span>
+  path: <span class="str">'/'</span>,
+});</code></pre>
+
+<h4>8.4 Input Validation — Sempre no servidor</h4>
+<p>Válidação no frontend e UX. Válidação no backend e <strong>segurança</strong>. Nunca confie em dados do cliente.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// NestJS DTO com class-válidator — validação rigorosa</span>
+<span class="kw">import</span> { IsEmail, IsString, MinLength, MaxLength, Matches } <span class="kw">from</span> <span class="str">'class-válidator'</span>;
+
+<span class="kw">class</span> <span class="tp">CreateUserDto</span> {
+  <span class="ann">@IsString</span>()
+  <span class="ann">@MinLength</span>(<span class="num">2</span>)
+  <span class="ann">@MaxLength</span>(<span class="num">100</span>)
+  name: <span class="tp">string</span>;
+
+  <span class="ann">@IsEmail</span>()
+  email: <span class="tp">string</span>;
+
+  <span class="ann">@IsString</span>()
+  <span class="ann">@MinLength</span>(<span class="num">8</span>)
+  <span class="ann">@MaxLength</span>(<span class="num">128</span>)
+  <span class="ann">@Matches</span>(<span class="str">/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/</span>, {
+    message: <span class="str">'Senha deve conter maiuscula, minuscula, número e caractere especial'</span>,
+  })
+  password: <span class="tp">string</span>;
+}
+
+<span class="cm">// No main.ts — ativar globalmente</span>
+app.<span class="fn">useGlobalPipes</span>(<span class="kw">new</span> <span class="tp">ValidationPipe</span>({
+  whitelist: <span class="kw">true</span>,              <span class="cm">// Remove propriedades não decoradas</span>
+  forbidNonWhitelisted: <span class="kw">true</span>,   <span class="cm">// Rejeita propriedades desconhecidas</span>
+  transform: <span class="kw">true</span>,              <span class="cm">// Auto-transforma tipos</span>
+}));</code></pre>
+
+<h4>8.5 Parameterized Queries — Prevenção de SQL Injection</h4>
+<p>ORMs como TypeORM e Prisma usam queries parametrizadas por padrão. <strong>Nunca concatene input do usuário em SQL.</strong></p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; VULNERÁVEL — SQL injection</span>
+<span class="kw">const</span> result = <span class="kw">await</span> dataSource.<span class="fn">query</span>(
+  <span class="str">`SELECT * FROM users WHERE email = '${userInput}'`</span>
+);
+<span class="cm">// Input malicioso: ' OR 1=1 -- retorna TODOS os usuários</span>
+
+<span class="cm">// &#9989; SEGURO — parametrizado</span>
+<span class="kw">const</span> result = <span class="kw">await</span> dataSource.<span class="fn">query</span>(
+  <span class="str">'SELECT * FROM users WHERE email = $1'</span>,
+  [userInput]
+);
+
+<span class="cm">// &#9989; SEGURO — TypeORM QueryBuilder</span>
+<span class="kw">const</span> user = <span class="kw">await</span> userRepo
+  .<span class="fn">createQueryBuilder</span>(<span class="str">'user'</span>)
+  .<span class="fn">where</span>(<span class="str">'user.email = :email'</span>, { email: userInput })
+  .<span class="fn">getOne</span>();
+
+<span class="cm">// &#9989; SEGURO — Prisma (parametrizado por design)</span>
+<span class="kw">const</span> user = <span class="kw">await</span> prisma.user.<span class="fn">findUnique</span>({
+  where: { email: userInput },
+});</code></pre>
+
+<h4>8.6 Security Headers — Helmet.js</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> helmet <span class="kw">from</span> <span class="str">'helmet'</span>;
+
+<span class="cm">// NestJS — configuração completa do Helmet</span>
+app.<span class="fn">use</span>(<span class="fn">helmet</span>({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: [<span class="str">"'self'"</span>],
+      scriptSrc: [<span class="str">"'self'"</span>],
+      styleSrc: [<span class="str">"'self'"</span>, <span class="str">"'unsafe-inline'"</span>],
+      imgSrc: [<span class="str">"'self'"</span>, <span class="str">'data:'</span>, <span class="str">'https:'</span>],
+      connectSrc: [<span class="str">"'self'"</span>],
+      frameSrc: [<span class="str">"'none'"</span>],
+      objectSrc: [<span class="str">"'none'"</span>],
+    },
+  },
+  crossOriginEmbedderPolicy: <span class="kw">true</span>,
+  crossOriginOpenerPolicy: <span class="kw">true</span>,
+  crossOriginResourcePolicy: { policy: <span class="str">'same-site'</span> },
+  dnsPrefetchControl: <span class="kw">true</span>,
+  frameguard: { action: <span class="str">'deny'</span> },         <span class="cm">// X-Frame-Options: DENY</span>
+  hidePoweredBy: <span class="kw">true</span>,                     <span class="cm">// Remove X-Powered-By</span>
+  hsts: { maxAge: <span class="num">31536000</span>, includeSubDomains: <span class="kw">true</span> }, <span class="cm">// Strict-Transport-Security</span>
+  ieNoOpen: <span class="kw">true</span>,
+  noSniff: <span class="kw">true</span>,                           <span class="cm">// X-Content-Type-Options: nosniff</span>
+  referrerPolicy: { policy: <span class="str">'strict-origin-when-cross-origin'</span> },
+  xssFilter: <span class="kw">true</span>,                          <span class="cm">// X-XSS-Protection</span>
+}));</code></pre>
+
+<h4>8.7 Secrets Management</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; NUNCA — segredos no código</span>
+<span class="kw">const</span> DB_PASSWORD = <span class="str">'super_secret_123'</span>; <span class="cm">// ERRO CRÍTICO</span>
+
+<span class="cm">// &#9989; CORRETO — .env + validação com Joi/Zod no bootstrap</span>
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="kw">const</span> envSchema = z.<span class="fn">object</span>({
+  DATABASE_URL: z.<span class="fn">string</span>().<span class="fn">url</span>(),
+  JWT_SECRET: z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">32</span>),
+  ENCRYPTION_KEY: z.<span class="fn">string</span>().<span class="fn">length</span>(<span class="num">64</span>), <span class="cm">// 32 bytes hex-encoded</span>
+  STRIPE_WEBHOOK_SECRET: z.<span class="fn">string</span>().<span class="fn">startsWith</span>(<span class="str">'whsec_'</span>),
+  NODE_ENV: z.<span class="fn">enum</span>([<span class="str">'development'</span>, <span class="str">'staging'</span>, <span class="str">'production'</span>]),
+});
+
+<span class="kw">const</span> env = envSchema.<span class="fn">parse</span>(process.env);
+<span class="cm">// Se faltar qualquer variável, a app NÃO inicia — fail fast</span></code></pre>
+
+<h4>8.8 Dependency Scanning</h4>
+<p>Suas dependências são superficie de ataque. Uma única lib vulnerável pode comprometer tudo.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Tipo</th><th>Uso</th></tr>
+<tr><td><strong>npm audit</strong></td><td>SCA (nativo)</td><td><code>npm audit --production</code> no CI/CD</td></tr>
+<tr><td><strong>Snyk</strong></td><td>SCA</td><td>Scan automático em PRs, fix automático</td></tr>
+<tr><td><strong>Dependabot</strong></td><td>SCA</td><td>GitHub nativo, PRs automáticos de update</td></tr>
+<tr><td><strong>Trivy</strong></td><td>Container + SCA</td><td>Scan de imagens Docker + dependências</td></tr>
+<tr><td><strong>Socket.dev</strong></td><td>Supply chain</td><td>Detecta dependências maliciosas</td></tr>
+</table>
+</div>
+
+<h4>8.9 SAST / DAST — Testes de Segurança</h4>
+<ul>
+<li><strong>SAST (Static Application Security Testing)</strong> — analisa o código-fonte sem executa-lo. Ferramentas: <strong>SonarQube</strong>, <strong>Semgrep</strong>, <strong>CodeQL</strong> (GitHub). Roda no CI/CD em cada PR</li>
+<li><strong>DAST (Dynamic Application Security Testing)</strong> — testa a aplicação rodando. Ferramentas: <strong>OWASP ZAP</strong>, <strong>Burp Suite</strong>, <strong>Nuclei</strong>. Simula ataques reais contra endpoints</li>
+<li><strong>SCA (Software Composition Analysis)</strong> — verifica dependências de terceiros (Snyk, npm audit)</li>
+</ul>
+
+<pre data-lang="yaml"><code><span class="cm"># GitHub Actions — Security pipeline</span>
+<span class="str">name</span>: Security Scan
+<span class="str">on</span>: [pull_request]
+<span class="str">jobs</span>:
+  <span class="str">security</span>:
+    <span class="str">runs-on</span>: ubuntu-latest
+    <span class="str">steps</span>:
+      - <span class="str">uses</span>: actions/checkout@v4
+      - <span class="str">name</span>: Run Semgrep SAST
+        <span class="str">uses</span>: returntocorp/semgrep-action@v1
+        <span class="str">with</span>:
+          <span class="str">config</span>: p/typescript
+      - <span class="str">name</span>: Run npm audit
+        <span class="str">run</span>: npm audit --production --audit-level=high
+      - <span class="str">name</span>: Run Trivy on Docker image
+        <span class="str">uses</span>: aquasecurity/trivy-action@master
+        <span class="str">with</span>:
+          <span class="str">image-ref</span>: myapp:latest
+          <span class="str">severity</span>: HIGH,CRITICAL</code></pre>
+
+<!-- ═══ 9. MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: End-to-End Encryption para Messaging App</h3>
+
+<p><strong>Cenário:</strong> Você está projetando um sistema de mensagens com criptografia ponta-a-ponta (E2EE). O servidor nunca deve ser capaz de ler as mensagens — mesmo que o banco de dados vaze, as mensagens devem permanecer ilegeíveis.</p>
+
+<div class="diagram">
+<div class="diagram-box blue">Alice<br><small>(Sender)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Key Exchange<br><small>(X25519 DH)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Bob<br><small>(Receiver)</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box blue">Plaintext msg</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">AES-256-GCM<br><small>(shared key)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Servidor<br><small>(armazena ciphertext)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">AES-256-GCM<br><small>(decrypt)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Plaintext msg</div>
+</div>
+
+<p><strong>Arquitetura passó a passo:</strong></p>
+
+<ol>
+<li><strong>Geração de chaves (registration)</strong> — Cada usuário gera um par de chaves X25519 (key exchange) é um par Ed25519 (assinaturas). A chave pública é enviada ao servidor. A chave privada <strong>nunca sai do dispositivo</strong></li>
+<li><strong>Key exchange (primeira mensagem)</strong> — Alice e Bob fazem um Diffie-Hellman com X25519 para derivar uma <strong>shared secret</strong>. Essa chave é usada para derivar a chave de sessão AES via HKDF</li>
+<li><strong>Encriptação da mensagem</strong> — Alice encripta a mensagem com <strong>AES-256-GCM</strong> usando a chave de sessão. Gera IV aleatório. Assina o ciphertext com sua chave Ed25519 (prova que Alice enviou)</li>
+<li><strong>Transporte</strong> — O servidor recebe e armazena <code>{ ciphertext, iv, authTag, signature, senderPublicKey }</code>. O servidor <strong>não tem a chave de sessão</strong> — não pode ler a mensagem</li>
+<li><strong>Desencriptação</strong> — Bob recebe o ciphertext, deriva a mesma shared secret via DH, desencripta com AES-GCM, e verifica a assinatura de Alice com a chave pública dela</li>
+</ol>
+
+<pre data-lang="typescript"><code><span class="cm">// Simplificação do fluxo E2EE</span>
+<span class="kw">import</span> { diffieHellman, generateKeyPairSync, createCipheriv, randomBytes } <span class="kw">from</span> <span class="str">'crypto'</span>;
+
+<span class="cm">// 1. Cada usuário gera seu par de chaves</span>
+<span class="kw">const</span> alice = <span class="fn">generateKeyPairSync</span>(<span class="str">'x25519'</span>);
+<span class="kw">const</span> bob = <span class="fn">generateKeyPairSync</span>(<span class="str">'x25519'</span>);
+
+<span class="cm">// 2. Diffie-Hellman — ambos derivam o MESMO shared secret</span>
+<span class="kw">const</span> aliceShared = <span class="fn">diffieHellman</span>({
+  privateKey: alice.privateKey,
+  publicKey: bob.publicKey,
+});
+
+<span class="kw">const</span> bobShared = <span class="fn">diffieHellman</span>({
+  privateKey: bob.privateKey,
+  publicKey: alice.publicKey,
+});
+
+<span class="cm">// aliceShared === bobShared (mesmo resultado!)</span>
+
+<span class="cm">// 3. Encriptar mensagem com AES-256-GCM usando shared secret</span>
+<span class="kw">const</span> iv = <span class="fn">randomBytes</span>(<span class="num">12</span>);
+<span class="kw">const</span> cipher = <span class="fn">createCipheriv</span>(<span class="str">'aes-256-gcm'</span>, aliceShared, iv);
+<span class="kw">let</span> encrypted = cipher.<span class="fn">update</span>(<span class="str">'Oi Bob, tudo bem?'</span>, <span class="str">'utf8'</span>);
+encrypted = Buffer.<span class="fn">concat</span>([encrypted, cipher.<span class="fn">final</span>()]);
+<span class="kw">const</span> authTag = cipher.<span class="fn">getAuthTag</span>();
+
+<span class="cm">// 4. Enviar ao servidor: { iv, encrypted, authTag }</span>
+<span class="cm">// Servidor NÃO consegue ler — não tem aliceShared/bobShared</span></code></pre>
+
+<div class="card purple">
+<div class="card-title">Protocolo Signal (Double Ratchet)</div>
+<p style="color:var(--text2);font-size:.88rem">Na prática, apps como Signal e WhatsApp usam o <strong>Double Ratchet Algorithm</strong>, que vai além do exemplo acima. Ele gera uma nova chave de sessão para <strong>cada mensagem</strong> (forward secrecy) — se uma chave for comprometida, apenas aquela mensagem e afetada, não as anteriores nem as futuras. O protocolo combina DH ratchet + symmetric ratchet (hash chain).</p>
+</div>
+
+<!-- ═══ 10. ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Rolling your own crypto:</strong> Criar seu próprio algoritmo de criptografia ou implementar AES "na mão". Até criptografos experientes cometem erros sutis. Use <strong>sempre</strong> bibliotecas auditadas: Node.js <code>crypto</code>, libsodium, Web Crypto API.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>bcrypt com rounds baixos:</strong> O default de muitas libs e <code>rounds=10</code>. Em 2024+, isso é rápido demais para GPUs modernas. Use no mínimo <code>12</code>, idealmente <code>13-14</code> para sistemas que podem tolerar 300-500ms por hash.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Armazenar senhas em plain text:</strong> Parece óbvio, mas em 2024 ainda existem empresas que fazem isso. Qualquer vazamento expõe todas as contas. Use bcrypt/Argon2. Se você herdar um sistema assim, a migração e <strong>prioridade zero</strong>.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>CORS wildcard com credentials:</strong> <code>origin: '*'</code> com <code>credentials: true</code> permite que qualquer site faca requests autenticados em nome do usuário. Browsers modernós bloqueiam essa combinação, mas nunca confie nisso. Sempre especifique origens explicitamente.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Confundir encriptação com hashing:</strong> Encriptação e reversível (com a chave). Hashing e unidirecional. Senhas devem ser <strong>hashadas</strong>, nunca encriptadas — se você pode "desencriptar" uma senha, você está fazendo errado.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>JWT sem expirar / segredo fraco:</strong> JWTs com <code>expiresIn: '999d'</code> ou assinados com <code>secret: '123'</code> são vulneráveis. Use segredos de no mínimo 32 bytes aleatórios e expiração curta (15min access + refresh token rotativo).</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra geral:</strong> Se você está pensando "será que isso é seguro o suficiente?", a resposta e provavelmente não. Segurança é feita com algoritmos padronizados, configurações testadas e paranoia saudável.</div>
+</div>
+
+<!-- ═══ 11. EXERCICIOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você precisa armazenar números de cartao de credito no banco de dados para cobrancas recorrentes. Qual abordagem de criptografia você usaria e por que?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>AES-256-GCM</strong> (criptografia simétrica) com <strong>envelope encryption</strong>. Cada número de cartao e encriptado com uma DEK (Data Encryption Key) única. A DEK e encriptada com uma KEK (Key Encryption Key) armazenada em um KMS (AWS KMS, por exemplo). No banco, armazene: <code>{ encryptedCard, encryptedDEK, iv }</code>. A KEK nunca sai do KMS — para desencriptar, você envia a encryptedDEK ao KMS que retorna a DEK em memória. Vantagens: rotação de KEK não exige re-encriptar todos os cartoes; se o banco vazar, sem a KEK os dados são inúteis. Bonus: considere usar um <strong>payment tokenization service</strong> (Stripe, Adyen) para não armazenar PAN diretamente — tokenização transfere o risco de PCI compliance para o provedor.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Sua API recebe webhooks do Stripe. Como você garante que o request realmente veio do Stripe e não de um atacante?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>HMAC-SHA256</strong> para verificar a assinatura do webhook. O Stripe envia um header <code>Stripe-Signature</code> contendo <code>t=timestamp,v1=hmac_signature</code>. No backend: (1) extraia o timestamp é a assinatura do header; (2) recalcule o HMAC usando <code>createHmac('sha256', webhookSecret).update(timestamp + '.' + rawBody)</code>; (3) compare com <code>timingSafeEqual()</code> para evitar timing attacks; (4) verifique se o timestamp não é muito antigo (ex: rejeite se >5 minutos — previne replay attacks). Use o <strong>raw body</strong> do request (não o JSON parseado) para o cálculo do HMAC.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Sua equipe usa bcrypt com 10 rounds é a senha mínima e 6 caracteres. Quais melhorias você faria imediatamente?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> (1) Aumente os <strong>rounds para 12-13</strong> — o cost factor 10 e rápido demais para hardware moderno. Teste para garantir que o hash leve entre 200-500ms. (2) Aumente a senha mínima para <strong>8 caracteres</strong> é exijá complexidade (maiuscula, minuscula, número, especial) via regex no class-válidator. (3) Adicione um <strong>pepper</strong> (segredo global em env var) concatenado a senha antes do hash — protege contra vazamento de banco. (4) Implemente <strong>raté limiting</strong> no login (ex: max 5 tentativas por IP/email em 15 minutos). (5) Para novos usuários, considere migrar para <strong>Argon2id</strong> que oferece proteção contra side-channel attacks. (6) Para usuários existentes, re-hash gradualmente: quando o usuário faz login com sucessó é o hash usa rounds antigos, re-hash com os novos parametros.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Criptografia & Application Security</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="29-auth-oauth-jwt-rbac.html">&#8592; Auth, OAuth, JWT & RBAC</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="31-lgpd-gdpr-privacy.html" class="primary">Próximo: LGPD, GDPR & Privacy &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 30: Criptografia & App Security
+// ══════════════════════════════════════════
+const SECTION_NUM = 30;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual modo de operação do AES fornece encriptação E autenticação de integridade (AEAD)?",
+    options: [
+      "AES-CBC (Cipher Block Chaining)",
+      "AES-ECB (Electronic Codebook)",
+      "AES-GCM (Galois/Counter Mode)",
+      "AES-CTR (Counter Mode)"
+    ],
+    correct: 2,
+    explanation: "AES-GCM (Galois/Counter Mode) é um modo AEAD (Authenticated Encryption with Associated Data) que encripta os dados e gera uma auth tag que garante integridade. CBC e CTR não fornecem autenticação. ECB é inseguro e nunca deve ser usado."
+  },
+  {
+    question: "Por que você NUNCA deve reútilizar o IV (Initialization Vector) com a mesma chave no AES-GCM?",
+    options: [
+      "Porque o IV reútilizado gera um hash diferente",
+      "Porque o AES-GCM perde TODAS as garantias de segurança — permite recuperar a chave de autenticação e decriptar dados",
+      "Porque o IV precisa ser secreto e reútiliza-lo o torna previsível",
+      "Porque o IV reútilizado causa erro de runtime no Node.js"
+    ],
+    correct: 1,
+    explanation: "No AES-GCM, reútilizar o par (key, IV) e catastrofico: permite que um atacante recupere a auth key e forge dados. O IV não precisa ser secreto, mas DEVE ser único por operação."
+  },
+  {
+    question: "Qual é a diferença fundamental entre criptografia simétrica e assimétrica?",
+    options: [
+      "Simétrica é mais segura que assimétrica",
+      "Assimétrica é mais rápida que simétrica",
+      "Simétrica usa a mesma chave para encriptar e desencriptar; assimétrica usa um par de chaves (pública/privada)",
+      "Simétrica só funciona para dados pequenos; assimétrica funciona para qualquer tamanho"
+    ],
+    correct: 2,
+    explanation: "Na criptografia simétrica (AES), a mesma chave encripta e desencripta. Na assimétrica (RSA, ECDSA), existem duas chaves: pública (distribua livremente) e privada (secreta). Simétrica é muito mais rápida; assimétrica é usada para key exchange e assinaturas."
+  },
+  {
+    question: "Por que MD5 e SHA-1 NÃO devem ser usados para nenhum propósito de segurança?",
+    options: [
+      "Porque são lentos demais para produção",
+      "Porque não suportam salt",
+      "Porque são vulneráveis a collision attacks — dois inputs diferentes podem gerar o mesmo hash",
+      "Porque geram hashes de tamanho variável"
+    ],
+    correct: 2,
+    explanation: "MD5 tem colisões conhecidas desde 2004. SHA-1 teve sua primeira colisão prática em 2017 (Google SHAttered). Ambos são rápidos demais para senhas e vulneráveis a colisões para integridade de dados. Use SHA-256+ ou SHA-3."
+  },
+  {
+    question: "Qual algoritmo de hash de senhas é a recomendação atual do OWASP (2024+)?",
+    options: [
+      "SHA-256 com salt",
+      "bcrypt com 8 rounds",
+      "Argon2id com parametros de tempo, memória e paralelismo",
+      "HMAC-SHA512"
+    ],
+    correct: 2,
+    explanation: "Argon2id é o vencedor da Password Hashing Competition (2015) é a recomendação atual do OWASP. Ele permite configurar CPU (tempo), memória e paralelismo, sendo resistente a ataques com GPUs e side-channel attacks. bcrypt continua aceitável com 12+ rounds."
+  },
+  {
+    question: "Por que se deve usar timingSafeEqual() ao comparar assinaturas HMAC, em vez do operador ===?",
+    options: [
+      "Porque === não funciona com Buffers no Node.js",
+      "Porque timingSafeEqual é mais rápido",
+      "Porque === 'curto-circuita' no primeiro byte diferente, permitindo timing attacks onde o atacante mede o tempo para adivinhar byte por byte",
+      "Porque === converte Buffers para string automáticamente"
+    ],
+    correct: 2,
+    explanation: "Comparação com === retorna false no primeiro byte diferente — mais rápido para bytes iniciais incorretos, mais lento para bytes corretos. Um atacante pode medir esses microsegundos de diferença e adivinhar a assinatura byte por byte. timingSafeEqual() sempre leva o mesmo tempo independente de quantos bytes coincidem."
+  },
+  {
+    question: "O que é envelope encryption e por que é usada?",
+    options: [
+      "Encriptar o email antes de enviar (envelope = email)",
+      "Encriptar dados com uma DEK, depois encriptar a DEK com uma KEK em KMS — permite rotação de chaves sem re-encriptar todos os dados",
+      "Encriptar dados duas vezes com algoritmos diferentes para maior segurança",
+      "Usar RSA para encriptar dados grandes diretamente"
+    ],
+    correct: 1,
+    explanation: "Envelope encryption separa a chave de dados (DEK) da chave mestre (KEK). Dados são encriptados com DEK (rápido, AES), a DEK e encriptada com KEK (em KMS/HSM). Para rotar a KEK, só precisa re-encriptar as DEKs — não todos os dados. A KEK nunca sai do KMS."
+  },
+  {
+    question: "Qual combinação de CORS e PERIGOSA e nunca deve ser usada em produção?",
+    options: [
+      "origin: ['https://app.meusite.com'] com credentials: true",
+      "origin: '*' sem credentials",
+      "origin: '*' com credentials: true",
+      "origin: false (CORS desabilitado)"
+    ],
+    correct: 2,
+    explanation: "origin: '*' (wildcard) com credentials: true permite que QUALQUER site faca requests autenticados. Browsers modernós bloqueiam essa combinação, mas nunca confie nisso. Sempre especifique origens explicitas quando usar credentials."
+  },
+  {
+    question: "Em uma arquitetura de mensagens com E2EE (end-to-end encryption), o que o servidor armazena?",
+    options: [
+      "As mensagens em plaintext + metadados",
+      "As mensagens encriptadas com a chave do servidor",
+      "Apenas o ciphertext, IV e authTag — o servidor NÃO tem a chave para desencriptar",
+      "Nada — as mensagens são efemeras e nunca armazenadas"
+    ],
+    correct: 2,
+    explanation: "Em E2EE, o servidor armazena apenas dados encriptados (ciphertext, IV, authTag, assinatura). A chave de sessão e derivada via Diffie-Hellman entre os dois dispositivos — o servidor nunca a possui. Mesmo que o banco de dados vaze, as mensagens são ilegíveis."
+  },
+  {
+    question: "Qual é a forma CORRETA de prevenir SQL Injection em TypeORM?",
+    options: [
+      "Escapar aspas simples do input do usuário manualmente",
+      "Usar query parametrizada: .where('user.email = :email', { email: input })",
+      "Validar o input com regex antes de concatenar no SQL",
+      "Usar HTTPS para encriptar a query"
+    ],
+    correct: 1,
+    explanation: "Queries parametrizadas separam o SQL dos dados — o banco de dados trata o input como valor literál, nunca como código SQL. Escapar manualmente e propensó a erros. Regex não é confiável. HTTPS encripta o transporte, não previne injection. TypeORM e Prisma usam parametrização por padrão."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina criptografia e segurança de aplicações.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

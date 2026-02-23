@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>03 — Design Patterns Criacionais | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="02-clean-code.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>03</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="04-design-patterns-estruturais.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:4.5%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 03</span>
+<h2>Design Patterns Criacionais</h2>
+<div class="section-line"></div>
+
+<p>Os cinco padrões criacionais do GoF (Gang of Four) resolvem um problema fundamental: <strong>como criar objetos de forma flexível, desacoplada e controlada</strong>. Enquanto um simples <code>new Classe()</code> funciona, ele cria acoplamento direto. Os padrões criacionais abstraem o processo de instanciacao, permitindo que o sistema sejá independente de como seus objetos são criados, compostos e representados.</p>
+
+<p>Pense assim: em uma fabrica real, você não monta o carro no estacionamento do cliente. Você tem linhas de montagem especializadas, com processos definidos e controle de qualidade. Os padrões criacionais são as <strong>linhas de montagem do seu código</strong> — cada um otimizado para um tipo diferente de construção.</p>
+
+<div class="card">
+<div class="card-title">Os 5 Padroes Criacionais do GoF</div>
+<ul>
+<li><strong>Singleton</strong> — Garante que uma classe tenha apenas uma instancia e fornece acesso global a ela</li>
+<li><strong>Factory Method</strong> — Define uma interface para criação, mas deixa as subclasses decidirem qual classe instanciar</li>
+<li><strong>Abstract Factory</strong> — Cria familias de objetos relacionados sem específicar suas classes concretas</li>
+<li><strong>Builder</strong> — Constroi objetos complexos passó a passo, separando construção de representacao</li>
+<li><strong>Prototype</strong> — Cria novos objetos clonando uma instancia existente</li>
+</ul>
+</div>
+
+<!-- ═══ SINGLETON ═══ -->
+<h3>Singleton</h3>
+<p><strong>"Garanta que uma classe tenha apenas uma instancia e forneca um ponto de acesso global a ela."</strong> O Singleton é o padrão criacional mais simples — é também o mais controverso. Ele é útil quando você precisa de exatamente uma instancia compartilhada: connection pools, configurações, loggers, caches em memória.</p>
+
+<p><strong>Quando usar legitimamente:</strong></p>
+<ul>
+<li><strong>Connection pools</strong> — você não quer 50 pools de banco ao inves de 1</li>
+<li><strong>Configuracoes globais</strong> — carregadas uma vez, lidas por todo o sistema</li>
+<li><strong>Loggers</strong> — centralizar a escrita de logs evita condições de corrida em arquivos</li>
+<li><strong>Caches em memória</strong> — compartilhar dados entre serviços sem duplicar alocação</li>
+</ul>
+
+<h4>Lazy vs Eager Initialization</h4>
+<p><strong>Eager:</strong> A instancia e criada quando a classe e carregada. Simples, mas consome memória mesmo se nunca for usada. <strong>Lazy:</strong> A instancia só e criada no primeiro acesso. Economiza recursos, mas precisa de cuidado com thread-safety.</p>
+
+<h4>TypeScript — Singleton com Lazy Init</h4>
+<pre data-lang="typescript"><code><span class="cm">// Singleton clássico com lazy initialization</span>
+<span class="kw">class</span> <span class="tp">DatabasePool</span> {
+  <span class="kw">privaté static</span> instance: <span class="tp">DatabasePool</span> | <span class="kw">null</span> = <span class="kw">null</span>;
+  <span class="kw">private</span> connections: <span class="tp">Connection</span>[] = [];
+  <span class="kw">private</span> maxSize = <span class="num">10</span>;
+
+  <span class="cm">// Construtor privado — impede new DatabasePool() externo</span>
+  <span class="kw">privaté constructor</span>() {
+    <span class="kw">this</span>.<span class="fn">initPool</span>();
+  }
+
+  <span class="cm">// Ponto de acesso único</span>
+  <span class="kw">static</span> <span class="fn">getInstance</span>(): <span class="tp">DatabasePool</span> {
+    <span class="kw">if</span> (!<span class="tp">DatabasePool</span>.instance) {
+      <span class="tp">DatabasePool</span>.instance = <span class="kw">new</span> <span class="tp">DatabasePool</span>();
+    }
+    <span class="kw">return</span> <span class="tp">DatabasePool</span>.instance;
+  }
+
+  <span class="kw">private</span> <span class="fn">initPool</span>() {
+    <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="kw">this</span>.maxSize; i++) {
+      <span class="kw">this</span>.connections.<span class="fn">push</span>(<span class="fn">createConnection</span>());
+    }
+  }
+
+  <span class="fn">getConnection</span>(): <span class="tp">Connection</span> {
+    <span class="kw">const</span> conn = <span class="kw">this</span>.connections.<span class="fn">pop</span>();
+    <span class="kw">if</span> (!conn) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pool esgotado'</span>);
+    <span class="kw">return</span> conn;
+  }
+
+  <span class="fn">releaseConnection</span>(conn: <span class="tp">Connection</span>) {
+    <span class="kw">this</span>.connections.<span class="fn">push</span>(conn);
+  }
+}
+
+<span class="cm">// Usó — sempre a mesma instancia</span>
+<span class="kw">const</span> pool1 = <span class="tp">DatabasePool</span>.<span class="fn">getInstance</span>();
+<span class="kw">const</span> pool2 = <span class="tp">DatabasePool</span>.<span class="fn">getInstance</span>();
+console.<span class="fn">log</span>(pool1 === pool2); <span class="cm">// true — mesma instancia</span></code></pre>
+
+<h4>TypeScript — Singleton Moderno (Module Pattern)</h4>
+<pre data-lang="typescript"><code><span class="cm">// Em TypeScript/ES Modules, o proprio módulo já e singleton</span>
+<span class="cm">// Mais simples e idiomatico que o padrão clássico</span>
+
+<span class="cm">// config.ts — cada import recebe a MESMA instancia</span>
+<span class="kw">class</span> <span class="tp">AppConfig</span> {
+  <span class="kw">readonly</span> dbHost: <span class="tp">string</span>;
+  <span class="kw">readonly</span> dbPort: <span class="tp">number</span>;
+  <span class="kw">readonly</span> apiKey: <span class="tp">string</span>;
+
+  <span class="kw">constructor</span>() {
+    <span class="kw">this</span>.dbHost = process.env.DB_HOST ?? <span class="str">'localhost'</span>;
+    <span class="kw">this</span>.dbPort = <span class="fn">parseInt</span>(process.env.DB_PORT ?? <span class="str">'5432'</span>);
+    <span class="kw">this</span>.apiKey = process.env.API_KEY ?? <span class="str">''</span>;
+    Object.<span class="fn">freeze</span>(<span class="kw">this</span>); <span class="cm">// Imutável após criação</span>
+  }
+}
+
+<span class="kw">export const</span> config = <span class="kw">new</span> <span class="tp">AppConfig</span>();
+
+<span class="cm">// Em qualquer arquivo:</span>
+<span class="cm">// import { config } from './config';</span>
+<span class="cm">// config.dbHost -> sempre a mesma instancia</span></code></pre>
+
+<h4>Python — Singleton com Metaclass</h4>
+<pre data-lang="python"><code><span class="cm"># Python — Singleton via metaclass (thread-safe)</span>
+<span class="kw">import</span> threading
+
+<span class="kw">class</span> <span class="tp">SingletonMeta</span>(type):
+    _instances = {}
+    _lock = threading.Lock()
+
+    <span class="kw">def</span> <span class="fn">__call__</span>(cls, *args, **kwargs):
+        <span class="kw">with</span> cls._lock:  <span class="cm"># Thread-safe</span>
+            <span class="kw">if</span> cls <span class="kw">not in</span> cls._instances:
+                instance = <span class="fn">super</span>().<span class="fn">__call__</span>(*args, **kwargs)
+                cls._instances[cls] = instance
+        <span class="kw">return</span> cls._instances[cls]
+
+<span class="kw">class</span> <span class="tp">Logger</span>(metaclass=<span class="tp">SingletonMeta</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self):
+        self.log_file = <span class="fn">open</span>(<span class="str">'app.log'</span>, <span class="str">'a'</span>)
+
+    <span class="kw">def</span> <span class="fn">log</span>(self, message: <span class="tp">str</span>):
+        self.log_file.<span class="fn">write</span>(f<span class="str">"[{datetime.now()}] {message}\n"</span>)
+
+<span class="cm"># Sempre a mesma instancia</span>
+logger1 = <span class="tp">Logger</span>()
+logger2 = <span class="tp">Logger</span>()
+<span class="kw">assert</span> logger1 <span class="kw">is</span> logger2  <span class="cm"># True</span></code></pre>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Singleton como anti-pattern:</strong> Singleton é essencialmente uma <strong>variável global disfarçada</strong>. Ele esconde dependências, dificulta testes unitários (impossível mockar sem hacks) e cria acoplamento implicito. Em frameworks modernós como NestJS, use <strong>injecao de dependência com escopo singleton</strong> ao inves de implementar o padrão manualmente. O container de DI gerencia o ciclo de vida sem os problemas do Singleton clássico.</div>
+</div>
+
+<!-- ═══ FACTORY METHOD ═══ -->
+<h3>Factory Method</h3>
+<p><strong>"Defina uma interface para criar um objeto, mas deixe as subclasses decidirem qual classe instanciar."</strong> O Factory Method resolve o problema de criar objetos sem específicar a classe exata. Ao inves de chamar <code>new EmailNotification()</code> diretamente, você chama <code>factory.create('email')</code> — é a factory decide qual classe concreta instanciar.</p>
+
+<p><strong>Quando usar:</strong></p>
+<ul>
+<li>Você não sabe de antemao qual classe concreta será necessária</li>
+<li>Você quer delegar a lógica de criação para subclasses ou para um método especializado</li>
+<li>Você precisa de um ponto centralizado que decide qual implementação usar</li>
+</ul>
+
+<h4>Exemplo Real: NotificationFactory</h4>
+<pre data-lang="typescript"><code><span class="cm">// Interface comum para todas as notificações</span>
+<span class="kw">interface</span> <span class="tp">INotification</span> {
+  <span class="fn">send</span>(to: <span class="tp">string</span>, message: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+}
+
+<span class="cm">// Implementacoes concretas</span>
+<span class="kw">class</span> <span class="tp">EmailNotification</span> <span class="kw">implements</span> <span class="tp">INotification</span> {
+  <span class="kw">async</span> <span class="fn">send</span>(to: <span class="tp">string</span>, message: <span class="tp">string</span>) {
+    console.<span class="fn">log</span>(<span class="str">`Enviando EMAIL para ${to}: ${message}`</span>);
+    <span class="cm">// Integra com SendGrid, SES, etc.</span>
+  }
+}
+
+<span class="kw">class</span> <span class="tp">SmsNotification</span> <span class="kw">implements</span> <span class="tp">INotification</span> {
+  <span class="kw">async</span> <span class="fn">send</span>(to: <span class="tp">string</span>, message: <span class="tp">string</span>) {
+    console.<span class="fn">log</span>(<span class="str">`Enviando SMS para ${to}: ${message}`</span>);
+    <span class="cm">// Integra com Twilio, Vonage, etc.</span>
+  }
+}
+
+<span class="kw">class</span> <span class="tp">PushNotification</span> <span class="kw">implements</span> <span class="tp">INotification</span> {
+  <span class="kw">async</span> <span class="fn">send</span>(to: <span class="tp">string</span>, message: <span class="tp">string</span>) {
+    console.<span class="fn">log</span>(<span class="str">`Enviando PUSH para ${to}: ${message}`</span>);
+    <span class="cm">// Integra com Firebase, OneSignal, etc.</span>
+  }
+}
+
+<span class="cm">// Factory Method — decide qual classe concreta criar</span>
+<span class="kw">type</span> <span class="tp">NotificationType</span> = <span class="str">'email'</span> | <span class="str">'sms'</span> | <span class="str">'push'</span>;
+
+<span class="kw">class</span> <span class="tp">NotificationFactory</span> {
+  <span class="kw">privaté static</span> registry = <span class="kw">new</span> <span class="tp">Map</span>&lt;<span class="tp">string</span>, <span class="kw">new</span> () => <span class="tp">INotification</span>&gt;([
+    [<span class="str">'email'</span>, <span class="tp">EmailNotification</span>],
+    [<span class="str">'sms'</span>, <span class="tp">SmsNotification</span>],
+    [<span class="str">'push'</span>, <span class="tp">PushNotification</span>],
+  ]);
+
+  <span class="kw">static</span> <span class="fn">create</span>(type: <span class="tp">NotificationType</span>): <span class="tp">INotification</span> {
+    <span class="kw">const</span> NotifClass = <span class="kw">this</span>.registry.<span class="fn">get</span>(type);
+    <span class="kw">if</span> (!NotifClass) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">`Tipo '${type}' não suportado`</span>);
+    }
+    <span class="kw">return new</span> <span class="fn">NotifClass</span>();
+  }
+
+  <span class="cm">// Extensivel — registra novos tipos em runtime</span>
+  <span class="kw">static</span> <span class="fn">register</span>(type: <span class="tp">string</span>, cls: <span class="kw">new</span> () => <span class="tp">INotification</span>) {
+    <span class="kw">this</span>.registry.<span class="fn">set</span>(type, cls);
+  }
+}
+
+<span class="cm">// Usó — o chamador não sabe (nem precisa saber) a classe concreta</span>
+<span class="kw">const</span> notif = <span class="tp">NotificationFactory</span>.<span class="fn">create</span>(<span class="str">'sms'</span>);
+<span class="kw">await</span> notif.<span class="fn">send</span>(<span class="str">'+5511999990000'</span>, <span class="str">'Seu pedido foi enviado!'</span>);
+
+<span class="cm">// Adicionar WhatsApp no futuro — zero mudanças no código existente:</span>
+<span class="cm">// NotificationFactory.register('whatsapp', WhatsAppNotification);</span></code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Factory com Registry:</strong> O padrão de usar um <code>Map</code> como registry torna a factory extensivel em runtime. Novos tipos podem ser registrados sem modificar a classe — respeitando o OCP (Open/Closed Principle).</div>
+</div>
+
+<!-- ═══ ABSTRACT FACTORY ═══ -->
+<h3>Abstract Factory</h3>
+<p><strong>"Forneca uma interface para criar familias de objetos relacionados sem específicar suas classes concretas."</strong> Enquanto o Factory Method cria UM tipo de objeto, o Abstract Factory cria <strong>familias inteiras</strong> de objetos que são projetados para funcionar juntos.</p>
+
+<p><strong>Diferenca chave:</strong> Factory Method = cria 1 produto. Abstract Factory = cria N produtos relacionados que pertencem a mesma "familia".</p>
+
+<h4>Exemplo Real: UI Component Factory (Web vs Mobile)</h4>
+<pre data-lang="typescript"><code><span class="cm">// Interfaces dos produtos da familia</span>
+<span class="kw">interface</span> <span class="tp">IButton</span> {
+  <span class="fn">render</span>(): <span class="tp">string</span>;
+  <span class="fn">onClick</span>(handler: () => <span class="tp">void</span>): <span class="tp">void</span>;
+}
+
+<span class="kw">interface</span> <span class="tp">IInput</span> {
+  <span class="fn">render</span>(): <span class="tp">string</span>;
+  <span class="fn">getValue</span>(): <span class="tp">string</span>;
+}
+
+<span class="kw">interface</span> <span class="tp">IModal</span> {
+  <span class="fn">open</span>(): <span class="tp">void</span>;
+  <span class="fn">close</span>(): <span class="tp">void</span>;
+}
+
+<span class="cm">// Abstract Factory — contrato para criar a familia completa</span>
+<span class="kw">interface</span> <span class="tp">IUIFactory</span> {
+  <span class="fn">createButton</span>(label: <span class="tp">string</span>): <span class="tp">IButton</span>;
+  <span class="fn">createInput</span>(placeholder: <span class="tp">string</span>): <span class="tp">IInput</span>;
+  <span class="fn">createModal</span>(title: <span class="tp">string</span>): <span class="tp">IModal</span>;
+}
+
+<span class="cm">// Familia Web — HTML/CSS</span>
+<span class="kw">class</span> <span class="tp">WebButton</span> <span class="kw">implements</span> <span class="tp">IButton</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> label: <span class="tp">string</span>) {}
+  <span class="fn">render</span>() { <span class="kw">return</span> <span class="str">`&lt;button class="btn"&gt;${this.label}&lt;/button&gt;`</span>; }
+  <span class="fn">onClick</span>(handler: () => <span class="tp">void</span>) { <span class="cm">/* addEventListener */</span> }
+}
+
+<span class="kw">class</span> <span class="tp">WebInput</span> <span class="kw">implements</span> <span class="tp">IInput</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> placeholder: <span class="tp">string</span>) {}
+  <span class="fn">render</span>() { <span class="kw">return</span> <span class="str">`&lt;input placeholder="${this.placeholder}" /&gt;`</span>; }
+  <span class="fn">getValue</span>() { <span class="kw">return</span> <span class="str">''</span>; <span class="cm">/* DOM query */</span> }
+}
+
+<span class="kw">class</span> <span class="tp">WebUIFactory</span> <span class="kw">implements</span> <span class="tp">IUIFactory</span> {
+  <span class="fn">createButton</span>(label: <span class="tp">string</span>) { <span class="kw">return new</span> <span class="tp">WebButton</span>(label); }
+  <span class="fn">createInput</span>(placeholder: <span class="tp">string</span>) { <span class="kw">return new</span> <span class="tp">WebInput</span>(placeholder); }
+  <span class="fn">createModal</span>(title: <span class="tp">string</span>) { <span class="kw">return new</span> <span class="tp">WebModal</span>(title); }
+}
+
+<span class="cm">// Familia Mobile — React Native</span>
+<span class="kw">class</span> <span class="tp">MobileButton</span> <span class="kw">implements</span> <span class="tp">IButton</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> label: <span class="tp">string</span>) {}
+  <span class="fn">render</span>() { <span class="kw">return</span> <span class="str">`&lt;TouchableOpacity&gt;${this.label}&lt;/TouchableOpacity&gt;`</span>; }
+  <span class="fn">onClick</span>(handler: () => <span class="tp">void</span>) { <span class="cm">/* onPress */</span> }
+}
+
+<span class="kw">class</span> <span class="tp">MobileUIFactory</span> <span class="kw">implements</span> <span class="tp">IUIFactory</span> {
+  <span class="fn">createButton</span>(label: <span class="tp">string</span>) { <span class="kw">return new</span> <span class="tp">MobileButton</span>(label); }
+  <span class="fn">createInput</span>(placeholder: <span class="tp">string</span>) { <span class="kw">return new</span> <span class="tp">MobileInput</span>(placeholder); }
+  <span class="fn">createModal</span>(title: <span class="tp">string</span>) { <span class="kw">return new</span> <span class="tp">MobileModal</span>(title); }
+}
+
+<span class="cm">// Código cliente — funciona com QUALQUER familia</span>
+<span class="kw">function</span> <span class="fn">buildLoginForm</span>(factory: <span class="tp">IUIFactory</span>) {
+  <span class="kw">const</span> emailInput = factory.<span class="fn">createInput</span>(<span class="str">'Digite seu email'</span>);
+  <span class="kw">const</span> passwordInput = factory.<span class="fn">createInput</span>(<span class="str">'Digite sua senha'</span>);
+  <span class="kw">const</span> submitBtn = factory.<span class="fn">createButton</span>(<span class="str">'Entrar'</span>);
+  <span class="cm">// Todos os componentes são da mesma familia — garantido pela factory</span>
+}
+
+<span class="cm">// Em runtime, escolha a factory correta:</span>
+<span class="kw">const</span> factory = isMobile ? <span class="kw">new</span> <span class="tp">MobileUIFactory</span>() : <span class="kw">new</span> <span class="tp">WebUIFactory</span>();
+<span class="fn">buildLoginForm</span>(factory);</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Abstract Factory vs Factory Method:</strong> Se você precisa criar apenas um tipo de objeto com variacoes, use Factory Method. Se precisa criar múltiplos objetos que devem ser compatíveis entre si (mesma familia), use Abstract Factory.</div>
+</div>
+
+<!-- ═══ BUILDER ═══ -->
+<h3>Builder</h3>
+<p><strong>"Separe a construção de um objeto complexo da sua representacao, permitindo que o mesmo processo de construção crie diferentes representacoes."</strong> O Builder resolve o problema de construtores com muitos parametros (o famosó <strong>telescoping constructor</strong> anti-pattern) e permite construção step-by-step com validação.</p>
+
+<p><strong>Quando usar:</strong></p>
+<ul>
+<li>O objeto tem muitos parametros opcionais (evita <code>new Obj(null, null, 'valor', null, true)</code>)</li>
+<li>A construção envolve multiplas etapas que precisam ser encadeadas</li>
+<li>Você precisa de objetos imutaveis que são complexos de construir</li>
+<li>Exemplos reais: QueryBuilder, HttpRequestBuilder, ConfigBuilder, EmailBuilder</li>
+</ul>
+
+<h4>TypeScript — Fluent API Builder</h4>
+<pre data-lang="typescript"><code><span class="cm">// O objeto que queremos construir — imutável após criação</span>
+<span class="kw">interface</span> <span class="tp">HttpRequest</span> {
+  <span class="kw">readonly</span> url: <span class="tp">string</span>;
+  <span class="kw">readonly</span> method: <span class="str">'GET'</span> | <span class="str">'POST'</span> | <span class="str">'PUT'</span> | <span class="str">'DELETE'</span>;
+  <span class="kw">readonly</span> headers: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt;;
+  <span class="kw">readonly</span> body?: <span class="tp">unknown</span>;
+  <span class="kw">readonly</span> timeout: <span class="tp">number</span>;
+  <span class="kw">readonly</span> retries: <span class="tp">number</span>;
+}
+
+<span class="cm">// Builder com fluent API — cada método retorna 'this'</span>
+<span class="kw">class</span> <span class="tp">HttpRequestBuilder</span> {
+  <span class="kw">private</span> _url = <span class="str">''</span>;
+  <span class="kw">private</span> _method: <span class="tp">HttpRequest</span>[<span class="str">'method'</span>] = <span class="str">'GET'</span>;
+  <span class="kw">private</span> _headers: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt; = {};
+  <span class="kw">private</span> _body?: <span class="tp">unknown</span>;
+  <span class="kw">private</span> _timeout = <span class="num">5000</span>;
+  <span class="kw">private</span> _retries = <span class="num">0</span>;
+
+  <span class="fn">url</span>(url: <span class="tp">string</span>): <span class="kw">this</span> {
+    <span class="kw">this</span>._url = url;
+    <span class="kw">return this</span>;
+  }
+
+  <span class="fn">method</span>(method: <span class="tp">HttpRequest</span>[<span class="str">'method'</span>]): <span class="kw">this</span> {
+    <span class="kw">this</span>._method = method;
+    <span class="kw">return this</span>;
+  }
+
+  <span class="fn">header</span>(key: <span class="tp">string</span>, value: <span class="tp">string</span>): <span class="kw">this</span> {
+    <span class="kw">this</span>._headers[key] = value;
+    <span class="kw">return this</span>;
+  }
+
+  <span class="fn">auth</span>(token: <span class="tp">string</span>): <span class="kw">this</span> {
+    <span class="kw">this</span>._headers[<span class="str">'Authorization'</span>] = <span class="str">`Bearer ${token}`</span>;
+    <span class="kw">return this</span>;
+  }
+
+  <span class="fn">json</span>(data: <span class="tp">unknown</span>): <span class="kw">this</span> {
+    <span class="kw">this</span>._body = data;
+    <span class="kw">this</span>._headers[<span class="str">'Content-Type'</span>] = <span class="str">'application/json'</span>;
+    <span class="kw">return this</span>;
+  }
+
+  <span class="fn">timeout</span>(ms: <span class="tp">number</span>): <span class="kw">this</span> {
+    <span class="kw">this</span>._timeout = ms;
+    <span class="kw">return this</span>;
+  }
+
+  <span class="fn">retries</span>(count: <span class="tp">number</span>): <span class="kw">this</span> {
+    <span class="kw">this</span>._retries = count;
+    <span class="kw">return this</span>;
+  }
+
+  <span class="cm">// Valida e constroi o objeto final</span>
+  <span class="fn">build</span>(): <span class="tp">HttpRequest</span> {
+    <span class="kw">if</span> (!<span class="kw">this</span>._url) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'URL e obrigatória'</span>);
+    }
+    <span class="kw">return</span> Object.<span class="fn">freeze</span>({
+      url: <span class="kw">this</span>._url,
+      method: <span class="kw">this</span>._method,
+      headers: { ...<span class="kw">this</span>._headers },
+      body: <span class="kw">this</span>._body,
+      timeout: <span class="kw">this</span>._timeout,
+      retries: <span class="kw">this</span>._retries,
+    });
+  }
+}
+
+<span class="cm">// Usó — legivel, auto-documentado, com validação</span>
+<span class="kw">const</span> request = <span class="kw">new</span> <span class="tp">HttpRequestBuilder</span>()
+  .<span class="fn">url</span>(<span class="str">'https://api.example.com/users'</span>)
+  .<span class="fn">method</span>(<span class="str">'POST'</span>)
+  .<span class="fn">auth</span>(<span class="str">'eyJhbGciOiJIUzI1NiJ9...'</span>)
+  .<span class="fn">json</span>({ name: <span class="str">'João'</span>, email: <span class="str">'joao@email.com'</span> })
+  .<span class="fn">timeout</span>(<span class="num">10000</span>)
+  .<span class="fn">retries</span>(<span class="num">3</span>)
+  .<span class="fn">build</span>();
+
+<span class="cm">// Compare com o equivalente sem Builder:</span>
+<span class="cm">// new HttpRequest('https://...', 'POST', {'Auth': '...', 'Content-Type': '...'}, {name: '...'}, 10000, 3)</span>
+<span class="cm">// ^^^ Qual parametro é o que? Impossível saber sem ler a assinatura.</span></code></pre>
+
+<h4>Python — Builder com Dataclass</h4>
+<pre data-lang="python"><code><span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass, field
+<span class="kw">from</span> typing <span class="kw">import</span> Optional
+
+<span class="ann">@dataclass</span>(frozen=<span class="kw">True</span>)
+<span class="kw">class</span> <span class="tp">QueryConfig</span>:
+    table: <span class="tp">str</span>
+    columns: <span class="tp">list</span>[<span class="tp">str</span>]
+    where: <span class="tp">Optional</span>[<span class="tp">str</span>] = <span class="kw">None</span>
+    order_by: <span class="tp">Optional</span>[<span class="tp">str</span>] = <span class="kw">None</span>
+    limit: <span class="tp">int</span> = <span class="num">100</span>
+    offset: <span class="tp">int</span> = <span class="num">0</span>
+
+<span class="kw">class</span> <span class="tp">QueryBuilder</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, table: <span class="tp">str</span>):
+        self._table = table
+        self._columns: <span class="tp">list</span>[<span class="tp">str</span>] = [<span class="str">'*'</span>]
+        self._where: <span class="tp">Optional</span>[<span class="tp">str</span>] = <span class="kw">None</span>
+        self._order_by: <span class="tp">Optional</span>[<span class="tp">str</span>] = <span class="kw">None</span>
+        self._limit = <span class="num">100</span>
+        self._offset = <span class="num">0</span>
+
+    <span class="kw">def</span> <span class="fn">select</span>(self, *columns: <span class="tp">str</span>) -> <span class="str">'QueryBuilder'</span>:
+        self._columns = <span class="fn">list</span>(columns)
+        <span class="kw">return</span> self
+
+    <span class="kw">def</span> <span class="fn">where</span>(self, condition: <span class="tp">str</span>) -> <span class="str">'QueryBuilder'</span>:
+        self._where = condition
+        <span class="kw">return</span> self
+
+    <span class="kw">def</span> <span class="fn">order_by</span>(self, column: <span class="tp">str</span>) -> <span class="str">'QueryBuilder'</span>:
+        self._order_by = column
+        <span class="kw">return</span> self
+
+    <span class="kw">def</span> <span class="fn">limit</span>(self, n: <span class="tp">int</span>) -> <span class="str">'QueryBuilder'</span>:
+        self._limit = n
+        <span class="kw">return</span> self
+
+    <span class="kw">def</span> <span class="fn">build</span>(self) -> <span class="tp">QueryConfig</span>:
+        <span class="kw">return</span> <span class="tp">QueryConfig</span>(
+            table=self._table,
+            columns=self._columns,
+            where=self._where,
+            order_by=self._order_by,
+            limit=self._limit,
+            offset=self._offset,
+        )
+
+    <span class="kw">def</span> <span class="fn">to_sql</span>(self) -> <span class="tp">str</span>:
+        config = self.<span class="fn">build</span>()
+        sql = f<span class="str">"SELECT {', '.join(config.columns)} FROM {config.table}"</span>
+        <span class="kw">if</span> config.where:
+            sql += f<span class="str">" WHERE {config.where}"</span>
+        <span class="kw">if</span> config.order_by:
+            sql += f<span class="str">" ORDER BY {config.order_by}"</span>
+        sql += f<span class="str">" LIMIT {config.limit} OFFSET {config.offset}"</span>
+        <span class="kw">return</span> sql
+
+<span class="cm"># Usó fluente</span>
+query = (<span class="tp">QueryBuilder</span>(<span class="str">'users'</span>)
+    .<span class="fn">select</span>(<span class="str">'id'</span>, <span class="str">'name'</span>, <span class="str">'email'</span>)
+    .<span class="fn">where</span>(<span class="str">"status = 'active'"</span>)
+    .<span class="fn">order_by</span>(<span class="str">'created_at DESC'</span>)
+    .<span class="fn">limit</span>(<span class="num">25</span>)
+    .<span class="fn">to_sql</span>())
+
+<span class="cm"># SELECT id, name, email FROM users WHERE status = 'active' ORDER BY created_at DESC LIMIT 25 OFFSET 0</span></code></pre>
+
+<!-- ═══ PROTOTYPE ═══ -->
+<h3>Prototype</h3>
+<p><strong>"Crie novos objetos clonando uma instancia existente."</strong> O Prototype é útil quando a criação de um objeto e cara (envolve IO, cálculos pesados ou estado complexo) e você precisa de copias com pequenas variacoes. Ao inves de construir do zero, você clona um "prototipo" e ajusta o necessário.</p>
+
+<p><strong>Quando usar:</strong></p>
+<ul>
+<li>Criacao de objetos envolve operações custosas (queries no banco, chamadas API)</li>
+<li>Você precisa de muitas variacoes de um objeto base (templates, presets)</li>
+<li>O objeto tem estado interno complexo que é difícil de recriar</li>
+</ul>
+
+<h4>Deep Clone vs Shallow Clone</h4>
+<p><strong>Shallow clone:</strong> Copia apenas o primeiro nível. Objetos aninhados continuam sendo a mesma referência — mutar o clone alterá o original. <strong>Deep clone:</strong> Copia tudo recursivamente. Clone e original são completamente independentes.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Interface Prototype — qualquer objeto clonavel</span>
+<span class="kw">interface</span> <span class="tp">Prototype</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="fn">clone</span>(): <span class="tp">T</span>;
+}
+
+<span class="cm">// Exemplo: Templaté de configuração de servidor</span>
+<span class="kw">class</span> <span class="tp">ServerConfig</span> <span class="kw">implements</span> <span class="tp">Prototype</span>&lt;<span class="tp">ServerConfig</span>&gt; {
+  <span class="kw">constructor</span>(
+    <span class="kw">public</span> name: <span class="tp">string</span>,
+    <span class="kw">public</span> cpu: <span class="tp">number</span>,
+    <span class="kw">public</span> memoryGB: <span class="tp">number</span>,
+    <span class="kw">public</span> region: <span class="tp">string</span>,
+    <span class="kw">public</span> env: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt;,
+    <span class="kw">public</span> tags: <span class="tp">string</span>[],
+  ) {}
+
+  <span class="cm">// Deep clone — copia tudo, sem referências compartilhadas</span>
+  <span class="fn">clone</span>(): <span class="tp">ServerConfig</span> {
+    <span class="kw">return new</span> <span class="tp">ServerConfig</span>(
+      <span class="kw">this</span>.name,
+      <span class="kw">this</span>.cpu,
+      <span class="kw">this</span>.memoryGB,
+      <span class="kw">this</span>.region,
+      { ...<span class="kw">this</span>.env },        <span class="cm">// Shallow copy do objeto</span>
+      [...<span class="kw">this</span>.tags],         <span class="cm">// Copia do array</span>
+    );
+  }
+}
+
+<span class="cm">// Templaté base — configuração padrão de produção</span>
+<span class="kw">const</span> productionTemplaté = <span class="kw">new</span> <span class="tp">ServerConfig</span>(
+  <span class="str">'prod-base'</span>,
+  <span class="num">4</span>,
+  <span class="num">16</span>,
+  <span class="str">'us-east-1'</span>,
+  { NODE_ENV: <span class="str">'production'</span>, LOG_LEVEL: <span class="str">'warn'</span> },
+  [<span class="str">'production'</span>, <span class="str">'critical'</span>],
+);
+
+<span class="cm">// Clona e ajusta — sem refazer toda a configuração</span>
+<span class="kw">const</span> apiServer = productionTemplate.<span class="fn">clone</span>();
+apiServer.name = <span class="str">'api-server-01'</span>;
+apiServer.cpu = <span class="num">8</span>;
+apiServer.env.API_PORT = <span class="str">'3000'</span>;
+
+<span class="kw">const</span> workerServer = productionTemplate.<span class="fn">clone</span>();
+workerServer.name = <span class="str">'worker-01'</span>;
+workerServer.memoryGB = <span class="num">32</span>;
+workerServer.tags.<span class="fn">push</span>(<span class="str">'background-jobs'</span>);
+
+<span class="cm">// Templaté original não foi alterádo</span>
+console.<span class="fn">log</span>(productionTemplate.name); <span class="cm">// 'prod-base' &#9989;</span>
+console.<span class="fn">log</span>(productionTemplate.cpu);  <span class="cm">// 4 &#9989;</span></code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>structuredClone():</strong> No JavaScript moderno (Node 17+, browsers modernos), use <code>structuredClone(obj)</code> para deep clone nativo. Funciona com a maioria dos tipos, mas não suporta funções, DOM nodes ou prototype chains. Para objetos simples (POJOs), é a solução mais segura e performática.</div>
+</div>
+
+<!-- ═══ QUANDO USAR CADA PATTERN ═══ -->
+<h3>Quando Usar Cada Pattern — Guia de Decisao</h3>
+
+<div class="table-wrap">
+<table>
+<tr>
+<th>Pattern</th>
+<th>Use Quando</th>
+<th>Não Use Quando</th>
+<th>Exemplo Real</th>
+</tr>
+<tr>
+<td><strong>Singleton</strong></td>
+<td>Precisa de exatamente 1 instancia compartilhada</td>
+<td>Precisa de testabilidade ou multiplas configs</td>
+<td>Connection Pool, Logger, Cache</td>
+</tr>
+<tr>
+<td><strong>Factory Method</strong></td>
+<td>Tipo do objeto depende de parametro/contexto</td>
+<td>So existe 1 tipo — use <code>new</code> direto</td>
+<td>NotificationFactory, ParserFactory</td>
+</tr>
+<tr>
+<td><strong>Abstract Factory</strong></td>
+<td>Precisa criar familias de objetos compativeis</td>
+<td>Os objetos não tem relacao entre si</td>
+<td>UI Themes, DB Adapters (PG + Redis + S3)</td>
+</tr>
+<tr>
+<td><strong>Builder</strong></td>
+<td>Objeto complexo com muitos params opcionais</td>
+<td>Objeto simples com 2-3 params obrigatórios</td>
+<td>QueryBuilder, RequestBuilder, ConfigBuilder</td>
+</tr>
+<tr>
+<td><strong>Prototype</strong></td>
+<td>Criacao e cara ou precisa de variacoes de um template</td>
+<td>Objetos são simples e baratos de criar</td>
+<td>Game objects, Config templates, Document presets</td>
+</tr>
+</table>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Sistema de Notificacoes com Factory + Builder</h3>
+<p><strong>Cenário:</strong> Projete um sistema que cria notificações de diferentes tipos (Email, SMS, Push), cada uma com muitas configurações opcionais (prioridade, agendamento, template, anexos). Combine Factory Method para selecionar o tipo e Builder para construir a notificação complexa.</p>
+
+<div class="diagram">
+<div class="diagram-box green">NotificationDirector<br><small>(Orquestra a construção)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">NotificationBuilder<br><small>(Constroi passo-a-passo)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">NotificationFactory<br><small>(Seleciona canal)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">EmailChannel<br>SmsChannel<br>PushChannel</div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// Builder constroi a notificação complexa</span>
+<span class="kw">class</span> <span class="tp">NotificationBuilder</span> {
+  <span class="kw">private</span> _to = <span class="str">''</span>;
+  <span class="kw">private</span> _message = <span class="str">''</span>;
+  <span class="kw">private</span> _channel: <span class="tp">NotificationType</span> = <span class="str">'email'</span>;
+  <span class="kw">private</span> _priority: <span class="str">'low'</span> | <span class="str">'normal'</span> | <span class="str">'high'</span> = <span class="str">'normal'</span>;
+  <span class="kw">private</span> _scheduledAt?: <span class="tp">Date</span>;
+  <span class="kw">private</span> _templateId?: <span class="tp">string</span>;
+  <span class="kw">private</span> _metadata: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">unknown</span>&gt; = {};
+
+  <span class="fn">to</span>(recipient: <span class="tp">string</span>): <span class="kw">this</span> { <span class="kw">this</span>._to = recipient; <span class="kw">return this</span>; }
+  <span class="fn">message</span>(msg: <span class="tp">string</span>): <span class="kw">this</span> { <span class="kw">this</span>._message = msg; <span class="kw">return this</span>; }
+  <span class="fn">via</span>(channel: <span class="tp">NotificationType</span>): <span class="kw">this</span> { <span class="kw">this</span>._channel = channel; <span class="kw">return this</span>; }
+  <span class="fn">priority</span>(p: <span class="str">'low'</span> | <span class="str">'normal'</span> | <span class="str">'high'</span>): <span class="kw">this</span> { <span class="kw">this</span>._priority = p; <span class="kw">return this</span>; }
+  <span class="fn">schedule</span>(date: <span class="tp">Date</span>): <span class="kw">this</span> { <span class="kw">this</span>._scheduledAt = date; <span class="kw">return this</span>; }
+  <span class="fn">template</span>(id: <span class="tp">string</span>): <span class="kw">this</span> { <span class="kw">this</span>._templateId = id; <span class="kw">return this</span>; }
+
+  <span class="kw">async</span> <span class="fn">send</span>(): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">if</span> (!<span class="kw">this</span>._to || !<span class="kw">this</span>._message) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Destinatario e mensagem são obrigatórios'</span>);
+    }
+
+    <span class="cm">// Factory decide qual canal usar</span>
+    <span class="kw">const</span> channel = <span class="tp">NotificationFactory</span>.<span class="fn">create</span>(<span class="kw">this</span>._channel);
+
+    <span class="kw">if</span> (<span class="kw">this</span>._scheduledAt) {
+      <span class="cm">// Agenda para o futuro via queue</span>
+      <span class="kw">await</span> <span class="fn">scheduleJob</span>(<span class="kw">this</span>._scheduledAt, () => channel.<span class="fn">send</span>(<span class="kw">this</span>._to, <span class="kw">this</span>._message));
+    } <span class="kw">else</span> {
+      <span class="kw">await</span> channel.<span class="fn">send</span>(<span class="kw">this</span>._to, <span class="kw">this</span>._message);
+    }
+  }
+}
+
+<span class="cm">// Usó — combina Builder (construção fluente) + Factory (selecao do canal)</span>
+<span class="kw">await new</span> <span class="tp">NotificationBuilder</span>()
+  .<span class="fn">to</span>(<span class="str">'joao@email.com'</span>)
+  .<span class="fn">message</span>(<span class="str">'Seu pedido #1234 foi enviado!'</span>)
+  .<span class="fn">via</span>(<span class="str">'email'</span>)
+  .<span class="fn">priority</span>(<span class="str">'high'</span>)
+  .<span class="fn">template</span>(<span class="str">'order-shipped'</span>)
+  .<span class="fn">send</span>();
+
+<span class="kw">await new</span> <span class="tp">NotificationBuilder</span>()
+  .<span class="fn">to</span>(<span class="str">'+5511999990000'</span>)
+  .<span class="fn">message</span>(<span class="str">'Código de verificação: 843291'</span>)
+  .<span class="fn">via</span>(<span class="str">'sms'</span>)
+  .<span class="fn">priority</span>(<span class="str">'high'</span>)
+  .<span class="fn">send</span>();</code></pre>
+
+<!-- ═══ ARMADILHAS COMUNS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Singleton como estado global:</strong> O maior problema do Singleton é que ele é um <strong>estado global disfarçado</strong>. Isso torna testes unitários um pesadelo — como mockar uma dependência que é acessada via <code>getInstance()</code> em vez de ser injetada? Prefira DI containers (NestJS, Spring, etc.) que fornecem escopo singleton sem os problemas do padrão clássico.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Over-using Factory quando um construtor simples basta:</strong> Se você tem apenas um tipo de objeto e não ha lógica condicional na criação, <code>new MinhaClasse(params)</code> é perfeitamente adequado. Factory adiciona uma camada de indireccao — ela só compensa quando existe variacao ou a lógica de criação e complexa.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Builder sem validação:</strong> O ponto forte do Builder é a validação no método <code>build()</code>. Se o seu Builder apenas seta campos e retorna o objeto sem verificar invariantes (campos obrigatórios, ranges válidos, combinacoes impossiveis), você perdeu metade do benefício. Sempre valide no <code>build()</code>.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Shallow clone quando precisa de deep clone:</strong> O erro mais comum com Prototype é fazer shallow clone de objetos com propriedades aninhadas. O clone é o original acabam compartilhando referências internas — mutar um afeta o outro silenciosamente. Use <code>structuredClone()</code> ou implemente deep clone explicitamente.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Comece com o mais simples (<code>new</code> direto). Quando sentir dor — construtores gigantes (use Builder), muitos <code>if/else</code> na criação (use Factory), objetos que precisam ser compatíveis (use Abstract Factory) — ai aplique o padrão. Padroes criacionais existem para resolver problemas reais, não para impressionar em code review.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem um sistema que precisa exportar relatórios em PDF, CSV e Excel. Cada formato tem lógica diferente de construção (headers, formatacao, encoding). Qual(is) pattern(s) criacional(is) você usaria e por que?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Combine <strong>Factory Method + Builder</strong>. A Factory decide qual exportador concreto usar (PdfExporter, CsvExporter, ExcelExporter) baseado no formato solicitado. O Builder configura o relatório step-by-step: <code>new ReportBuilder().title('Vendas Q1').columns(['data', 'valor']).dateRange(início, fim).format('pdf').build()</code>. A Factory é usada internamente pelo Builder no <code>build()</code> para criar o exportador correto. Isso separa a lógica de configuração (Builder) da lógica de instanciacao (Factory).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu time usa Singleton para gerenciar a configuração do app. Nos testes, cada teste precisa de uma configuração diferente, mas o Singleton sempre retorna a mesma instancia. Como resolver?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Substitua o Singleton clássico por <strong>injecao de dependência</strong>. Em vez de <code>AppConfig.getInstance()</code>, injete <code>IAppConfig</code> nós serviços que precisam. No container de DI (NestJS, por exemplo), registre como <code>{ provide: 'APP_CONFIG', useClass: AppConfig, scope: Scope.DEFAULT }</code> (singleton gerenciado pelo container). Nos testes, injete um mock: <code>{ provide: 'APP_CONFIG', useValue: mockConfig }</code>. Assim você mantém a semântica de instancia única em produção, mas cada teste pode usar sua propria configuração.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você esta criando um jogo e precisa instanciar milhares de inimigos com variacoes (cor, velocidade, arma). Criar cada um do zero e lento porque envolve carregar sprites e calcular hitboxes. Qual pattern usar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use o <strong>Prototype</strong>. Crie templates pre-configurados (prototipos) para cada tipo de inimigo: <code>zombieTemplate</code>, <code>skeletonTemplate</code>, <code>dragonTemplate</code>. Cada templaté já tem sprites carregados e hitboxes calculadas. Para criar uma instancia, clone o templaté e ajuste as variacoes: <code>const enemy = zombieTemplate.clone(); enemy.color = 'red'; enemy.speed *= 1.5;</code>. O clone e práticamente instantaneo porque reútiliza o trabalho pesado (sprites, hitboxes) já feito no template.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Design Patterns Criacionais</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="02-clean-code.html">&#8592; Anterior</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="04-design-patterns-estruturais.html" class="primary">Próximo: Design Patterns Estruturais &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 03: Design Patterns Criacionais
+// ══════════════════════════════════════════
+const SECTION_NUM = 3;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual padrão criacional garante que uma classe tenha apenas uma instancia e forneca um ponto de acesso global?",
+    options: [
+      "Factory Method",
+      "Singleton",
+      "Prototype",
+      "Builder"
+    ],
+    correct: 1,
+    explanation: "O Singleton garante uma única instancia da classe com um ponto de acesso global. Exemplos clássicos: connection pools, loggers e configurações."
+  },
+  {
+    question: "Você tem um sistema que cria notificações por Email, SMS ou Push dependendo de um parametro. Qual padrão criacional é mais adequado?",
+    options: [
+      "Singleton",
+      "Builder",
+      "Factory Method",
+      "Prototype"
+    ],
+    correct: 2,
+    explanation: "O Factory Method define uma interface para criação e decide qual classe concreta instanciar baseado em um parametro ou contexto. Ideal quando o tipo do objeto varia em runtime."
+  },
+  {
+    question: "Qual a principal diferença entre Factory Method e Abstract Factory?",
+    options: [
+      "Factory Method é mais performatico",
+      "Abstract Factory cria familias de objetos relacionados; Factory Method cria um único tipo",
+      "Factory Method usa heranca; Abstract Factory usa composicao exclusivamente",
+      "Não ha diferença — são nomes diferentes para o mesmo padrão"
+    ],
+    correct: 1,
+    explanation: "Factory Method cria UM tipo de objeto com variacoes. Abstract Factory cria FAMILIAS de objetos que precisam ser compativeis entre si (ex: Button + Input + Modal para Web ou Mobile)."
+  },
+  {
+    question: "Um construtor HttpRequest(url, method, headers, body, timeout, retries, auth, proxy) tem 8 parametros. Qual padrão resolve esse problema?",
+    options: [
+      "Factory Method",
+      "Prototype",
+      "Singleton",
+      "Builder"
+    ],
+    correct: 3,
+    explanation: "O Builder permite construção step-by-step com métodos nomeados: new HttpRequestBuilder().url('...').method('POST').timeout(5000).build(). Resolve o telescoping constructor anti-pattern."
+  },
+  {
+    question: "Em um jogo, criar um inimigo do zero e lento (carregar sprites, calcular hitboxes). Você precisa de centenas de copias com pequenas variacoes. Qual padrão usar?",
+    options: [
+      "Factory Method",
+      "Builder",
+      "Abstract Factory",
+      "Prototype"
+    ],
+    correct: 3,
+    explanation: "O Prototype permite clonar um objeto existente (template) ao inves de construir do zero. O clone reútiliza o trabalho pesado (sprites carregados, hitboxes calculadas) e só ajusta as variacoes."
+  },
+  {
+    question: "Por que o Singleton é frequentemente considerado um anti-pattern em projetos modernos?",
+    options: [
+      "Porque e lento e consome muita memória",
+      "Porque não funciona em linguagens tipadas",
+      "Porque é essencialmente estado global disfarçado, dificultando testes e criando acoplamento implicito",
+      "Porque foi removido do livro GoF na edicao mais recente"
+    ],
+    correct: 2,
+    explanation: "O Singleton e estado global disfarçado. Dependencias ficam escondidas (não aparecem no construtor), mockar para testes é difícil, e cria acoplamento implicito entre módulos. A alternativa moderna e injecao de dependência com escopo singleton."
+  },
+  {
+    question: "Qual a diferença entre shallow clone e deep clone no padrão Prototype?",
+    options: [
+      "Shallow clone copia só métodos; deep clone copia também propriedades",
+      "Shallow clone copia o primeiro nível; deep clone copia recursivamente todos os níveis",
+      "Shallow clone e síncrono; deep clone e assíncrono",
+      "Não ha diferença prática em TypeScript"
+    ],
+    correct: 1,
+    explanation: "Shallow clone copia apenas o primeiro nível — objetos aninhados continuam sendo a mesma referência. Deep clone copia tudo recursivamente, tornando clone e original completamente independentes."
+  },
+  {
+    question: "Você precisa criar componentes de UI (Button, Input, Modal) que funcionem juntos em versão Web ou Mobile. Qual padrão criacional é mais adequado?",
+    options: [
+      "Builder",
+      "Factory Method",
+      "Abstract Factory",
+      "Singleton"
+    ],
+    correct: 2,
+    explanation: "O Abstract Factory cria familias de objetos relacionados (Button + Input + Modal) que devem ser compativeis entre si. WebUIFactory cria componentes Web; MobileUIFactory cria componentes Mobile."
+  },
+  {
+    question: "Qual é o principal benefício do método build() no padrão Builder?",
+    options: [
+      "Retornar sempre a mesma instancia (singleton)",
+      "Permitir heranca multipla do objeto",
+      "Validar invariantes é criar o objeto final imutável",
+      "Converter o objeto para JSON automáticamente"
+    ],
+    correct: 2,
+    explanation: "O método build() é onde a validação acontece (campos obrigatórios, ranges válidos, combinacoes impossiveis) é o objeto final e construido. Sem validação no build(), o Builder perde metade do seu valor."
+  },
+  {
+    question: "Em TypeScript/ES Modules, qual é a forma mais idiomatica de implementar o padrão Singleton?",
+    options: [
+      "Classe com construtor privado e método estático getInstance()",
+      "Exportar uma instancia diretamente do módulo (module pattern)",
+      "Usar uma variável global no window/globalThis",
+      "Implementar com WeakMap para garbage collection"
+    ],
+    correct: 1,
+    explanation: "Em ES Modules, o módulo é executado uma única vez — qualquer export const config = new AppConfig() será a mesma instancia em todos os imports. E a forma mais simples e idiomatica, sem precisar do padrão clássico com getInstance()."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina os Design Patterns Criacionais.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

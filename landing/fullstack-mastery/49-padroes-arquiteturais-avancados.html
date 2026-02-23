@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>49 — Padroes Arquiteturais Avancados | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="48-comunicacao-sistemas-contratos.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>49</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="50-platform-engineering.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:74.2%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 49</span>
+<h2>Padroes Arquiteturais Avancados</h2>
+<div class="section-line"></div>
+
+<p>Quando você sai de um monolito e entra no mundo de sistemas distribuídos, os problemas mudam radicalmente. <strong>Transacoes que antes eram atomicas agora atravessam múltiplos serviços.</strong> Migracoes que antes eram um deploy único agora precisam ser incrementais. Falhas que antes derrubavam tudo agora precisam ser isoladas. Esta seção cobre os padrões arquiteturais que resolvem esses problemas — não como teoria abstrata, mas com implementações concretas em TypeScript/NestJS.</p>
+
+<p>Estes padrões não são opcionais em arquiteturas de microserviços. Se você opera mais de 5 serviços em produção sem Saga, Outbox, Circuit Breaker e ACL, você esta acumulando <strong>debito técnico invisível</strong> que vai explodir na primeira falha em cascata.</p>
+
+<!-- ═══ SAGA PATTERN ═══ -->
+<h3>Saga Pattern — Transacoes Distribuidas</h3>
+
+<p>Em um monolito, você faz <code>BEGIN TRANSACTION</code>, executa 5 operações e faz <code>COMMIT</code>. Se algo falha, <code>ROLLBACK</code> desfaz tudo. Em microserviços, <strong>não existe transação distribuida atomica viavel</strong> (2PC tem problemas graves de performance e disponibilidade). O Saga Pattern é a alternativa.</p>
+
+<p><strong>Definição:</strong> Uma Saga é uma sequência de transações locais onde cada transação atualiza um serviço e publica um evento/mensagem que dispara a próxima transação. Se uma transação falha, a saga executa <strong>compensating transactions</strong> para desfazer as transações anteriores.</p>
+
+<h4>Choreography vs Orchestration</h4>
+
+<p>Existem duas abordagens para coordenar uma saga:</p>
+
+<ul>
+<li><strong>Choreography (Coreografia):</strong> Cada serviço escuta eventos e decide autonomamente o próximo passo. Não ha coordenador central. Serviços são desacoplados, mas o fluxo fica implicito é difícil de debugar quando cresce</li>
+<li><strong>Orchestration (Orquestracao):</strong> Um serviço central (o orquestrador) coordena todos os passos da saga. O fluxo e explicito é fácil de entender, mas cria um ponto de acoplamento central</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Choreography</th><th>Orchestration</th></tr>
+<tr><td><strong>Coordenacao</strong></td><td>Descentralizada (eventos)</td><td>Centralizada (orchestrator)</td></tr>
+<tr><td><strong>Acoplamento</strong></td><td>Baixo entre serviços</td><td>Serviços acoplados ao orchestrator</td></tr>
+<tr><td><strong>Visibilidade</strong></td><td>Fluxo implicito, difícil de rastrear</td><td>Fluxo explicito, fácil de visualizar</td></tr>
+<tr><td><strong>Complexidade</strong></td><td>Cresce exponencialmente com mais passos</td><td>Linear — orquestrador gerencia tudo</td></tr>
+<tr><td><strong>Ideal para</strong></td><td>Sagas simples (2-3 passos)</td><td>Sagas complexas (4+ passos)</td></tr>
+<tr><td><strong>Compensacao</strong></td><td>Cada serviço sabe desfazer o proprio</td><td>Orchestrator dispara compensacoes</td></tr>
+<tr><td><strong>Testing</strong></td><td>Dificil testar fluxo completo</td><td>Facil — testa o orchestrator</td></tr>
+</table>
+</div>
+
+<h4>Compensating Transactions</h4>
+
+<p>Compensating transactions são o "undo" de cada passo. Porem, <strong>não são um rollback perfeito</strong> — são acoes semânticas que revertem o efeito. Exemplo: se o passó "reservar estoque" executou, a compensação e "liberar estoque", não um ROLLBACK de banco. Se o passó "enviar email de confirmacao" executou, a compensação pode ser "enviar email de cancelamento".</p>
+
+<p><strong>Regras criticas:</strong></p>
+<ul>
+<li>Compensacoes devem ser <strong>idempotentes</strong> — executar 2x deve ter o mesmo efeito de 1x</li>
+<li>Compensacoes devem ser <strong>comutativas quando possível</strong> — a ordem de execução não deve importar</li>
+<li>Compensacoes podem falhar — você precisa de retry com backoff exponencial</li>
+<li>Nem tudo é compensavel — enviar um SMS não pode ser "desenviado". Use pivot transactions (o ponto sem retorno)</li>
+</ul>
+
+<h4>Implementation: Saga Orchestrator em TypeScript/NestJS</h4>
+
+<pre data-lang="TypeScript"><code><span class="cm">// saga-orchestrator.ts — Orchestrator genérico para Sagas</span>
+<span class="kw">interface</span> <span class="tp">SagaStep</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="fn">name</span>: <span class="tp">string</span>;
+  <span class="fn">execute</span>(context: <span class="tp">T</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;;
+  <span class="fn">compensate</span>(context: <span class="tp">T</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;;
+}
+
+<span class="kw">enum</span> <span class="tp">SagaStatus</span> {
+  <span class="str">RUNNING</span> = <span class="str">'RUNNING'</span>,
+  <span class="str">COMPLETED</span> = <span class="str">'COMPLETED'</span>,
+  <span class="str">COMPENSATING</span> = <span class="str">'COMPENSATING'</span>,
+  <span class="str">FAILED</span> = <span class="str">'FAILED'</span>,
+}
+
+<span class="kw">class</span> <span class="tp">SagaOrchestrator</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="kw">private</span> steps: <span class="tp">SagaStep</span>&lt;<span class="tp">T</span>&gt;[] = [];
+  <span class="kw">private</span> completedSteps: <span class="tp">SagaStep</span>&lt;<span class="tp">T</span>&gt;[] = [];
+  <span class="kw">private</span> status: <span class="tp">SagaStatus</span> = <span class="tp">SagaStatus</span>.<span class="str">RUNNING</span>;
+
+  <span class="fn">addStep</span>(step: <span class="tp">SagaStep</span>&lt;<span class="tp">T</span>&gt;): <span class="kw">this</span> {
+    <span class="kw">this</span>.steps.push(step);
+    <span class="kw">return this</span>;
+  }
+
+  <span class="kw">async</span> <span class="fn">execute</span>(initialContext: <span class="tp">T</span>): <span class="tp">Promise</span>&lt;{ status: <span class="tp">SagaStatus</span>; context: <span class="tp">T</span> }&gt; {
+    <span class="kw">let</span> context = { ...initialContext };
+
+    <span class="kw">for</span> (<span class="kw">const</span> step <span class="kw">of</span> <span class="kw">this</span>.steps) {
+      <span class="kw">try</span> {
+        console.<span class="fn">log</span>(<span class="str">`[Saga] Executing: ${step.name}`</span>);
+        context = <span class="kw">await</span> step.<span class="fn">execute</span>(context);
+        <span class="kw">this</span>.completedSteps.push(step);
+      } <span class="kw">catch</span> (error) {
+        console.<span class="fn">error</span>(<span class="str">`[Saga] Failed at: ${step.name}`</span>, error);
+        <span class="kw">await this</span>.<span class="fn">compensate</span>(context);
+        <span class="kw">return</span> { status: <span class="kw">this</span>.status, context };
+      }
+    }
+
+    <span class="kw">this</span>.status = <span class="tp">SagaStatus</span>.<span class="str">COMPLETED</span>;
+    <span class="kw">return</span> { status: <span class="kw">this</span>.status, context };
+  }
+
+  <span class="kw">privaté async</span> <span class="fn">compensate</span>(context: <span class="tp">T</span>): <span class="tp">Promise</span>&lt;<span class="kw">void</span>&gt; {
+    <span class="kw">this</span>.status = <span class="tp">SagaStatus</span>.<span class="str">COMPENSATING</span>;
+    <span class="cm">// Compensaté in reverse order</span>
+    <span class="kw">for</span> (<span class="kw">const</span> step <span class="kw">of</span> [...<span class="kw">this</span>.completedSteps].<span class="fn">reverse</span>()) {
+      <span class="kw">try</span> {
+        console.<span class="fn">log</span>(<span class="str">`[Saga] Compensating: ${step.name}`</span>);
+        <span class="kw">await</span> step.<span class="fn">compensate</span>(context);
+      } <span class="kw">catch</span> (err) {
+        console.<span class="fn">error</span>(<span class="str">`[Saga] Compensation failed: ${step.name}`</span>, err);
+        <span class="cm">// Log for manual intervention — compensation MUST NOT throw</span>
+      }
+    }
+    <span class="kw">this</span>.status = <span class="tp">SagaStatus</span>.<span class="str">FAILED</span>;
+  }
+}
+
+<span class="cm">// ── Usage: Order Creation Saga ──</span>
+<span class="kw">interface</span> <span class="tp">OrderContext</span> {
+  orderId: <span class="tp">string</span>;
+  userId: <span class="tp">string</span>;
+  items: { productId: <span class="tp">string</span>; qty: <span class="tp">number</span> }[];
+  totalAmount: <span class="tp">number</span>;
+  paymentId?: <span class="tp">string</span>;
+  reservationId?: <span class="tp">string</span>;
+}
+
+<span class="kw">const</span> saga = <span class="kw">new</span> <span class="tp">SagaOrchestrator</span>&lt;<span class="tp">OrderContext</span>&gt;()
+  .<span class="fn">addStep</span>({
+    name: <span class="str">'ReserveInventory'</span>,
+    <span class="kw">async</span> <span class="fn">execute</span>(ctx) {
+      <span class="kw">const</span> res = <span class="kw">await</span> inventoryService.<span class="fn">reserve</span>(ctx.items);
+      <span class="kw">return</span> { ...ctx, reservationId: res.id };
+    },
+    <span class="kw">async</span> <span class="fn">compensate</span>(ctx) {
+      <span class="kw">if</span> (ctx.reservationId)
+        <span class="kw">await</span> inventoryService.<span class="fn">release</span>(ctx.reservationId);
+      <span class="kw">return</span> ctx;
+    },
+  })
+  .<span class="fn">addStep</span>({
+    name: <span class="str">'ProcessPayment'</span>,
+    <span class="kw">async</span> <span class="fn">execute</span>(ctx) {
+      <span class="kw">const</span> payment = <span class="kw">await</span> paymentService.<span class="fn">charge</span>(ctx.userId, ctx.totalAmount);
+      <span class="kw">return</span> { ...ctx, paymentId: payment.id };
+    },
+    <span class="kw">async</span> <span class="fn">compensate</span>(ctx) {
+      <span class="kw">if</span> (ctx.paymentId)
+        <span class="kw">await</span> paymentService.<span class="fn">refund</span>(ctx.paymentId);
+      <span class="kw">return</span> ctx;
+    },
+  })
+  .<span class="fn">addStep</span>({
+    name: <span class="str">'ConfirmOrder'</span>,
+    <span class="kw">async</span> <span class="fn">execute</span>(ctx) {
+      <span class="kw">await</span> orderService.<span class="fn">confirm</span>(ctx.orderId);
+      <span class="kw">return</span> ctx;
+    },
+    <span class="kw">async</span> <span class="fn">compensate</span>(ctx) {
+      <span class="kw">await</span> orderService.<span class="fn">cancel</span>(ctx.orderId);
+      <span class="kw">return</span> ctx;
+    },
+  });
+
+<span class="kw">const</span> result = <span class="kw">await</span> saga.<span class="fn">execute</span>({
+  orderId: <span class="str">'ord_123'</span>, userId: <span class="str">'usr_456'</span>,
+  items: [{ productId: <span class="str">'prod_789'</span>, qty: <span class="num">2</span> }],
+  totalAmount: <span class="num">299.90</span>,
+});</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Dica:</strong> Em produção, persista o estado da saga em banco de dados (saga log). Isso permite retomar sagas interrompidas após restart do serviço e auditoria completa de cada passó executado/compensado.</div>
+</div>
+
+<!-- ═══ TRANSACTIONAL OUTBOX & CDC ═══ -->
+<h3>Transactional Outbox & CDC</h3>
+
+<h4>O Problema do Dual-Write</h4>
+
+<p>Imagine que seu serviço precisa (1) salvar um pedido no banco e (2) publicar um evento no Kafka. Se você faz as duas operações separadamente, existe uma janela de falha:</p>
+
+<ul>
+<li><strong>Cenário A:</strong> Salva no banco, mas a publicação no Kafka falha &rarr; banco tem o dado, mas ninguem foi notificado</li>
+<li><strong>Cenário B:</strong> Publica no Kafka, mas o save no banco falha &rarr; consumidores processam um evento de algo que não existe</li>
+</ul>
+
+<p>Isso é o <strong>dual-write problem</strong> — você não pode fazer commit atomico em dois sistemas diferentes (banco + message broker).</p>
+
+<h4>Outbox Table Pattern</h4>
+
+<p><strong>Solução:</strong> Em vez de publicar diretamente no Kafka, salve o evento em uma tabela <code>outbox</code> na <strong>mesma transação</strong> que salva o dado de negócio. Um processo separado le a tabela outbox e publica no message broker.</p>
+
+<div class="diagram">
+<div class="diagram-box green">App Service</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">BEGIN TX<br><small>INSERT order</small><br><small>INSERT outbox</small><br><small>COMMIT</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Outbox Relay<br><small>(polling / CDC)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Kafka / SQS<br><small>Message Broker</small></div>
+</div>
+
+<h4>Polling Publisher vs CDC (Change Data Capture)</h4>
+
+<ul>
+<li><strong>Polling Publisher:</strong> Um job periódico (cron) le a tabela outbox, publica os eventos pendentes e marca como processados. Simples de implementar, mas tem latência (intervalo do poll) e pode gerar carga no banco</li>
+<li><strong>CDC (Change Data Capture):</strong> Ferramentas como Debezium leem o <strong>transaction log</strong> (WAL do Postgres, binlog do MySQL) e capturam mudanças em tempo real. Nenhum poll necessário, latência de milissegundos. Mais complexo de operar</li>
+</ul>
+
+<h4>Implementação: Outbox Table + Debezium Config</h4>
+
+<pre data-lang="SQL"><code><span class="cm">-- Migration: Creaté outbox table</span>
+<span class="kw">CREATE TABLE</span> outbox_events (
+  id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+  aggregate_type  <span class="tp">VARCHAR</span>(<span class="num">255</span>) <span class="kw">NOT NULL</span>,  <span class="cm">-- e.g. 'Order'</span>
+  aggregate_id    <span class="tp">VARCHAR</span>(<span class="num">255</span>) <span class="kw">NOT NULL</span>,  <span class="cm">-- e.g. 'ord_123'</span>
+  event_type      <span class="tp">VARCHAR</span>(<span class="num">255</span>) <span class="kw">NOT NULL</span>,  <span class="cm">-- e.g. 'OrderCreated'</span>
+  payload         <span class="tp">JSONB</span>       <span class="kw">NOT NULL</span>,
+  created_at      <span class="tp">TIMESTAMP</span>   <span class="kw">DEFAULT NOW</span>(),
+  published_at    <span class="tp">TIMESTAMP</span>   <span class="kw">NULL</span>        <span class="cm">-- NULL = pending</span>
+);
+
+<span class="kw">CREATE INDEX</span> idx_outbox_pending
+  <span class="kw">ON</span> outbox_events (created_at)
+  <span class="kw">WHERE</span> published_at <span class="kw">IS NULL</span>;</code></pre>
+
+<pre data-lang="TypeScript"><code><span class="cm">// outbox.service.ts — Save data + outbox event in same transaction</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">OrderService</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> dataSource: <span class="tp">DataSource</span>,
+    <span class="ann">@InjectRepository</span>(<span class="tp">Order</span>) <span class="kw">private</span> orderRepo: <span class="tp">Repository</span>&lt;<span class="tp">Order</span>&gt;,
+    <span class="ann">@InjectRepository</span>(<span class="tp">OutboxEvent</span>) <span class="kw">private</span> outboxRepo: <span class="tp">Repository</span>&lt;<span class="tp">OutboxEvent</span>&gt;,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">createOrder</span>(dto: <span class="tp">CreateOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>&gt; {
+    <span class="kw">return</span> <span class="kw">this</span>.dataSource.<span class="fn">transaction</span>(<span class="kw">async</span> (manager) =&gt; {
+      <span class="cm">// 1. Save business data</span>
+      <span class="kw">const</span> order = manager.<span class="fn">create</span>(<span class="tp">Order</span>, dto);
+      <span class="kw">await</span> manager.<span class="fn">save</span>(order);
+
+      <span class="cm">// 2. Save outbox event in SAME transaction</span>
+      <span class="kw">const</span> event = manager.<span class="fn">create</span>(<span class="tp">OutboxEvent</span>, {
+        aggregateType: <span class="str">'Order'</span>,
+        aggregateId: order.id,
+        eventType: <span class="str">'OrderCreated'</span>,
+        payload: { orderId: order.id, userId: order.userId, total: order.total },
+      });
+      <span class="kw">await</span> manager.<span class="fn">save</span>(event);
+
+      <span class="kw">return</span> order;
+    });
+  }
+}</code></pre>
+
+<pre data-lang="JSON"><code><span class="cm">// Debezium connector config — captures outbox table changes via PostgreSQL WAL</span>
+{
+  <span class="str">"name"</span>: <span class="str">"outbox-connector"</span>,
+  <span class="str">"config"</span>: {
+    <span class="str">"connector.class"</span>: <span class="str">"io.debezium.connector.postgresql.PostgresConnector"</span>,
+    <span class="str">"database.hostname"</span>: <span class="str">"db.internal"</span>,
+    <span class="str">"database.port"</span>: <span class="str">"5432"</span>,
+    <span class="str">"database.user"</span>: <span class="str">"debezium"</span>,
+    <span class="str">"database.dbname"</span>: <span class="str">"orders_db"</span>,
+    <span class="str">"table.include.list"</span>: <span class="str">"public.outbox_events"</span>,
+    <span class="str">"transforms"</span>: <span class="str">"outbox"</span>,
+    <span class="str">"transforms.outbox.type"</span>: <span class="str">"io.debezium.transforms.outbox.EventRouter"</span>,
+    <span class="str">"transforms.outbox.table.field.event.key"</span>: <span class="str">"aggregate_id"</span>,
+    <span class="str">"transforms.outbox.table.field.event.type"</span>: <span class="str">"event_type"</span>,
+    <span class="str">"transforms.outbox.table.field.event.payload"</span>: <span class="str">"payload"</span>,
+    <span class="str">"transforms.outbox.route.topic.replacement"</span>: <span class="str">"events.${routedByValue}"</span>
+  }
+}</code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Cuidado:</strong> O Outbox Pattern garante <strong>at-least-once delivery</strong>, não exactly-once. Consumidores DEVEM ser idempotentes — use o <code>aggregate_id</code> + <code>event_type</code> como chave de deduplicação.</div>
+</div>
+
+<!-- ═══ STRANGLER FIG ═══ -->
+<h3>Strangler Fig Pattern</h3>
+
+<p>O nome vem da figueira-estranguladora: uma planta que cresce ao redor de uma árvore, eventualmente substituindo-a por completo. No software, é a estratégia de <strong>migrar incrementalmente de um sistema legado para um moderno</strong>, sem big-bang rewrite.</p>
+
+<h4>Estrategia de Migracao Incremental</h4>
+
+<ol>
+<li><strong>Identify:</strong> Mapeie todas as funcionalidades do sistema legado</li>
+<li><strong>Route:</strong> Coloque uma routing layer (API Gateway/proxy) na frente do legado</li>
+<li><strong>Implement:</strong> Reimplemente uma funcionalidade por vez no sistema novo</li>
+<li><strong>Redirect:</strong> Redirecione o tráfego daquela funcionalidade para o novo serviço</li>
+<li><strong>Repeat:</strong> Repita até que o legado não receba mais tráfego</li>
+<li><strong>Retire:</strong> Desligue o sistema legado</li>
+</ol>
+
+<h4>Routing Layer e Feature Toggles</h4>
+
+<p>A routing layer é o coracao do padrão. Ela decide para onde enviar cada request — legado ou novo sistema. Feature toggles permitem ativar/desativar rotas gradualmente é fazer rollback instantaneo:</p>
+
+<pre data-lang="TypeScript"><code><span class="cm">// strangler-proxy.middleware.ts</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">StranglerProxyMiddleware</span> <span class="kw">implements</span> <span class="tp">NestMiddleware</span> {
+  <span class="kw">private</span> routingTable: <span class="tp">Map</span>&lt;<span class="tp">string</span>, { target: <span class="str">'legacy'</span> | <span class="str">'modern'</span>; percentage: <span class="tp">number</span> }&gt;;
+
+  <span class="kw">constructor</span>(<span class="kw">private</span> featureFlags: <span class="tp">FeatureFlagService</span>) {
+    <span class="kw">this</span>.routingTable = <span class="kw">new</span> <span class="tp">Map</span>([
+      [<span class="str">'/api/orders'</span>,    { target: <span class="str">'modern'</span>,  percentage: <span class="num">100</span> }], <span class="cm">// fully migrated</span>
+      [<span class="str">'/api/payments'</span>,  { target: <span class="str">'modern'</span>,  percentage: <span class="num">50</span> }],  <span class="cm">// canary 50%</span>
+      [<span class="str">'/api/inventory'</span>, { target: <span class="str">'legacy'</span>,  percentage: <span class="num">0</span> }],   <span class="cm">// not migrated</span>
+      [<span class="str">'/api/reports'</span>,   { target: <span class="str">'legacy'</span>,  percentage: <span class="num">0</span> }],   <span class="cm">// not migrated</span>
+    ]);
+  }
+
+  <span class="kw">async</span> <span class="fn">use</span>(req: <span class="tp">Request</span>, res: <span class="tp">Response</span>, next: <span class="tp">NextFunction</span>) {
+    <span class="kw">const</span> route = <span class="kw">this</span>.<span class="fn">findMatchingRoute</span>(req.path);
+
+    <span class="kw">if</span> (!route || route.target === <span class="str">'legacy'</span>) {
+      <span class="cm">// Proxy to legacy system</span>
+      <span class="kw">return this</span>.<span class="fn">proxyToLegacy</span>(req, res);
+    }
+
+    <span class="kw">if</span> (route.percentage &lt; <span class="num">100</span>) {
+      <span class="cm">// Canary: percentage-based routing</span>
+      <span class="kw">const</span> hash = <span class="kw">this</span>.<span class="fn">hashUserId</span>(req.user?.id) % <span class="num">100</span>;
+      <span class="kw">if</span> (hash &gt;= route.percentage) {
+        <span class="kw">return this</span>.<span class="fn">proxyToLegacy</span>(req, res);
+      }
+    }
+
+    <span class="cm">// Route to modern service</span>
+    <span class="fn">next</span>();
+  }
+}</code></pre>
+
+<!-- DIAGRAM: Strangler Fig Migration -->
+<div class="diagram">
+<div class="diagram-box red">Legacy System<br><small>monolith</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box cyan">API Gateway<br><small>routing layer</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">New Services<br><small>orders, payments</small></div>
+</div>
+<p style="text-align:center;color:var(--text3);font-size:.8rem;margin-top:-12px">O Gateway roteia entre legado e moderno. Conforme serviços migram, legado recebe menós tráfego até ser desligado.</p>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Dica prática:</strong> Use o Strangler Fig junto com <strong>feature flags</strong> (LaunchDarkly, Unleash). Assim você pode migrar rota por rota, ativar para 10% dos usuários, monitorar métricas é fazer rollback instantaneo se algo quebrar — sem deploy.</div>
+</div>
+
+<!-- ═══ ANTI-CORRUPTION LAYER ═══ -->
+<h3>Anti-Corruption Layer (ACL)</h3>
+
+<p>Quando você integra com um sistema legado, externo ou de outro bounded context, os modelos de domínio são diferentes. Sem proteção, o modelo "sujo" do sistema externo <strong>corrompe</strong> seu domínio interno. O ACL e uma camada de traducao que impede essa contaminacao.</p>
+
+<h4>Context Mapping em DDD</h4>
+
+<p>No DDD, bounded contexts diferentes usam linguagens diferentes para os mesmos conceitos. Um "Customer" no contexto de vendas tem atributos diferentes de um "Customer" no contexto de suporte. O ACL traduz entre essas linguagens:</p>
+
+<ul>
+<li><strong>Conformist:</strong> Você aceita o modelo do outro time. Sem ACL — você se conforma ao modelo externo</li>
+<li><strong>Customer-Supplier:</strong> O time upstream (supplier) atende requests do downstream (customer). ACL leve</li>
+<li><strong>Anti-Corruption Layer:</strong> Você não confia no modelo externo e constroi uma barreira explicita de traducao</li>
+</ul>
+
+<h4>Implementação: ACL para integração com sistema legado</h4>
+
+<pre data-lang="TypeScript"><code><span class="cm">// acl/legacy-customer.adapter.ts</span>
+<span class="cm">// The legacy system uses completely different field names and formats</span>
+
+<span class="cm">// ── Legacy model (external, "dirty") ──</span>
+<span class="kw">interface</span> <span class="tp">LegacyCustomerResponse</span> {
+  CUST_ID: <span class="tp">string</span>;        <span class="cm">// uppercase, prefixed</span>
+  CUST_NM: <span class="tp">string</span>;        <span class="cm">// abbreviated field name</span>
+  EMAIL_ADDR: <span class="tp">string</span>;
+  ACCT_STATUS: <span class="str">'A'</span> | <span class="str">'I'</span> | <span class="str">'S'</span>;  <span class="cm">// single-char codes</span>
+  CRTD_DT: <span class="tp">string</span>;        <span class="cm">// daté as 'YYYYMMDD' string</span>
+  CRED_LIMIT: <span class="tp">string</span>;     <span class="cm">// number as string with cents '29990'</span>
+}
+
+<span class="cm">// ── Our domain model (internal, clean) ──</span>
+<span class="kw">interface</span> <span class="tp">Customer</span> {
+  id: <span class="tp">string</span>;
+  name: <span class="tp">string</span>;
+  email: <span class="tp">string</span>;
+  status: <span class="str">'active'</span> | <span class="str">'inactive'</span> | <span class="str">'suspended'</span>;
+  createdAt: <span class="tp">Date</span>;
+  creditLimit: <span class="tp">number</span>;
+}
+
+<span class="cm">// ── Anti-Corruption Layer ──</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">LegacyCustomerAdapter</span> {
+  <span class="kw">privaté static</span> STATUS_MAP: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">Customer</span>[<span class="str">'status'</span>]&gt; = {
+    <span class="str">'A'</span>: <span class="str">'active'</span>,
+    <span class="str">'I'</span>: <span class="str">'inactive'</span>,
+    <span class="str">'S'</span>: <span class="str">'suspended'</span>,
+  };
+
+  <span class="fn">toDomain</span>(legacy: <span class="tp">LegacyCustomerResponse</span>): <span class="tp">Customer</span> {
+    <span class="kw">return</span> {
+      id: legacy.CUST_ID,
+      name: legacy.CUST_NM,
+      email: legacy.EMAIL_ADDR.<span class="fn">toLowerCase</span>(),
+      status: <span class="tp">LegacyCustomerAdapter</span>.STATUS_MAP[legacy.ACCT_STATUS] ?? <span class="str">'inactive'</span>,
+      createdAt: <span class="kw">this</span>.<span class="fn">parseDate</span>(legacy.CRTD_DT),
+      creditLimit: <span class="fn">parseInt</span>(legacy.CRED_LIMIT, <span class="num">10</span>) / <span class="num">100</span>,
+    };
+  }
+
+  <span class="fn">toLegacy</span>(customer: <span class="tp">Partial</span>&lt;<span class="tp">Customer</span>&gt;): <span class="tp">Partial</span>&lt;<span class="tp">LegacyCustomerResponse</span>&gt; {
+    <span class="kw">const</span> reverseStatus = <span class="tp">Object</span>.<span class="fn">entries</span>(<span class="tp">LegacyCustomerAdapter</span>.STATUS_MAP)
+      .<span class="fn">find</span>(([_, v]) =&gt; v === customer.status);
+
+    <span class="kw">return</span> {
+      ...(customer.name && { CUST_NM: customer.name }),
+      ...(customer.email && { EMAIL_ADDR: customer.email.<span class="fn">toUpperCase</span>() }),
+      ...(reverseStatus && { ACCT_STATUS: reverseStatus[<span class="num">0</span>] <span class="kw">as</span> <span class="str">'A'</span> | <span class="str">'I'</span> | <span class="str">'S'</span> }),
+    };
+  }
+
+  <span class="kw">private</span> <span class="fn">parseDate</span>(yyyymmdd: <span class="tp">string</span>): <span class="tp">Date</span> {
+    <span class="kw">const</span> y = yyyymmdd.<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">4</span>);
+    <span class="kw">const</span> m = yyyymmdd.<span class="fn">slice</span>(<span class="num">4</span>, <span class="num">6</span>);
+    <span class="kw">const</span> d = yyyymmdd.<span class="fn">slice</span>(<span class="num">6</span>, <span class="num">8</span>);
+    <span class="kw">return new</span> <span class="tp">Date</span>(<span class="str">`${y}-${m}-${d}`</span>);
+  }
+}</code></pre>
+
+<!-- ═══ SIDECAR & AMBASSADOR ═══ -->
+<h3>Sidecar & Ambassador Patterns</h3>
+
+<p>Em arquiteturas de microserviços, cada serviço precisa lidar com concerns transversais: logging, auth, metrics, retries, raté limiting, service discovery. Implementar isso em cada serviço gera duplicação massiva. Os padrões Sidecar e Ambassador resolvem isso extraindo essas responsabilidades para processos auxiliares.</p>
+
+<h4>Sidecar Pattern</h4>
+
+<p>Um <strong>sidecar</strong> é um processo que roda ao lado do seu serviço (no mesmo pod/host) e intercepta tráfego de entrada/saida. O serviço não sabe que o sidecar existe — ele só faz HTTP/gRPC normalmente é o sidecar adiciona as capacidades transversais.</p>
+
+<ul>
+<li><strong>Logging:</strong> Captura todos os requests/responses automáticamente</li>
+<li><strong>mTLS:</strong> Encripta comunicação entre serviços sem o app saber</li>
+<li><strong>Metrics:</strong> Coleta latência, error rate, throughput de cada request</li>
+<li><strong>Retries/Timeouts:</strong> Configura politicas de retry sem mudar código do app</li>
+</ul>
+
+<h4>Ambassador Pattern</h4>
+
+<p>O <strong>Ambassador</strong> é similar ao sidecar, mas focado em <strong>tráfego de saida</strong> (outbound). Funciona como um proxy local que o serviço usa para acessar serviços externos. Adiciona: circuit breaking, retry, logging, raté limiting para chamadas externas.</p>
+
+<!-- DIAGRAM: Sidecar Architecture -->
+<div class="diagram">
+<div class="diagram-box blue" style="min-width:220px">
+  Pod / Container Group<br><br>
+  <span style="font-size:.7rem;color:var(--text2)">
+  [App Container] &harr; [Sidecar Proxy]<br>
+  port 8080 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; port 15001
+  </span>
+</div>
+<div class="diagram-arrow">&harr;</div>
+<div class="diagram-box purple" style="min-width:220px">
+  Pod / Container Group<br><br>
+  <span style="font-size:.7rem;color:var(--text2)">
+  [App Container] &harr; [Sidecar Proxy]<br>
+  port 3000 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; port 15001
+  </span>
+</div>
+</div>
+<p style="text-align:center;color:var(--text3);font-size:.8rem;margin-top:-12px">Toda comunicação entre pods passa pelos sidecars. mTLS, retries, metrics e tracing ficam transparentes ao app.</p>
+
+<div class="card blue">
+<div class="card-title">Service Meshes: Sidecar em Escala</div>
+<p style="color:var(--text2);font-size:.88rem;margin:0">Istio, Linkerd e Consul Connect são <strong>service meshes</strong> que automatizam o deploy de sidecars (tipicamente Envoy Proxy) em cada pod. O control plane configura todos os sidecars centralmente. Você ganha mTLS, observability, traffic management e circuit breaking <strong>sem mudar uma linha de código do app</strong>. O custo: ~10-15% de overhead de latência e consumo de memória por sidecar.</p>
+</div>
+
+<!-- ═══ CIRCUIT BREAKER & BULKHEAD ═══ -->
+<h3>Circuit Breaker & Bulkhead Avancados</h3>
+
+<p>Quando um serviço downstream falha ou fica lento, sem proteção, as threads do chamador ficam bloqueadas esperando timeout, criando uma <strong>falha em cascata</strong> que derruba todo o sistema. Circuit Breaker e Bulkhead são os dois padrões fundamentais de resiliência para evitar isso.</p>
+
+<h4>Circuit Breaker: Estados e Comportamento</h4>
+
+<ul>
+<li><strong>Closed (normal):</strong> Requests passam normalmente. O breaker monitora taxa de erros. Se erros ultrapassam o threshold (ex: 50% em 10 requests), transiciona para OPEN</li>
+<li><strong>Open (protegendo):</strong> Requests são rejeitados imediatamente com erro (fail fast), sem chamar o serviço downstream. Apos um timeout (ex: 30s), transiciona para HALF-OPEN</li>
+<li><strong>Half-Open (testando):</strong> Permite um número limitado de requests passar. Se todos succedem, volta para CLOSED. Se algum falha, volta para OPEN</li>
+</ul>
+
+<h4>Bulkhead: Isolamento de Falhas</h4>
+
+<p>O nome vem dos compartimentos estanques de navios — se um compartimento alaga, os outros não são afetados. No software, você isola recursos para que a falha de um componente não consuma todos os recursos do sistema.</p>
+
+<ul>
+<li><strong>Thread Pool Bulkhead:</strong> Cada serviço downstream recebe seu proprio pool de threads. Se o serviço A fica lento e consome suas 20 threads, o serviço B ainda tem suas 20 threads intactas</li>
+<li><strong>Semaphore Bulkhead:</strong> Limita o número de chamadas concorrentes sem criar threads dedicadas. Mais leve, mas sem timeout no waiting</li>
+</ul>
+
+<h4>Back-Pressure Patterns</h4>
+
+<p>Quando o sistema esta sobrecarregado, em vez de aceitar tudo é falhar, você <strong>sinaliza ao chamador que reduza a taxa</strong>:</p>
+<ul>
+<li><strong>HTTP 429 (Too Many Requests):</strong> Raté limiting com header <code>Retry-After</code></li>
+<li><strong>HTTP 503 (Service Unavailable):</strong> Load shedding — rejeita requests novos para proteger os em andamento</li>
+<li><strong>Queue-based:</strong> Coloca requests em fila com tamanho limitado. Fila cheia = reject</li>
+<li><strong>Reactive Streams:</strong> O subscriber informa ao publisher quantos itens pode processar (demand)</li>
+</ul>
+
+<h4>Implementação: Circuit Breaker em TypeScript</h4>
+
+<pre data-lang="TypeScript"><code><span class="cm">// circuit-breaker.ts — Production-ready implementation</span>
+<span class="kw">enum</span> <span class="tp">CircuitState</span> {
+  <span class="str">CLOSED</span>    = <span class="str">'CLOSED'</span>,
+  <span class="str">OPEN</span>      = <span class="str">'OPEN'</span>,
+  <span class="str">HALF_OPEN</span> = <span class="str">'HALF_OPEN'</span>,
+}
+
+<span class="kw">interface</span> <span class="tp">CircuitBreakerOptions</span> {
+  failureThreshold: <span class="tp">number</span>;    <span class="cm">// errors before opening (e.g. 5)</span>
+  successThreshold: <span class="tp">number</span>;    <span class="cm">// successes in half-open to close (e.g. 3)</span>
+  timeout: <span class="tp">number</span>;             <span class="cm">// ms before trying half-open (e.g. 30000)</span>
+  monitorWindow: <span class="tp">number</span>;       <span class="cm">// ms window for failure counting (e.g. 60000)</span>
+}
+
+<span class="kw">class</span> <span class="tp">CircuitBreaker</span> {
+  <span class="kw">private</span> state: <span class="tp">CircuitState</span> = <span class="tp">CircuitState</span>.<span class="str">CLOSED</span>;
+  <span class="kw">private</span> failures: <span class="tp">number</span>[] = [];     <span class="cm">// timestamps of failures</span>
+  <span class="kw">private</span> successes = <span class="num">0</span>;
+  <span class="kw">private</span> lastFailureTime = <span class="num">0</span>;
+  <span class="kw">private</span> opts: <span class="tp">CircuitBreakerOptions</span>;
+
+  <span class="kw">constructor</span>(opts: <span class="tp">Partial</span>&lt;<span class="tp">CircuitBreakerOptions</span>&gt; = {}) {
+    <span class="kw">this</span>.opts = {
+      failureThreshold: opts.failureThreshold ?? <span class="num">5</span>,
+      successThreshold: opts.successThreshold ?? <span class="num">3</span>,
+      timeout: opts.timeout ?? <span class="num">30_000</span>,
+      monitorWindow: opts.monitorWindow ?? <span class="num">60_000</span>,
+    };
+  }
+
+  <span class="kw">async</span> <span class="fn">execute</span>&lt;<span class="tp">T</span>&gt;(fn: () =&gt; <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;, fallback?: () =&gt; <span class="tp">T</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt; {
+    <span class="kw">if</span> (<span class="kw">this</span>.state === <span class="tp">CircuitState</span>.<span class="str">OPEN</span>) {
+      <span class="kw">if</span> (<span class="tp">Date</span>.<span class="fn">now</span>() - <span class="kw">this</span>.lastFailureTime &gt; <span class="kw">this</span>.opts.timeout) {
+        <span class="kw">this</span>.state = <span class="tp">CircuitState</span>.<span class="str">HALF_OPEN</span>;
+        <span class="kw">this</span>.successes = <span class="num">0</span>;
+      } <span class="kw">else</span> {
+        <span class="kw">if</span> (fallback) <span class="kw">return</span> <span class="fn">fallback</span>();
+        <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Circuit is OPEN — request rejected'</span>);
+      }
+    }
+
+    <span class="kw">try</span> {
+      <span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">fn</span>();
+      <span class="kw">this</span>.<span class="fn">onSuccess</span>();
+      <span class="kw">return</span> result;
+    } <span class="kw">catch</span> (error) {
+      <span class="kw">this</span>.<span class="fn">onFailure</span>();
+      <span class="kw">if</span> (fallback) <span class="kw">return</span> <span class="fn">fallback</span>();
+      <span class="kw">throw</span> error;
+    }
+  }
+
+  <span class="kw">private</span> <span class="fn">onSuccess</span>(): <span class="kw">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>.state === <span class="tp">CircuitState</span>.<span class="str">HALF_OPEN</span>) {
+      <span class="kw">this</span>.successes++;
+      <span class="kw">if</span> (<span class="kw">this</span>.successes &gt;= <span class="kw">this</span>.opts.successThreshold) {
+        <span class="kw">this</span>.state = <span class="tp">CircuitState</span>.<span class="str">CLOSED</span>;
+        <span class="kw">this</span>.failures = [];
+      }
+    }
+  }
+
+  <span class="kw">private</span> <span class="fn">onFailure</span>(): <span class="kw">void</span> {
+    <span class="kw">const</span> now = <span class="tp">Date</span>.<span class="fn">now</span>();
+    <span class="kw">this</span>.failures.push(now);
+    <span class="kw">this</span>.lastFailureTime = now;
+
+    <span class="cm">// Remove failures outside monitoring window</span>
+    <span class="kw">this</span>.failures = <span class="kw">this</span>.failures.<span class="fn">filter</span>(
+      t =&gt; now - t &lt; <span class="kw">this</span>.opts.monitorWindow
+    );
+
+    <span class="kw">if</span> (<span class="kw">this</span>.state === <span class="tp">CircuitState</span>.<span class="str">HALF_OPEN</span> ||
+        <span class="kw">this</span>.failures.length &gt;= <span class="kw">this</span>.opts.failureThreshold) {
+      <span class="kw">this</span>.state = <span class="tp">CircuitState</span>.<span class="str">OPEN</span>;
+    }
+  }
+
+  <span class="fn">getState</span>(): <span class="tp">CircuitState</span> { <span class="kw">return this</span>.state; }
+}
+
+<span class="cm">// ── Usage with fallback ──</span>
+<span class="kw">const</span> breaker = <span class="kw">new</span> <span class="tp">CircuitBreaker</span>({ failureThreshold: <span class="num">3</span>, timeout: <span class="num">15_000</span> });
+
+<span class="kw">const</span> recommendations = <span class="kw">await</span> breaker.<span class="fn">execute</span>(
+  () =&gt; recommendationService.<span class="fn">getPersonalized</span>(userId),
+  () =&gt; [<span class="str">'Popular Item 1'</span>, <span class="str">'Popular Item 2'</span>] <span class="cm">// fallback: return popular items</span>
+);</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Dica:</strong> Em produção, use bibliotecas testadas em vez de implementar do zero: <strong>opossum</strong> (Node.js), <strong>Resilience4j</strong> (Java), <strong>Polly</strong> (.NET). Elas incluem métricas, configuração dinâmica e integração com health checks.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Armadilha comum:</strong> Não confunda Circuit Breaker com Retry. Retry tenta de novo imediatamente — útil para falhas transientes (network blip). Circuit Breaker para de tentar por um periodo — útil quando o serviço downstream esta genuinamente fora do ar. Use ambos juntos: retry 3x, se todas falharem, o circuit breaker abre.</div>
+</div>
+
+<!-- ═══ Q&A ═══ -->
+<h3>Perguntas & Respostas</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Quando usar Saga Choreography vs Orchestration? Qual a regra prática?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Use <strong>Choreography</strong> quando a saga tem 2-3 passos simples e os serviços já estão desacoplados via eventos (ex: order created &rarr; payment processed &rarr; notification sent). Use <strong>Orchestration</strong> quando a saga tem 4+ passos, lógica condicional (se pagamento falhar, tente outro método), ou precisa de visibilidade clara do fluxo. Regra prática: se você não consegue desenhar o fluxo completo no whiteboard em 30 segundos, use orchestration.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Outbox Pattern vs Event Sourcing — qual a diferença é quando usar cada um?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> O <strong>Outbox Pattern</strong> resolve específicamente o dual-write problem: garante que dados de negócio e eventos são persistidos atomicamente. Você continua usando CRUD normal para o estado. <strong>Event Sourcing</strong> é um paradigma completo onde o estado e derivado de eventos — não existe tabela de estado, só eventos. Event Sourcing resolve o dual-write naturalmente (os eventos JA são a source of truth), mas é muito mais complexo. Use Outbox quando precisa de garantia de publicação de eventos com arquitetura CRUD existente. Use Event Sourcing quando auditabilidade completa e reconstrução de estado são requisitos críticos (fintech, trading).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Precisó de um service mesh (Istio/Linkerd) ou possó implementar sidecar manualmente?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>Depende da escala.</strong> Com 3-5 serviços, implemente circuit breaker, retry e logging em uma library compartilhada — um service mesh e overkill e adiciona complexidade operacional significativa. Com 10+ serviços, a library compartilhada vira um nightmare de versioning e deployment. Nesse ponto, um service mesh se paga porque centraliza a configuração e elimina a necessidade de cada time implementar resiliência. Comece com Linkerd (mais simples que Istio). Regra: se você não tem um time de plataforma dedicado, provavelmente e cedo demais para service mesh.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Como decidir os parametros do Circuit Breaker (threshold, timeout)?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Não existe valor universal — depende do serviço. Comece com: <strong>failureThreshold = 5</strong> (tolere 5 falhas antes de abrir), <strong>timeout = 30s</strong> (espere 30s antes de testar novamente), <strong>monitorWindow = 60s</strong> (conte erros nós últimos 60s). Depois, ajuste com dados reais: se o serviço downstream leva 2 minutos para se recuperar de falhas tipicas, o timeout deve ser >= 2min. Se ele é crítico e você quer fail-fast rápido, reduza o threshold para 3. <strong>Sempre tenha métricas</strong> no circuit breaker (state transitions, rejection rate) para calibrar.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Padroes Arquiteturais Avancados</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="48-comunicacao-sistemas-contratos.html">&#8592; Anterior: Comúnicação entre Sistemas</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="50-platform-engineering.html" class="primary">Próximo: Platform Engineering &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 49: Padroes Arquiteturais Avancados
+// ══════════════════════════════════════════
+const SECTION_NUM = 49;
+const STORAGE_KEY = 'fsm_quiz_49';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual a principal diferença entre Saga Choreography e Saga Orchestration?",
+    options: [
+      "Choreography usa banco de dados; Orchestration usa message broker",
+      "Choreography e descentralizada via eventos; Orchestration tem um coordenador central",
+      "Choreography e síncrona; Orchestration e assíncrona",
+      "Choreography não suporta compensating transactions"
+    ],
+    correct: 1,
+    explanation: "Na Choreography, cada serviço escuta eventos e decide autonomamente o próximo passó (descentralizado). Na Orchestration, um serviço central coordena todos os passos. Choreography gera acoplamento implicito via eventos; Orchestration gera acoplamento explicito via orchestrator."
+  },
+  {
+    question: "O que é o 'dual-write problem' que o Outbox Pattern resolve?",
+    options: [
+      "Escrever em duas tabelas diferentes do mesmo banco",
+      "Não conseguir fazer commit atomico em dois sistemas diferentes (banco + message broker)",
+      "Dois serviços escrevendo no mesmo registro simultaneamente",
+      "Duplicacao de dados entre banco primário e replica"
+    ],
+    correct: 1,
+    explanation: "O dual-write problem ocorre quando você precisa salvar dados no banco E publicar um evento no Kafka/SQS atomicamente. Se fizer separadamente, uma operação pode falhar deixando o sistema inconsistente. O Outbox Pattern resolve salvando ambos na mesma transação do banco."
+  },
+  {
+    question: "No padrão Circuit Breaker, o que acontece no estado HALF-OPEN?",
+    options: [
+      "Metade dos requests são permitidos, metade são rejeitados",
+      "O circuito permite um número limitado de requests de teste para verificar se o serviço se recuperou",
+      "O serviço downstream esta operando com capacidade reduzida",
+      "O timeout do circuito esta na metade do tempo configurado"
+    ],
+    correct: 1,
+    explanation: "No estado HALF-OPEN, o circuit breaker permite um número limitado de requests passar como teste. Se esses requests succedem, o circuito volta para CLOSED (normal). Se algum falha, volta para OPEN (protegendo). E o mecanismo de 'recovery probe'."
+  },
+  {
+    question: "Qual a função principal do Anti-Corruption Layer (ACL)?",
+    options: [
+      "Prevenir SQL injection e XSS em APIs legadas",
+      "Traduzir entre modelos de domínio diferentes, impedindo que o modelo externo contamine o domínio interno",
+      "Encriptar dados em transito entre microserviços",
+      "Validar schemas de mensagens em filas de eventos"
+    ],
+    correct: 1,
+    explanation: "O ACL e uma camada de traducao que converte entre modelos de domínio de bounded contexts diferentes. Ele protege seu domínio interno de ser 'corrompido' pelos nomes de campo, formatos e convencoes do sistema externo/legado."
+  },
+  {
+    question: "No Strangler Fig Pattern, qual componente é essencial para a migração incremental?",
+    options: [
+      "Um banco de dados compartilhado entre legado e moderno",
+      "Uma routing layer (API Gateway/proxy) que direciona tráfego entre legado e novo sistema",
+      "Um script de migração de dados batch",
+      "Feature flags no código do sistema legado"
+    ],
+    correct: 1,
+    explanation: "A routing layer (API Gateway ou proxy reverso) é o componente central do Strangler Fig. Ela decide, rota por rota, se envia o tráfego para o legado ou para o novo serviço. Isso permite migração gradual, canary routing e rollback instantaneo."
+  },
+  {
+    question: "Qual afirmacao sobre compensating transactions em Sagas e CORRETA?",
+    options: [
+      "Compensacoes são identicas a um ROLLBACK de banco de dados",
+      "Compensacoes devem ser idempotentes e podem falhar — precisam de retry",
+      "Compensacoes só funcionam com Saga Orchestration, não Choreography",
+      "Toda operação em uma Saga deve ter compensação — não existem operações não-compensaveis"
+    ],
+    correct: 1,
+    explanation: "Compensacoes são acoes semânticas de reversão (não ROLLBACK de banco). Devem ser idempotentes porque podem ser executadas mais de uma vez (retry). Podem falhar e precisam de retry com backoff. Existem operações não-compensaveis (ex: enviar SMS) — chamadas de 'pivot transactions'."
+  },
+  {
+    question: "Qual a diferença entre Sidecar Pattern e Ambassador Pattern?",
+    options: [
+      "Sidecar e para containerss; Ambassador e para VMs",
+      "Sidecar intercepta tráfego de entrada/saida; Ambassador foca em tráfego de saida (outbound)",
+      "Sidecar é um padrão de código; Ambassador é um padrão de infraestrutura",
+      "Não ha diferença — são nomes diferentes para o mesmo padrão"
+    ],
+    correct: 1,
+    explanation: "Ambos rodam como processos auxiliares ao lado do serviço principal. O Sidecar é mais genérico — intercepta tráfego de entrada e saida para cross-cutting concerns (mTLS, metrics, logging). O Ambassador foca específicamente em tráfego outbound — age como proxy para serviços externos, adicionando retry, circuit breaking e raté limiting."
+  },
+  {
+    question: "Debezium resolve o Outbox Pattern usando qual técnica?",
+    options: [
+      "Polling periódico na tabela outbox a cada 5 segundos",
+      "Triggers de banco de dados que publicam eventos automáticamente",
+      "Change Data Capture (CDC) — leitura do transaction log (WAL/binlog) do banco",
+      "Webhooks configurados no PostgreSQL para cada INSERT"
+    ],
+    correct: 2,
+    explanation: "Debezium usa Change Data Capture (CDC) — ele le o transaction log do banco (WAL no PostgreSQL, binlog no MySQL) em tempo real. Isso é mais eficiente que polling: latência de milissegundos, nenhuma carga adicional no banco com queries, e captura toda mudança incluindo DELETEs."
+  },
+  {
+    question: "O que é Bulkhead Pattern e qual problema ele resolve?",
+    options: [
+      "Encripta dados em compartimentos separados para segurança",
+      "Isola recursos (thread pools, conexões) para que a falha de um componente não consuma recursos de outros",
+      "Comprime dados para economizar bandwidth entre microserviços",
+      "Divide o banco de dados em shards independentes"
+    ],
+    correct: 1,
+    explanation: "O Bulkhead Pattern (nome dos compartimentos estanques de navios) isola recursos entre componentes. Se o serviço A fica lento e esgota seu thread pool, o serviço B continua com seu pool intacto. Sem bulkhead, um único serviço lento pode bloquear todas as threads e derrubar tudo."
+  },
+  {
+    question: "Qual combinação de padrões é mais adequada para migrar um monolito para microserviços gradualmente?",
+    options: [
+      "Saga + Circuit Breaker: gerenciar transações e falhas desde o início",
+      "Strangler Fig + ACL: migrar incrementalmente e proteger o domínio novo do legado",
+      "Outbox + CDC: garantir consistência de eventos durante a migração",
+      "Sidecar + Ambassador: adicionar observabilidade e resiliência transparentemente"
+    ],
+    correct: 1,
+    explanation: "Strangler Fig permite migrar rota por rota sem big-bang rewrite. O ACL protege os novos serviços de serem contaminados pelos modelos e convencoes do monolito legado. Juntos, eles formam a base de qualquer estratégia de migração incremental. Os outros padrões são importantes mas para fases posteriores."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina os Padroes Arquiteturais Avancados.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

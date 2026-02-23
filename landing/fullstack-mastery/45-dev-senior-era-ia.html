@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>45 — O que Diferencia um Dev Senior na Era da IA | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="44-quality-attributes-ilities.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>45</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="46-fundamentos-computacao.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:68.2%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 45</span>
+<h2>O que Diferencia um Dev Senior na Era da IA</h2>
+<div class="section-line"></div>
+
+<p>Você chegou até aqui. 44 seções cobrindo desde SOLID até AI Agents, de Clean Code a Quality Attributes. Mas ter conhecimento técnico e condição necessária, não suficiente. O que <strong>realmente diferencia um desenvolvedor senior</strong> não é saber mais — e saber <strong>aplicar com discernimento</strong>, liderar pelo exemplo e gerar impacto desproporcionalmente maior que o número de linhas de código que escreve.</p>
+
+<p>Na era da IA, isso é ainda mais verdade. Quando qualquer junior com Claude/Copilot pode gerar 500 linhas de código em minutos, o valor do senior não está em <strong>digitar rápido</strong>. Está em <strong>saber o que digitar</strong>, saber o que <strong>não</strong> digitar, e saber <strong>por que</strong>. Esta seção organiza esse "meta-conhecimento" em 6 dimensões.</p>
+
+<!-- ═══ DIMENSAO 1: TECHNICAL DEPTH ═══ -->
+<h3>Dimensão 1: Profundidade Técnica</h3>
+
+<p>Um senior não é "generalista raso". E alguém com <strong>profundidade real em pelo menós 1 ecossistema</strong> é amplitude suficiente para transitar entre domínios. As 44 seções anteriores cobriram a amplitude. Agora, vamos falar sobre profundidade.</p>
+
+<h4>Dominando Patterns e Trade-offs</h4>
+<p>O junior conhece o pattern. O senior sabe <strong>quando NÃO usar</strong>. Cada pattern das seções 1-44 tem trade-offs:</p>
+
+<ul>
+<li><strong>Microsserviços</strong> — Resolvem escalabilidade de time e deploy independente. Mas adicionam complexidade de rede, distributed transactions e observabilidade. Para times < 5 devs, monolito modular e quase sempre melhor</li>
+<li><strong>Event Sourcing</strong> — Auditabilidade perfeita e time-travel de estado. Mas queries de leitura são complexas (precisa de CQRS), rebuild de projeções é lento e eventual consistency confunde usuários</li>
+<li><strong>Serverless</strong> — Zero ops e escala automática. Mas cold starts, vendor lock-in, debugging local é dolorosó e custos imprevisíveis em escala</li>
+<li><strong>GraphQL</strong> — Frontend pede exatamente o que precisa. Mas caching é mais complexo (não basta CDN por URL), N+1 queries no resolver é o raté limiting e não-trivial</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Exercício de profundidade:</strong> Para cada tecnologia que você usa, escreva 3 cenários onde ela é a melhor opção E 3 cenários onde é a pior. Se não consegue, você não tem profundidade suficiente nela.</div>
+</div>
+
+<h4>Expertise Profunda em 1 Ecossistema</h4>
+<p>Escolha uma stack e va até o fundo. Não e sobre "saber Node.js" — e sobre:</p>
+<ul>
+<li>Entender o event loop, o libuv, como o garbage collector V8 funciona é quando causa latency spikes</li>
+<li>Saber diagnosticar memory leaks com heap snapshots, CPU profiling com flame graphs</li>
+<li>Conhecer os internals do framework (NestJS: como o DI container resolve dependências, lifecycle hooks, middleware pipeline)</li>
+<li>Ter opinião informada sobre ORMs (TypeORM vs Prisma vs Drizzle) baseada em experiência real com cada um</li>
+<li>Entender como o runtime interáge com o SO (file descriptors, TCP connections, epoll)</li>
+</ul>
+
+<h4>Trade-off Analysis Framework</h4>
+<p>Para toda decisão técnica, um senior avalia sistematicamente:</p>
+
+<div class="card blue">
+<div class="card-title">Framework de Análise de Trade-offs</div>
+<ol>
+<li><strong>Complexidade:</strong> Quanto complexidade isso adiciona? Quem vai manter isso daqui a 2 anos?</li>
+<li><strong>Reversibilidade:</strong> Se essa decisão estiver errada, quao caro e reverter? (Decisões reversíveis = decida rápido. Irreversíveis = análise profundamente)</li>
+<li><strong>Escala:</strong> Essa solução funciona para 10x a carga atual? E para 100x?</li>
+<li><strong>Time context:</strong> O time tem experiência com isso? Quanto custa o ramp-up?</li>
+<li><strong>Alternativas:</strong> Que outras opções considerei? Por que descartei cada uma?</li>
+</ol>
+</div>
+
+<!-- ═══ DIMENSAO 2: ARCHITECTURAL THINKING ═══ -->
+<h3>Dimensão 2: Pensamento Arquitetural</h3>
+
+<p>O senior não apenas implementa features — ele <strong>projeta sistemas</strong>. Isso inclui System Design, NFRs, seleção de tecnologia, documentação de decisões e capacity planning.</p>
+
+<h4>ADRs — Architecture Decision Records</h4>
+<p>Toda decisão arquitetural significativa deve ser documentada. ADRs são o "commit history" das decisões técnicas. Template:</p>
+
+<pre data-lang="markdown"><code><span class="cm"># ADR-007: Usar PostgreSQL como banco primário ao invés de MongoDB</span>
+
+<span class="cm">## Status: Accepted</span>
+<span class="cm">## Data: 2025-03-15</span>
+<span class="cm">## Autores: @joao, @maria</span>
+
+<span class="cm">## Contexto</span>
+Precisamos escolher o banco principal para o sistema de pedidos.
+O sistema tem:
+- Relações complexas (pedido → itens → produtos → categorias)
+- Necessidade de transações ACID para pagamentos
+- Queries analiticas para dashboard
+
+<span class="cm">## Decisão</span>
+Usar <span class="str">PostgreSQL 16</span> como banco primário.
+
+<span class="cm">## Alternativas Consideradas</span>
+1. <span class="str">MongoDB</span> — Descartado: relações complexas ficam desnormalizadas
+   e inconsistentes. Transações multi-document são lentas.
+2. <span class="str">MySQL</span> — Viável, mas PostgreSQL tem melhor suporte a JSON,
+   CTEs, window functions e extensões (pgvector para futuro AI).
+3. <span class="str">DynamoDB</span> — Descartado: queries analiticas exigiriam ETL
+   para Redshift. Custo operacional maior para nossó caso.
+
+<span class="cm">## Consequências</span>
+- (+) Transações ACID nativas para pagamentos
+- (+) JSON columns para dados semi-estruturados sem sacrificar relacional
+- (+) Ecossistema maduro, fácil contratar devs
+- (-) Scaling horizontal mais complexo que DynamoDB (mas desnecessário para nossó volume)
+- (-) Precisa de expertise em tuning de queries e vacuum
+
+<span class="cm">## Métricas de Sucesso</span>
+- P99 de queries < 100ms com 10K pedidos/dia
+- Zero inconsistências de transação em 6 meses</code></pre>
+
+<h4>Capacity Planning — Back-of-Envelope Calculations</h4>
+<p>Um senior estima números na cabeça (ou no guardanapo) antes de projetar:</p>
+
+<pre data-lang="text"><code><span class="cm">Cenário: API de e-commerce para a Black Friday</span>
+
+<span class="cm">--- Estimativa de Trafego ---</span>
+Usuários ativos diarios (DAU): 500K
+Pico na Black Friday: 10x = 5M DAU
+Cada usuário faz ~20 requests/sessão
+Total requests/dia no pico: 5M * 20 = 100M requests/dia
+RPS medio: 100M / 86400 = ~1,150 RPS
+RPS pico (3x medio): ~3,500 RPS
+
+<span class="cm">--- Estimativa de Storage ---</span>
+Cada pedido: ~2KB (JSON comprimido)
+Pedidos/dia no pico: 200K
+Storage de pedidos/ano: 200K * 365 * 2KB = ~146GB/ano
+Com replicas (3x): ~440GB
+
+<span class="cm">--- Estimativa de Banda ---</span>
+Response medio: 5KB
+RPS pico * 5KB = 3,500 * 5KB = 17.5 MB/s = ~140 Mbps
+CDN para assets estáticos: separado, ~500 Mbps no pico
+
+<span class="cm">--- Decisões derivadas ---</span>
+- 3,500 RPS: um único PostgreSQL com read replicas aguenta
+- Não precisa de sharding (volume < 1TB)
+- CDN obrigatória para assets (Cloudfront)
+- Redis para cache de catálogo (hit raté > 90%)
+- Fila (SQS) para processamento de pedidos async</code></pre>
+
+<h4>Technology Selection</h4>
+<p>O senior avalia tecnologia como investimento, não como preferência pessoal:</p>
+<ul>
+<li><strong>Maturidade:</strong> Produção em empresas do nossó porte? Quantos anos? Issues abertos no GitHub?</li>
+<li><strong>Ecossistema:</strong> Libraries, ferramentas, integração com nossó stack existente?</li>
+<li><strong>Talent pool:</strong> Conseguimos contratar devs que conhecem isso? Qual o custo?</li>
+<li><strong>Exit cost:</strong> Se precisarmos trocar em 2 anos, quanto custa a migração?</li>
+<li><strong>Maintenance burden:</strong> Quem mantém o projeto? E uma empresa ou 1 dev open-source?</li>
+</ul>
+
+<!-- ═══ DIMENSAO 3: AI-ERA SKILLS ═══ -->
+<h3>Dimensão 3: Habilidades na Era da IA</h3>
+
+<p>A IA não substituiu devs seniors — ela <strong>amplificou a diferença</strong> entre quem sabe o que está fazendo e quem não sabe. Um junior com IA gera código mediocre 10x mais rápido. Um senior com IA gera código excelente 10x mais rápido. A diferença está em 3 habilidades.</p>
+
+<h4>1. Prompting Eficaz para Geração de Código</h4>
+<ul>
+<li><strong>Sejá específico sobre o contexto:</strong> "NestJS 11 com TypeORM, PostgreSQL, class-válidator. Padrão repository com DI" gera resultado 10x melhor que "crie um CRUD"</li>
+<li><strong>Defina constraints:</strong> "Sem usar any. Strict TypeScript. Handlers devem retornar DTOs, não entities. Erros tipados com HttpException"</li>
+<li><strong>De exemplos do padrão desejado:</strong> "Siga o mesmo padrão deste service existente: [cole código]"</li>
+<li><strong>Itere, não aceite de primeira:</strong> "Bom, mas adicione tratamento de erro para caso o registro não exista. E adicione logging estruturado"</li>
+</ul>
+
+<h4>2. Revisando Código Gerado por IA — Checklist Crítico</h4>
+
+<div class="card orange">
+<div class="card-title">Checklist de Review de Código Gerado por IA</div>
+<ol>
+<li><strong>Segurança:</strong> SQL injection? XSS? Secrets hardcoded? Válidação de input? Sanitização de output?</li>
+<li><strong>Error Handling:</strong> O que acontece quando a API externa falha? Timeout? Retry com backoff? Circuit breaker?</li>
+<li><strong>Edge Cases:</strong> Null, undefined, string vazia, array vazio, números negativos, datas inválidas, Unicode, emojis?</li>
+<li><strong>Performance:</strong> N+1 queries? Loop dentro de loop? Objetos grandes em memória? Missing indexes?</li>
+<li><strong>Concurrency:</strong> Race conditions? Deadlocks? Operações não-atomicas em dados compartilhados?</li>
+<li><strong>Testabilidade:</strong> Dependências são injetáveis? O código pode ser testado unitariamente sem banco/rede real?</li>
+<li><strong>Naming:</strong> Nomes fazem sentido no domínio? Abreviações confusas? Consistência com o codebase existente?</li>
+<li><strong>Patterns:</strong> Segue os patterns do projeto? Ou introduz um padrão novo que conflita com os existentes?</li>
+<li><strong>Hallucinations:</strong> APIs que não existem? Parametros inventados? Versões de bibliotecas incorretas?</li>
+<li><strong>Over-engineering:</strong> E mais complexo do que precisa ser? Abstractions desnecessárias? Design patterns forçados?</li>
+</ol>
+</div>
+
+<h4>3. Construindo Features com IA</h4>
+<p>O senior sabe usar IA como ferramenta, não como muleta:</p>
+<ul>
+<li><strong>Geração de boilerplate:</strong> DTOs, entities, migrations, CRUD básico. IA faz em segundos. Você válida e ajusta</li>
+<li><strong>Refactoring assistido:</strong> "Extraia esse switch/case em Strategy pattern". IA é excelente nisso</li>
+<li><strong>Testes:</strong> "Gere testes unitários para este service cobrindo happy path e error cases". IA gera 80%, você ajusta 20%</li>
+<li><strong>Documentação:</strong> "Gere JSDoc para esta função" ou "Escreva o ADR para esta decisão". IA como ghost writer</li>
+<li><strong>Debug:</strong> "Este erro está acontecendo: [stack trace]. O contexto e: [código]. Qual a causa provável?"</li>
+</ul>
+
+<h4>Entendendo Limitações da IA</h4>
+<ul>
+<li><strong>Contexto limitado:</strong> A IA não ve todo seu codebase. Ela pode gerar código correto sintaticamente mas que conflita com patterns existentes</li>
+<li><strong>Hallucinations:</strong> A IA inventa APIs, parametros e até bibliotecas que não existem. SEMPRE verifique documentação</li>
+<li><strong>Bias de treinamento:</strong> A IA tende a gerar código "medio" — o padrão mais comum do GitHub. Pode não ser o melhor para seu caso específico</li>
+<li><strong>Segurança:</strong> A IA não pensa em segurança por padrão. Ela pode gerar SQL concatenado, secrets em plain text ou endpoints sem autenticação</li>
+</ul>
+
+<!-- ═══ DIMENSAO 4: ENGINEERING EXCELLENCE ═══ -->
+<h3>Dimensão 4: Excelência em Engenharia</h3>
+
+<h4>Code Review Checklist</h4>
+<p>Um bom code review não é "LGTM". E uma ferramenta de ensino, qualidade e alinhamento:</p>
+
+<ul>
+<li><strong>Corretude:</strong> O código faz o que o ticket pede? Todos os cenários estão cobertos?</li>
+<li><strong>Design:</strong> A abordagem é a mais simples que resolve? Existe alternativa mais limpa?</li>
+<li><strong>Consistência:</strong> Segue os padrões do projeto? Naming, estrutura de pastas, error handling?</li>
+<li><strong>Testes:</strong> Os testes cobrem happy path E edge cases? Os nomes dos testes descrevem o comportamento?</li>
+<li><strong>Performance:</strong> Operações O(n^2) desnecessárias? Queries sem index? Carregamento lazy onde deveria ser eager?</li>
+<li><strong>Segurança:</strong> Input válidado? Output sanitizado? Autorização verificada?</li>
+<li><strong>Observabilidade:</strong> Logs em pontos críticos? Métricas para monitorar a feature? Error tracking?</li>
+</ul>
+
+<h4>Observability-First</h4>
+<p>O senior pensa em observabilidade ANTES de codar. Não depois de um incidente.</p>
+<ul>
+<li>Logs estruturados (JSON) com correlation ID desde o primeiro request</li>
+<li>Métricas de negócio (pedidos/minuto) além de métricas técnicas (CPU, memória)</li>
+<li>Alertas com thresholds significativos (não "CPU > 80%", mas "taxa de erro > 1% por 5 min")</li>
+<li>Runbooks para cada alerta — "o que verificar quando este alerta dispara"</li>
+</ul>
+
+<h4>Security-First</h4>
+<p>Segurança não é uma feature — e uma propriedade do sistema:</p>
+<ul>
+<li>Válidação de input em TODA borda (API, webhook, file upload, message queue)</li>
+<li>Princípio do menor privilégio (least privilege) — cada serviço só acessa o que precisa</li>
+<li>Secrets em vault (AWS Secrets Manager, HashiCorp Vault) — NUNCA em env vars de CI ou código</li>
+<li>Dependency scanning automatizado (Dependabot, Snyk) com bloqueio de merge para vulnerabilidades críticas</li>
+</ul>
+
+<h4>Cost-Conscious Engineering</h4>
+<p>O senior entende que cada decisão técnica tem um custo financeiro:</p>
+<ul>
+<li>Reserved Instances para workloads previsíveis (economia de 40-60%)</li>
+<li>Rightsizing — uma instância t3.xlarge rodando a 10% de CPU e desperdicio</li>
+<li>TTLs agressivos em cache e storage de logs — 90% dos logs nunca são lidos após 7 dias</li>
+<li>Arquitetura cost-aware: Serverless para spiky workloads, containers para sustained</li>
+</ul>
+
+<h4>Testing Strategy</h4>
+<p>O senior define a <strong>estratégia</strong> de testes, não apenas "cobertura":</p>
+<ul>
+<li><strong>Unit tests:</strong> Lógica de negócio pura. Rápidos, isolados, mockados. Bulk do testing (70%)</li>
+<li><strong>Integration tests:</strong> Camada de dados (repository + DB real via testcontainers). Verifica queries, migrations, constraints (20%)</li>
+<li><strong>E2E tests:</strong> Fluxos críticos do usuário. Poucos mas essenciais. Login, checkout, pagamento (10%)</li>
+<li><strong>Contract tests:</strong> Quando ha APIs entre times. Pact/MSW para garantir compatibilidade</li>
+<li><strong>Load tests:</strong> Antes de cada release major. k6/Gatling para encontrar bottlenecks</li>
+</ul>
+
+<!-- ═══ DIMENSAO 5: TECHNICAL LEADERSHIP ═══ -->
+<h3>Dimensão 5: Liderança Técnica</h3>
+
+<h4>Framework de Mentoria</h4>
+<p>Um senior multiplica o time. A formula: <strong>ensine a pescar, não de o peixe</strong>.</p>
+
+<ul>
+<li><strong>Pair programming dirígido:</strong> Não assuma o teclado. Faca perguntas. "O que acontece se esse campo for null?" "Tem outra forma de modelar isso?"</li>
+<li><strong>Code review como ensino:</strong> Não apenas "mude X para Y". Explique o <strong>por que</strong>. Linke para documentação. De contexto histórico. "A gente já tentou essa abordagem no projeto Z é o problema foi..."</li>
+<li><strong>Delegação progressiva:</strong> Comece delegando tasks com solução conhecida (você sabe o caminho). Depois delegue tasks com solução desconhecida (você confia no processo do mentee)</li>
+<li><strong>1:1 técnico regular:</strong> "O que você aprendeu essa semana?" "Onde você travou?" "Que decisão você tomou que não tem certeza?" Crie espaço seguro para duvidas</li>
+</ul>
+
+<h4>Comúnicando para Stakeholders Não-Técnicos</h4>
+<p>O CTO não quer ouvir "refatoramos o service layer para usar o Strategy pattern com DI". Ele quer ouvir:</p>
+
+<ul>
+<li><strong>Impacto no negócio:</strong> "Reduzimos o tempo de adicionar novo método de pagamento de 2 semanas para 2 dias"</li>
+<li><strong>Risco:</strong> "Se não fizermos isso agora, o próximo incidente de pagamento vai levar 4h para diagnosticar ao invés de 20min"</li>
+<li><strong>Custo de oportunidade:</strong> "Cada semana que adiamos essa migração custa R$15K em infra desperdicada"</li>
+<li><strong>Timeline realista:</strong> "3 sprints com risco medio. Se priorizarmos, 2 sprints. Podemos paralelisar se alocarmos mais 1 dev"</li>
+</ul>
+
+<h4>Influência sem Autoridade</h4>
+<p>O senior influência decisões sem ter cargo de gerência:</p>
+<ul>
+<li><strong>Provas técnicas:</strong> Prototipe a solução em 2h ao invés de debater em reuniao de 1h. "Fiz um spike e os números são esses"</li>
+<li><strong>Documentação de decisões:</strong> ADRs criam registro. Quando alguém perguntar "por que escolhemos X?", a resposta existe</li>
+<li><strong>Consistência:</strong> Sejá confiávelmente certo. Quando você diz "vai dar problema", o histórico comprova. Credibilidade e construída com tempo</li>
+<li><strong>Empowers others:</strong> Apoie publicamente ideias boas de juniores. "A sugestão do Joao é melhor que a minha porque..."</li>
+</ul>
+
+<h4>Cultura de Engenharia</h4>
+<ul>
+<li><strong>Blameless postmortems:</strong> "O sistema falhou" não "o Joao errou". Foco em prevenção, não em culpa</li>
+<li><strong>Documentation culture:</strong> Se não está documentado, não existe. READMEs, runbooks, ADRs, onboarding guides</li>
+<li><strong>Testing culture:</strong> "Testes são parte da feature, não um extra". PR sem testes não passa review</li>
+<li><strong>Continuous improvement:</strong> Tech debt sprints regulares. Não acumular até ser insustentável</li>
+</ul>
+
+<!-- ═══ DIMENSAO 6: BUSINESS VISION ═══ -->
+<h3>Dimensão 6: Visao de Negocio</h3>
+
+<h4>Entendendo o Usuário</h4>
+<p>O senior não implementa tickets cegamente. Ele pergunta <strong>"por que o usuário precisa disso?"</strong> é as vezes descobre que a solução real é diferente do que foi pedido.</p>
+
+<ul>
+<li><strong>Participe de user research:</strong> Assista a sessões de usabilidade. Vejá onde o usuário trava</li>
+<li><strong>Métricas de produto:</strong> Entenda DAU, retention, conversion rate, churn. Essas métricas guiam prioridades</li>
+<li><strong>Proposta de solução técnica:</strong> "O ticket pede um campo de busca. Mas olhando os dados, 80% dos usuários filtram por categoria. Um filtro por categoria resolve melhor e e 3x mais rápido de implementar"</li>
+</ul>
+
+<h4>Build vs Buy Framework</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Criterio</th><th>Build (Interno)</th><th>Buy (SaaS/Lib)</th></tr>
+<tr><td><strong>Core business</strong></td><td>SIM — seu diferencial competitivo deve ser controlado internamente</td><td>NÃO — não construa o que não é core</td></tr>
+<tr><td><strong>Customização</strong></td><td>Se precisa de >30% de customização sobre qualquer SaaS, build</td><td>Se o SaaS atende 80%+ do caso, buy</td></tr>
+<tr><td><strong>Time-to-market</strong></td><td>Semanas/meses. Só se você tem runway</td><td>Dias/horas. Ideal para validação rápida</td></tr>
+<tr><td><strong>Custo 5 anos</strong></td><td>Alto upfront, mas TCO pode ser menor se escalar</td><td>Baixo upfront, mas custo escala com uso</td></tr>
+<tr><td><strong>Expertise</strong></td><td>Requer time especializado para manter</td><td>Manutenção e responsabilidade do vendor</td></tr>
+</table>
+</div>
+
+<h4>Technical Debt Quadrant</h4>
+<p>Nem toda tech debt é ruim. Martin Fowler define 4 tipos cruzando <strong>deliberada/inadvertida</strong> com <strong>prudente/imprudente</strong>:</p>
+
+<div class="diagram">
+<div class="diagram-box green">Deliberada + Prudente<br><small>"Sabemos que não é ideal,<br>mas precisamos entregar.<br>Vamos pagar depois."</small></div>
+<div class="diagram-box blue">Inadvertida + Prudente<br><small>"Agora que entregamos,<br>percebemos como deveria<br>ter sido feito."</small></div>
+<div class="diagram-box orange">Deliberada + Imprudente<br><small>"Não temos tempo<br>para design.<br>Vai assim mesmo."</small></div>
+<div class="diagram-box red">Inadvertida + Imprudente<br><small>"O que é camada<br>de serviço?"<br>(Falta de conhecimento)</small></div>
+</div>
+
+<ul>
+<li><strong>Deliberada + Prudente</strong> — Aceitável. Você sabe o trade-off. Crie ticket de tech debt com deadline</li>
+<li><strong>Inadvertida + Prudente</strong> — Natural. Aprendizado continuo. Refatore quando perceber</li>
+<li><strong>Deliberada + Imprudente</strong> — Perigosa. Corte de esquina consciente sem plano de pagamento. Acumula juros compostos</li>
+<li><strong>Inadvertida + Imprudente</strong> — Crítica. Indica que o time precisa de mentoria e treinamento. Não e debt — e falta de fundação</li>
+</ul>
+
+<h4>TCO Analysis</h4>
+<p>Antes de propor uma mudança técnica, calcule o custo total:</p>
+
+<pre data-lang="text"><code><span class="cm">Proposta: Migrar de REST para GraphQL</span>
+
+<span class="cm">--- Custos de Migração ---</span>
+Engenharia: 2 devs * 3 meses = R$180K
+Risco de regressão: 2 semanas de bug fixing = R$30K
+Treinamento do time: workshops + ramp-up = R$15K
+Downtime parcial durante migração: R$5K
+Total migração: ~R$230K
+
+<span class="cm">--- Beneficios Anuais ---</span>
+Redução de over-fetching: -30% de banda = R$12K/ano
+Velocidade de desenvolvimento (frontend): +20% = R$60K/ano
+Menós endpoints para manter: -15% ops = R$20K/ano
+Total benefício: ~R$92K/ano
+
+<span class="cm">--- ROI ---</span>
+Break-even: 230K / 92K = ~2.5 anos
+Decisão: NÃO fazer agora. REST atende bem. Revisitar quando
+volume de dados ou número de clientes mobile justificar.</code></pre>
+
+<!-- ═══ LIVROS RECOMENDADOS ═══ -->
+<h3>Livros Recomendados</h3>
+
+<div class="card purple">
+<div class="card-title">12 Livros Essenciais para o Dev Senior</div>
+<ol>
+<li><strong>Clean Code</strong> — Robert C. Martin. A fundação. Nomes, funções, formatação, tratamento de erro</li>
+<li><strong>Clean Architecture</strong> — Robert C. Martin. Dependency Rule, boundaries, layers. Como organizar sistemas</li>
+<li><strong>Designing Data-Intensive Applications (DDIA)</strong> — Martin Kleppmann. A biblia de sistemas distribuídos. Replicação, particionamento, consensus</li>
+<li><strong>System Design Interview (Vol 1 e 2)</strong> — Alex Xu. Framework prático para System Design. URL shortener até distributed message queue</li>
+<li><strong>The Pragmatic Programmer</strong> — Hunt & Thomas. Sabedoria prática de engenharia. DRY, tracer bullets, ortogonalidade</li>
+<li><strong>Fundamentals of Software Architecture</strong> — Richards & Ford. Architecture characteristics, styles, decisions. O livro que conecta code a arquitetura</li>
+<li><strong>Building Microservices</strong> — Sam Newman. Quando (e quando não) usar microsserviços. Decomposicao, comunicação, deploy</li>
+<li><strong>Domain-Driven Design</strong> — Eric Evans. Bounded contexts, aggregates, ubiquitous language. Essencial para domínios complexos</li>
+<li><strong>Accelerate</strong> — Forsgren, Humble & Kim. Prova cientifica de que DevOps practices (CI/CD, trunk-based) melhoram resultados. DORA metrics</li>
+<li><strong>Staff Engineer</strong> — Will Larson. O que vem depois de senior: staff, principal. Como operar no nível de organização</li>
+<li><strong>The Manager's Path</strong> — Camille Fournier. Mesmo se você não quer ser manager. Entender a hierarquia, expectativas e dinâmicas de poder</li>
+<li><strong>Thinking in Systems</strong> — Donella Meadows. Pensamento sistemico. Feedback loops, delays, emergent behavior. Aplicável a arquitetura e organizações</li>
+</ol>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Sua Primeira Semana como Tech Lead</h3>
+<p><strong>Cenário:</strong> Você acabou de ser promovido a Tech Lead de um time de 6 pessoas trabalhando em um e-commerce. O sistema tem um monolito Node.js de 3 anos, 0 testes, deploys manuais é o antigo tech lead saiu. O que você faz na primeira semana?</p>
+
+<h4>Dia 1-2: Entender o Estado Atual</h4>
+<ul>
+<li><strong>1:1 com cada dev:</strong> "O que funciona bem? O que te frustra? Onde você vê risco? O que você mudaria se pudesse?" (Ouvir > Falar)</li>
+<li><strong>1:1 com Product Manager:</strong> "Quais são as prioridades dos próximos 3 meses? Onde a tech está bloqueando o produto?"</li>
+<li><strong>Audit do codebase:</strong> Estrutura de pastas, dependências desatualizadas, padrões (ou falta deles), tamanho dos arquivos, complexidade</li>
+<li><strong>Audit da infra:</strong> Como é o deploy? Quanto demora? Tem CI? Tem staging? Monitoramento? Alertas? On-call?</li>
+</ul>
+
+<h4>Dia 3-4: Quick Wins e Plano</h4>
+<ul>
+<li><strong>Quick win 1:</strong> Configurar CI básico (GitHub Actions: lint + build). 2 horas de trabalho, impacto imediato</li>
+<li><strong>Quick win 2:</strong> Adicionar health check endpoint + uptime monitor (UptimeRobot). 30 min de trabalho</li>
+<li><strong>Quick win 3:</strong> Documentar o processo de deploy atual. Mesmo que manual, documente cada passo</li>
+<li><strong>Plano de 30-60-90 dias:</strong> 30d = CI/CD + primeiros testes. 60d = Monitoramento + observabilidade. 90d = Primeiro módulo com testes > 60% coverage</li>
+</ul>
+
+<h4>Dia 5: Comúnicar e Alinhar</h4>
+<ul>
+<li><strong>Apresentar findings para o time:</strong> "Aqui está onde estamos. Aqui está o risco. Aqui está o plano. O que vocês acham?" (Co-criação, não imposicao)</li>
+<li><strong>Apresentar para gestão:</strong> "O risco principal e X. O custo de não enderecar e Y. Precisamos de Z sprints dedicados"</li>
+<li><strong>Estabelecer agreements:</strong> "A partir de agora: PR obrigatório, CI deve passar, testes para código novo (não retroativo)"</li>
+<li><strong>NÃO fazer:</strong> Reescrever tudo, escolher novo framework, criticar decisões anteriores, fazer mudanças grandes sem consenso</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Princípio fundamental:</strong> Os primeiros 30 dias são para <strong>ouvir e entender</strong>, não para mudar. Mudanças precipitadas sem contexto destroem credibilidade. Conquiste confiança primeiro mostrando que você entende a realidade — depois proponha mudanças com evidências.</div>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Confundir senior com "sabe tudo":</strong> O senior diz "não sei, mas vou descobrir" com frequência. A diferença é que ele sabe COMO descobrir rapidamente e tem o framework mental para avaliar o que aprendeu. Fingir saber é o anti-padrão mais perigoso.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Gold Plating:</strong> Gastar 3 semanas refatorando algo que funciona bem porque "não está bonito". Se não tem bug, não tem performance issue e não impede features futuras — deixe. Perfeição e inimiga da entrega.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Resistir a IA por orgulho:</strong> "Eu não precisó de IA para codar". Você também não precisa de IDE com autocomplete. Mas seria ineficiente sem. IA e uma ferramenta de produtividade. Ignorar por orgulho é como recusar o compilador. Aprenda a usa-lá BEM.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>O segredo final:</strong> O dev senior na era da IA é um <strong>multiplicador</strong>. Ele não apenas escreve bom código — ele faz o time inteiro escrever bom código. Ele não apenas resolve problemas — ele cria sistemas onde problemas são previsíveis e previníveis. E ele usa IA não como substituto de pensamento, mas como <strong>amplificador de julgamento</strong>.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Um junior no seu time quer usar MongoDB para um novo serviço de pedidos com transações entre pedido, estoque e pagamento. Como você aborda essa conversa?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Não diga "não, use PostgreSQL" diretamente. Faca perguntas: "Quais são os requisitos de consistência transacional? O que acontece se o pagamento for aprovado mas o estoque já acabou?" Guie o junior a perceber que transações multi-collection no MongoDB são mais lentas e complexas que transações ACID no PostgreSQL. Pergunte: "Você já trabalhou com transactions multi-document no Mongo? Quais são as limitações?" Se ele não sabe, sugira um spike de 2h comparando as duas abordagens. Deixe ele chegar na conclusão. O aprendizado e 10x mais duradouro quando é auto-descoberto.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: O CTO pede para você estimar quanto custa manter o sistema atual vs reescrever em uma stack moderna. Como você estrutura essa análise?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Use TCO Analysis. <strong>Custo de manter:</strong> (1) Tempo extra por feature devido a tech debt (métricas reais: lead time atual vs ideal). (2) Custo de incidentes (frequência * MTTR * custo/hora da equipe). (3) Custo de oportunidade (features não feitas por estar apagando incendio). <strong>Custo de reescrever:</strong> (1) Engenharia (devs * meses * salário). (2) Risco de regressions. (3) Feature freeze parcial durante migração. (4) Treinamento na nova stack. <strong>Apresente cenários:</strong> (A) Manter como está: custo X/ano crescente. (B) Refactoring incremental: investir Y nós próximos 6 meses, reduzir custo para Z/ano. (C) Rewrite: investir W, 12 meses, custo futuro V/ano. Recomende B (incremental) — quase sempre é a opção correta. Rewrites totais falham mais do que funcionam.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você usou IA para gerar um service inteiro de 200 linhas. O código compila e os testes passam. O que mais você verifica antes de abrir o PR?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Aplique o Checklist de Review completo: (1) <strong>Segurança:</strong> Inputs válidados? SQL parametrizado? Secrets não hardcoded? (2) <strong>Error handling:</strong> O que acontece quando dependências falham? Tem timeout? Retry? Fallback? (3) <strong>Edge cases:</strong> Null checks? Arrays vazios? Strings excessivamente longas? (4) <strong>Performance:</strong> Queries com N+1? Loops desnecessários? Objetos grandes em memória? (5) <strong>Hallucinations:</strong> Verifique que todas as APIs/métodos chamados realmente existem na versão que você usa. (6) <strong>Patterns:</strong> O código segue os padrões do projeto ou introduz padrões estranhos? (7) <strong>Naming:</strong> Nomes fazem sentido no domínio? (8) <strong>Over-engineering:</strong> Abstractions desnecessárias? O junior que mantiver isso vai entender? Só ENTÃO abra o PR.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Dev Senior na Era da IA</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="44-quality-attributes-ilities.html">&#8592; Anterior: Quality Attributes</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="46-fundamentos-computacao.html" class="primary">Próximo: Fundamentos de Computação &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 45: Dev Senior na Era da IA
+// ══════════════════════════════════════════
+const SECTION_NUM = 45;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a principal diferença entre um dev senior é um junior na era da IA?",
+    options: [
+      "O senior digita código mais rápido sem IA",
+      "O senior sabe quais frameworks são mais populares",
+      "O senior sabe o que construir, o que não construir e por que — usando IA como amplificador de julgamento",
+      "O senior não usa IA porque não precisa"
+    ],
+    correct: 2,
+    explanation: "Na era da IA, o valor do senior está no julgamento e discernimento — saber o que construir, avaliar trade-offs é usar IA como ferramenta de amplificação, não como substituto de pensamento."
+  },
+  {
+    question: "O que é um ADR (Architecture Decision Record)?",
+    options: [
+      "Um diagrama de arquitetura do sistema",
+      "Um documento que registra uma decisão técnica significativa, seu contexto, alternativas e consequências",
+      "Um ticket de bug relacionado a arquitetura",
+      "Uma métrica automatizada de qualidade de código"
+    ],
+    correct: 1,
+    explanation: "ADR documenta decisões arquiteturais com contexto, alternativas consideradas, decisão tomada e consequências esperadas. E o 'commit history' das decisões técnicas."
+  },
+  {
+    question: "No Technical Debt Quadrant de Martin Fowler, qual tipo é o mais perigoso?",
+    options: [
+      "Deliberada + Prudente (sabemos e vamos pagar depois)",
+      "Inadvertida + Prudente (aprendemos algo novo e percebemos a melhoria)",
+      "Deliberada + Imprudente (cortamos caminho conscientes sem plano de pagamento)",
+      "Inadvertida + Imprudente (falta de conhecimento fundamental)"
+    ],
+    correct: 3,
+    explanation: "Inadvertida + Imprudente é a mais perigosa porque indica falta de fundação técnica. Não e tech debt que pode ser paga — e falta de conhecimento que precisa de treinamento e mentoria. Deliberada + Imprudente é a segunda pior (corta caminho sem plano)."
+  },
+  {
+    question: "Qual é o primeiro item a verificar ao revisar código gerado por IA?",
+    options: [
+      "Se o código esta formatado corretamente",
+      "Se os nomes das variáveis são descritivos",
+      "Segurança: SQL injection, XSS, secrets hardcoded, validação de input",
+      "Se usa os design patterns mais modernos"
+    ],
+    correct: 2,
+    explanation: "Segurança é o item mais crítico. IA não pensa em segurança por padrão — pode gerar SQL concatenado, secrets em plain text ou endpoints sem autenticação. Uma falha de segurança tem impacto muito maior que qualquer outro problema de qualidade."
+  },
+  {
+    question: "Na primeira semana como Tech Lead de um time novo, qual é a ação mais importante?",
+    options: [
+      "Escolher um novo framework e iniciar a reescrita",
+      "Ouvir o time em 1:1s, entender o estado atual e identificar quick wins",
+      "Implementar microsserviços para resolver problemas de escalabilidade",
+      "Criar documentação completa de todo o sistema"
+    ],
+    correct: 1,
+    explanation: "Os primeiros 30 dias são para ouvir e entender. 1:1s revelam a realidade do time, os riscos e as oportunidades. Quick wins (CI básico, health checks) constroem credibilidade. Mudanças grandes sem contexto destroem confiança."
+  },
+  {
+    question: "Quando avaliar Build vs Buy, em qual caso é mais provável que 'Build' sejá a opção correta?",
+    options: [
+      "Quando o SaaS atende 90% do caso de uso",
+      "Quando é o core business da empresa e diferencial competitivo",
+      "Quando o time tem pouca experiência na tecnologia necessária",
+      "Quando o time-to-market é a prioridade máxima"
+    ],
+    correct: 1,
+    explanation: "Seu diferencial competitivo deve ser controlado internamente. Se você é uma fintech, o motor de risco e core — build. O sistema de email marketing não é core — buy. O criterio chave e: isso é o que diferencia sua empresa no mercado?"
+  },
+  {
+    question: "Qual é a distribuição ideal de testes na pirâmide de testes?",
+    options: [
+      "90% E2E, 5% Integration, 5% Unit",
+      "33% Unit, 33% Integration, 33% E2E",
+      "70% Unit, 20% Integration, 10% E2E",
+      "50% Unit, 50% E2E, 0% Integration"
+    ],
+    correct: 2,
+    explanation: "A pirâmide de testes clássica: 70% unit (rápidos, baratos, isolados), 20% integration (verifica camada de dados e integração), 10% E2E (fluxos críticos do usuário). Inverter a pirâmide (muitos E2E) gera suites lentas e flaky."
+  },
+  {
+    question: "Como um senior comúnica a necessidade de refactoring para o CTO?",
+    options: [
+      "O código esta feio e precisa ser limpo",
+      "Precisamos refatorar para usar design patterns modernos",
+      "O tempo para adicionar novo pagamento caiu de 2 semanas para 2 dias, reduzindo custo de R$30K por feature",
+      "Todos os devs seniors concordam que precisamos refatorar"
+    ],
+    correct: 2,
+    explanation: "Stakeholders não-técnicos entendem impacto no negócio, custo e risco. Traduza técnico para valor: tempo, dinheiro e risco. 'Refatorar' não é justificativa — 'reduzir custo e tempo de delivery' e."
+  },
+  {
+    question: "Qual é o maior risco de usar código gerado por IA sem revisão crítica?",
+    options: [
+      "O código pode ter formatação inconsistente",
+      "O código pode não seguir os design patterns mais recentes",
+      "Hallucinations: APIs inexistentes, vulnerabilidades de segurança, edge cases ignorados",
+      "O código pode ser mais longo que o necessário"
+    ],
+    correct: 2,
+    explanation: "Os riscos críticos são: hallucinations (APIs/métodos que não existem), falhas de segurança (a IA não pensa em segurança por padrão), e edge cases ignorados. Código que compila e passa testes básicos pode ter bugs sutis e perigosos."
+  },
+  {
+    question: "Qual princípio diferencia um senior de um programador experiente que não evolui?",
+    options: [
+      "O senior conhece mais linguagens de programação",
+      "O senior multiplica o time — faz o time inteiro produzir melhor código, não apenas ele mesmo",
+      "O senior trabalha mais horas por semana",
+      "O senior evita delegar tarefas para manter qualidade"
+    ],
+    correct: 1,
+    explanation: "O senior é um multiplicador. Ele não apenas escreve bom código — ele faz o time inteiro escrever bom código através de mentoria, code review, documentação e cultura de engenharia. O impacto e no time, não no individuo."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você está pronto para liderar como dev senior na era da IA.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

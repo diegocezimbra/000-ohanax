@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full-Stack Mastery — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── LAYOUT ── */
+.container{max-width:1100px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:64px 0 48px}
+.hero-badge{display:inline-block;padding:6px 16px;background:var(--accent-dim);border:1px solid rgba(61,214,140,.2);border-radius:20px;font-size:.72rem;font-weight:600;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px}
+.hero h1{font-size:2.8rem;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin-bottom:12px}
+.hero h1 span{color:var(--accent)}
+.hero p{font-size:1.05rem;color:var(--text2);max-width:600px;margin:0 auto 32px}
+.hero-cta{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:var(--accent);color:var(--bg);border-radius:var(--radius-sm);font-size:.95rem;font-weight:600;text-decoration:none;transition:all .2s}
+.hero-cta:hover{background:var(--accent2);transform:translateY(-1px)}
+
+/* ── STATS CARDS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:0 0 48px}
+.stat-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;text-align:center}
+.stat-value{font-size:2rem;font-weight:800;margin-bottom:4px}
+.stat-value.green{color:var(--accent)}
+.stat-value.blue{color:var(--blue)}
+.stat-value.purple{color:var(--purple)}
+.stat-value.orange{color:var(--orange)}
+.stat-label{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+
+/* ── PROGRESS BAR ── */
+.progress-section{margin-bottom:48px}
+.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.progress-header span{font-size:.8rem;color:var(--text3);font-weight:600}
+.progress-bar{height:8px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .6s ease;border-radius:4px}
+
+/* ── SECTION GROUPS ── */
+.group{margin-bottom:40px}
+.group-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--card-border)}
+.group-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.group-icon.green{background:rgba(61,214,140,.12);color:var(--accent)}
+.group-icon.blue{background:rgba(91,156,245,.12);color:var(--blue)}
+.group-icon.purple{background:rgba(176,122,238,.12);color:var(--purple)}
+.group-icon.orange{background:rgba(232,145,90,.12);color:var(--orange)}
+.group-icon.red{background:rgba(224,92,108,.12);color:var(--red)}
+.group-icon.cyan{background:rgba(86,182,194,.12);color:var(--cyan)}
+.group-icon.yellow{background:rgba(226,197,90,.12);color:var(--yellow)}
+.group-title{font-size:1rem;font-weight:700;color:var(--text)}
+.group-count{font-size:.72rem;color:var(--text3);font-weight:500}
+
+/* ── SECTION CARDS ── */
+.section-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.section-card{display:flex;align-items:center;gap:16px;padding:16px 20px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);text-decoration:none;transition:all .2s}
+.section-card:hover{border-color:var(--accent);background:var(--accent-dim);transform:translateY(-1px)}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text3);background:var(--bg4);padding:4px 8px;border-radius:4px;min-width:32px;text-align:center;font-weight:600}
+.section-card.completed .section-num{background:rgba(61,214,140,.15);color:var(--accent)}
+.section-title{font-size:.88rem;font-weight:500;color:var(--text);flex:1}
+.section-score{font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:600;padding:4px 10px;border-radius:4px;min-width:48px;text-align:center}
+.section-score.high{background:rgba(61,214,140,.12);color:var(--accent)}
+.section-score.mid{background:rgba(226,197,90,.12);color:var(--yellow)}
+.section-score.low{background:rgba(224,92,108,.12);color:var(--red)}
+.section-score.none{background:var(--bg4);color:var(--text3)}
+
+/* ── FOOTER ── */
+.footer{text-align:center;padding:48px 0 0;border-top:1px solid var(--card-border);margin-top:48px}
+.footer p{font-size:.8rem;color:var(--text3)}
+.footer a{color:var(--accent);text-decoration:none}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.container{padding:32px 16px 80px}
+.hero h1{font-size:1.8rem}
+.stats{grid-template-columns:repeat(2,1fr)}
+.section-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+.stats{grid-template-columns:1fr}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero{animation:fadeUp .5s ease both}
+.stats{animation:fadeUp .5s ease .1s both}
+.progress-section{animation:fadeUp .5s ease .2s both}
+.group{animation:fadeUp .5s ease .3s both}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ── HERO ── -->
+<div class="hero">
+<div class="hero-badge">66 Seções &bull; Wizard Interátivo &bull; Quizzes</div>
+<h1>Full-Stack <span>Mastery</span></h1>
+<p>O guia definitivo do desenvolvedor na era da IA. De SOLID a AI Agents, cada seção com exemplos multi-linguagem, exercícios práticos e quiz com pontuação.</p>
+<a href="fullstack-mastery/01-principios-solid.html" class="hero-cta" id="hero-cta">Começar Cursó &rarr;</a>
+</div>
+
+<!-- ── STATS ── -->
+<div class="stats">
+<div class="stat-card">
+<div class="stat-value green" id="stat-completed">0/66</div>
+<div class="stat-label">Completadas</div>
+</div>
+<div class="stat-card">
+<div class="stat-value blue" id="stat-average">0%</div>
+<div class="stat-label">Média Geral</div>
+</div>
+<div class="stat-card">
+<div class="stat-value purple" id="stat-perfect">0</div>
+<div class="stat-label">Notas 10/10</div>
+</div>
+<div class="stat-card">
+<div class="stat-value orange" id="stat-remaining">66</div>
+<div class="stat-label">Restantes</div>
+</div>
+</div>
+
+<!-- ── PROGRESS ── -->
+<div class="progress-section">
+<div class="progress-header">
+<span>Progressó Geral</span>
+<span id="progress-percent">0%</span>
+</div>
+<div class="progress-bar"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+</div>
+
+<!-- ══════ SECTION GROUPS ══════ -->
+
+<!-- Grupo 1: Fundamentos de Design -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon green">&#9670;</div>
+<div>
+<div class="group-title">Fundamentos de Design</div>
+<div class="group-count">Seções 01-05 &bull; Princípios, Clean Code, Design Patterns</div>
+</div>
+</div>
+<div class="section-grid" id="group-1"></div>
+</div>
+
+<!-- Grupo 2: Arquitetura de Software -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon blue">&#9632;</div>
+<div>
+<div class="group-title">Arquitetura de Software</div>
+<div class="group-count">Seções 06-11 &bull; DDD, Clean Architecture, Microservices, CQRS, EDA</div>
+</div>
+</div>
+<div class="section-grid" id="group-2"></div>
+</div>
+
+<!-- Grupo 3: Dados & Persistência -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon purple">&#9679;</div>
+<div>
+<div class="group-title">Dados & Persistência</div>
+<div class="group-count">Seções 12-17 &bull; SQL, NoSQL, Grafos, CAP, Mensageria</div>
+</div>
+</div>
+<div class="section-grid" id="group-3"></div>
+</div>
+
+<!-- Grupo 4: Performance & APIs -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon orange">&#9733;</div>
+<div>
+<div class="group-title">Performance & APIs</div>
+<div class="group-count">Seções 18-24 &bull; Concorrência, Escalabilidade, Caching, REST, GraphQL, AWS</div>
+</div>
+</div>
+<div class="section-grid" id="group-4"></div>
+</div>
+
+<!-- Grupo 5: DevOps & Infraestrutura -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon cyan">&#9881;</div>
+<div>
+<div class="group-title">DevOps & Infraestrutura</div>
+<div class="group-count">Seções 25-35 &bull; Containers, IaC, Serverless, Security, CI/CD, GitOps</div>
+</div>
+</div>
+<div class="section-grid" id="group-5"></div>
+</div>
+
+<!-- Grupo 6: Observabilidade & Testes -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon yellow">&#9888;</div>
+<div>
+<div class="group-title">Observabilidade & Testes</div>
+<div class="group-count">Seções 36-39 &bull; Logs, Métricas, SLOs, TDD, Testes Especializados</div>
+</div>
+</div>
+<div class="section-grid" id="group-6"></div>
+</div>
+
+<!-- Grupo 7: Frontend Avancado & IA -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon red">&#9830;</div>
+<div>
+<div class="group-title">Frontend Avançado & Inteligência Artificial</div>
+<div class="group-count">Seções 40-45 &bull; SSR, State, LLMs, AI Agents, Quality Attributes, Carreira</div>
+</div>
+</div>
+<div class="section-grid" id="group-7"></div>
+</div>
+
+<!-- Grupo 8: Fundamentos & Comúnicação -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon green">&#9650;</div>
+<div>
+<div class="group-title">Fundamentos & Comúnicação</div>
+<div class="group-count">Seções 46-48 &bull; Computação, Networking, Contratos</div>
+</div>
+</div>
+<div class="section-grid" id="group-8"></div>
+</div>
+
+<!-- Grupo 9: Engenharia de Plataforma & Operações -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon blue">&#9632;</div>
+<div>
+<div class="group-title">Engenharia de Plataforma & Operações</div>
+<div class="group-count">Seções 49-52 &bull; Padrões Arquiteturais, Platform Engineering, SRE, FinOps</div>
+</div>
+</div>
+<div class="section-grid" id="group-9"></div>
+</div>
+
+<!-- Grupo 10: Dados, Testes & Documentação -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon purple">&#9679;</div>
+<div>
+<div class="group-title">Dados, Testes & Documentação</div>
+<div class="group-count">Seções 53-56 &bull; Segurança Avançada, Testes, Engenharia de Dados, ADRs</div>
+</div>
+</div>
+<div class="section-grid" id="group-10"></div>
+</div>
+
+<!-- Grupo 11: Especialidades Multiplataforma -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon orange">&#9733;</div>
+<div>
+<div class="group-title">Especialidades Multiplataforma</div>
+<div class="group-count">Seções 57-60 &bull; Acessibilidade, Mobile, Systems Programming, Produto</div>
+</div>
+</div>
+<div class="section-grid" id="group-11"></div>
+</div>
+
+<!-- Grupo 12: IA Avançada & Tecnologias Emergentes -->
+<div class="group">
+<div class="group-header">
+<div class="group-icon cyan">&#9830;</div>
+<div>
+<div class="group-title">IA Avançada & Tecnologias Emergentes</div>
+<div class="group-count">Seções 61-66 &bull; AI Engineering, Segurança de IA, Blockchain, Quantum, NFRs</div>
+</div>
+</div>
+<div class="section-grid" id="group-12"></div>
+</div>
+
+<!-- ── FOOTER ── -->
+<div class="footer">
+<p>Full-Stack Mastery &mdash; 66 seções &bull; Multi-linguagem &bull; Quizzes interátivos</p>
+<p style="margin-top:8px"><a href="fullstack-mastery/01-principios-solid.html">Começar do início</a></p>
+</div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// SECTION DATA
+// ══════════════════════════════════════════
+const SECTIONS = [
+  { num: 1, file: '01-principios-solid.html', title: 'Princípios SOLID', group: 1 },
+  { num: 2, file: '02-clean-code.html', title: 'Clean Code & Refactoring', group: 1 },
+  { num: 3, file: '03-design-patterns-criacionais.html', title: 'Design Patterns — Criacionais', group: 1 },
+  { num: 4, file: '04-design-patterns-estruturais.html', title: 'Design Patterns — Estruturais', group: 1 },
+  { num: 5, file: '05-design-patterns-comportamentais.html', title: 'Design Patterns — Comportamentais', group: 1 },
+  { num: 6, file: '06-ddd-domain-driven-design.html', title: 'DDD — Domain-Driven Design', group: 2 },
+  { num: 7, file: '07-clean-hexagonal-onion.html', title: 'Clean, Hexagonal & Onion Architecture', group: 2 },
+  { num: 8, file: '08-mvc-mvp-mvvm-mvi.html', title: 'MVC, MVP, MVVM & MVI', group: 2 },
+  { num: 9, file: '09-microservices-vs-monolito.html', title: 'Microservices vs Monolito', group: 2 },
+  { num: 10, file: '10-cqrs-event-sourcing.html', title: 'CQRS & Event Sourcing', group: 2 },
+  { num: 11, file: '11-eda-event-driven.html', title: 'Event-Driven Architecture', group: 2 },
+  { num: 12, file: '12-bancos-sql-relacional.html', title: 'Bancos SQL & Relacional', group: 3 },
+  { num: 13, file: '13-nosql-documento-kv-colunar.html', title: 'NoSQL — Documento, KV, Colunar', group: 3 },
+  { num: 14, file: '14-grafos-vetorial-fulltext.html', title: 'Grafos, Vetorial & Full-Text', group: 3 },
+  { num: 15, file: '15-data-architecture.html', title: 'Data Architecture', group: 3 },
+  { num: 16, file: '16-cap-acid-base.html', title: 'CAP, ACID & BASE', group: 3 },
+  { num: 17, file: '17-mensageria-kafka-rabbit-sqs.html', title: 'Mensageria — Kafka, Rabbit, SQS', group: 3 },
+  { num: 18, file: '18-concorrência-paralelismo.html', title: 'Concorrência & Paralelismo', group: 4 },
+  { num: 19, file: '19-escalabilidade-load-balancing.html', title: 'Escalabilidade & Load Balancing', group: 4 },
+  { num: 20, file: '20-caching-estratégias.html', title: 'Caching — Estratégias', group: 4 },
+  { num: 21, file: '21-performance-otimização.html', title: 'Performance & Otimização', group: 4 },
+  { num: 22, file: '22-rest-graphql-grpc-websocket.html', title: 'REST, GraphQL, gRPC & WebSocket', group: 4 },
+  { num: 23, file: '23-api-design-versionamento.html', title: 'API Design & Versionamento', group: 4 },
+  { num: 24, file: '24-aws-serviços-essenciais.html', title: 'AWS — Serviços Essenciais', group: 4 },
+  { num: 25, file: '25-containers-kubernetes.html', title: 'Containers & Kubernetes', group: 5 },
+  { num: 26, file: '26-iac-terraform-pulumi-cdk.html', title: 'IaC — Terraform, Pulumi, CDK', group: 5 },
+  { num: 27, file: '27-serverless-edge-computing.html', title: 'Serverless & Edge Computing', group: 5 },
+  { num: 28, file: '28-owasp-top-10.html', title: 'OWASP Top 10', group: 5 },
+  { num: 29, file: '29-auth-oauth-jwt-rbac.html', title: 'Auth — OAuth, JWT, RBAC', group: 5 },
+  { num: 30, file: '30-criptografia-app-security.html', title: 'Criptografia & App Security', group: 5 },
+  { num: 31, file: '31-lgpd-gdpr-privacy.html', title: 'LGPD, GDPR & Privacy', group: 5 },
+  { num: 32, file: '32-cicd-pipelines.html', title: 'CI/CD Pipelines', group: 5 },
+  { num: 33, file: '33-gitflow-trunk-based.html', title: 'GitFlow & Trunk-Based', group: 5 },
+  { num: 34, file: '34-deploy-blue-green-canary.html', title: 'Deploy — Blue/Green & Canary', group: 5 },
+  { num: 35, file: '35-gitops-progressive-delivery.html', title: 'GitOps & Progressive Delivery', group: 5 },
+  { num: 36, file: '36-logs-métricas-tracing.html', title: 'Logs, Métricas & Tracing', group: 6 },
+  { num: 37, file: '37-sli-slo-sla-error-budgets.html', title: 'SLI, SLO, SLA & Error Budgets', group: 6 },
+  { num: 38, file: '38-tdd-bdd-piramide-testes.html', title: 'TDD, BDD & Pirâmide de Testes', group: 6 },
+  { num: 39, file: '39-testes-especializados.html', title: 'Testes Especializados — Chaos, Load', group: 6 },
+  { num: 40, file: '40-ssr-ssg-isr-micro-frontends.html', title: 'SSR, SSG, ISR & Micro Frontends', group: 7 },
+  { num: 41, file: '41-state-management-web-vitals.html', title: 'Staté Management & Web Vitals', group: 7 },
+  { num: 42, file: '42-llms-rag-prompt-engineering.html', title: 'LLMs, RAG & Prompt Engineering', group: 7 },
+  { num: 43, file: '43-ai-agents-finetuning-mlops.html', title: 'AI Agents, Fine-Tuning & MLOps', group: 7 },
+  { num: 44, file: '44-quality-attributes-ilities.html', title: 'Os 26 "-ilities" — Quality Attributes', group: 7 },
+  { num: 45, file: '45-dev-senior-era-ia.html', title: 'O que Diferencia um Dev Senior na Era da IA', group: 7 },
+  { num: 46, file: '46-fundamentos-computação.html', title: 'Fundamentos de Computação', group: 8 },
+  { num: 47, file: '47-networking-protocolos.html', title: 'Networking & Protocolos', group: 8 },
+  { num: 48, file: '48-comunicação-sistemas-contratos.html', title: 'Comúnicação entre Sistemas & Contratos', group: 8 },
+  { num: 49, file: '49-padrões-arquiteturais-avançados.html', title: 'Padrões Arquiteturais Avançados', group: 9 },
+  { num: 50, file: '50-platform-engineering.html', title: 'Platform Engineering', group: 9 },
+  { num: 51, file: '51-reliability-engineering.html', title: 'Reliability Engineering', group: 9 },
+  { num: 52, file: '52-finops.html', title: 'FinOps', group: 9 },
+  { num: 53, file: '53-segurança-avançada-pqc.html', title: 'Segurança Avançada & PQC', group: 10 },
+  { num: 54, file: '54-testes-avançados.html', title: 'Testes Avançados', group: 10 },
+  { num: 55, file: '55-engenharia-dados.html', title: 'Engenharia de Dados', group: 10 },
+  { num: 56, file: '56-documentação-adrs.html', title: 'Documentação & ADRs', group: 10 },
+  { num: 57, file: '57-acessibilidade-a11y.html', title: 'Acessibilidade (a11y)', group: 11 },
+  { num: 58, file: '58-mobile-development.html', title: 'Mobile Development', group: 11 },
+  { num: 59, file: '59-low-level-systems-wasm.html', title: 'Low-Level & Systems Programming', group: 11 },
+  { num: 60, file: '60-gestão-produto-métricas.html', title: 'Gestão de Produto & Métricas', group: 11 },
+  { num: 61, file: '61-ai-engineering.html', title: 'AI Engineering Completa', group: 12 },
+  { num: 62, file: '62-ia-aplicada-dev.html', title: 'IA Aplicada ao Desenvolvimento', group: 12 },
+  { num: 63, file: '63-segurança-ia.html', title: 'Segurança de IA', group: 12 },
+  { num: 64, file: '64-blockchain-web3.html', title: 'Blockchain & Web3', group: 12 },
+  { num: 65, file: '65-computação-quântica.html', title: 'Computação Quântica', group: 12 },
+  { num: 66, file: '66-requisitos-não-funcionais.html', title: 'Requisitos Não Funcionais', group: 12 }
+];
+
+// ══════════════════════════════════════════
+// RENDER SECTIONS
+// ══════════════════════════════════════════
+function getQuizData(num) {
+  try {
+    const saved = localStorage.getItem('fsm_quiz_' + num);
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.score !== undefined && data.total !== undefined) {
+        return data;
+      }
+    }
+  } catch(e) {}
+  return null;
+}
+
+function renderSections() {
+  // Group sections
+  const groups = {};
+  SECTIONS.forEach(s => {
+    if (!groups[s.group]) groups[s.group] = [];
+    groups[s.group].push(s);
+  });
+
+  // Render each group
+  for (const [groupId, sections] of Object.entries(groups)) {
+    const container = document.getElementById('group-' + groupId);
+    if (!container) continue;
+
+    let html = '';
+    sections.forEach(s => {
+      const quiz = getQuizData(s.num);
+      const completed = quiz !== null;
+      const score = quiz ? quiz.score : null;
+      const total = quiz ? quiz.total : 10;
+
+      let scoreClass = 'none';
+      let scoreText = '—';
+      if (score !== null) {
+        const pct = (score / total) * 100;
+        scoreClass = pct >= 80 ? 'high' : pct >= 50 ? 'mid' : 'low';
+        scoreText = score + '/' + total;
+      }
+
+      const numStr = String(s.num).padStart(2, '0');
+      html += '<a class="section-card' + (completed ? ' completed' : '') + '" href="fullstack-mastery/' + s.file + '">';
+      html += '<span class="section-num">' + numStr + '</span>';
+      html += '<span class="section-title">' + s.title + '</span>';
+      html += '<span class="section-score ' + scoreClass + '">' + scoreText + '</span>';
+      html += '</a>';
+    });
+
+    container.innerHTML = html;
+  }
+}
+
+// ══════════════════════════════════════════
+// UPDATE STATS
+// ══════════════════════════════════════════
+function updateStats() {
+  let completed = 0;
+  let totalScore = 0;
+  let totalPossible = 0;
+  let perfectScores = 0;
+  let firstIncomplete = null;
+
+  SECTIONS.forEach(s => {
+    const quiz = getQuizData(s.num);
+    if (quiz) {
+      completed++;
+      totalScore += quiz.score;
+      totalPossible += quiz.total;
+      if (quiz.score === quiz.total) perfectScores++;
+    } else if (!firstIncomplete) {
+      firstIncomplete = s;
+    }
+  });
+
+  const total = SECTIONS.length;
+  const average = totalPossible > 0 ? Math.round((totalScore / totalPossible) * 100) : 0;
+  const remaining = total - completed;
+  const progressPct = Math.round((completed / total) * 100);
+
+  document.getElementById('stat-completed').textContent = completed + '/' + total;
+  document.getElementById('stat-average').textContent = average + '%';
+  document.getElementById('stat-perfect').textContent = perfectScores;
+  document.getElementById('stat-remaining').textContent = remaining;
+  document.getElementById('progress-percent').textContent = progressPct + '%';
+
+  // Animaté progress bar
+  setTimeout(function() {
+    document.getElementById('progress-fill').style.width = progressPct + '%';
+  }, 300);
+
+  // Updaté CTA button
+  const cta = document.getElementById('hero-cta');
+  if (completed === 0) {
+    cta.textContent = 'Começar Cursó \u2192';
+    cta.href = 'fullstack-mastery/01-principios-solid.html';
+  } else if (completed === total) {
+    cta.textContent = 'Cursó Completo! Revisar \u2192';
+    cta.href = 'fullstack-mastery/01-principios-solid.html';
+  } else if (firstIncomplete) {
+    cta.textContent = 'Continuar: Seção ' + String(firstIncomplete.num).padStart(2, '0') + ' \u2192';
+    cta.href = 'fullstack-mastery/' + firstIncomplete.file;
+  }
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+renderSections();
+updateStats();
+</script>
+</body>
+</html>

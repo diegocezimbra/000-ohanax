@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>47 — Networking & Protocolos | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="46-fundamentos-computacao.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>47</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="48-comunicacao-sistemas-contratos.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:71.2%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 47</span>
+<h2>Networking & Protocolos</h2>
+<div class="section-line"></div>
+
+<p>Networking é a espinha dorsal de qualquer sistema distribuido. Cada request HTTP que você faz percorre camadas de protocolos, atravessa routers, e resolvido por DNS, criptografado por TLS e roteado por load balancers — tudo isso em milissegundos. Entender como essas camadas funcionam é o que diferencia um dev que "usa a rede" de um que <strong>domina a rede</strong>.</p>
+
+<p>Nesta seção, vamos cobrir desde o modelo OSI até HTTP/3 e service meshes. O objetivo não é decorar RFCs — e <strong>entender profundamente como dados fluem do cliente ao servidor</strong>, é como cada decisão de protocolo impacta latência, segurança e escalabilidade do seu sistema.</p>
+
+<!-- ═══ MODELO OSI ═══ -->
+<h3>Modelo OSI — As 7 Camadas</h3>
+
+<p>O modelo OSI (Open Systems Interconnection) divide a comunicação de rede em <strong>7 camadas</strong>. Cada camada tem responsabilidade específica e se comúnica apenas com as camadas adjacentes. Na prática, usamos o modelo TCP/IP (4 camadas), mas o OSI é essencial para <strong>entender onde cada problema acontece</strong>.</p>
+
+<h4>Camada 7 — Aplicacao</h4>
+<ul>
+<li><strong>Funcao:</strong> Interface entre o usuário/aplicação é a rede. Define protocolos de alto nível</li>
+<li><strong>Protocolos:</strong> <code>HTTP</code>, <code>HTTPS</code>, <code>FTP</code>, <code>SMTP</code>, <code>DNS</code>, <code>gRPC</code>, <code>WebSocket</code></li>
+<li><strong>Exemplo:</strong> Quando você faz <code>fetch('/api/users')</code>, esta operando nesta camada</li>
+</ul>
+
+<h4>Camada 6 — Apresentacao</h4>
+<ul>
+<li><strong>Funcao:</strong> Traducao, compressão e criptografia de dados. Converte formatos entre aplicação e rede</li>
+<li><strong>Protocolos:</strong> SSL/TLS (criptografia), JPEG/PNG (compressão de imagem), JSON/XML (serialização)</li>
+<li><strong>Exemplo:</strong> TLS encrypta o payload HTTP antes de enviar. gzip comprime a resposta</li>
+</ul>
+
+<h4>Camada 5 — Sessao</h4>
+<ul>
+<li><strong>Funcao:</strong> Gerencia conexões (abrir, manter, fechar). Controle de dialogo e sincronização</li>
+<li><strong>Protocolos:</strong> NetBIOS, RPC, sessões HTTP keep-alive, WebSocket sessions</li>
+<li><strong>Exemplo:</strong> Uma conexão WebSocket mantida aberta por horas — a camada de sessão gerencia isso</li>
+</ul>
+
+<h4>Camada 4 — Transporte</h4>
+<ul>
+<li><strong>Funcao:</strong> Entrega confiável (ou não) de dados entre processos. Segmentacao, controle de fluxo, controle de erros</li>
+<li><strong>Protocolos:</strong> <code>TCP</code> (confiável, orientado a conexão), <code>UDP</code> (rápido, sem garantia), <code>QUIC</code></li>
+<li><strong>Exemplo:</strong> TCP garante que todos os pacotes de um download chegam na ordem certa. UDP é usado em video call — perder 1 frame é melhor que esperar retransmissao</li>
+</ul>
+
+<h4>Camada 3 — Rede</h4>
+<ul>
+<li><strong>Funcao:</strong> Roteamento de pacotes entre redes diferentes. Enderecamento lógico (IP)</li>
+<li><strong>Protocolos:</strong> <code>IP</code> (IPv4/IPv6), <code>ICMP</code> (ping), <code>BGP</code>, <code>OSPF</code></li>
+<li><strong>Exemplo:</strong> Quando um pacote sai da sua máquina para um servidor na AWS, routers usam BGP para encontrar o melhor caminho</li>
+</ul>
+
+<h4>Camada 2 — Enlace (Data Link)</h4>
+<ul>
+<li><strong>Funcao:</strong> Transferencia de frames entre nós diretamente conectados. Deteccao de erros no nível fisico</li>
+<li><strong>Protocolos:</strong> Ethernet (802.3), Wi-Fi (802.11), ARP, MAC addressing</li>
+<li><strong>Exemplo:</strong> ARP resolve o IP <code>192.168.1.1</code> para o MAC address <code>aa:bb:cc:dd:ee:ff</code> do router no seu WiFi</li>
+</ul>
+
+<h4>Camada 1 — Fisica</h4>
+<ul>
+<li><strong>Funcao:</strong> Transmissao de bits brutos pelo meio fisico. Sinais eletricos, opticos ou radio</li>
+<li><strong>Meios:</strong> Cabo Ethernet (RJ45), fibra optica, WiFi (ondas de radio), Bluetooth</li>
+<li><strong>Exemplo:</strong> Fibra optica transmite dados como pulsos de luz a velocidade próxima da luz — 1ms por 200km</li>
+</ul>
+
+<!-- Diagram: 7 camadas OSI -->
+<div class="diagram" style="flex-direction:column;gap:4px">
+<div class="diagram-box green" style="width:100%;max-width:500px">7. Aplicacao — HTTP, DNS, gRPC</div>
+<div class="diagram-arrow" style="font-size:.8rem">&#8595;</div>
+<div class="diagram-box blue" style="width:100%;max-width:500px">6. Apresentacao — TLS, Compressão</div>
+<div class="diagram-arrow" style="font-size:.8rem">&#8595;</div>
+<div class="diagram-box purple" style="width:100%;max-width:500px">5. Sessao — Conexoes, Keep-alive</div>
+<div class="diagram-arrow" style="font-size:.8rem">&#8595;</div>
+<div class="diagram-box orange" style="width:100%;max-width:500px">4. Transporte — TCP, UDP, QUIC</div>
+<div class="diagram-arrow" style="font-size:.8rem">&#8595;</div>
+<div class="diagram-box red" style="width:100%;max-width:500px">3. Rede — IP, ICMP, BGP</div>
+<div class="diagram-arrow" style="font-size:.8rem">&#8595;</div>
+<div class="diagram-box cyan" style="width:100%;max-width:500px">2. Enlace — Ethernet, WiFi, ARP</div>
+<div class="diagram-arrow" style="font-size:.8rem">&#8595;</div>
+<div class="diagram-box green" style="width:100%;max-width:500px">1. Fisica — Cabos, Fibra, Radio</div>
+</div>
+
+<!-- Comparison Table: OSI vs TCP/IP -->
+<h4>OSI vs TCP/IP — Comparacao</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Modelo OSI</th><th>Modelo TCP/IP</th><th>Protocolos</th><th>Exemplo Pratico</th></tr>
+<tr><td>7. Aplicacao</td><td rowspan="3">Aplicacao</td><td>HTTP, DNS, SMTP, FTP</td><td>Browser faz GET /api/data</td></tr>
+<tr><td>6. Apresentacao</td><td>TLS, gzip, JSON</td><td>TLS encrypta o request</td></tr>
+<tr><td>5. Sessao</td><td>Sessoes, RPC</td><td>Keep-alive mantém conexão</td></tr>
+<tr><td>4. Transporte</td><td>Transporte</td><td>TCP, UDP, QUIC</td><td>TCP garante entrega ordenada</td></tr>
+<tr><td>3. Rede</td><td>Internet</td><td>IP, ICMP, BGP</td><td>Pacotes roteados entre redes</td></tr>
+<tr><td>2. Enlace</td><td rowspan="2">Acessó a Rede</td><td>Ethernet, WiFi, ARP</td><td>Frames no switch local</td></tr>
+<tr><td>1. Fisica</td><td>Cabos, sinais eletricos</td><td>Bits transmitidos pelo cabo</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">&#8505;</span>
+<div><strong>Na prática:</strong> O modelo TCP/IP com 4 camadas é o que realmente importa no dia a dia. O OSI é mais útil como <strong>ferramenta de debugging</strong> — quando algo não funciona, você sobe camada por camada: "O cabo esta conectado? (L1) O IP esta acessível? (L3) A porta esta aberta? (L4) O HTTP retorna 200? (L7)".</div>
+</div>
+
+<!-- ═══ TCP/IP EM PROFUNDIDADE ═══ -->
+<h3>TCP/IP em Profundidade</h3>
+
+<p>TCP (Transmission Control Protocol) é o protocolo de transporte que garante <strong>entrega confiável e ordenada</strong> de dados. E o fundamento de HTTP, HTTPS, SSH, FTP e práticamente toda comunicação web. Entender TCP em profundidade explica por que conexões demoram, por que latência varia é como otimizar throughput.</p>
+
+<h4>3-Way Handshake — Estabelecendo Conexao</h4>
+<p>Antes de trocar qualquer dado, cliente e servidor fazem um "aperto de mao" em 3 etapas:</p>
+
+<div class="diagram">
+<div class="diagram-box blue">Cliente<br><small>SYN seq=100</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box green">Servidor<br><small>SYN-ACK seq=300, ack=101</small></div>
+<div class="diagram-arrow">&#8592;</div>
+<div class="diagram-box blue">Cliente<br><small>ACK ack=301</small></div>
+</div>
+
+<ol>
+<li><strong>SYN (synchronize):</strong> Cliente envia um pacote SYN com sequence number inicial (ISN). "Quero conectar, meu ISN e 100"</li>
+<li><strong>SYN-ACK:</strong> Servidor responde com seu proprio ISN e confirma o ISN do cliente. "OK, meu ISN e 300, recebi seu 100 (ack=101)"</li>
+<li><strong>ACK:</strong> Cliente confirma o ISN do servidor. "Recebi seu 300 (ack=301)". A partir daqui, dados fluem</li>
+</ol>
+
+<p><strong>Impacto prático:</strong> Cada nova conexão TCP custa <strong>1 RTT (Round Trip Time)</strong> só para o handshake. Se o RTT para o servidor e 50ms, você gasta 50ms antes de enviar qualquer dado. Por isso HTTP/1.1 usa <code>keep-alive</code> é HTTP/2 usa multiplexing — para evitar repetir handshakes.</p>
+
+<h4>Flow Control — Sliding Window</h4>
+<p>O receptor anuncia uma <strong>window size</strong> — quantos bytes ele pode receber antes de precisar confirmar. O sender ajusta a velocidade de envio para não sobrecarregar o receiver.</p>
+<ul>
+<li><strong>Window scaling:</strong> O campo window no header TCP tem 16 bits (max 64KB). Window scaling option multiplica por 2^n, permitindo janelas de até 1GB</li>
+<li><strong>Zero window:</strong> Se o receptor esta sobrecarregado, anuncia window=0. O sender para de enviar e faz "window probing" periodicamente</li>
+</ul>
+
+<h4>Congestion Control — AIMD e Slow Start</h4>
+<p>Diferente de flow control (protege o receptor), congestion control protege a <strong>rede</strong> contra sobrecarga:</p>
+<ul>
+<li><strong>Slow Start:</strong> Comeca com cwnd (congestion window) de 1 MSS. Dobra a cada RTT (crescimento exponencial) até atingir o threshold</li>
+<li><strong>Congestion Avoidance (AIMD):</strong> Apos o threshold, cresce linearmente (+1 MSS por RTT). Na detecção de perda, corta pela metade (Multiplicative Decrease)</li>
+<li><strong>Fast Recovery:</strong> Em perdas detectadas por 3 ACKs duplicados, reduz cwnd pela metade (sem voltar a slow start)</li>
+</ul>
+
+<h4>TCP vs UDP — Trade-offs</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>TCP</th><th>UDP</th></tr>
+<tr><td>Conexao</td><td>Orientado a conexão (3-way handshake)</td><td>Sem conexão (fire and forget)</td></tr>
+<tr><td>Garantia de entrega</td><td>Sim — retransmissao automática</td><td>Não — pacotes podem se perder</td></tr>
+<tr><td>Ordenacao</td><td>Sim — dados chegam na ordem</td><td>Não — podem chegar fora de ordem</td></tr>
+<tr><td>Overhead</td><td>Header de 20+ bytes, handshake, ACKs</td><td>Header de 8 bytes, sem overhead</td></tr>
+<tr><td>Latencia</td><td>Maior (handshake + retransmissoes)</td><td>Menor (sem espera)</td></tr>
+<tr><td>Usó ideal</td><td>HTTP, APIs, transferencia de arquivos</td><td>Video/audio real-time, DNS, games</td></tr>
+<tr><td>Controle de congestionamento</td><td>Sim — slow start, AIMD</td><td>Não — pode sobrecarregar a rede</td></tr>
+</table>
+</div>
+
+<h4>Nagle's Algorithm e TCP_NODELAY</h4>
+<p>Nagle's Algorithm agrupa pequenós pacotes TCP para reduzir overhead. Ao inves de enviar 10 pacotes de 1 byte, espera e envia 1 pacote de 10 bytes. <strong>Problema:</strong> adiciona latência — ruim para aplicações interátivas.</p>
+
+<pre data-lang="python"><code><span class="cm"># Socket programming com TCP_NODELAY</span>
+<span class="kw">import</span> socket
+
+<span class="cm"># Criar socket TCP</span>
+sock = socket.<span class="fn">socket</span>(socket.AF_INET, socket.SOCK_STREAM)
+
+<span class="cm"># Desabilitar Nagle's Algorithm para baixa latência</span>
+sock.<span class="fn">setsockopt</span>(socket.IPPROTO_TCP, socket.TCP_NODELAY, <span class="num">1</span>)
+
+<span class="cm"># Conectar ao servidor</span>
+sock.<span class="fn">connect</span>((<span class="str">'api.example.com'</span>, <span class="num">443</span>))
+
+<span class="cm"># Enviar dados — com TCP_NODELAY, cada send() vai imediatamente</span>
+sock.<span class="fn">sendall</span>(<span class="str">b'GET / HTTP/1.1\r\nHost: api.example.com\r\n\r\n'</span>)
+
+<span class="cm"># Receber resposta</span>
+response = sock.<span class="fn">recv</span>(<span class="num">4096</span>)
+<span class="fn">print</span>(response.<span class="fn">decode</span>())
+
+sock.<span class="fn">close</span>()</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Habilite <code>TCP_NODELAY</code> para aplicações interátivas (APIs, real-time, games). Mantenha Nagle habilitado para transferencias bulk (uploads de arquivos). Na duvida, a maioria dos frameworks HTTP modernós já desabilita Nagle por padrão.</div>
+</div>
+
+<!-- ═══ DNS ═══ -->
+<h3>DNS — Resolução de Nomes</h3>
+
+<p>DNS (Domain Name System) é o "catálogo telefônico" da internet. Traduz nomes legíveis (<code>api.example.com</code>) em endereços IP (<code>104.26.10.33</code>). Parece simples, mas é um sistema distribuido massivo que responde <strong>bilhoes de queries por dia</strong> com latência tipica de 1-50ms.</p>
+
+<h4>Hierarquia DNS</h4>
+<div class="diagram">
+<div class="diagram-box red">Root Servers<br><small>13 clusters (a-m.root-servers.net)</small></div>
+<div class="diagram-arrow">&#8595;</div>
+<div class="diagram-box orange">TLD Servers<br><small>.com, .net, .org, .io, .br</small></div>
+<div class="diagram-arrow">&#8595;</div>
+<div class="diagram-box blue">Authoritative Servers<br><small>ns1.example.com</small></div>
+<div class="diagram-arrow">&#8595;</div>
+<div class="diagram-box green">IP Resolvido<br><small>104.26.10.33</small></div>
+</div>
+
+<h4>Resolução Recursiva vs Iterátiva</h4>
+<ul>
+<li><strong>Recursiva:</strong> O resolver (ex: 8.8.8.8) faz todo o trabalho — pergunta root, TLD e authoritative, e retorna a resposta final. Usado por clientes (seu computador pede ao resolver)</li>
+<li><strong>Iterátiva:</strong> Cada servidor responde com "não sei, mas pergunte a este outro". O resolver vai perguntando um a um. Usado entre servidores DNS</li>
+</ul>
+
+<p><strong>Fluxo completo de resolução:</strong></p>
+<ol>
+<li>Browser verifica cache local (OS cache, browser cache)</li>
+<li>Se não tem, pergunta ao resolver recursivo (ISP ou 8.8.8.8 / 1.1.1.1)</li>
+<li>Resolver pergunta a um root server: "Onde fica .com?"</li>
+<li>Root responde: "Pergunte ao TLD server de .com (192.5.6.30)"</li>
+<li>Resolver pergunta ao TLD: "Onde fica example.com?"</li>
+<li>TLD responde: "O authoritative e ns1.example.com (198.51.100.1)"</li>
+<li>Resolver pergunta ao authoritative: "Qual IP de api.example.com?"</li>
+<li>Authoritative responde: "104.26.10.33, TTL=300s"</li>
+<li>Resolver cacheia por 300s e retorna ao cliente</li>
+</ol>
+
+<h4>DNS-over-HTTPS (DoH) e DNS-over-TLS (DoT)</h4>
+<ul>
+<li><strong>DNS tradicional:</strong> Queries em texto puro via UDP porta 53 — qualquer um no caminho pode ver quais sites você acessa</li>
+<li><strong>DoT (DNS-over-TLS):</strong> Encapsula DNS em TLS na porta 853. Protege contra sniffing mas e detectavel (porta dedicada)</li>
+<li><strong>DoH (DNS-over-HTTPS):</strong> Encapsula DNS em HTTPS na porta 443. Indistinguivel de tráfego web normal — <strong>privacidade máxima</strong></li>
+</ul>
+
+<h4>DNSSEC e Cache Poisoning</h4>
+<ul>
+<li><strong>Cache Poisoning:</strong> Atacante injeta respostas DNS falsas no cache do resolver. Você digita "banco.com.br" e vai para o servidor do atacante. Ataque clássico: Kaminsky Attack (2008)</li>
+<li><strong>DNSSEC:</strong> Adiciona assinaturas criptograficas as respostas DNS. O resolver verifica que a resposta veio do authoritative real e não foi adulteráda</li>
+</ul>
+
+<pre data-lang="bash"><code><span class="cm"># Analisar resolução DNS completa com dig</span>
+$ dig +trace api.example.com
+
+<span class="cm"># Resultado mostra cada etapa da resolução:</span>
+<span class="cm"># .              IN NS   a.root-servers.net.    (root)</span>
+<span class="cm"># com.           IN NS   a.gtld-servers.net.    (TLD)</span>
+<span class="cm"># example.com.   IN NS   ns1.example.com.       (authoritative)</span>
+<span class="cm"># api.example.com. 300 IN A  104.26.10.33        (resposta final)</span>
+
+<span class="cm"># Verificar DNSSEC</span>
+$ dig +dnssec example.com
+
+<span class="cm"># Consultar registros específicos</span>
+$ dig example.com MX     <span class="cm"># Mail servers</span>
+$ dig example.com CNAME  <span class="cm"># Alias</span>
+$ dig example.com TXT    <span class="cm"># SPF, DKIM, verificacoes</span>
+
+<span class="cm"># Resolver usando servidor específico (Google DNS)</span>
+$ dig @8.8.8.8 api.example.com
+
+<span class="cm"># Medir latência de resolução</span>
+$ dig api.example.com | <span class="fn">grep</span> <span class="str">"Query time"</span>
+<span class="cm">;; Query time: 23 msec</span></code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Cuidado com TTL baixo:</strong> TTL=60s significa que clientes re-resolvem DNS a cada minuto — mais queries, mais latência. TTL=86400 (24h) reduz queries mas dificulta mudanças rápidas de IP. Para failover rápido, use TTL=300s (5min). Para CDNs que mudam pouco, TTL=3600s (1h).</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Por que DNS usa UDP e não TCP?</div>
+<div class="qa-a">
+<p>DNS usa UDP por padrão porque queries são <strong>pequenas</strong> (tipicamente < 512 bytes) é o overhead do 3-way handshake TCP (1 RTT extra) dobraria a latência. UDP permite pergunta-e-resposta em 1 RTT. Porem, DNS usa TCP quando: (1) a resposta excede 512 bytes (EDNS0 estendeu para 4096, mas respostas grandes ainda podem usar TCP), (2) transferencias de zona (AXFR) entre servidores DNS, (3) quando DoT é usado (TLS exige TCP). Na prática, ~95% das queries DNS são UDP.</p>
+</div>
+</div>
+
+<!-- ═══ HTTP/2 & HTTP/3 ═══ -->
+<h3>HTTP/2 & HTTP/3 — Evolucao do Protocolo</h3>
+
+<p>HTTP é o protocolo da web, mas sua evolução de 1.1 para 3 resolve problemas fundamentais de performance. Entender as diferenças e crucial para otimizar APIs e aplicações web.</p>
+
+<h4>HTTP/1.1 — Limitacoes</h4>
+<ul>
+<li><strong>Head-of-Line (HOL) Blocking:</strong> Apenas 1 request por conexão TCP de cada vez. Request 2 espera o response 1 terminar. Workaround: browsers abrem 6 conexões paralelas por domínio</li>
+<li><strong>Headers redundantes:</strong> Cada request repete todos os headers (Cookie, User-Agent, Accept). Em APIs, headers podem ser maiores que o body</li>
+<li><strong>Sem server push:</strong> Servidor só responde quando o cliente pede. Não pode antecipar necessidades</li>
+</ul>
+
+<h4>HTTP/2 — Multiplexing e Compressão</h4>
+<ul>
+<li><strong>Multiplexing:</strong> Multiplos requests/responses trafegam na mesma conexão TCP simultaneamente, via <strong>streams</strong>. Cada stream tem um ID e não bloqueia os outros</li>
+<li><strong>HPACK Header Compression:</strong> Headers são comprimidos e cacheados entre requests. Headers repetidos (cookies, user-agent) são enviados como índices — redução de 85-90% em tamanho</li>
+<li><strong>Server Push:</strong> Servidor pode enviar recursos antes do cliente pedir. Ex: junto com o HTML, já envia CSS e JS que sabe que seráo necessários</li>
+<li><strong>Prioridade de streams:</strong> Cliente pode indicar quais requests são mais importantes. CSS tem prioridade sobre imagens</li>
+<li><strong>Binario:</strong> HTTP/2 usa formato binário (mais eficiente para parsing) vs HTTP/1.1 que é texto puro</li>
+</ul>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>HOL blocking não sumiu no HTTP/2:</strong> HTTP/2 resolve HOL no nível da aplicação (streams independentes), mas o problema <strong>persiste no nível TCP</strong>. Se 1 pacote TCP se perde, TODOS os streams da conexão esperam a retransmissao. Esse é o problema que HTTP/3 resolve.</div>
+</div>
+
+<h4>HTTP/3 — QUIC e 0-RTT</h4>
+<ul>
+<li><strong>QUIC:</strong> HTTP/3 roda sobre <strong>QUIC</strong> (Quick UDP Internet Connections) ao inves de TCP. QUIC é um protocolo de transporte sobre UDP que reimplementa reliability com multiplexing nativo</li>
+<li><strong>Zero HOL blocking:</strong> Perda de 1 pacote afeta apenas o stream correspondente — outros streams continuam fluindo normalmente</li>
+<li><strong>0-RTT Connection:</strong> Clientes que já se conectaram antes podem enviar dados no primeiro pacote (zero round trips). TCP+TLS 1.3 precisa de 1-2 RTT</li>
+<li><strong>Connection Migration:</strong> A conexão e identificada por Connection ID (não por IP:porta). Se você troca de WiFi para 4G, a conexão QUIC <strong>sobrevive</strong>. TCP morreria e precisaria re-estabelecer</li>
+</ul>
+
+<!-- Diagram: HTTP Evolution -->
+<div class="diagram" style="flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center">
+<div class="diagram-box orange" style="min-width:200px">HTTP/1.1<br><small>1 request/conexão<br>Text-based, HOL blocking</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue" style="min-width:200px">HTTP/2<br><small>Multiplexing sobre TCP<br>HPACK, Server Push, Binary</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box green" style="min-width:200px">HTTP/3<br><small>QUIC sobre UDP<br>0-RTT, Zero HOL blocking</small></div>
+</div>
+</div>
+
+<div class="card blue">
+<div class="card-title">Impacto em Performance Real</div>
+<ul>
+<li><strong>HTTP/1.1 para HTTP/2:</strong> Reducao de 40-60% no page load time para sites com muitos assets (SPAs, e-commerces)</li>
+<li><strong>HTTP/2 para HTTP/3:</strong> Melhoria de 10-30% em redes com perda de pacotes (mobile, WiFi ruim). Em redes estaveis, a diferença é menor</li>
+<li><strong>0-RTT:</strong> Economia de 50-100ms por conexão em redes com latência alta. Critico para usuários em regioes distantes do servidor</li>
+</ul>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Se HTTP/3 e tao melhor, por que não migrar tudo hoje?</div>
+<div class="qa-a">
+<p>Alguns motivos práticos: (1) <strong>Firewalls bloqueiam UDP:</strong> muitas redes corporativas bloqueiam UDP exceto porta 53 (DNS). QUIC precisa de UDP porta 443. (2) <strong>Debugging é mais difícil:</strong> ferramentas de network analysis (Wireshark, tcpdump) tem suporte limitado para QUIC vs TCP que todo mundo conhece. (3) <strong>CPU overhead:</strong> QUIC implementa congestion control em userspace (não no kernel como TCP), consumindo mais CPU. (4) <strong>Fallback:</strong> HTTP/3 precisa de fallback para HTTP/2 quando UDP e bloqueado — mais complexidade. Na prática, CDNs como Cloudflare e Akamai já suportam HTTP/3 automáticamente. Para APIs internas, HTTP/2 é suficiente.</p>
+</div>
+</div>
+
+<!-- ═══ TLS 1.3 ═══ -->
+<h3>TLS 1.3 & Segurança de Transporte</h3>
+
+<p>TLS (Transport Layer Security) é o protocolo que protege dados em transito. Quando você ve <code>https://</code>, TLS esta criptografando toda a comunicação. TLS 1.3 (2018) simplificou e acelerou drasticamente o handshake em relacao ao TLS 1.2.</p>
+
+<h4>TLS 1.3 Handshake — 1-RTT</h4>
+<p>TLS 1.2 precisava de 2 RTTs para o handshake. TLS 1.3 reduz para <strong>1 RTT</strong> (e 0-RTT para reconexões):</p>
+<ol>
+<li><strong>ClientHello:</strong> Cliente envia versões suportadas, cipher suites, e já inclui key share (Diffie-Hellman). Não espera o servidor escolher parametros primeiro</li>
+<li><strong>ServerHello + Encrypted:</strong> Servidor responde com key share, certificado e finished — tudo já encriptado. A partir daqui, dados de aplicação fluem</li>
+</ol>
+
+<h4>Forward Secrecy (PFS)</h4>
+<p><strong>Perfect Forward Secrecy</strong> garante que mesmo se a chave privada do servidor for comprometida no futuro, comúnicações passadas não podem ser decriptadas. TLS 1.3 <strong>obriga</strong> forward secrecy — somente cipher suites com Ephemeral Diffie-Hellman (DHE ou ECDHE) são permitidas.</p>
+
+<h4>Cipher Suites em TLS 1.3</h4>
+<p>TLS 1.3 reduziu drasticamente as cipher suites permitidas (de 300+ para 5), eliminando algoritmos inseguros:</p>
+<ul>
+<li><code>TLS_AES_256_GCM_SHA384</code> — o mais seguro, padrão para maioria dos servidores</li>
+<li><code>TLS_AES_128_GCM_SHA256</code> — mais rápido, segurança ainda excelente</li>
+<li><code>TLS_CHACHA20_POLY1305_SHA256</code> — otimizado para mobile (sem AES-NI)</li>
+</ul>
+
+<h4>mTLS — Mutual TLS</h4>
+<p>No TLS normal, só o servidor apresenta certificado. Em <strong>mTLS</strong>, ambos os lados (cliente E servidor) apresentam certificados. Usado em:</p>
+<ul>
+<li><strong>Service-to-service:</strong> Microserviços autenticam entre si via mTLS (cada serviço tem seu certificado)</li>
+<li><strong>Service Mesh:</strong> Istio/Linkerd usam mTLS automáticamente entre sidecars</li>
+<li><strong>APIs B2B:</strong> Parceiros comerciais autenticam com certificados de cliente</li>
+<li><strong>Zero Trust Architecture:</strong> Não confie em nada dentro da rede — cada request e autenticado</li>
+</ul>
+
+<h4>Certificaté Pinning</h4>
+<p>Fixar o certificado (ou public key) esperado no cliente, impedindo ataques MITM mesmo com CAs comprometidas. Comum em apps mobile bancarios. <strong>Risco:</strong> se o certificado expira e você não atualizou o app, os usuários ficam bloqueados.</p>
+
+<pre data-lang="bash"><code><span class="cm"># Verificar certificado TLS de um servidor</span>
+$ openssl s_client -connect api.example.com:<span class="num">443</span> -servername api.example.com
+
+<span class="cm"># Ver detalhes do certificado (válidade, issuer, subject)</span>
+$ openssl s_client -connect api.example.com:<span class="num">443</span> \
+    -servername api.example.com <span class="num">2</span>>/dev/null | \
+    openssl x509 -noout -text
+
+<span class="cm"># Verificar data de expiracao</span>
+$ openssl s_client -connect api.example.com:<span class="num">443</span> \
+    -servername api.example.com <span class="num">2</span>>/dev/null | \
+    openssl x509 -noout -dates
+<span class="cm"># notBefore=Jan  1 00:00:00 2025 GMT</span>
+<span class="cm"># notAfter=Dec 31 23:59:59 2025 GMT</span>
+
+<span class="cm"># Testar se TLS 1.3 e suportado</span>
+$ openssl s_client -connect api.example.com:<span class="num">443</span> \
+    -tls1_3 -brief
+<span class="cm"># CONNECTION ESTABLISHED</span>
+<span class="cm"># Protocol version: TLSv1.3</span>
+<span class="cm"># Ciphersuite: TLS_AES_256_GCM_SHA384</span>
+
+<span class="cm"># Ver cadeia de certificados completa</span>
+$ openssl s_client -connect api.example.com:<span class="num">443</span> \
+    -showcerts -servername api.example.com</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Checklist mínimo de TLS para produção:</strong> (1) TLS 1.2+ obrigatório (desabilite 1.0 e 1.1). (2) Forward Secrecy habilitado. (3) HSTS header com max-age >= 1 ano. (4) Certificados renovados automáticamente (Let's Encrypt + certbot). (5) Teste com SSL Labs (ssllabs.com) — alvo: nota A+.</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Qual a diferença entre TLS e SSL?</div>
+<div class="qa-a">
+<p>SSL (Secure Sockets Layer) foi o predecessor do TLS. SSL 3.0 (1996) foi a última versão antes de ser renomeado para TLS 1.0 (1999). Na prática, <strong>SSL esta morto</strong> — SSL 3.0 tem vulnerabilidades criticas (POODLE attack). Quando alguem diz "certificado SSL", na verdade e TLS. A industria ainda usa o termo "SSL" por inerciahistorica, mas todo sistema moderno usa TLS 1.2 ou 1.3. Nunca aceite TLS 1.0 ou 1.1 em produção — ambos tem vulnerabilidades conhecidas.</p>
+</div>
+</div>
+
+<!-- ═══ CDN, LOAD BALANCERS & SERVICE MESH ═══ -->
+<h3>CDN, Load Balancers & Service Mesh</h3>
+
+<p>Estes três componentes formam a <strong>infraestrutura de rede moderna</strong>. CDNs apróximam conteúdo do usuário, Load Balancers distribuem carga, e Service Meshes gerenciam comunicação entre microserviços.</p>
+
+<h4>CDN — Content Delivery Network</h4>
+<p>Uma CDN e uma rede global de servidores (PoPs — Points of Presence) que cacheia conteúdo próximo ao usuário final:</p>
+<ul>
+<li><strong>Edge Servers:</strong> Servidores em 200+ locais globais. Quando um usuário em São Paulo acessa, e servido pelo PoP de SP — não pelo origin server na Virginia</li>
+<li><strong>Cache Hit/Miss:</strong> Se o PoP tem o conteúdo cacheado, retorna diretamente (hit, ~5ms). Se não, busca no origin (miss, ~200ms) e cacheia para próximos requests</li>
+<li><strong>Cache Inválidation:</strong> O problema mais difícil de caching. Opcoes: TTL-based (expira após N segundos), purge manual (via API), cache tags (inválida grupo de recursos)</li>
+<li><strong>Tipos de conteúdo:</strong> Assets estáticos (JS, CSS, imagens, fontes), API responses cacheados, páginas SSG, video streaming (HLS/DASH)</li>
+</ul>
+
+<h4>L4 vs L7 Load Balancing</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>L4 (Transporte)</th><th>L7 (Aplicacao)</th></tr>
+<tr><td>Opera em</td><td>TCP/UDP — ve IP:porta</td><td>HTTP — ve headers, URL, cookies</td></tr>
+<tr><td>Decisao de roteamento</td><td>IP, porta, protocolo</td><td>URL path, headers, body, cookies</td></tr>
+<tr><td>Performance</td><td>Mais rápido (menós processamento)</td><td>Mais lento (inspeciona conteúdo)</td></tr>
+<tr><td>SSL Termination</td><td>Não (passa TCP direto)</td><td>Sim (decripta TLS, roteia, re-encripta)</td></tr>
+<tr><td>Use case</td><td>TCP puro, databases, gaming</td><td>APIs, web apps, routing por path</td></tr>
+<tr><td>Exemplos</td><td>AWS NLB, HAProxy (modo TCP)</td><td>AWS ALB, Nginx, Envoy, Traefik</td></tr>
+</table>
+</div>
+
+<p><strong>Health Checks:</strong> Load balancers verificam periodicamente se cada backend esta saudavel. Tipos:</p>
+<ul>
+<li><strong>TCP check:</strong> "A porta esta aberta?" (L4) — rápido mas não garante que a aplicação funciona</li>
+<li><strong>HTTP check:</strong> "GET /health retorna 200?" (L7) — mais preciso, pode verificar dependências (DB, cache)</li>
+<li><strong>Shallow vs Deep:</strong> Shallow = "estou vivo". Deep = "estou vivo E minha DB e meu Redis estão acessiveis"</li>
+</ul>
+
+<h4>Service Mesh — Istio, Linkerd & Envoy</h4>
+<p>Em arquiteturas de microserviços, cada serviço precisa lidar com: descoberta de serviços, load balancing, retry, circuit breaking, mTLS, observabilidade. Um <strong>Service Mesh</strong> extrai toda essa lógica da aplicação para um <strong>sidecar proxy</strong>.</p>
+
+<!-- Diagram: Service Mesh Architecture -->
+<div class="diagram" style="flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center">
+<div class="diagram-box blue" style="min-width:160px">Control Plane<br><small>Istio / Linkerd</small></div>
+</div>
+<div class="diagram-arrow">&#8595; Configuração</div>
+<div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:center">
+<div style="text-align:center">
+<div class="diagram-box green">Service A</div>
+<div class="diagram-box cyan" style="margin-top:4px;font-size:.7rem;min-width:120px">Envoy Sidecar</div>
+</div>
+<div class="diagram-arrow">&#8596; mTLS</div>
+<div style="text-align:center">
+<div class="diagram-box green">Service B</div>
+<div class="diagram-box cyan" style="margin-top:4px;font-size:.7rem;min-width:120px">Envoy Sidecar</div>
+</div>
+<div class="diagram-arrow">&#8596; mTLS</div>
+<div style="text-align:center">
+<div class="diagram-box green">Service C</div>
+<div class="diagram-box cyan" style="margin-top:4px;font-size:.7rem;min-width:120px">Envoy Sidecar</div>
+</div>
+</div>
+</div>
+
+<ul>
+<li><strong>Data Plane (Envoy sidecars):</strong> Proxy que roda ao lado de cada serviço. Intercepta todo tráfego in/out. Faz load balancing, retry, circuit breaking, mTLS — tudo transparente para a aplicação</li>
+<li><strong>Control Plane (Istio/Linkerd):</strong> Gerencia configuração dos sidecars. Define politicas de tráfego, regras de retry, timeouts, canary deployments</li>
+<li><strong>Beneficios:</strong> A aplicação não precisa implementar retry, circuit breaking, mTLS — o sidecar faz tudo. Observabilidade gratuita (métricas, traces de cada request)</li>
+<li><strong>Overhead:</strong> Cada request passa pelo sidecar (+1-3ms latência). Consumo de memória (~50MB por sidecar). Complexidade operacional significativa</li>
+</ul>
+
+<div class="card orange">
+<div class="card-title">Quando usar Service Mesh?</div>
+<ul>
+<li><strong>Sim:</strong> 20+ microserviços, equipe de plataforma dedicada, necessidade de mTLS zero-trust, observabilidade cross-service</li>
+<li><strong>Não:</strong> Menós de 10 serviços, equipe pequena, monolito ou monolito modular, overhead não justifica</li>
+<li><strong>Alternativa leve:</strong> Para equipes menores, considere client-side load balancing (gRPC built-in) + retry libraries (Polly/.NET, resilience4j/Java) + distributed tracing (OpenTelemetry)</li>
+</ul>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Armadilha:</strong> Não adote Service Mesh "porque o Google usa". O overhead operacional e significativo. Comece com health checks, retry simples e circuit breakers na aplicação. Migre para mesh quando a complexidade de networking justificar.</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">CDN só serve arquivos estáticos?</div>
+<div class="qa-a">
+<p>Não, CDNs modernas fazem muito mais: (1) <strong>Edge Computing:</strong> Cloudflare Workers e Vercel Edge Functions executam código JavaScript no edge — SSR com latência de 5ms. (2) <strong>API Caching:</strong> Respostas de API com headers Cache-Control podem ser cacheadas no edge. (3) <strong>Video Streaming:</strong> CDNs distribuem video (HLS/DASH) com adaptive bitrate. (4) <strong>WAF:</strong> CDNs como Cloudflare atuam como firewall, bloqueando ataques DDoS e injection antes de chegar ao origin. (5) <strong>DNS:</strong> Cloudflare 1.1.1.1 e Route 53 são efetivamente CDNs para resolução DNS.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Networking & Protocolos</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="46-fundamentos-computacao.html">&#8592; Anterior: Fundamentos de Computação</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="48-comunicacao-sistemas-contratos.html" class="primary">Próximo: Comúnicação entre Sistemas &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 47: Networking & Protocolos
+// ══════════════════════════════════════════
+const SECTION_NUM = 47;
+const STORAGE_KEY = 'fsm_quiz_47';
+
+const QUIZ_DATA = [
+  {
+    question: "No modelo OSI, em qual camada o protocolo TCP opera?",
+    options: [
+      "Camada 3 — Rede",
+      "Camada 4 — Transporte",
+      "Camada 5 — Sessao",
+      "Camada 7 — Aplicacao"
+    ],
+    correct: 1,
+    explanation: "TCP opera na Camada 4 (Transporte). Essa camada é responsável pela entrega confiável de dados entre processos, incluindo segmentação, controle de fluxo e controle de erros. IP opera na Camada 3 (Rede) e HTTP na Camada 7 (Aplicacao)."
+  },
+  {
+    question: "Qual o principal problema do HTTP/1.1 que o HTTP/2 resolve com multiplexing?",
+    options: [
+      "Falta de criptografia — HTTP/2 obriga HTTPS",
+      "Head-of-Line blocking — apenas 1 request por conexão TCP",
+      "Headers em formato binário — HTTP/1.1 usa texto",
+      "Falta de compressão no body das respostas"
+    ],
+    correct: 1,
+    explanation: "HTTP/1.1 sofre de Head-of-Line (HOL) blocking: apenas 1 request/response pode trafegar por vez em cada conexão TCP. HTTP/2 resolve com multiplexing — múltiplos streams independentes na mesma conexão. Porem, HOL blocking no nível TCP persiste (resolvido no HTTP/3 com QUIC)."
+  },
+  {
+    question: "Qual a função do 3-way handshake TCP (SYN, SYN-ACK, ACK)?",
+    options: [
+      "Criptografar a conexão entre cliente e servidor",
+      "Resolver o nome de domínio para endereço IP",
+      "Estabelecer uma conexão confiável sincronizando sequence numbers",
+      "Autenticar o servidor com certificado digital"
+    ],
+    correct: 2,
+    explanation: "O 3-way handshake sincroniza os sequence numbers iniciais (ISN) de ambos os lados, estabelecendo uma conexão confiável. SYN envia o ISN do cliente, SYN-ACK confirma e envia o ISN do servidor, ACK confirma o ISN do servidor. Isso custa 1 RTT antes de qualquer dado ser transmitido."
+  },
+  {
+    question: "Qual a principal vantagem do HTTP/3 (QUIC) sobre HTTP/2?",
+    options: [
+      "HTTP/3 usa TCP otimizado com Nagle desabilitado",
+      "HTTP/3 suporta mais streams simultâneos que HTTP/2",
+      "HTTP/3 elimina HOL blocking no nível de transporte e suporta connection migration",
+      "HTTP/3 tem headers menores que HPACK do HTTP/2"
+    ],
+    correct: 2,
+    explanation: "HTTP/3 usa QUIC (sobre UDP), eliminando HOL blocking no nível de transporte — perda de 1 pacote afeta apenas o stream correspondente. Alem disso, suporta connection migration (troca WiFi para 4G sem perder conexão) e 0-RTT para reconexões. HTTP/2 ainda sofre de HOL blocking TCP."
+  },
+  {
+    question: "Na resolução DNS, o que é um resolver recursivo?",
+    options: [
+      "O servidor que armazena os registros definitivos de um domínio",
+      "O servidor que faz todo o trabalho de resolução e retorna a resposta final ao cliente",
+      "O servidor root que aponta para os servidores TLD",
+      "O cache DNS local do sistema operacional"
+    ],
+    correct: 1,
+    explanation: "O resolver recursivo (ex: 8.8.8.8, 1.1.1.1) recebe a query do cliente e faz todo o trabalho: pergunta ao root, ao TLD, ao authoritative, e retorna a resposta final. O cliente faz apenas 1 query. O authoritative é o servidor que armazena os registros definitivos."
+  },
+  {
+    question: "O que é Perfect Forward Secrecy (PFS) no contexto de TLS?",
+    options: [
+      "Garantia de que o certificado nunca expira",
+      "Garantia de que comúnicações passadas não podem ser decriptadas mesmo se a chave privada for comprometida",
+      "Criptografia dupla do payload (TLS + AES)",
+      "Verificacao de integridade de cada pacote via checksum"
+    ],
+    correct: 1,
+    explanation: "PFS garante que cada sessão usa chaves efemeras (Ephemeral Diffie-Hellman). Mesmo que a chave privada do servidor sejá comprometida no futuro, sessões passadas permanecem seguras. TLS 1.3 obriga PFS — somente cipher suites com DHE/ECDHE são permitidas."
+  },
+  {
+    question: "Qual a diferença entre L4 e L7 load balancing?",
+    options: [
+      "L4 é mais lento porque inspeciona mais dados que L7",
+      "L4 opera no nível TCP/UDP (IP:porta), L7 opera no nível HTTP (headers, URL, cookies)",
+      "L4 suporta HTTPS mas L7 não suporta",
+      "L4 e L7 são a mesma coisa com nomes diferentes"
+    ],
+    correct: 1,
+    explanation: "L4 (Transporte) roteia baseado em IP, porta e protocolo — rápido mas sem visibilidade do conteúdo. L7 (Aplicacao) inspeciona HTTP headers, URL path, cookies — mais inteligente, permite routing por path (/api -> backend, /static -> CDN), SSL termination, e header-based routing."
+  },
+  {
+    question: "Em um Service Mesh, qual é a função do sidecar proxy (ex: Envoy)?",
+    options: [
+      "Compilar e deployar o código da aplicação",
+      "Gerenciar o banco de dados do serviço",
+      "Interceptar todo tráfego de rede do serviço e aplicar load balancing, retry, mTLS e observabilidade",
+      "Servir como CDN para assets estáticos do serviço"
+    ],
+    correct: 2,
+    explanation: "O sidecar proxy (Envoy) roda ao lado de cada serviço e intercepta todo tráfego in/out. Ele aplica load balancing, retry, circuit breaking, mTLS e coleta métricas/traces — tudo transparente para a aplicação. O control plane (Istio/Linkerd) configura os sidecars centralmente."
+  },
+  {
+    question: "DNS-over-HTTPS (DoH) resolve qual problema do DNS tradicional?",
+    options: [
+      "DNS tradicional é muito lento — DoH é mais rápido",
+      "DNS tradicional não suporta IPv6",
+      "DNS tradicional envia queries em texto puro — qualquer intermediário pode ver quais sites você acessa",
+      "DNS tradicional não suporta registros CNAME"
+    ],
+    correct: 2,
+    explanation: "DNS tradicional usa UDP porta 53 sem criptografia — ISPs, redes WiFi publicas e atacantes podem ver todas as queries DNS. DoH encapsula DNS em HTTPS (porta 443), tornando queries DNS indistinguiveis de tráfego web normal. DoT (DNS-over-TLS, porta 853) oferece proteção similar mas e detectavel."
+  },
+  {
+    question: "Por que CDNs útilizam cache inválidation baseada em TTL é o que pode dar errado?",
+    options: [
+      "TTL é o único método possível — não existem alternativas",
+      "TTL alto garante conteúdo sempre atualizado, TTL baixo economiza bandwidth",
+      "TTL alto reduz queries ao origin mas pode servir conteúdo stale; TTL baixo mantém conteúdo fresco mas aumenta carga no origin",
+      "TTL se aplica apenas a imagens, não a respostas de API"
+    ],
+    correct: 2,
+    explanation: "TTL (Time To Live) define por quanto tempo o edge server cacheia o conteúdo. TTL alto (3600s) = menós requests ao origin mas risco de servir conteúdo desatualizado por até 1h. TTL baixo (60s) = conteúdo mais fresco mas 60x mais requests ao origin. Para conteúdo crítico (preços, estoque), use TTL baixo + purge via API."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Networking & Protocolos.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

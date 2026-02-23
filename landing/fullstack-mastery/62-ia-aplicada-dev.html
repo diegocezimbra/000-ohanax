@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>62 — IA Aplicada ao Desenvolvimento | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="61-ai-engineering.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>62</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="63-seguranca-ia.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:93.9%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 62</span>
+<h2>IA Aplicada ao Desenvolvimento</h2>
+<div class="section-line"></div>
+
+<p>Nas seções anteriores (42 e 43), estudamos a teoria por tras de LLMs, RAG, Agents e MLOps. Agora vamos ao que interessa no dia a dia: <strong>como usar IA para escrever, revisar, testar é manter código de forma prática</strong>. Esta seção foca exclusivamente nas ferramentas e workflows que transformam desenvolvedores em engenheiros 10x mais produtivos.</p>
+
+<p>A IA não substitui o desenvolvedor — ela <strong>amplifica</strong>. Um dev que sabe usar essas ferramentas entrega em 2 horas o que antes levava 2 dias. Mas um dev que confia cegamente na IA entrega código cheio de bugs sutis que levam semanas para detectar. A chave e saber <strong>quando confiar é quando verificar</strong>.</p>
+
+<!-- ═══ AI CODE ASSISTANTS ═══ -->
+<h3>1. AI Code Assistants</h3>
+
+<p>As três principais ferramentas de assistencia de código com IA representam abordagens diferentes para o mesmo problema: <strong>acelerar o ciclo de desenvolvimento</strong>.</p>
+
+<h4>GitHub Copilot</h4>
+<p><strong>Como funciona:</strong> Treinado inicialmente no Codex (derivado do GPT-3), evoluiu para usar GPT-4 e Claude Sonnet. Funciona como um plugin de IDE que faz autocomplete contextual baseado no arquivo atual, arquivos abertos e comentários.</p>
+<ul>
+<li><strong>Modelo:</strong> GPT-4o e Claude 3.5 Sonnet (conforme plano), com fallback para modelos menores para autocomplete rápido</li>
+<li><strong>Context window:</strong> Analisa o arquivo atual + arquivos abertos na IDE + imports para gerar sugestoes contextuais</li>
+<li><strong>Copilot Chat:</strong> Interface conversacional integrada na IDE para perguntas sobre o codebase</li>
+<li><strong>Ghost Text:</strong> Sugestoes inline em cinza que você aceita com Tab — o modo mais usado no dia a dia</li>
+<li><strong>Copilot Edits:</strong> Multi-file editing com instruções em linguagem natural (lancado em 2024)</li>
+<li><strong>Agent Mode:</strong> Modo agentico que executa comandos, cria arquivos e iterá autonomamente (2025)</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Copilot brilha em código repetitivo e patterns óbvios</span>
+<span class="cm">// Basta escrever o nome da função e ele completa:</span>
+
+<span class="cm">// Você digita:</span>
+<span class="kw">function</span> <span class="fn">válidateEmail</span>(<span class="tp">email</span>: <span class="tp">string</span>): <span class="tp">boolean</span> {
+  <span class="cm">// Copilot sugere automáticamente:</span>
+  <span class="kw">const</span> regex = <span class="str">/^[^\s@]+@[^\s@]+\.[^\s@]+$/</span>;
+  <span class="kw">return</span> regex.<span class="fn">test</span>(email);
+}
+
+<span class="cm">// Também funciona com comentários descritivos:</span>
+<span class="cm">// Parse CSV string into array of objects using first row as headers</span>
+<span class="kw">function</span> <span class="fn">parseCSV</span>(<span class="tp">csv</span>: <span class="tp">string</span>): <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt;[] {
+  <span class="kw">const</span> lines = csv.<span class="fn">split</span>(<span class="str">'\n'</span>).<span class="fn">filter</span>(l =&gt; l.<span class="fn">trim</span>());
+  <span class="kw">const</span> headers = lines[<span class="num">0</span>].<span class="fn">split</span>(<span class="str">','</span>).<span class="fn">map</span>(h =&gt; h.<span class="fn">trim</span>());
+  <span class="kw">return</span> lines.<span class="fn">slice</span>(<span class="num">1</span>).<span class="fn">map</span>(line =&gt; {
+    <span class="kw">const</span> values = line.<span class="fn">split</span>(<span class="str">','</span>).<span class="fn">map</span>(v =&gt; v.<span class="fn">trim</span>());
+    <span class="kw">return</span> headers.<span class="fn">reduce</span>((obj, h, i) =&gt; ({ ...obj, [h]: values[i] }), {});
+  });
+}</code></pre>
+
+<h4>Cursor IDE</h4>
+<p><strong>Como funciona:</strong> Fork do VS Code com IA integrada nativamente. Diferente do Copilot que é um plugin, o Cursor foi construido como um <strong>editor AI-first</strong> — a IA não é um add-on, é o core do produto.</p>
+<ul>
+<li><strong>Codebase Indexing:</strong> Indexa todo o repositório em embeddings locais para contexto profundo. Sabe sobre arquivos que você não abriu</li>
+<li><strong>Composer:</strong> Multi-file editing com instruções em linguagem natural — "refatore este serviço para usar o pattern Repository"</li>
+<li><strong>Chat com @mentions:</strong> <code>@file</code>, <code>@folder</code>, <code>@codebase</code>, <code>@web</code> para controlar o contexto precisamente</li>
+<li><strong>Cmd+K (Inline Edit):</strong> Selecione código, descreva a mudança, e o Cursor aplica inline com diff visual</li>
+<li><strong>Tab Autocomplete:</strong> Prediz não só a próxima linha mas todo o bloco lógico seguinte</li>
+<li><strong>Modelos:</strong> Suporta Claude Sonnet/Opus, GPT-4o, e modelos customizados via API key propria</li>
+</ul>
+
+<pre data-lang="cursor"><code><span class="cm">// Exemplo de usó do Composer no Cursor</span>
+<span class="cm">// Você seleciona múltiplos arquivos e instrui:</span>
+
+<span class="cm">// Prompt no Composer:</span>
+<span class="str">"Refatore UserService para extrair a lógica de validação</span>
+<span class="str"> em um UserValidator separado. Mantenha a interface publica</span>
+<span class="str"> identica. Atualize os testes para mockar o válidator."</span>
+
+<span class="cm">// O Cursor:</span>
+<span class="cm">// 1. Analisa UserService.ts, UserService.test.ts</span>
+<span class="cm">// 2. Cria UserValidator.ts com métodos extraidos</span>
+<span class="cm">// 3. Atualiza UserService para injetar UserValidator</span>
+<span class="cm">// 4. Atualiza testes com mocks do válidator</span>
+<span class="cm">// 5. Mostra diff de TODOS os arquivos para review</span></code></pre>
+
+<h4>Claude Code (CLI)</h4>
+<p><strong>Como funciona:</strong> Ferramenta de linha de comando que opera como um <strong>agente autônomo</strong> no terminal. Diferente de plugins de IDE, ele navega pelo filesystem, le arquivos, executa comandos e faz mudanças diretamente.</p>
+<ul>
+<li><strong>Agentic Coding:</strong> Você descreve a tarefa e ele planeja, executa e iterá autonomamente usando ferramentas (Read, Write, Bash, Grep, etc.)</li>
+<li><strong>Tool Use nativo:</strong> Pode executar testes, rodar linters, fazer builds, ler logs de erro e corrigir iterátivamente</li>
+<li><strong>Context profundo:</strong> Navega o codebase inteiro — não depende de arquivos abertos na IDE</li>
+<li><strong>CLAUDE.md:</strong> Arquivo de instruções persistentes que configura comportamento, regras do projeto e context automático</li>
+<li><strong>Headless mode:</strong> Pode rodar em CI/CD como agente automatizado para tarefas como code review e migração</li>
+<li><strong>Multi-turn:</strong> Mantém contexto longo da conversa — ideal para refactoring complexo que envolve dezenas de arquivos</li>
+</ul>
+
+<pre data-lang="bash"><code><span class="cm"># Exemplo de usó do Claude Code</span>
+
+<span class="cm"># Tarefa simples: criar um endpoint</span>
+$ claude <span class="str">"Crie um endpoint GET /api/health que retorna</span>
+<span class="str">  { status: 'ok', uptime: process.uptime() } com teste unitário"</span>
+
+<span class="cm"># Tarefa complexa: refactoring multi-arquivo</span>
+$ claude <span class="str">"Refatore o módulo de pagamentos: extraia a lógica</span>
+<span class="str">  de cálculo de taxas para um TaxCalculator separado,</span>
+<span class="str">  adicione testes unitários, e rode npm test para verificar"</span>
+
+<span class="cm"># Claude Code vai:</span>
+<span class="cm"># 1. Ler os arquivos relevantes (Grep + Read)</span>
+<span class="cm"># 2. Planejar a refatoração</span>
+<span class="cm"># 3. Criar/editar arquivos (Write/Edit)</span>
+<span class="cm"># 4. Rodar npm test (Bash)</span>
+<span class="cm"># 5. Se falhar, ler o erro e corrigir iterátivamente</span>
+<span class="cm"># 6. Repetir até todos os testes passarem</span></code></pre>
+
+<h4>Comparacao entre as Ferramentas</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>GitHub Copilot</th><th>Cursor IDE</th><th>Claude Code</th></tr>
+<tr><td><strong>Tipo</strong></td><td>Plugin de IDE</td><td>Editor AI-first</td><td>CLI agentico</td></tr>
+<tr><td><strong>Melhor para</strong></td><td>Autocomplete, boilerplate</td><td>Refactoring multi-arquivo</td><td>Tarefas autonomas complexas</td></tr>
+<tr><td><strong>Contexto</strong></td><td>Arquivo atual + abertos</td><td>Codebase inteiro (indexado)</td><td>Codebase inteiro (navegação)</td></tr>
+<tr><td><strong>Execucao</strong></td><td>Apenas sugestoes de código</td><td>Edita arquivos com preview</td><td>Edita + executa comandos</td></tr>
+<tr><td><strong>Curva de aprendizado</strong></td><td>Minima (Tab para aceitar)</td><td>Media (Composer, @mentions)</td><td>Media-alta (prompts eficazes)</td></tr>
+<tr><td><strong>CI/CD</strong></td><td>Copilot Autofix</td><td>Não</td><td>Sim (headless mode)</td></tr>
+<tr><td><strong>Preco (2025)</strong></td><td>$10-39/mes</td><td>$20/mes (Pro)</td><td>Pay-per-use (API)</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Dica prática:</strong> As ferramentas são complementares, não excludentes. Muitos devs usam Copilot para autocomplete rápido + Cursor para refactoring + Claude Code para tarefas autonomas e CI/CD. Escolha baseado na tarefa, não na ferramenta.</div>
+</div>
+
+<!-- ═══ AI CODE REVIEW ═══ -->
+<h3>2. AI Code Review</h3>
+
+<p>Code review é um dos maiores gargalos de produtividade em times de desenvolvimento. AI Code Review não substitui revisores humanós — mas <strong>elimina o trabalho repetitivo</strong> para que humanós foquem em lógica de negócio e arquitetura.</p>
+
+<h4>Ferramentas Principais</h4>
+<ul>
+<li><strong>CodeRabbit:</strong> Revisa PRs automáticamente com análise profunda. Gera sumario do PR, identifica bugs potenciais, sugere melhorias de performance, e responde a perguntas no proprio PR</li>
+<li><strong>Sourcery:</strong> Foco em qualidade de código Python/JS. Identifica code smells, complexidade excessiva e sugere refactorings específicos</li>
+<li><strong>GitHub Copilot PR Review:</strong> Integrado no GitHub, faz review automático com sugestoes de código inline</li>
+<li><strong>Claude Code (headless):</strong> Pode ser configurado no CI para rodar review automatizado com regras customizadas</li>
+</ul>
+
+<h4>O que AI Code Review faz bem</h4>
+<ul>
+<li><strong>Bugs óbvios:</strong> Off-by-one errors, null pointer dereferences, resource leaks, race conditions simples</li>
+<li><strong>Style e consistência:</strong> Naming conventions, formatacao, patterns do projeto</li>
+<li><strong>Security básica:</strong> SQL injection, XSS, secrets hardcoded, dependências vulneraveis</li>
+<li><strong>Documentação:</strong> Funcoes publicas sem JSDoc, parametros não documentados</li>
+<li><strong>Performance:</strong> N+1 queries óbvios, loops desnecessários, allocations em hot paths</li>
+</ul>
+
+<h4>O que AI Code Review NAO faz bem</h4>
+<ul>
+<li><strong>Logica de negócio:</strong> Não sabe se a regra de cálculo de frete esta correta para o seu domínio</li>
+<li><strong>Arquitetura:</strong> Não avalia se o componente esta no módulo certo ou se viola bounded contexts</li>
+<li><strong>Trade-offs:</strong> Não entende por que você escolheu eventual consistency naquele fluxo específico</li>
+<li><strong>Context organizacional:</strong> Não sabe que o time decidiu migrar para gRPC e novos endpoints não devem ser REST</li>
+</ul>
+
+<pre data-lang="yaml"><code><span class="cm"># Exemplo: configuração do CodeRabbit em .coderabbit.yaml</span>
+<span class="tp">reviews</span>:
+  <span class="tp">profile</span>: <span class="str">"assertive"</span>      <span class="cm"># chill | assertive | nitpicky</span>
+  <span class="tp">auto_review</span>:
+    <span class="tp">enabled</span>: <span class="num">true</span>
+    <span class="tp">drafts</span>: <span class="num">false</span>           <span class="cm"># não revisa draft PRs</span>
+  <span class="tp">path_instructions</span>:
+    - <span class="tp">path</span>: <span class="str">"src/services/**"</span>
+      <span class="tp">instructions</span>: <span class="str">"Verifique se serviços usam DI e não instanciam dependências diretamente"</span>
+    - <span class="tp">path</span>: <span class="str">"src/controllers/**"</span>
+      <span class="tp">instructions</span>: <span class="str">"Valide que todos os endpoints tem DTOs com class-válidator decorators"</span>
+    - <span class="tp">path</span>: <span class="str">"**/*.test.ts"</span>
+      <span class="tp">instructions</span>: <span class="str">"Verifique cobertura de edge cases e que mocks são limpos no afterEach"</span>
+
+<span class="cm"># Exemplo: Claude Code no CI para review customizado</span>
+<span class="cm"># .github/workflows/ai-review.yml</span>
+<span class="tp">jobs</span>:
+  <span class="tp">ai-review</span>:
+    <span class="tp">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="tp">steps</span>:
+      - <span class="tp">uses</span>: <span class="str">actions/checkout@v4</span>
+      - <span class="tp">run</span>: |
+          claude <span class="str">"Review the diff in this PR. Focus on:</span>
+<span class="str">          1. Security vulnerabilities</span>
+<span class="str">          2. Missing error handling</span>
+<span class="str">          3. Violations of our CLAUDE.md rules</span>
+<span class="str">          Post findings as PR comments."</span></code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Regra de ouro:</strong> AI review é um <strong>primeiro filtro</strong>, não o único. Use IA para pegar problemas mecanicos (bugs, style, security). Use humanós para avaliar lógica de negócio, decisões arquiteturais e trade-offs estrategicos. O PR só deve ser mergeado após aprovacao humana.</div>
+</div>
+
+<!-- ═══ AI-ASSISTED TESTING ═══ -->
+<h3>3. AI-Assisted Testing</h3>
+
+<p>Geracao de testes é uma das areas onde IA brilha mais — é também onde mais engana. O segredo e entender o que IA gera bem (testes de cobertura mecanica) é o que você precisa escrever manualmente (testes de lógica de negócio).</p>
+
+<h4>Geracao Automatica de Testes</h4>
+<p>Tanto Copilot quanto Claude podem gerar testes a partir de código existente. O fluxo tipico:</p>
+<ol>
+<li>Selecione a função/classe que quer testar</li>
+<li>Peca para a IA gerar testes cobrindo: happy path, edge cases, error handling</li>
+<li><strong>Revise criticamente</strong> — a IA frequentemente gera testes que passam mas não testam nada útil</li>
+</ol>
+
+<pre data-lang="typescript"><code><span class="cm">// Código original</span>
+<span class="kw">export class</span> <span class="tp">PriceCalculator</span> {
+  <span class="fn">calculateDiscount</span>(
+    <span class="tp">price</span>: <span class="tp">number</span>,
+    <span class="tp">quantity</span>: <span class="tp">number</span>,
+    <span class="tp">customerType</span>: <span class="str">'regular'</span> | <span class="str">'premium'</span> | <span class="str">'vip'</span>
+  ): <span class="tp">number</span> {
+    <span class="kw">if</span> (price &lt;= <span class="num">0</span> || quantity &lt;= <span class="num">0</span>) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Price and quantity must be positive'</span>);
+    }
+    <span class="kw">let</span> discount = <span class="num">0</span>;
+    <span class="kw">if</span> (quantity &gt;= <span class="num">100</span>) discount += <span class="num">0.15</span>;
+    <span class="kw">else if</span> (quantity &gt;= <span class="num">50</span>) discount += <span class="num">0.10</span>;
+    <span class="kw">else if</span> (quantity &gt;= <span class="num">10</span>) discount += <span class="num">0.05</span>;
+
+    <span class="kw">if</span> (customerType === <span class="str">'vip'</span>) discount += <span class="num">0.10</span>;
+    <span class="kw">else if</span> (customerType === <span class="str">'premium'</span>) discount += <span class="num">0.05</span>;
+
+    <span class="kw">return</span> Math.<span class="fn">round</span>(price * quantity * (<span class="num">1</span> - discount) * <span class="num">100</span>) / <span class="num">100</span>;
+  }
+}
+
+<span class="cm">// Testes gerados pela IA (depois de revisao humana)</span>
+<span class="fn">describe</span>(<span class="str">'PriceCalculator'</span>, () =&gt; {
+  <span class="kw">const</span> calc = <span class="kw">new</span> <span class="tp">PriceCalculator</span>();
+
+  <span class="fn">describe</span>(<span class="str">'calculateDiscount'</span>, () =&gt; {
+    <span class="cm">// Happy path</span>
+    <span class="fn">it</span>(<span class="str">'should calculaté without discount for small quantity regular customer'</span>, () =&gt; {
+      <span class="fn">expect</span>(calc.<span class="fn">calculateDiscount</span>(<span class="num">10</span>, <span class="num">5</span>, <span class="str">'regular'</span>)).<span class="fn">toBe</span>(<span class="num">50</span>);
+    });
+
+    <span class="cm">// Quantity discount tiers</span>
+    <span class="fn">it</span>(<span class="str">'should apply 5% for 10+ items'</span>, () =&gt; {
+      <span class="fn">expect</span>(calc.<span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">10</span>, <span class="str">'regular'</span>)).<span class="fn">toBe</span>(<span class="num">950</span>);
+    });
+
+    <span class="fn">it</span>(<span class="str">'should apply 10% for 50+ items'</span>, () =&gt; {
+      <span class="fn">expect</span>(calc.<span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">50</span>, <span class="str">'regular'</span>)).<span class="fn">toBe</span>(<span class="num">4500</span>);
+    });
+
+    <span class="fn">it</span>(<span class="str">'should apply 15% for 100+ items'</span>, () =&gt; {
+      <span class="fn">expect</span>(calc.<span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">100</span>, <span class="str">'regular'</span>)).<span class="fn">toBe</span>(<span class="num">8500</span>);
+    });
+
+    <span class="cm">// Customer type discounts stack with quantity</span>
+    <span class="fn">it</span>(<span class="str">'should stack VIP + quantity discount'</span>, () =&gt; {
+      <span class="cm">// 15% quantity + 10% VIP = 25% total</span>
+      <span class="fn">expect</span>(calc.<span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">100</span>, <span class="str">'vip'</span>)).<span class="fn">toBe</span>(<span class="num">7500</span>);
+    });
+
+    <span class="cm">// Edge cases — ESTES são os testes que a IA frequentemente esquece</span>
+    <span class="fn">it</span>(<span class="str">'should throw for zero price'</span>, () =&gt; {
+      <span class="fn">expect</span>(() =&gt; calc.<span class="fn">calculateDiscount</span>(<span class="num">0</span>, <span class="num">5</span>, <span class="str">'regular'</span>)).<span class="fn">toThrow</span>();
+    });
+
+    <span class="fn">it</span>(<span class="str">'should throw for negative quantity'</span>, () =&gt; {
+      <span class="fn">expect</span>(() =&gt; calc.<span class="fn">calculateDiscount</span>(<span class="num">10</span>, <span class="num">-1</span>, <span class="str">'regular'</span>)).<span class="fn">toThrow</span>();
+    });
+
+    <span class="cm">// Boundary values — quantidade exata no limite do tier</span>
+    <span class="fn">it</span>(<span class="str">'should apply 5% at exactly 10 items (boundary)'</span>, () =&gt; {
+      <span class="fn">expect</span>(calc.<span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">10</span>, <span class="str">'regular'</span>)).<span class="fn">toBe</span>(<span class="num">950</span>);
+    });
+
+    <span class="fn">it</span>(<span class="str">'should NOT apply 5% at 9 items (below boundary)'</span>, () =&gt; {
+      <span class="fn">expect</span>(calc.<span class="fn">calculateDiscount</span>(<span class="num">100</span>, <span class="num">9</span>, <span class="str">'regular'</span>)).<span class="fn">toBe</span>(<span class="num">900</span>);
+    });
+  });
+});</code></pre>
+
+<h4>AI para Test Case Discovery</h4>
+<p>Alem de gerar o código do teste, IA é excelente para <strong>descobrir cenários que você não pensou</strong>:</p>
+
+<pre data-lang="prompt"><code><span class="cm">// Prompt eficaz para test case discovery:</span>
+
+<span class="str">"Análise a função calculateDiscount e liste TODOS os</span>
+<span class="str"> cenários de teste que deveriam existir, organizados em:</span>
+<span class="str"> 1. Happy path (fluxo normal)</span>
+<span class="str"> 2. Boundary values (limites exatos de cada tier)</span>
+<span class="str"> 3. Error cases (inputs inválidos)</span>
+<span class="str"> 4. Edge cases (combinacoes incomuns)</span>
+<span class="str"> 5. Property-based (invariantes que devem sempre valer)</span>
+<span class="str"></span>
+<span class="str"> NAO gere o código dos testes ainda — apenas liste os cenários</span>
+<span class="str"> com o valor esperado de cada um."</span></code></pre>
+
+<h4>Limitacoes: Coverage vs Quality</h4>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>O erro mais comum:</strong> A IA gera testes que aumentam o code coverage para 95% mas <strong>não testam nada significativo</strong>. Exemplo clássico: testes que simplesmente chamam a função e verificam "não deu erro" sem assertar o resultado. Ou testes que mockam tudo é só verificam que o mock foi chamado — testando a implementação, não o comportamento.</div>
+</div>
+
+<ul>
+<li><strong>Coverage alto sem qualidade</strong> é pior que coverage baixo — da falsa sensacao de segurança</li>
+<li><strong>Testes gerados por IA precisam de revisao humana</strong> para garantir que as assertions são significativas</li>
+<li><strong>IA não conhece o domínio:</strong> Não sabe que "desconto máximo permitido e 30%" e uma regra de negócio critica</li>
+<li><strong>Mutation testing</strong> (Stryker) é o melhor válidador: se a IA gerou testes bons, mutations devem ser detectadas</li>
+</ul>
+
+<!-- ═══ PROMPT ENGINEERING PARA CODIGO ═══ -->
+<h3>4. Prompt Engineering para Código</h3>
+
+<p>A seção 42 cobriu técnicas gerais de prompt engineering. Aqui focamos em <strong>patterns específicos para geracao de código</strong> que maximizam a qualidade do output.</p>
+
+<h4>Pattern 1: Role + Context + Task + Constraints</h4>
+<p>O pattern mais eficaz para geracao de código complexo:</p>
+
+<pre data-lang="prompt"><code><span class="cm">// Estrutura do prompt:</span>
+
+<span class="cm">// ROLE: Define expertise específica</span>
+<span class="str">"Você e um engenheiro backend senior especializado em NestJS</span>
+<span class="str"> com TypeORM e PostgreSQL."</span>
+
+<span class="cm">// CONTEXT: Descreve o sistema existente</span>
+<span class="str">"O sistema usa: NestJS 11, TypeORM com entidades auto-sync,</span>
+<span class="str"> ValidationPipe com forbidNonWhitelisted: true,</span>
+<span class="str"> autenticação via JWT em httpOnly cookies."</span>
+
+<span class="cm">// TASK: O que precisa ser feito</span>
+<span class="str">"Crie um módulo completo de 'Invoices' com:</span>
+<span class="str"> - Entity com campos: id, amount, status, customerId, createdAt</span>
+<span class="str"> - DTOs com class-válidator para Creaté e Update</span>
+<span class="str"> - Service com CRUD + filtro por status</span>
+<span class="str"> - Controller com guards de autenticação"</span>
+
+<span class="cm">// CONSTRAINTS: Regras obrigatórias</span>
+<span class="str">"Regras:</span>
+<span class="str"> - Colunas no banco em snake_case, propriedades em camelCase</span>
+<span class="str"> - Todo DTO precisa de decorators do class-válidator</span>
+<span class="str"> - Rotas específicas ANTES de rotas parametrizadas no controller</span>
+<span class="str"> - Entity DEVE ser registrada no database.module.ts"</span></code></pre>
+
+<h4>Pattern 2: Few-Shot com Exemplo do Projeto</h4>
+<p>Forneca um exemplo real do seu projeto para a IA seguir o mesmo estilo:</p>
+
+<pre data-lang="prompt"><code><span class="str">"Aqui esta um exemplo de como criamos DTOs neste projeto:</span>
+
+<span class="str">```typescript</span>
+<span class="str">// create-topic.dto.ts (exemplo existente)</span>
+<span class="str">export class CreateTopicDto {</span>
+<span class="str">  @IsString()</span>
+<span class="str">  @IsNotEmpty()</span>
+<span class="str">  @MaxLength(200)</span>
+<span class="str">  title: string;</span>
+<span class="str"></span>
+<span class="str">  @IsString()</span>
+<span class="str">  @IsOptional()</span>
+<span class="str">  @MaxLength(500)</span>
+<span class="str">  description?: string;</span>
+<span class="str"></span>
+<span class="str">  @IsUUID()</span>
+<span class="str">  productId: string;</span>
+<span class="str">}</span>
+<span class="str">```</span>
+
+<span class="str">Agora crie o CreateInvoiceDto seguindo exatamente</span>
+<span class="str">o mesmo pattern: decorators, optional com ?, tipos."</span></code></pre>
+
+<h4>Pattern 3: Chain-of-Thought para Debug</h4>
+<p>Para problemas complexos, force a IA a raciocinar passó a passo:</p>
+
+<pre data-lang="prompt"><code><span class="str">"O endpoint POST /topics retorna 500 Internal Server Error.</span>
+
+<span class="str">Análise passó a passo:</span>
+<span class="str">1. Qual o stack trace exato do erro?</span>
+<span class="str">2. Qual entidade esta envolvida?</span>
+<span class="str">3. O TypeORM esta gerando SQL correto?</span>
+<span class="str">4. As colunas do entity batem com as colunas da tabela?</span>
+<span class="str">5. Existe algum enum que pode causar desserialização?</span>
+<span class="str">6. Proponha a correcao com código."</span></code></pre>
+
+<h4>Pattern 4: Context Management</h4>
+<p>O que incluir (e não incluir) no prompt para maximizar qualidade:</p>
+
+<div class="card">
+<div class="card-title">O que INCLUIR no prompt</div>
+<ul>
+<li><strong>Stack técnica:</strong> Framework, versão, ORM, banco de dados</li>
+<li><strong>Conventions do projeto:</strong> Naming, estrutura de pastas, patterns usados</li>
+<li><strong>Exemplos existentes:</strong> Código similar que já funciona no projeto</li>
+<li><strong>Constraints:</strong> Regras de negócio, limitações técnicas, performance targets</li>
+<li><strong>Erro exato:</strong> Stack trace completo, não apenas "deu erro"</li>
+</ul>
+</div>
+
+<div class="card orange">
+<div class="card-title">O que NAO incluir no prompt</div>
+<ul>
+<li><strong>Código irrelevante:</strong> Não cole 500 linhas se o bug esta em 10 linhas</li>
+<li><strong>Historia do problema:</strong> "Ontem tentei X, depois Y, depois Z..." — va direto ao ponto</li>
+<li><strong>Multiplas tarefas:</strong> Um prompt = uma tarefa. Não peca "crie o endpoint E o teste E o deploy"</li>
+<li><strong>Secrets/credenciais:</strong> Nunca inclua tokens, passwords ou API keys no prompt</li>
+</ul>
+</div>
+
+<!-- ═══ AI NO WORKFLOW ═══ -->
+<h3>5. AI no Workflow de Desenvolvimento</h3>
+
+<h4>AI para Debugging ("Rubber Duck com Superpoderes")</h4>
+<p>O clássico "rubber duck debugging" — explicar o problema em voz alta para encontrar a solução — funciona ainda melhor quando o "pato" entende código e pode responder:</p>
+
+<pre data-lang="prompt"><code><span class="cm">// Prompt eficaz para debugging:</span>
+
+<span class="str">"Estou investigando um bug: o endpoint GET /products retorna</span>
+<span class="str"> dados duplicados quando o usuário tem mais de um papel (role).</span>
+
+<span class="str"> Aqui esta a query:</span>
+<span class="str"> ```sql</span>
+<span class="str"> SELECT p.* FROM products p</span>
+<span class="str"> JOIN user_roles ur ON ur.user_id = p.owner_id</span>
+<span class="str"> WHERE ur.role IN ('admin', 'editor')</span>
+<span class="str"> ```</span>
+
+<span class="str"> O usuário 'joao' tem roles ['admin', 'editor'].</span>
+<span class="str"> Por que os produtos aparecem duplicados?"</span>
+
+<span class="cm">// IA identifica: JOIN multiplica linhas quando usuário tem</span>
+<span class="cm">// múltiplos roles. Solução: usar DISTINCT ou EXISTS subquery.</span></code></pre>
+
+<h4>AI para Documentação Automatica</h4>
+<p>IA é excelente para gerar documentação técnica a partir de código existente:</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Antes: função sem documentação</span>
+<span class="kw">async</span> <span class="fn">processPayment</span>(orderId: <span class="tp">string</span>, method: <span class="tp">PaymentMethod</span>): <span class="tp">Promise</span>&lt;<span class="tp">PaymentResult</span>&gt; {
+  <span class="cm">// ... 50 linhas de lógica complexa</span>
+}
+
+<span class="cm">// Prompt: "Gere JSDoc completo para esta função,</span>
+<span class="cm">// incluindo @param, @returns, @throws e @example"</span>
+
+<span class="cm">// Depois: documentação gerada pela IA (revisada pelo dev)</span>
+<span class="cm">/**</span>
+<span class="cm"> * Processa o pagamento de um pedido usando o método específicado.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Fluxo: válida pedido -> reserva estoque -> cobra pagamento</span>
+<span class="cm"> *        -> confirma pedido -> envia notificação</span>
+<span class="cm"> *</span>
+<span class="cm"> * @param orderId - UUID do pedido (deve existir e estar em status 'pending')</span>
+<span class="cm"> * @param method - Método de pagamento (credit_card, pix, boleto)</span>
+<span class="cm"> * @returns PaymentResult com transactionId e status</span>
+<span class="cm"> * @throws OrderNotFoundError se o pedido não existir</span>
+<span class="cm"> * @throws PaymentDeclinedError se o pagamento for recusado</span>
+<span class="cm"> * @throws InsufficientStockError se o estoque for insuficiente</span>
+<span class="cm"> *</span>
+<span class="cm"> * @example</span>
+<span class="cm"> * const result = await processPayment('uuid-123', 'pix');</span>
+<span class="cm"> * // { transactionId: 'txn-456', status: 'completed' }</span>
+<span class="cm"> */</span>
+<span class="kw">async</span> <span class="fn">processPayment</span>(orderId: <span class="tp">string</span>, method: <span class="tp">PaymentMethod</span>): <span class="tp">Promise</span>&lt;<span class="tp">PaymentResult</span>&gt; {</code></pre>
+
+<h4>AI para Migracao de Código</h4>
+<p>Uma das aplicações mais poderosas: migrar código entre linguagens ou frameworks mantendo a lógica intacta.</p>
+
+<pre data-lang="prompt"><code><span class="cm">// Exemplo: migrar de Express para NestJS</span>
+
+<span class="str">"Migre este endpoint Express para NestJS seguindo os patterns:</span>
+<span class="str"> - Controller com decorators (@Get, @Post, etc)</span>
+<span class="str"> - Service com injecao de dependência</span>
+<span class="str"> - DTO com class-válidator</span>
+<span class="str"> - Mantenha a mesma lógica de negócio 100%</span>
+<span class="str"> - Preserve os mesmos status codes e formato de response</span>
+
+<span class="str"> Código Express original:</span>
+<span class="str"> ```javascript</span>
+<span class="str"> router.post('/users', async (req, res) => {</span>
+<span class="str">   const { name, email } = req.body;</span>
+<span class="str">   if (!name || !email) {</span>
+<span class="str">     return res.status(400).json({ error: 'Name and email required' });</span>
+<span class="str">   }</span>
+<span class="str">   const exists = await db.users.findByEmail(email);</span>
+<span class="str">   if (exists) {</span>
+<span class="str">     return res.status(409).json({ error: 'Email already in use' });</span>
+<span class="str">   }</span>
+<span class="str">   const user = await db.users.create({ name, email });</span>
+<span class="str">   res.status(201).json(user);</span>
+<span class="str"> });</span>
+<span class="str"> ```"</span></code></pre>
+
+<h4>AI para Refactoring</h4>
+<p>IA brilha em refactoring mecanico — extrair funções, renomear variáveis, aplicar design patterns:</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Prompt: "Refatore esta função de 80 linhas aplicando</span>
+<span class="cm">//  Single Responsibility. Extraia cada responsabilidade</span>
+<span class="cm">//  em uma função privada com nome descritivo."</span>
+
+<span class="cm">// Antes (função monolitica):</span>
+<span class="kw">async</span> <span class="fn">createOrder</span>(dto: <span class="tp">CreateOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>&gt; {
+  <span class="cm">// 80 linhas: validação + cálculo + persistência + notificação</span>
+}
+
+<span class="cm">// Depois (refatorado pela IA):</span>
+<span class="kw">async</span> <span class="fn">createOrder</span>(dto: <span class="tp">CreateOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>&gt; {
+  <span class="kw">const</span> customer = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">válidateCustomer</span>(dto.customerId);
+  <span class="kw">const</span> items = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">válidateAndReserveItems</span>(dto.items);
+  <span class="kw">const</span> total = <span class="kw">this</span>.<span class="fn">calculateTotal</span>(items, customer.discountTier);
+  <span class="kw">const</span> order = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">persistOrder</span>(customer, items, total);
+  <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">sendOrderConfirmation</span>(order);
+  <span class="kw">return</span> order;
+}
+
+<span class="kw">privaté async</span> <span class="fn">válidateCustomer</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Customer</span>&gt; { <span class="cm">/* ... */</span> }
+<span class="kw">privaté async</span> <span class="fn">válidateAndReserveItems</span>(items: <span class="tp">OrderItemDto</span>[]): <span class="tp">Promise</span>&lt;<span class="tp">OrderItem</span>[]&gt; { <span class="cm">/* ... */</span> }
+<span class="kw">private</span> <span class="fn">calculateTotal</span>(items: <span class="tp">OrderItem</span>[], tier: <span class="tp">DiscountTier</span>): <span class="tp">number</span> { <span class="cm">/* ... */</span> }
+<span class="kw">privaté async</span> <span class="fn">persistOrder</span>(...): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>&gt; { <span class="cm">/* ... */</span> }
+<span class="kw">privaté async</span> <span class="fn">sendOrderConfirmation</span>(order: <span class="tp">Order</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; { <span class="cm">/* ... */</span> }</code></pre>
+
+<!-- ═══ BEST PRACTICES ═══ -->
+<h3>6. Best Practices</h3>
+
+<h4>Quando Confiar na IA</h4>
+<ul>
+<li><strong>Boilerplaté e código repetitivo:</strong> CRUD, DTOs, interfaces, configurações — aceite sem medo</li>
+<li><strong>Regex e formatacao:</strong> IA gera regex melhor que 99% dos devs humanos</li>
+<li><strong>Conversão de formatos:</strong> JSON para XML, CSV para JSON, SQL para TypeORM — operações mecanicas</li>
+<li><strong>Documentação:</strong> JSDoc, README, comentários explicativos — sempre bom, revise para precisão</li>
+<li><strong>Testes de cobertura:</strong> Happy path e error handling básico — mas revise as assertions</li>
+</ul>
+
+<h4>Quando Verificar Manualmente</h4>
+<ul>
+<li><strong>Logica de negócio:</strong> Cálculos financeiros, regras de desconto, válidacoes de domínio — SEMPRE verifique</li>
+<li><strong>Security:</strong> Autenticação, autorização, sanitizacao de input — NUNCA confie cegamente</li>
+<li><strong>Queries de banco:</strong> JOINs complexos, subqueries, performance — verifique com EXPLAIN</li>
+<li><strong>Concorrência:</strong> Race conditions, locks, transações — IA frequentemente gera código com bugs sutis de concorrência</li>
+<li><strong>Configuração de infra:</strong> IAM policies, security groups, CORS — um erro pode expor tudo</li>
+</ul>
+
+<h4>Code Review de Código Gerado por IA</h4>
+<p>Revise código gerado por IA com o mesmo (ou mais) rigor que código de um dev junior:</p>
+<ol>
+<li><strong>Leia linha por linha:</strong> Não aceite cegamente porque "parece certo"</li>
+<li><strong>Verifique edge cases:</strong> IA frequentemente trata o happy path e ignora boundary conditions</li>
+<li><strong>Teste manualmente:</strong> Execute o código com inputs inesperados</li>
+<li><strong>Verifique dependências:</strong> IA pode importar bibliotecas desatualizadas ou com vulnerabilidades</li>
+<li><strong>Valide idiomas:</strong> O código segue os patterns e idiomas do seu projeto?</li>
+</ol>
+
+<h4>Riscos Conhecidos</h4>
+
+<div class="card orange">
+<div class="card-title">Riscos do usó de IA para código</div>
+<ul>
+<li><strong>Licencas:</strong> Copilot foi treinado em código open-source. Pode sugerir trechos de código GPL que contaminam seu projeto proprietário. Use filtros de licenca quando disponíveis</li>
+<li><strong>Código inseguro:</strong> IA frequentemente gera código que funciona mas tem vulnerabilidades: SQL injection por string interpolation, secrets em logs, falta de raté limiting</li>
+<li><strong>Alucinacoes:</strong> IA inventa APIs que não existem, métodos com assinaturas erradas, configurações inválidas. Sempre verifique na documentação oficial</li>
+<li><strong>Over-reliance:</strong> Devs que usam IA demais perdem a habilidade de resolver problemas complexos sozinhos. A IA deve amplificar, não substituir, seu raciocinio</li>
+<li><strong>Data leakage:</strong> Código proprietário enviado para APIs de IA pode ser usado para treinamento (depende dos termos de serviço e do plano)</li>
+</ul>
+</div>
+
+<h4>Politicas Corporativas para Usó de IA</h4>
+<p>Todo time deve definir regras claras:</p>
+<ol>
+<li><strong>Quais ferramentas são aprovadas?</strong> (Ex: Copilot Business sim, ChatGPT free não)</li>
+<li><strong>Quais dados podem ser enviados?</strong> (Ex: código sim, dados de produção nunca)</li>
+<li><strong>Code review obrigatório?</strong> (Ex: todo código gerado por IA precisa de review humano)</li>
+<li><strong>Atribuicao:</strong> Código gerado por IA deve ser marcado? (Ex: Co-Authored-By no commit)</li>
+<li><strong>Compliance:</strong> A ferramenta atende requisitos de LGPD/SOC2/HIPAA do projeto?</li>
+</ol>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>7. Mini System Design: Integrando IA no Pipeline de Desenvolvimento</h3>
+
+<p><strong>Cenário:</strong> Você é o tech lead de um time de 8 desenvolvedores. O CTO pede para integrar IA no pipeline de desenvolvimento para aumentar a produtividade em 30%. Como você projeta isso?</p>
+
+<div class="diagram">
+<div class="diagram-box green">Developer<br><small>IDE + AI Assistant</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">PR Created<br><small>AI Review Bot</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">CI Pipeline<br><small>AI Test Gen</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Human Review<br><small>Final Approval</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Deploy<br><small>AI Monitoring</small></div>
+</div>
+
+<p><strong>Fase 1: Desenvolvimento (IDE)</strong></p>
+<ul>
+<li>Cursor IDE como editor padrão do time (codebase indexing compartilhado)</li>
+<li>CLAUDE.md com regras do projeto: naming, patterns, constraints do framework</li>
+<li>Copilot para autocomplete rápido durante digitacao</li>
+</ul>
+
+<p><strong>Fase 2: PR Review (Automatizado)</strong></p>
+<ul>
+<li>CodeRabbit configurado com regras específicas do projeto (<code>.coderabbit.yaml</code>)</li>
+<li>AI review como gaté obrigatório — PR só pode ser aprovado por humano após AI review completar</li>
+<li>Regras customizadas: "todo endpoint novo precisa de testes", "todo DTO precisa de válidators"</li>
+</ul>
+
+<p><strong>Fase 3: CI Pipeline</strong></p>
+<ul>
+<li>AI sugere testes adicionais para linhas não cobertas (delta coverage)</li>
+<li>Claude Code headless roda checklist de qualidade automatizado</li>
+<li>Security scanning com AI (detecta vulnerabilidades contextuais, não só CVEs conhecidos)</li>
+</ul>
+
+<p><strong>Fase 4: Human Review</strong></p>
+<ul>
+<li>Reviewer humano foca em: lógica de negócio, decisões arquiteturais, trade-offs</li>
+<li>AI já resolveu: style, bugs mecanicos, documentação, security básica</li>
+<li>Tempo de review humano reduzido de 45min para 15min por PR</li>
+</ul>
+
+<p><strong>Fase 5: Pos-Deploy</strong></p>
+<ul>
+<li>AI analisa logs de erro e sugere fixes automáticamente (abre PR de correcao)</li>
+<li>Alertas inteligentes: "Erro X começou a aparecer 5min após deploy Y — provavel regressão"</li>
+</ul>
+
+<p><strong>Métricas de sucesso:</strong></p>
+<ol>
+<li>Lead time for changes: alvo redução de 40%</li>
+<li>Bugs em produção: alvo redução de 25%</li>
+<li>Tempo de code review: alvo redução de 60%</li>
+<li>Developer satisfaction (survey trimestral): acima de 4/5</li>
+</ol>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>8. Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Copiar e colar sem entender:</strong> O maior risco de AI coding. Se você não entende o código que a IA gerou, você não consegue debugar quando quebrar (e VAI quebrar). Se não consegue explicar cada linha para um colega, não faca commit.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Prompt vago = código vago:</strong> "Faz um CRUD de usuários" gera código genérico e inútilizavel. "Crie um endpoint POST /users com validação de email único, hash bcrypt de senha, retorno 201 sem expor o hash, usando NestJS com TypeORM" gera código útilizavel.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Confiar na IA para segurança:</strong> IA frequentemente gera código que funciona mas e inseguro: passwords em plain text, SQL com string interpolation, JWT sem expiracao, CORS com '*'. SEMPRE revise aspectos de segurança manualmente, mesmo em código gerado por IA.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Ignorar o contexto do projeto:</strong> IA não sabe que seu time decidiu usar Repository Pattern, que o banco tem constraints específicas, ou que existe um middleware de logging obrigatório. Sempre inclua contexto do projeto no prompt (ou use CLAUDE.md / .cursorrules).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Alucinacoes de API:</strong> IA inventa métodos que não existem. Exemplos reais: <code>fs.readFileAsync()</code> (não existe), <code>axios.getJSON()</code> (não existe), <code>TypeORM.createQueryRunner().startTransaction()</code> (assinatura errada). Sempre verifique na documentação oficial.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Traté a IA como um dev junior muito rápido: produz muito código, mas precisa de code review rigoroso. Aceite sugestoes de boilerplaté sem hesitar, mas escrutine lógica de negócio, segurança e concorrência como se fosse código de um estagiario.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>9. Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você recebeu um código gerado por IA para autenticação. Quais 5 pontos você verificaria antes de aprovar o PR?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> (1) <strong>Hashing de senha:</strong> Usa bcrypt/argon2 com salt? Nunca armazena plain text. (2) <strong>JWT:</strong> Tem expiracao curta (15min access, 7d refresh)? Secret e forte e vem de env var? (3) <strong>Raté limiting:</strong> Endpoint de login tem proteção contra brute force? (4) <strong>Sanitizacao:</strong> Inputs são válidados? Previne SQL injection e NoSQL injection? (5) <strong>Cookies:</strong> httpOnly, Secure, SameSite configurados? Não expoe tokens em localStorage?</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Escreva um prompt eficaz para pedir a IA que refatore um serviço de 500 linhas. O que incluir é o que não incluir?</div>
+<div class="qa-a">
+<p><strong>Resposta - Incluir:</strong> (1) Role: "Você é um engenheiro senior especializado em [framework]". (2) Código atual completo do serviço. (3) Design pattern desejado: "Aplique Facade Pattern, extraia em serviços especializados". (4) Constraints: "Mantenha interface publica identica (zero breaking changes)". (5) Exemplo de como outro serviço foi refatorado no projeto. <strong>NAO incluir:</strong> Historia de como o serviço ficou grande, código de outros módulos não relacionados, requisitos vagos como "melhore o código".</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Seu time quer adotar AI code review (CodeRabbit). O QA argumenta que isso vai substituir testes manuais. O dev senior argumenta que vai gerar falsos positivos. Como você mediaria?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Ambos tem pontos válidos. Para o QA: AI code review <strong>não substitui</strong> testes manuais — substitui a parte mecanica do code review (style, bugs óbvios, patterns). Testes manuais continuam necessários para fluxos de negócio. Para o dev senior: falsos positivos existem, mas são gerenciaveis. (1) Configure o perfil como "assertive" em vez de "nitpicky". (2) Adicione regras específicas do projeto no .coderabbit.yaml. (3) Faca um piloto de 2 semanas medindo: falsos positivos vs bugs reais encontrados. (4) Ajuste as regras baseado nós dados. Proposta: piloto de 30 dias com 3 repos. Métricas: tempo de review, bugs em produção, satisfacao do time. Decisao baseada em dados, não opinião.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — IA Aplicada ao Desenvolvimento</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="61-ai-engineering.html">&#8592; Anterior: AI Engineering Completa</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="63-seguranca-ia.html" class="primary">Próximo: Segurança de IA &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 62: IA Aplicada ao Desenvolvimento
+// ══════════════════════════════════════════
+const SECTION_NUM = 62;
+const STORAGE_KEY = 'fsm_quiz_62';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual a principal diferença entre GitHub Copilot e Cursor IDE?",
+    options: [
+      "Copilot usa GPT-4 e Cursor usa modelos open-source",
+      "Copilot é um plugin de IDE; Cursor é um editor AI-first com codebase indexing nativo",
+      "Cursor só funciona para Python, Copilot funciona para todas as linguagens",
+      "Não ha diferença significativa — ambos fazem autocomplete identico"
+    ],
+    correct: 1,
+    explanation: "Copilot é um plugin que adiciona IA a editores existentes (VS Code, JetBrains). Cursor é um fork do VS Code construido com IA no core — indexa o codebase inteiro em embeddings e oferece Composer para editar múltiplos arquivos simultaneamente."
+  },
+  {
+    question: "O que diferencia o Claude Code das outras ferramentas de AI coding?",
+    options: [
+      "E a única que suporta TypeScript",
+      "E uma ferramenta de linha de comando que opera como agente autônomo, podendo executar comandos e iterár sobre erros",
+      "E mais barata que todas as alternativas",
+      "Funciona apenas offline, sem enviar código para servidores"
+    ],
+    correct: 1,
+    explanation: "Claude Code é uma CLI agentica: navega pelo filesystem, le arquivos, executa comandos (testes, builds, linters) e iterá autonomamente até completar a tarefa. Diferente de plugins de IDE que só sugerem código."
+  },
+  {
+    question: "Qual destas tarefas AI Code Review faz BEM?",
+    options: [
+      "Avaliar se a regra de negócio de cálculo de frete esta correta",
+      "Decidir se o time deveria usar microserviços ou monolito",
+      "Detectar off-by-one errors, resource leaks e SQL injection",
+      "Priorizar quais features desenvolver primeiro"
+    ],
+    correct: 2,
+    explanation: "AI Code Review brilha em bugs mecanicos (off-by-one, leaks, injection), style/consistência e security básica. NAO e boa para lógica de negócio, decisões arquiteturais ou contexto organizacional."
+  },
+  {
+    question: "Qual o maior risco ao usar IA para gerar testes automatizados?",
+    options: [
+      "Os testes são mais lentos que testes escritos manualmente",
+      "Os testes podem aumentar coverage sem testar nada significativo (assertions vazias)",
+      "A IA só gera testes unitários, nunca testes de integração",
+      "Testes gerados por IA não funcionam em CI/CD"
+    ],
+    correct: 1,
+    explanation: "O maior risco e falsa sensacao de segurança: testes que chamam funções e verificam 'não deu erro' sem assertar valores. Coverage sobe para 95% mas os testes não detectam regressoes. Sempre revise se as assertions são significativas."
+  },
+  {
+    question: "No pattern 'Role + Context + Task + Constraints' para prompts de código, qual seção é mais frequentemente esquecida e causa mais problemas?",
+    options: [
+      "Role — devs esquecem de definir a expertise",
+      "Task — devs não descrevem o que querem",
+      "Constraints — regras do projeto, naming conventions e limitações técnicas",
+      "Context — ninguem descreve o sistema existente"
+    ],
+    correct: 2,
+    explanation: "Constraints é a seção mais esquecida. Sem ela, a IA gera código genérico que não segue as conventions do projeto: naming errado, patterns diferentes dos existentes, imports de bibliotecas não usadas no projeto. Incluir constraints como 'colunas snake_case', 'ValidationPipe ativo' transforma a qualidade do output."
+  },
+  {
+    question: "Um desenvolvedor usa Copilot para gerar uma função de autenticação. Quais itens devem ser verificados MANUALMENTE antes do merge?",
+    options: [
+      "Apenas se o código compila sem erros",
+      "Hashing de senha, expiracao de JWT, raté limiting, sanitizacao de inputs e configuração de cookies",
+      "Apenas se os testes passam",
+      "Nada — se o Copilot gerou, esta seguro"
+    ],
+    correct: 1,
+    explanation: "Segurança NUNCA deve ser confiada cegamente a IA. Verifique: hashing com bcrypt/argon2, JWT com expiracao curta, raté limiting contra brute force, inputs sanitizados, cookies httpOnly/Secure/SameSite. IA frequentemente gera código funcional mas inseguro."
+  },
+  {
+    question: "Qual abordagem é mais eficaz para usar IA em debugging?",
+    options: [
+      "Colar o erro inteiro sem contexto e pedir 'conserte isso'",
+      "Descrever o comportamento esperado vs real, incluir stack trace, e pedir análise passó a passó (chain-of-thought)",
+      "Pedir para a IA reescrever o módulo inteiro do zero",
+      "Usar apenas o autocomplete do Copilot até o bug sumir"
+    ],
+    correct: 1,
+    explanation: "Chain-of-thought para debug: descreva o bug (esperado vs real), inclua stack trace, dados de input, e peca análise passó a passo. Isso força a IA a raciocinar sobre cada possível causa ao inves de chutar uma solução."
+  },
+  {
+    question: "No Mini System Design de integração de IA no pipeline, qual é a ordem correta das fases?",
+    options: [
+      "AI Review → Developer IDE → CI Pipeline → Deploy → Human Review",
+      "Developer IDE → PR (AI Review) → CI Pipeline → Human Review → Deploy",
+      "Human Review → AI Review → CI Pipeline → Developer IDE → Deploy",
+      "CI Pipeline → Developer IDE → AI Review → Deploy → Human Review"
+    ],
+    correct: 1,
+    explanation: "A ordem correta e: Developer escreve código com AI Assistant → Cria PR (AI Review automático) → CI Pipeline com AI test gen → Human Review final (foco em lógica de negócio) → Deploy com AI monitoring. IA otimiza cada etapa mas humano tem a palavra final."
+  },
+  {
+    question: "Qual destes é um risco REAL de usar IA para geracao de código em projetos proprietários?",
+    options: [
+      "A IA vai roubar suas ideias é criar uma startup concorrente",
+      "Copilot pode sugerir trechos de código GPL que contaminam licencas proprietarias",
+      "A IA sempre gera código mais lento que código escrito manualmente",
+      "Empresas que usam IA para coding são processadas automáticamente"
+    ],
+    correct: 1,
+    explanation: "Copilot foi treinado em código open-source (incluindo GPL). Pode sugerir trechos identicos a projetos GPL, o que teoricamente contamina a licenca do seu projeto proprietário. Use filtros de licenca e revise sugestoes que parecem copiadas."
+  },
+  {
+    question: "Seu time tem um arquivo CLAUDE.md no projeto. Qual a função deste arquivo?",
+    options: [
+      "E a documentação oficial do projeto para novos membros",
+      "E um arquivo de configuração de regras persistentes que a IA le automáticamente para entender conventions, constraints e patterns do projeto",
+      "E o changelog do projeto gerado automáticamente",
+      "E usado apenas pelo GitHub Copilot para indexar o repositório"
+    ],
+    correct: 1,
+    explanation: "CLAUDE.md (e equivalentes como .cursorrules) são arquivos de instruções persistentes. A IA os le automáticamente e segue as regras: naming conventions, patterns obrigatórios, stack técnica, constraints de framework. Elimina a necessidade de repetir contexto em cada prompt."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina IA aplicada ao desenvolvimento.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>01 — Princípios SOLID | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="../fullstack-mastery.html">&#8592; Índice</a>
+<div class="nav-center">Seção <span>01</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="02-clean-code.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:1.5%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 01</span>
+<h2>Princípios SOLID</h2>
+<div class="section-line"></div>
+
+<p>Os cinco princípios que formam a base da Programação Orientada a Objetos de qualidade. Criados por Robert C. Martin (Uncle Bob), são a fundação sobre a qual toda arquitetura limpa é construída. Não são regras absolutas — são <strong>diretrizes de design</strong> que, quando aplicadas com discernimento, resultam em código mais flexível, testável e resistente a mudanças.</p>
+
+<p>Uma analogia simples: pense em SOLID como as regras de engenharia civil. Você pode construir uma casa sem segui-las, e ela pode ficar de pé por um tempo. Mas quando o terreno trepidar (requisitos mudam), a casa sem fundação desmorona. SOLID é a fundação.</p>
+
+<!-- ═══ S — SRP ═══ -->
+<h3>S — Single Responsibility Principle (SRP)</h3>
+<p><strong>"Uma classe deve ter apenas um motivo para mudar."</strong> Cada módulo, classe ou função deve ser responsável por uma única parte da funcionalidade. Na prática, isso significa que se você precisa mudar a lógica de envio de email E a lógica de criação de usuário, eles não devem estar na mesma classe — porque são <strong>dois motivos diferentes para mudar</strong>.</p>
+
+<p>O SRP não significa que uma classe deve ter apenas um método. Significa que todos os métodos da classe devem estar <strong>coesos</strong> — trabalhando para o mesmo proposito.</p>
+
+<h4>Exemplo: Violacao vs Aplicacao</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; VIOLACAO — Classe faz 3 coisas não relacionadas</span>
+<span class="kw">class</span> <span class="tp">OrderService</span> {
+  <span class="kw">async</span> <span class="fn">createOrder</span>(dto: <span class="tp">CreateOrderDto</span>) {
+    <span class="cm">// 1. Logica de negócio — validação e criação</span>
+    <span class="kw">const</span> order = <span class="kw">new</span> <span class="tp">Order</span>();
+    order.items = dto.items;
+    order.total = <span class="kw">this</span>.<span class="fn">calculateTotal</span>(dto.items);
+    <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">save</span>(order);
+
+    <span class="cm">// 2. Envio de email — responsabilidade de notificação</span>
+    <span class="kw">const</span> html = <span class="str">`&lt;h1&gt;Pedido #${order.id}&lt;/h1&gt;...`</span>;
+    <span class="kw">await</span> <span class="kw">this</span>.mailer.<span class="fn">send</span>(dto.email, <span class="str">'Pedido confirmado'</span>, html);
+
+    <span class="cm">// 3. Geracao de PDF — responsabilidade de relatório</span>
+    <span class="kw">const</span> pdf = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">generateInvoicePDF</span>(order);
+    <span class="kw">await</span> <span class="kw">this</span>.s3.<span class="fn">upload</span>(<span class="str">`invoices/${order.id}.pdf`</span>, pdf);
+  }
+}
+
+<span class="cm">// &#9989; CORRETO — Cada serviço com uma responsabilidade clara</span>
+<span class="kw">class</span> <span class="tp">OrderService</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> orderRepo: <span class="tp">OrderRepository</span>,
+    <span class="kw">private</span> notifier: <span class="tp">OrderNotificationService</span>,
+    <span class="kw">private</span> invoicer: <span class="tp">InvoiceService</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">create</span>(dto: <span class="tp">CreateOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>&gt; {
+    <span class="kw">const</span> order = Order.<span class="fn">fromDto</span>(dto);
+    <span class="kw">await</span> <span class="kw">this</span>.orderRepo.<span class="fn">save</span>(order);
+    <span class="kw">await</span> <span class="kw">this</span>.notifier.<span class="fn">sendConfirmation</span>(order);
+    <span class="kw">await</span> <span class="kw">this</span>.invoicer.<span class="fn">generate</span>(order);
+    <span class="kw">return</span> order;
+  }
+}
+
+<span class="kw">class</span> <span class="tp">OrderNotificationService</span> {
+  <span class="kw">async</span> <span class="fn">sendConfirmation</span>(order: <span class="tp">Order</span>) { <span class="cm">/* email logic */</span> }
+  <span class="kw">async</span> <span class="fn">sendShipped</span>(order: <span class="tp">Order</span>) { <span class="cm">/* ... */</span> }
+}
+
+<span class="kw">class</span> <span class="tp">InvoiceService</span> {
+  <span class="kw">async</span> <span class="fn">generate</span>(order: <span class="tp">Order</span>) { <span class="cm">/* PDF generation + S3 upload */</span> }
+}</code></pre>
+
+<h4>Exemplo em Python — Backend Flask</h4>
+<pre data-lang="python"><code><span class="cm"># &#10060; Tudo junto — rota, validação, lógica, notificação</span>
+<span class="ann">@app</span>.<span class="fn">route</span>(<span class="str">'/orders'</span>, methods=[<span class="str">'POST'</span>])
+<span class="kw">def</span> <span class="fn">create_order</span>():
+    data = request.json
+    <span class="kw">if not</span> data.get(<span class="str">'items'</span>):
+        <span class="kw">return</span> jsonify(error=<span class="str">'items required'</span>), <span class="num">400</span>
+    order = Order(items=data[<span class="str">'items'</span>])
+    db.session.add(order)
+    db.session.commit()
+    send_email(order.user.email, <span class="str">'Confirmacao'</span>, render_template(<span class="str">'order.html'</span>))
+    <span class="kw">return</span> jsonify(order.to_dict()), <span class="num">201</span>
+
+<span class="cm"># &#9989; Separado — cada função com uma responsabilidade</span>
+<span class="kw">class</span> <span class="tp">OrderValidator</span>:
+    <span class="kw">def</span> <span class="fn">válidate</span>(self, data: <span class="tp">dict</span>) -> <span class="tp">CreateOrderDto</span>: ...
+
+<span class="kw">class</span> <span class="tp">OrderRepository</span>:
+    <span class="kw">def</span> <span class="fn">save</span>(self, order: <span class="tp">Order</span>) -> <span class="tp">Order</span>: ...
+
+<span class="kw">class</span> <span class="tp">OrderNotifier</span>:
+    <span class="kw">def</span> <span class="fn">send_confirmation</span>(self, order: <span class="tp">Order</span>): ...
+
+<span class="kw">class</span> <span class="tp">OrderService</span>:
+    <span class="kw">def</span> <span class="fn">create</span>(self, dto: <span class="tp">CreateOrderDto</span>) -> <span class="tp">Order</span>:
+        order = Order.from_dto(dto)
+        self.repo.save(order)
+        self.notifier.send_confirmation(order)
+        <span class="kw">return</span> order</code></pre>
+
+<!-- ═══ O — OCP ═══ -->
+<h3>O — Open/Closed Principle (OCP)</h3>
+<p><strong>"Aberto para extensão, fechado para modificacao."</strong> Você deve poder adicionar novo comportamento sem alterár código existente. Na prática, isso se traduz em usar <strong>interfaces, abstrações e polimorfismo</strong> ao inves de condicionais (<code>if/else</code>, <code>switch</code>).</p>
+
+<p>Sempre que você ve um <code>switch</code> que cresce com cada novo tipo, e uma violação do OCP. A solução clássica é o <strong>Strategy Pattern</strong>.</p>
+
+<h4>Exemplo Real: Sistema de Pagamentos</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; VIOLACAO — Cada novo método de pagamento exige alterár essa função</span>
+<span class="kw">function</span> <span class="fn">processPayment</span>(method: <span class="tp">string</span>, amount: <span class="tp">number</span>) {
+  <span class="kw">if</span> (method === <span class="str">'pix'</span>) {
+    <span class="cm">// 20 linhas de lógica Pix...</span>
+  } <span class="kw">else if</span> (method === <span class="str">'credit_card'</span>) {
+    <span class="cm">// 30 linhas de lógica Cartao...</span>
+  } <span class="kw">else if</span> (method === <span class="str">'boleto'</span>) {
+    <span class="cm">// 25 linhas de lógica Boleto...</span>
+  }
+  <span class="cm">// Vai crescer infinitamente...</span>
+}
+
+<span class="cm">// &#9989; CORRETO — Aberto para extensão via interface</span>
+<span class="kw">interface</span> <span class="tp">PaymentProcessor</span> {
+  <span class="fn">supports</span>(method: <span class="tp">string</span>): <span class="tp">boolean</span>;
+  <span class="fn">process</span>(amount: <span class="tp">number</span>, metadata: <span class="tp">PaymentMeta</span>): <span class="tp">Promise</span>&lt;<span class="tp">PaymentResult</span>&gt;;
+}
+
+<span class="kw">class</span> <span class="tp">PixProcessor</span> <span class="kw">implements</span> <span class="tp">PaymentProcessor</span> {
+  <span class="fn">supports</span>(method: <span class="tp">string</span>) { <span class="kw">return</span> method === <span class="str">'pix'</span>; }
+  <span class="kw">async</span> <span class="fn">process</span>(amount: <span class="tp">number</span>, meta: <span class="tp">PaymentMeta</span>) {
+    <span class="cm">// Gera QR Code, registra no banco central, etc.</span>
+    <span class="kw">return</span> { status: <span class="str">'approved'</span>, txId: <span class="fn">generatePixId</span>() };
+  }
+}
+
+<span class="kw">class</span> <span class="tp">CreditCardProcessor</span> <span class="kw">implements</span> <span class="tp">PaymentProcessor</span> {
+  <span class="fn">supports</span>(method: <span class="tp">string</span>) { <span class="kw">return</span> method === <span class="str">'credit_card'</span>; }
+  <span class="kw">async</span> <span class="fn">process</span>(amount: <span class="tp">number</span>, meta: <span class="tp">PaymentMeta</span>) {
+    <span class="cm">// Chama gateway Stripe/PagSeguro, tokeniza cartao, etc.</span>
+    <span class="kw">return</span> { status: <span class="str">'approved'</span>, txId: meta.chargeId };
+  }
+}
+
+<span class="cm">// Para adicionar Boleto: crie BoletoProcessor. NENHUM código existente muda.</span>
+<span class="kw">class</span> <span class="tp">PaymentService</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> processors: <span class="tp">PaymentProcessor</span>[]) {}
+
+  <span class="kw">async</span> <span class="fn">pay</span>(method: <span class="tp">string</span>, amount: <span class="tp">number</span>, meta: <span class="tp">PaymentMeta</span>) {
+    <span class="kw">const</span> processor = <span class="kw">this</span>.processors.<span class="fn">find</span>(p => p.<span class="fn">supports</span>(method));
+    <span class="kw">if</span> (!processor) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">`Método ${method} não suportado`</span>);
+    <span class="kw">return</span> processor.<span class="fn">process</span>(amount, meta);
+  }
+}</code></pre>
+
+<!-- ═══ L — LSP ═══ -->
+<h3>L — Liskov Substitution Principle (LSP)</h3>
+<p><strong>"Subtipos devem ser substituiveis por seus tipos base sem alterár o comportamento correto do programa."</strong> Se <code>B</code> herda de <code>A</code>, qualquer código que funcione com <code>A</code> deve funcionar com <code>B</code> sem surpresas.</p>
+
+<p><strong>Regras práticas do LSP:</strong></p>
+<ul>
+<li><strong>Preconditions</strong> — subclasse não pode exigir MAIS do que a classe base</li>
+<li><strong>Postconditions</strong> — subclasse não pode entregar MENOS do que a classe base</li>
+<li><strong>Invariants</strong> — propriedades que são verdade na classe base devem permanecer na subclasse</li>
+</ul>
+
+<h4>Violacao Classica: Rectangle vs Square</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; VIOLACAO — Square quebra o contrato de Rectangle</span>
+<span class="kw">class</span> <span class="tp">Rectangle</span> {
+  <span class="kw">constructor</span>(<span class="kw">protected</span> width: <span class="tp">number</span>, <span class="kw">protected</span> height: <span class="tp">number</span>) {}
+  <span class="fn">setWidth</span>(w: <span class="tp">number</span>) { <span class="kw">this</span>.width = w; }
+  <span class="fn">setHeight</span>(h: <span class="tp">number</span>) { <span class="kw">this</span>.height = h; }
+  <span class="fn">area</span>(): <span class="tp">number</span> { <span class="kw">return</span> <span class="kw">this</span>.width * <span class="kw">this</span>.height; }
+}
+
+<span class="kw">class</span> <span class="tp">Square</span> <span class="kw">extends</span> <span class="tp">Rectangle</span> {
+  <span class="fn">setWidth</span>(w: <span class="tp">number</span>) { <span class="kw">this</span>.width = w; <span class="kw">this</span>.height = w; } <span class="cm">// Surpresa!</span>
+  <span class="fn">setHeight</span>(h: <span class="tp">number</span>) { <span class="kw">this</span>.width = h; <span class="kw">this</span>.height = h; } <span class="cm">// Surpresa!</span>
+}
+
+<span class="cm">// Este código funciona com Rectangle, mas QUEBRA com Square:</span>
+<span class="kw">function</span> <span class="fn">testArea</span>(rect: <span class="tp">Rectangle</span>) {
+  rect.<span class="fn">setWidth</span>(<span class="num">5</span>);
+  rect.<span class="fn">setHeight</span>(<span class="num">4</span>);
+  console.<span class="fn">assert</span>(rect.<span class="fn">area</span>() === <span class="num">20</span>); <span class="cm">// Falha com Square! area() = 16</span>
+}
+
+<span class="cm">// &#9989; CORRETO — Use interfaces/composicao ao inves de heranca</span>
+<span class="kw">interface</span> <span class="tp">Shape</span> {
+  <span class="fn">area</span>(): <span class="tp">number</span>;
+}
+
+<span class="kw">class</span> <span class="tp">Rectangle</span> <span class="kw">implements</span> <span class="tp">Shape</span> {
+  <span class="kw">constructor</span>(<span class="kw">public</span> width: <span class="tp">number</span>, <span class="kw">public</span> height: <span class="tp">number</span>) {}
+  <span class="fn">area</span>() { <span class="kw">return</span> <span class="kw">this</span>.width * <span class="kw">this</span>.height; }
+}
+
+<span class="kw">class</span> <span class="tp">Square</span> <span class="kw">implements</span> <span class="tp">Shape</span> {
+  <span class="kw">constructor</span>(<span class="kw">public</span> side: <span class="tp">number</span>) {}
+  <span class="fn">area</span>() { <span class="kw">return</span> <span class="kw">this</span>.side ** <span class="num">2</span>; }
+}</code></pre>
+
+<!-- ═══ I — ISP ═══ -->
+<h3>I — Interface Segregation Principle (ISP)</h3>
+<p><strong>"Muitas interfaces específicas são melhores que uma interface genérica."</strong> Nenhum cliente deve ser forçado a depender de métodos que não usa. Quando uma interface e grande demais, quem a implementa acaba criando métodos vazios ou lancando <code>NotImplementedError</code> — sinal claro de violação.</p>
+
+<h4>Exemplo Real: Sistema de Repositorios</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Interface gorda — nem todo repositório precisa de tudo</span>
+<span class="kw">interface</span> <span class="tp">Repository</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="fn">findAll</span>(): <span class="tp">Promise</span>&lt;<span class="tp">T</span>[]&gt;;
+  <span class="fn">findById</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span> | <span class="kw">null</span>&gt;;
+  <span class="fn">save</span>(entity: <span class="tp">T</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;;
+  <span class="fn">delete</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+  <span class="fn">softDelete</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+  <span class="fn">páginate</span>(page: <span class="tp">number</span>): <span class="tp">Promise</span>&lt;<span class="tp">PaginatedResult</span>&lt;<span class="tp">T</span>&gt;&gt;;
+  <span class="fn">fullTextSearch</span>(query: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>[]&gt;;
+  <span class="fn">bulkInsert</span>(entities: <span class="tp">T</span>[]): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+}
+
+<span class="cm">// &#9989; Interfaces segregadas — compose o que precisa</span>
+<span class="kw">interface</span> <span class="tp">ReadRepository</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="fn">findAll</span>(): <span class="tp">Promise</span>&lt;<span class="tp">T</span>[]&gt;;
+  <span class="fn">findById</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span> | <span class="kw">null</span>&gt;;
+}
+
+<span class="kw">interface</span> <span class="tp">WriteRepository</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="fn">save</span>(entity: <span class="tp">T</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;;
+  <span class="fn">delete</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+}
+
+<span class="kw">interface</span> <span class="tp">SearchableRepository</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="fn">fullTextSearch</span>(query: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>[]&gt;;
+}
+
+<span class="cm">// Cada classe implementa apenas o que precisa:</span>
+<span class="kw">class</span> <span class="tp">ProductRepository</span> <span class="kw">implements</span> <span class="tp">ReadRepository</span>&lt;<span class="tp">Product</span>&gt;, <span class="tp">WriteRepository</span>&lt;<span class="tp">Product</span>&gt;, <span class="tp">SearchableRepository</span>&lt;<span class="tp">Product</span>&gt; {
+  <span class="cm">// Implementa findAll, findById, save, delete, fullTextSearch</span>
+}
+
+<span class="kw">class</span> <span class="tp">AuditLogRepository</span> <span class="kw">implements</span> <span class="tp">ReadRepository</span>&lt;<span class="tp">AuditLog</span>&gt; {
+  <span class="cm">// Implementa APENAS findAll e findById — logs não são deletaveis</span>
+}</code></pre>
+
+<!-- ═══ D — DIP ═══ -->
+<h3>D — Dependency Inversion Principle (DIP)</h3>
+<p><strong>"Dependa de abstrações, não de implementações concretas."</strong> Modulos de alto nível (regras de negócio) não devem depender de módulos de baixo nível (banco de dados, HTTP, email). Ambos devem depender de abstrações. Isso é a base da <strong>Injecao de Dependencia (DI)</strong>.</p>
+
+<h4>Exemplo Real: NestJS com DIP</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Alto nível depende diretamente do baixo nível</span>
+<span class="kw">import</span> { SESClient } <span class="kw">from</span> <span class="str">'@aws-sdk/client-ses'</span>;
+
+<span class="kw">class</span> <span class="tp">NotificationService</span> {
+  <span class="kw">private</span> ses = <span class="kw">new</span> <span class="tp">SESClient</span>({ region: <span class="str">'us-east-1'</span> });
+  <span class="cm">// Impossível testar sem AWS real. Impossível trocar para SendGrid.</span>
+}
+
+<span class="cm">// &#9989; Alto nível depende de abstração</span>
+<span class="kw">interface</span> <span class="tp">IEmailProvider</span> {
+  <span class="fn">send</span>(to: <span class="tp">string</span>, subject: <span class="tp">string</span>, body: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+}
+
+<span class="cm">// Implementação concreta 1: AWS SES</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">SesEmailProvider</span> <span class="kw">implements</span> <span class="tp">IEmailProvider</span> {
+  <span class="kw">async</span> <span class="fn">send</span>(to: <span class="tp">string</span>, subject: <span class="tp">string</span>, body: <span class="tp">string</span>) {
+    <span class="cm">// AWS SES logic</span>
+  }
+}
+
+<span class="cm">// Implementação concreta 2: SendGrid</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">SendGridEmailProvider</span> <span class="kw">implements</span> <span class="tp">IEmailProvider</span> {
+  <span class="kw">async</span> <span class="fn">send</span>(to: <span class="tp">string</span>, subject: <span class="tp">string</span>, body: <span class="tp">string</span>) {
+    <span class="cm">// SendGrid API logic</span>
+  }
+}
+
+<span class="cm">// Alto nível — não sabe (e não se importa) qual provider esta usando</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">NotificationService</span> {
+  <span class="kw">constructor</span>(
+    <span class="ann">@Inject</span>(<span class="str">'EMAIL_PROVIDER'</span>)
+    <span class="kw">private</span> emailProvider: <span class="tp">IEmailProvider</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">notifyUser</span>(user: <span class="tp">User</span>, message: <span class="tp">string</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.emailProvider.<span class="fn">send</span>(user.email, <span class="str">'Notificacao'</span>, message);
+  }
+}
+
+<span class="cm">// Module — decide qual implementação injetar (fácil de trocar)</span>
+<span class="ann">@Module</span>({
+  providers: [
+    { provide: <span class="str">'EMAIL_PROVIDER'</span>, useClass: <span class="tp">SesEmailProvider</span> },
+    <span class="tp">NotificationService</span>,
+  ],
+})</code></pre>
+
+<!-- ═══ OUTROS PRINCIPIOS ═══ -->
+<h3>Outros Princípios Fundamentais</h3>
+
+<div class="card">
+<div class="card-title">Princípios Complementares ao SOLID</div>
+<ul>
+<li><strong>DRY</strong> — Don't Repeat Yourself: elimine duplicação de <strong>lógica</strong> (não de código identico — as vezes duplicar e intencional)</li>
+<li><strong>KISS</strong> — Keep It Simple, Stupid: a solução mais simples geralmente é a melhor. 3 linhas repetidas &gt; 1 abstração prematura</li>
+<li><strong>YAGNI</strong> — You Aren't Gonna Need It: não construa o que não precisa agora. Features imaginarias = custo real de manutenção</li>
+<li><strong>Separation of Concerns</strong> — cada parte do sistema trata de uma preocupacao. Frontend não sabe de SQL. Backend não sabe de CSS</li>
+<li><strong>Composition over Inheritance</strong> — prefira composicao a heranca. Heranca cria acoplamento rígido. Composicao permite flexibilidade</li>
+<li><strong>Law of Demeter</strong> — um objeto deve interágir apenas com seus vizinhos imediatos. <code>user.getAddress().getCity().getName()</code> viola — use <code>user.getCityName()</code></li>
+<li><strong>Fail Fast</strong> — detecte e reporte erros o mais cedo possível. Validar no construtor &gt; validar no uso</li>
+<li><strong>Convention over Configuration</strong> — use padrões sensiveis, configure exceções (ex: NestJS, Rails)</li>
+<li><strong>Tell, Don't Ask</strong> — diga ao objeto o que fazer, não pergunte seu estado para decidir por ele</li>
+<li><strong>Principle of Least Astonishment</strong> — o software deve se comportar como o dev espera. Sem surpresas</li>
+</ul>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Aplicando SOLID</h3>
+<p><strong>Cenário:</strong> Você esta projetando um sistema de notificações que envia alertas por Email, SMS, Push e Slack. Novos canais seráo adicionados no futuro.</p>
+
+<div class="diagram">
+<div class="diagram-box green">NotificationService<br><small>(Alto nível)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">INotificationChannel<br><small>(Abstracao)</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box purple">EmailChannel<br>SmsChannel<br>PushChannel<br>SlackChannel</div>
+</div>
+
+<p><strong>Princípios aplicados:</strong></p>
+<ul>
+<li><strong>SRP</strong> — Cada canal é um serviço separado com uma responsabilidade</li>
+<li><strong>OCP</strong> — Novo canal (ex: WhatsApp) = nova classe, sem mudar código existente</li>
+<li><strong>LSP</strong> — Todos os canais são substituiveis pela interface <code>INotificationChannel</code></li>
+<li><strong>ISP</strong> — Interface com apenas <code>send(notification)</code> — não força métodos desnecessários</li>
+<li><strong>DIP</strong> — <code>NotificationService</code> depende da abstração, não de <code>SendGrid</code> ou <code>Twilio</code></li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="kw">interface</span> <span class="tp">INotificationChannel</span> {
+  <span class="kw">readonly</span> type: <span class="tp">string</span>;
+  <span class="fn">send</span>(notification: <span class="tp">NotificationPayload</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+}
+
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">NotificationService</span> {
+  <span class="kw">constructor</span>(
+    <span class="ann">@Inject</span>(<span class="str">'NOTIFICATION_CHANNELS'</span>)
+    <span class="kw">private</span> channels: <span class="tp">INotificationChannel</span>[],
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">notify</span>(userId: <span class="tp">string</span>, payload: <span class="tp">NotificationPayload</span>) {
+    <span class="kw">const</span> prefs = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">getUserPreferences</span>(userId);
+
+    <span class="kw">const</span> activeChannels = <span class="kw">this</span>.channels
+      .<span class="fn">filter</span>(ch => prefs.enabledChannels.<span class="fn">includes</span>(ch.type));
+
+    <span class="kw">await</span> Promise.<span class="fn">allSettled</span>(
+      activeChannels.<span class="fn">map</span>(ch => ch.<span class="fn">send</span>(payload))
+    );
+  }
+}</code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Over-engineering com SOLID:</strong> Criar interfaces para TUDO, mesmo quando só existe uma implementação e nenhuma previsao de segunda. SOLID e sobre flexibilidade onde ela é necessária — não em todo lugar. Se você tem <code>IUserService</code> com apenas <code>UserService</code>, a interface esta adicionando complexidade sem benefício.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>SRP extremo:</strong> Dividir uma classe de 30 linhas em 5 classes de 6 linhas cada não é SRP — e fragmentação. SRP significa um "motivo para mudar", não "uma função por classe". Use bom senso.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Confundir DIP com DI:</strong> Dependency Inversion (princípio) e Dependency Injection (técnica) são coisas diferentes. DIP diz "dependa de abstrações". DI é uma das formas de implementar DIP. Você pode aplicar DIP sem um container de DI.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Aplique SOLID em boundaries — na fronteira entre módulos, entre camadas, entre serviços. Dentro de uma função privada de 10 linhas? Não precisa de interface. O custo da abstração precisa ser menor que o custo da rigidez.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem uma classe ReportService que gera relatórios em PDF, CSV e Excel. Cada formato tem lógica diferente. Como aplicar OCP?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Crie uma interface <code>ReportFormatter</code> com método <code>format(data)</code>. Implemente <code>PdfFormatter</code>, <code>CsvFormatter</code>, <code>ExcelFormatter</code>. O <code>ReportService</code> recebe um <code>ReportFormatter</code> por injecao e delega a formatacao. Para adicionar um novo formato (ex: HTML), basta criar <code>HtmlFormatter</code> — zero mudanças no <code>ReportService</code>.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Identifique qual princípio SOLID esta sendo violado: uma interface IAnimal com métodos fly(), swim() e run().</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> ISP (Interface Segregation Principle). Um pinguim implementaria <code>IAnimal</code> é seria forçado a implementar <code>fly()</code> que não faz sentido. Solução: <code>IFlyable</code>, <code>ISwimmable</code>, <code>IRunnable</code> — cada animal implementa apenas o que pode fazer.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Refatore — sua UserService importa diretamente o módulo bcrypt para hash de senhas. Como aplicar DIP?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Crie uma interface <code>IHashProvider</code> com <code>hash(value)</code> é <code>compare(value, hashed)</code>. Implemente <code>BcryptHashProvider</code>. Injete <code>IHashProvider</code> no <code>UserService</code>. Agora pode trocar para Argon2, testar com mock, e o UserService não precisa mudar.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Princípios SOLID</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="../fullstack-mastery.html">&#8592; Índice</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="02-clean-code.html" class="primary">Próximo: Clean Code &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 01: Princípios SOLID
+// ══════════════════════════════════════════
+const SECTION_NUM = 1;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual princípio SOLID afirma que uma classe deve ter apenas um motivo para mudar?",
+    options: [
+      "Open/Closed Principle",
+      "Single Responsibility Principle",
+      "Liskov Substitution Principle",
+      "Dependency Inversion Principle"
+    ],
+    correct: 1,
+    explanation: "O SRP (Single Responsibility Principle) diz que cada classe deve ter apenas uma razão para mudar — ou seja, uma única responsabilidade."
+  },
+  {
+    question: "Você tem uma função processPayment() com if/else para Pix, Cartao e Boleto. Cada novo método exige alterár essa função. Qual princípio esta sendo violado?",
+    options: [
+      "Single Responsibility Principle",
+      "Interface Segregation Principle",
+      "Open/Closed Principle",
+      "Liskov Substitution Principle"
+    ],
+    correct: 2,
+    explanation: "O OCP (Open/Closed Principle) diz que o código deve ser aberto para extensão e fechado para modificacao. A solução é usar uma interface PaymentProcessor é criar classes para cada método."
+  },
+  {
+    question: "Se Square herda de Rectangle e alterár a largura também alterá a altura (quebrando testes que esperam area = largura * altura separadamente), qual princípio e violado?",
+    options: [
+      "Open/Closed Principle",
+      "Single Responsibility Principle",
+      "Liskov Substitution Principle",
+      "Dependency Inversion Principle"
+    ],
+    correct: 2,
+    explanation: "O LSP (Liskov Substitution Principle) diz que subtipos devem ser substituiveis por seus tipos base sem alterár o comportamento. Square muda o contrato de Rectangle."
+  },
+  {
+    question: "Uma interface IWorker com métodos code(), design(), test() e manage() força um Designer a implementar code() e manage(). Qual princípio esta sendo violado?",
+    options: [
+      "Single Responsibility Principle",
+      "Open/Closed Principle",
+      "Interface Segregation Principle",
+      "Dependency Inversion Principle"
+    ],
+    correct: 2,
+    explanation: "O ISP (Interface Segregation Principle) diz que interfaces devem ser específicas. A solução é criar ICoder, IDesigner, ITester, IManager."
+  },
+  {
+    question: "Seu NotificationService importa diretamente 'aws-sdk' para enviar emails via SES. Qual princípio esta sendo violado?",
+    options: [
+      "Liskov Substitution Principle",
+      "Dependency Inversion Principle",
+      "Open/Closed Principle",
+      "Single Responsibility Principle"
+    ],
+    correct: 1,
+    explanation: "O DIP (Dependency Inversion) diz que módulos de alto nível (regras de negócio) não devem depender de módulos de baixo nível (AWS SDK). Ambos devem depender de abstrações (IEmailProvider)."
+  },
+  {
+    question: "Qual das alternativas abaixo é a forma CORRETA de aplicar o SRP?",
+    options: [
+      "Cada classe deve ter exatamente 1 método",
+      "Cada classe deve ter apenas 1 razão para mudar",
+      "Cada função deve ter no máximo 5 linhas",
+      "Cada módulo deve exportar apenas 1 classe"
+    ],
+    correct: 1,
+    explanation: "SRP significa 'uma razão para mudar', não 'um método'. Uma classe pode ter vários métodos desde que todos sejam coesos e pertencam a mesma responsabilidade."
+  },
+  {
+    question: "Sobre o princípio DRY, qual afirmacao esta CORRETA?",
+    options: [
+      "Todo código duplicado deve ser extraido em uma função compartilhada",
+      "DRY se aplica a lógica de negócio, não necessariamente a código identico",
+      "DRY significa que cada linha de código deve aparecer uma única vez no sistema",
+      "DRY é o princípio mais importante e deve ser seguido sem exceção"
+    ],
+    correct: 1,
+    explanation: "DRY e sobre não duplicar LOGICA, não necessariamente código. Dois trechos identicos podem representar conceitos diferentes e devem evoluir independentemente. Abstrair cedo demais (WET: Write Everything Twice) pode ser pior."
+  },
+  {
+    question: "Qual padrão de design é a implementação mais direta do Open/Closed Principle?",
+    options: [
+      "Singleton",
+      "Observer",
+      "Strategy",
+      "Builder"
+    ],
+    correct: 2,
+    explanation: "O Strategy Pattern permite adicionar novos algoritmos (strategies) sem modificar o código que os útiliza — exatamente o que o OCP preçoniza."
+  },
+  {
+    question: "Qual é a diferença entre Dependency Inversion (DIP) e Dependency Injection (DI)?",
+    options: [
+      "São a mesma coisa — DI é a abreviação de DIP",
+      "DIP é um princípio de design; DI é uma técnica/padrão para implementa-lo",
+      "DI é o princípio; DIP é o framework (como NestJS IoC)",
+      "DIP se aplica a classes; DI se aplica a funções"
+    ],
+    correct: 1,
+    explanation: "DIP é o PRINCIPIO (dependa de abstrações). DI (Dependency Injection) é uma TECNICA para implementar DIP — o container injeta as dependências ao inves da classe instancia-las."
+  },
+  {
+    question: "Quando NAO faz sentido aplicar SOLID rigorosamente?",
+    options: [
+      "Em projetos enterprise com muitos desenvolvedores",
+      "Em scripts simples, prototipos ou funções internas de poucas linhas",
+      "Em APIs que seráo consumidas por terceiros",
+      "Em sistemas que precisam escalar"
+    ],
+    correct: 1,
+    explanation: "SOLID adiciona complexidade (mais arquivos, mais abstrações). Em scripts simples, prototipos, ou funções internas de 10 linhas, a complexidade da abstração pode ser maior que o benefício. Use bom sensó — SOLID brilha em boundaries e em sistemas que crescem."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina os princípios SOLID.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

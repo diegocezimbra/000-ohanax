@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>53 — Segurança Avancada & PQC | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="52-finops.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>53</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="54-testes-avancados.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:80.3%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 53</span>
+<h2>Segurança Avancada & Post-Quantum Cryptography</h2>
+<div class="section-line"></div>
+
+<p>A segurança moderna vai muito além de firewalls e HTTPS. Ataques a supply chain comprometerám empresas inteiras (SolarWinds afetou 18.000 organizacoes). Computadores quânticos ameaçam quebrar RSA e ECC em anos, não decadas. Zero-Knowledge Proofs permitem autenticação sem revelar segredos. E segredos hardcoded em código continuam sendo o vetor #1 de breaches evitaveis.</p>
+
+<p>Esta seção cobre os 5 pilares da segurança avançada que todo senior precisa dominar: <strong>Supply Chain Security</strong>, <strong>Post-Quantum Cryptography</strong>, <strong>Zero-Knowledge Proofs</strong>, <strong>Secrets Management</strong> é <strong>Runtime Security</strong>. São temas de entrevista em big techs e essenciais para qualquer sistema que lida com dados sensiveis.</p>
+
+<!-- ═══ SUPPLY CHAIN SECURITY ═══ -->
+<h3>Supply Chain Security</h3>
+
+<p>Um ataque a supply chain compromete não o seu código, mas as <strong>dependências, ferramentas de build ou artefatos</strong> que você confia. E devastador porque explora a confiança implicita que temos em pacotes npm, imagens Docker e pipelines CI/CD.</p>
+
+<h4>Ataques reais que mudaram a industria</h4>
+<ul>
+<li><strong>SolarWinds (2020):</strong> Atacantes injetaram backdoor no build system do Orion. 18.000 organizacoes (incluindo US Treasury, DOJ) instalaram a atualização maliciosa. Ficou oculto por 9 meses</li>
+<li><strong>Log4Shell (2021):</strong> CVE-2021-44228 no Log4j — uma dependência transitiva presente em milhões de aplicações Java. RCE (Remote Code Execution) com uma única string no header. CVSS 10.0</li>
+<li><strong>Codecov (2021):</strong> Script de upload de coverage foi comprometido. Atacantes extrairam env vars (secrets, tokens) de milhares de pipelines CI</li>
+<li><strong>ua-parser-js (2021):</strong> Pacote npm com 8M downloads/semana foi sequestrado. Versoes maliciosas mineravam crypto nós servidores de quem instalou</li>
+</ul>
+
+<h4>SBOM (Software Bill of Materials)</h4>
+<p>SBOM é a <strong>lista completa de todos os componentes</strong> (diretos e transitivos) do seu software — como a lista de ingredientes de um alimento. Dois formatos dominantes:</p>
+<ul>
+<li><strong>SPDX (Software Package Data Exchange):</strong> Padrão ISO/IEC 5962:2021. Mantido pela Linux Foundation. Foco em licenciamento + segurança</li>
+<li><strong>CycloneDX:</strong> Mantido pela OWASP. Mais focado em segurança. Suporta VEX (Vulnerability Exploitability eXchange) nativamente</li>
+</ul>
+
+<p>Desde 2021, o US Executive Order 14028 exige SBOM para qualquer software vendido ao governo americano. SBOM não é mais opcional para empresas serias.</p>
+
+<h4>SLSA Framework (Supply-chain Levels for Software Artifacts)</h4>
+<p>SLSA (pronuncia-se "salsa") define <strong>4 níveis de maturidade</strong> para proteção da supply chain:</p>
+
+<div class="diagram">
+<div class="diagram-box green">SLSA 1<br><small>Build scripted<br>+ provenance</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">SLSA 2<br><small>Hosted build<br>+ signed provenance</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">SLSA 3<br><small>Hardened build<br>+ non-falsifiable</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">SLSA 4<br><small>Hermetic + reproducible<br>+ 2-person review</small></div>
+</div>
+
+<ul>
+<li><strong>Level 1:</strong> Build automatizado (não manual). Gera provenance (metadados de quem buildou, quando, de qual source)</li>
+<li><strong>Level 2:</strong> Build em ambiente hospedado (CI/CD, não laptop do dev). Provenance assinado criptograficamente</li>
+<li><strong>Level 3:</strong> Build em ambiente hardened. Provenance não-falsificavel (o build system assina, não o usuário)</li>
+<li><strong>Level 4:</strong> Build hermético (sem acesso a rede durante build). Reproducivel (mesmo input = mesmo output). Two-person review obrigatório</li>
+</ul>
+
+<h4>Sigstore: Assinatura de Artefatos</h4>
+<p>Sigstore é o ecossistema open-source para <strong>assinar, verificar e registrar artefatos</strong> de software. Tres componentes:</p>
+<ul>
+<li><strong>Cosign:</strong> Assina e verifica containers, blobs, OCI artifacts</li>
+<li><strong>Rekor:</strong> Transparency log imutável (similar ao Certificaté Transparency do TLS). Registro publico de todas as assinaturas</li>
+<li><strong>Fulcio:</strong> CA (Certificaté Authority) efemera. Emite certificados de curta duracao vinculados a identidade OIDC (GitHub, Google)</li>
+</ul>
+
+<pre data-lang="bash"><code><span class="cm"># Assinar uma imagem Docker com cosign (keyless signing via OIDC)</span>
+cosign sign --yes ghcr.io/myorg/myapp:v1.2.3
+
+<span class="cm"># Verificar assinatura de uma imagem</span>
+cosign verify \
+  --certificate-identity=dev@myorg.com \
+  --certificate-oidc-issuer=https://accounts.google.com \
+  ghcr.io/myorg/myapp:v1.2.3
+
+<span class="cm"># Gerar SBOM com syft e atachar na imagem</span>
+syft ghcr.io/myorg/myapp:v1.2.3 -o spdx-json > sbom.spdx.json
+cosign attest --predicaté sbom.spdx.json --type spdxjson \
+  ghcr.io/myorg/myapp:v1.2.3
+
+<span class="cm"># Escanear vulnerabilidades no SBOM com grype</span>
+grype sbom:sbom.spdx.json --fail-on critical</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Dica:</strong> Integre cosign + SBOM no CI/CD. Nenhuma imagem vai para produção sem assinatura verificada e SBOM sem CVEs criticas. GitHub Actions já tem action oficial para cosign signing.</div>
+</div>
+
+<!-- ═══ POST-QUANTUM CRYPTOGRAPHY ═══ -->
+<h3>Post-Quantum Cryptography (PQC)</h3>
+
+<p>Computadores quânticos usam qubits e <strong>algoritmo de Shor</strong> para fatorar números grandes e calcular logaritmos discretos em tempo polinomial. Isso <strong>quebra RSA, ECC, DH e DSA</strong> — a base de toda criptografia assimétrica atual. Não e "se", e "quando".</p>
+
+<h4>A ameaça quântica concreta</h4>
+<ul>
+<li><strong>"Harvest Now, Decrypt Later" (HNDL):</strong> Adversarios estão coletando dados criptografados AGORA para decriptar quando tiverem computadores quânticos. Dados com valor em 10+ anós (governamentais, medicos, financeiros) já estão em risco</li>
+<li><strong>Timeline:</strong> Estimativas variam de 2030 a 2040 para computadores quânticos criptograficamente relevantes (CRQC). IBM planejá 100K qubits até 2033. Mas a migração de criptografia leva 5-15 anós — então o momento de começar e agora</li>
+<li><strong>Criptografia simétrica:</strong> AES-256 é relativamente seguro contra quantum (Grover's algorithm reduz segurança pela metade: AES-256 vira ~AES-128). SHA-256+ também resiste</li>
+</ul>
+
+<h4>Padroes NIST PQC (Finalizados em 2024)</h4>
+<p>O NIST conduziu um processo de 8 anós (2016-2024) para selecionar algoritmos resistentes a quantum:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Algoritmo</th><th>Tipo</th><th>Uso</th><th>Abordagem</th><th>Padrão NIST</th></tr>
+<tr><td><strong>ML-KEM (Kyber)</strong></td><td>KEM</td><td>Key Encapsulation<br>(troca de chaves)</td><td>Lattice-based<br>(Module-LWE)</td><td>FIPS 203</td></tr>
+<tr><td><strong>ML-DSA (Dilithium)</strong></td><td>Assinatura</td><td>Assinaturas digitais</td><td>Lattice-based<br>(Module-LWE/SIS)</td><td>FIPS 204</td></tr>
+<tr><td><strong>SLH-DSA (SPHINCS+)</strong></td><td>Assinatura</td><td>Assinaturas digitais<br>(backup stateless)</td><td>Hash-based</td><td>FIPS 205</td></tr>
+<tr><td><strong>FN-DSA (Falcon)</strong></td><td>Assinatura</td><td>Assinaturas digitais<br>(compactas)</td><td>Lattice-based<br>(NTRU)</td><td>Em revisao</td></tr>
+</table>
+</div>
+
+<h4>Abordagens criptograficas PQC</h4>
+<ul>
+<li><strong>Lattice-based (Redes):</strong> Problemas como LWE (Learning With Errors) e SIS. Mais eficiente e versatil. Base do Kyber e Dilithium. Chaves e ciphertexts relativamente pequenos</li>
+<li><strong>Hash-based:</strong> Segurança baseada apenas em funções hash (bem entendidas). SPHINCS+ usa árvores de Merkle. Assinaturas grandes (~8-40KB) mas premissa de segurança muito conservadora</li>
+<li><strong>Code-based:</strong> Problema de decodificacao de códigos lineares (McEliece, 1978). Chaves publicas enormes (~1MB). Muito estudado, sem ataques em 45+ anos</li>
+<li><strong>Multivariate:</strong> Sistemas de equacoes polinomiais multivariáveis. Usado em Rainbow (quebrado em 2022 no processo NIST). Menós confiável atualmente</li>
+</ul>
+
+<h4>Hybrid Encryption (Transicao Segura)</h4>
+<p>A estratégia de migração recomendada e <strong>hybrid encryption</strong>: combinar algoritmo clássico + PQC. Se o PQC tiver uma vulnerabilidade desconhecida, o clássico protege. Se quantum chegar, o PQC protege.</p>
+
+<pre data-lang="pseudocode"><code><span class="cm">// Hybrid KEM: Combina X25519 (clássico) + ML-KEM-768 (PQC)</span>
+<span class="cm">// Usado pelo Chrome/Cloudflare desde 2024 para TLS 1.3</span>
+
+<span class="kw">function</span> <span class="fn">hybridKeyEncapsulate</span>(recipientPubKey) {
+  <span class="cm">// Componente clássico (ECDH X25519)</span>
+  clássicalSS = X25519.keyAgreement(ephemeralKey, recipientPubKey.clássical)
+
+  <span class="cm">// Componente PQC (ML-KEM-768 / Kyber)</span>
+  (pqcCiphertext, pqcSS) = MLKEM768.encapsulate(recipientPubKey.pqc)
+
+  <span class="cm">// Combinar ambos shared secrets com KDF</span>
+  combinedSS = HKDF-SHA256(clássicalSS || pqcSS, <span class="str">"hybrid-kem-v1"</span>)
+
+  <span class="kw">return</span> { ciphertext: pqcCiphertext, sharedSecret: combinedSS }
+}
+
+<span class="cm">// Chrome: X25519Kyber768Draft (TLS 1.3 key agreement)</span>
+<span class="cm">// Signal: PQXDH (X25519 + Kyber para ratchet PQ)</span>
+<span class="cm">// AWS KMS: suporta ML-KEM para key encapsulation</span></code></pre>
+
+<h4>Crypto-Agility e Timeline de Migracao</h4>
+<p><strong>Crypto-agility</strong> é a capacidade de trocar algoritmos criptográficos <strong>sem mudar a aplicação</strong>. Se você hardcodou "RSA-2048" em 500 lugares do código, a migração vai ser dolorosa.</p>
+
+<ul>
+<li><strong>2024-2026:</strong> Inventariar todos os usos de criptografia (TLS, certificados, JWT, encryption at rest, assinaturas). Implementar crypto-agility</li>
+<li><strong>2026-2028:</strong> Migrar para hybrid (clássico + PQC) em sistemas críticos. Testar performance (PQC tem chaves/ciphertexts maiores)</li>
+<li><strong>2028-2030:</strong> Deprecar algoritmos clássicos-only. Full PQC para novos sistemas</li>
+<li><strong>2030+:</strong> Remover criptografia clássica gradualmente. NSA já recomenda PQC para sistemas classificados</li>
+</ul>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Atencao HNDL:</strong> Se seus dados tem valor por mais de 10 anós (financeiro, governamental, saude, propriedade intelectual), você PRECISA de hybrid encryption agora. Dados capturados hoje seráo decriptados quando computadores quânticos estiverem disponíveis.</div>
+</div>
+
+<!-- ═══ ZERO-KNOWLEDGE PROOFS ═══ -->
+<h3>Zero-Knowledge Proofs (ZKPs)</h3>
+
+<p>Uma Zero-Knowledge Proof permite que um <strong>prover prove ao verifier que uma afirmacao e verdadeira</strong> sem revelar NENHUMA informação adicional além da veracidade da afirmacao. E como provar que você sabe a senha de um cofre sem abrir o cofre na frente de ninguem.</p>
+
+<h4>Tres propriedades fundamentais</h4>
+<ul>
+<li><strong>Completeness (Completude):</strong> Se a afirmacao e verdadeira, o verifier honesto será convencido pelo prover honesto</li>
+<li><strong>Soundness (Solidez):</strong> Se a afirmacao e falsa, nenhum prover desonesto pode convencer o verifier (exceto com probabilidade negligivel)</li>
+<li><strong>Zero-Knowledge:</strong> O verifier não aprende NADA além do fato de que a afirmacao e verdadeira. A prova não vaza informação</li>
+</ul>
+
+<h4>zk-SNARKs vs zk-STARKs</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Caracteristica</th><th>zk-SNARKs</th><th>zk-STARKs</th></tr>
+<tr><td><strong>Nome completo</strong></td><td>Zero-Knowledge Succinct Non-Interáctive Argument of Knowledge</td><td>Zero-Knowledge Scalable Transparent Argument of Knowledge</td></tr>
+<tr><td><strong>Trusted Setup</strong></td><td>Necessario (cerimonia inicial)</td><td>Não necessário (transparent)</td></tr>
+<tr><td><strong>Tamanho da prova</strong></td><td>~200-300 bytes (muito compacto)</td><td>~45-200 KB (maior)</td></tr>
+<tr><td><strong>Tempo de verificação</strong></td><td>~ms (muito rápido)</td><td>~ms a segundos</td></tr>
+<tr><td><strong>Quantum-resistant</strong></td><td>Não (baseado em curvas elipticas)</td><td>Sim (baseado em hash functions)</td></tr>
+<tr><td><strong>Premissa criptografica</strong></td><td>Curvas elipticas + pairing</td><td>Collision-resistant hash functions</td></tr>
+<tr><td><strong>Usó principal</strong></td><td>Zcash, Ethereum (zkSync)</td><td>StarkNet, StarkEx</td></tr>
+</table>
+</div>
+
+<h4>Aplicacoes práticas de ZKPs</h4>
+<ul>
+<li><strong>Autenticação sem senha:</strong> Prove que você conhece o segredo sem transmitir o segredo. Eliminacao de phishing — não ha segredo para roubar</li>
+<li><strong>Verificacao de identidade:</strong> Prove que você tem mais de 18 anós sem revelar sua data de nascimento ou documento</li>
+<li><strong>Blockchain privacy:</strong> Zcash usa zk-SNARKs para transações privadas (valor e participantes ocultos, mas transação verificavel). Ethereum L2 rollups (zkSync, StarkNet) usam ZKPs para compactar milhares de transações em uma única prova</li>
+<li><strong>Compliance sem exposicao:</strong> Prove que sua empresa atende requisitos regulatorios sem expor dados financeiros internos</li>
+<li><strong>Voting systems:</strong> Prove que seu voto foi contado sem revelar em quem votou</li>
+</ul>
+
+<pre data-lang="pseudocode"><code><span class="cm">// Conceito: ZKP para provar que você conhece x tal que hash(x) = H</span>
+<span class="cm">// Sem revelar x ao verificador</span>
+
+<span class="cm">// === Prover (quem conhece o segredo x) ===</span>
+<span class="kw">function</span> <span class="fn">generateProof</span>(secret_x, public_H) {
+  <span class="cm">// 1. Gerar valor aleatório (commitment)</span>
+  r = randomScalar()
+  commitment = hash(r)
+
+  <span class="cm">// 2. Receber challenge do verifier (ou derivar via Fiat-Shamir)</span>
+  challenge = hash(commitment || public_H)
+
+  <span class="cm">// 3. Computar response que liga commitment ao segredo</span>
+  response = r + challenge * secret_x  <span class="cm">// simplificado</span>
+
+  <span class="kw">return</span> { commitment, response }
+}
+
+<span class="cm">// === Verifier (não conhece x, só H) ===</span>
+<span class="kw">function</span> <span class="fn">verifyProof</span>(proof, public_H) {
+  challenge = hash(proof.commitment || public_H)
+
+  <span class="cm">// Verificar relacao matematica sem conhecer x</span>
+  expected = hash(proof.response - challenge * <span class="str">"???"</span>)
+  <span class="cm">// O verifier verifica a consistência algebrica</span>
+  <span class="cm">// sem NUNCA aprender o valor de x</span>
+
+  <span class="kw">return</span> isConsistent(proof, challenge, public_H)
+}
+
+<span class="cm">// Na prática: use bibliotecas como snarkjs, circom, arkworks</span>
+<span class="cm">// Não implemente ZKPs do zero — a matematica e muito delicada</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Para entrevistas:</strong> Não precisa saber implementar ZKPs, mas precisa explicar o conceito ("prove sem revelar"), diferenciar SNARKs vs STARKs (trusted setup, tamanho, quantum resistance) e dar 2-3 exemplos de aplicação prática.</div>
+</div>
+
+<!-- ═══ SECRETS MANAGEMENT ═══ -->
+<h3>Secrets Management</h3>
+
+<p>Secrets (senhas, API keys, certificados, tokens) são o vetor de ataque mais comum em breaches. O problema não é o secret em si — e <strong>como é onde ele é armazenado, distribuido e rotacionado</strong>. Hardcodar secrets no código é o equivalente a deixar a chave de casa embaixo do tapete.</p>
+
+<h4>HashiCorp Vault — Arquitetura</h4>
+<p>Vault é o padrão de mercado para secrets management centralizado. Arquitetura core:</p>
+
+<div class="diagram">
+<div class="diagram-box red">Sealed Vault<br><small>Encrypted at rest<br>Inacessível</small></div>
+<div class="diagram-arrow">&#8594;<br><small>Unseal Keys<br>(Shamir's)</small></div>
+<div class="diagram-box green">Unsealed Vault<br><small>Operational<br>In-memory master key</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Secret Engines<br><small>KV, AWS, DB<br>PKI, Transit</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Auth Methods<br><small>OIDC, K8s<br>AppRole, JWT</small></div>
+</div>
+
+<ul>
+<li><strong>Seal/Unseal:</strong> Vault inicia "selado" — dados criptografados, inacessiveis. Precisa de N de M unseal keys (Shamir's Secret Sharing) para abrir. Se o servidor reiniciar, ele sela de novo automáticamente</li>
+<li><strong>Secret Engines:</strong> Backends que geram/armazenam secrets. KV (static secrets), AWS (dynamic IAM credentials), Database (dynamic DB credentials), PKI (certificados), Transit (encryption as a service)</li>
+<li><strong>Auth Methods:</strong> Como aplicações provam identidade para acessar secrets. Kubernetes ServiceAccount, AppRole (para CI/CD), OIDC, JWT, AWS IAM</li>
+<li><strong>Policies:</strong> ACLs que definem quem pode acessar o que. Princípio do menor privilégio</li>
+</ul>
+
+<pre data-lang="hcl"><code><span class="cm"># Vault Policy: aplicação de pagamentos só pode ler seus secrets</span>
+path <span class="str">"secret/data/payments/*"</span> {
+  capabilities = [<span class="str">"read"</span>, <span class="str">"list"</span>]
+}
+
+<span class="cm"># Negar acesso a qualquer outro path</span>
+path <span class="str">"secret/data/*"</span> {
+  capabilities = [<span class="str">"deny"</span>]
+}
+
+<span class="cm"># Dynamic database credentials (auto-rotated)</span>
+path <span class="str">"database/creds/payments-readonly"</span> {
+  capabilities = [<span class="str">"read"</span>]
+}</code></pre>
+
+<pre data-lang="bash"><code><span class="cm"># Autenticar via Kubernetes ServiceAccount</span>
+vault login -method=kubernetes role=payments-app
+
+<span class="cm"># Ler um secret estático</span>
+vault kv get -field=api_key secret/payments/stripe
+
+<span class="cm"># Obter credenciais dinâmicas de DB (auto-expire em 1h)</span>
+vault read database/creds/payments-readonly
+<span class="cm"># Retorna username/password temporários, criados on-demand</span>
+<span class="cm"># Vault revoga automáticamente quando o TTL expira</span>
+
+<span class="cm"># Rotacionar root credentials do secret engine</span>
+vault write -force database/rotate-root/payments-db</code></pre>
+
+<h4>Dynamic Secrets e Rotacao Automatica</h4>
+<p>O conceito mais poderosó do Vault são <strong>dynamic secrets</strong>: credenciais criadas sob demanda, com TTL curto, e revogadas automáticamente. Se um secret vaza, ele já expirou.</p>
+<ul>
+<li><strong>AWS Engine:</strong> Gera credenciais IAM temporárias (STS AssumeRole). TTL de 15min-1h. Zero credenciais estáticas na AWS</li>
+<li><strong>Database Engine:</strong> Cria usuário/senha no PostgreSQL/MySQL com permissões específicas. TTL de 1h. Quando expira, Vault faz DROP USER automáticamente</li>
+<li><strong>PKI Engine:</strong> Emite certificados TLS com válidade curta (24h). Mutual TLS entre serviços sem gerenciar certificados manualmente</li>
+</ul>
+
+<h4>Alternativas Gerenciadas</h4>
+<ul>
+<li><strong>AWS Secrets Manager:</strong> Integrado nativamente com RDS, Redshift, DocumentDB. Rotacao automática via Lambda. $0.40/secret/mes + $0.05 por 10K API calls</li>
+<li><strong>Azure Key Vault:</strong> Integrado com Azure AD. HSM-backed (FIPS 140-2 Level 2/3). Suporta keys, secrets e certificates</li>
+<li><strong>GCP Secret Manager:</strong> Versionamento automático. IAM-based access control. Integrado com Cloud Functions para rotacao</li>
+</ul>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Nunca faca isso:</strong> Secrets em variáveis de ambiente do container (visível em <code>docker inspect</code>), secrets em ConfigMaps do Kubernetes (base64 não é criptografia!), secrets commitados no git (mesmo que você faca "git rm" depois — o historico mantém). Use Vault, Sealed Secrets, ou External Secrets Operator.</div>
+</div>
+
+<!-- ═══ RUNTIME SECURITY ═══ -->
+<h3>Runtime Security</h3>
+
+<p>Security em build time (SAST, dependency scanning) detecta problemas <strong>antes</strong> do deploy. Mas ataques zero-day, container escapes e comportamentos anomalos só aparecem em <strong>runtime</strong>. Runtime security observa e protege o sistema enquanto ele esta rodando.</p>
+
+<h4>eBPF para Observabilidade de Kernel</h4>
+<p>eBPF (extended Berkeley Packet Filter) permite executar programas sandboxed <strong>dentro do kernel Linux</strong> sem modificar o kernel ou recompilar módulos. E a tecnologia que revolucionou networking e observabilidade.</p>
+<ul>
+<li><strong>Observabilidade:</strong> Rastrear syscalls, file opens, network connections, process executions — tudo sem overhead significativo (~1-5%)</li>
+<li><strong>Networking:</strong> Cilium usa eBPF para network policies no Kubernetes. Substituiu iptables com performance 10x melhor</li>
+<li><strong>Security:</strong> Detectar comportamentos anomalos em tempo real. Processó X nunca fez syscall execve — se fizer, pode ser shell injection</li>
+<li><strong>Ferramentas:</strong> Cilium (networking), Tetragon (security observability), bpftrace (tracing), Pixie (observability)</li>
+</ul>
+
+<h4>Falco para Deteccao de Ameacas em Runtime</h4>
+<p>Falco (CNCF project) monitora syscalls do kernel e dispara alertas quando detecta comportamento suspeito em containers e hosts.</p>
+<ul>
+<li><strong>Regras padrão:</strong> Shell spawned em container, escrita em /etc, leitura de /etc/shadow, conexões de rede inesperadas, acesso a Kubernetes secrets</li>
+<li><strong>Custom rules:</strong> Defina regras específicas para seu workload. Ex: "container X nunca deveria fazer outbound HTTP para IPs fora da VPC"</li>
+<li><strong>Integracao:</strong> Alertas para Slack, PagerDuty, SIEM (Splunk, ELK). Pode triggar automated response (kill container, revoke credentials)</li>
+</ul>
+
+<pre data-lang="yaml"><code><span class="cm"># Falco rule: detectar shell spawned em container</span>
+- rule: Terminal shell in container
+  desc: Detect shell being spawned inside a container
+  condition: >
+    spawned_process and container and
+    shell_procs and proc.tty != 0 and
+    container_entrypoint
+  output: >
+    Shell spawned in container
+    (user=%user.name container=%container.name
+     shell=%proc.name parent=%proc.pname
+     image=%container.image.repository)
+  priority: WARNING
+  tags: [container, shell, mitre_execution]
+
+<span class="cm"># Falco rule: detectar leitura de secrets do Kubernetes</span>
+- rule: K8s Secret Access
+  desc: Detect any access to Kubernetes secrets
+  condition: >
+    ka.verb in (get, list) and
+    ka.target.resource = secrets and
+    not ka.user.name in (allowed_service_accounts)
+  output: >
+    K8s secret accessed
+    (user=%ka.user.name secret=%ka.target.name
+     namespace=%ka.target.namespace)
+  priority: NOTICE</code></pre>
+
+<h4>Container Sandboxing</h4>
+<p>Containers padrão compartilham o kernel do host — um container escape e game over. Sandboxing adiciona camadas de isolamento:</p>
+<ul>
+<li><strong>gVisor (Google):</strong> Reimplementa ~200 syscalls em userspace. Container não toca o kernel real. Overhead de ~5-15% em I/O. Usado em Google Cloud Run</li>
+<li><strong>Kata Containers:</strong> Cada container roda em uma microVM dedicada (QEMU/Cloud Hypervisor). Isolamento no nível de hardware. Overhead de ~1-2s no startup. Usado para workloads multi-tenant de alto risco</li>
+<li><strong>Firecracker (AWS):</strong> MicroVMs ultralight (~125ms boot). Usado no Lambda e Fargate. Combina segurança de VM com velocidade de container</li>
+</ul>
+
+<h4>RBAC Hardening Patterns</h4>
+<p>Princípios para endurecer RBAC (Role-Based Access Control) no Kubernetes:</p>
+<ul>
+<li><strong>Princípio do menor privilégio:</strong> Nenhum pod deve rodar como root. Use <code>securityContext.runAsNonRoot: true</code></li>
+<li><strong>Namespace isolation:</strong> Cada equipe/serviço em namespace separado. RBAC scoped por namespace, nunca cluster-wide desnecessariamente</li>
+<li><strong>ServiceAccount por workload:</strong> Nunca use a ServiceAccount default. Crie uma SA específica para cada deployment com apenas as permissões necessárias</li>
+<li><strong>Audit logging:</strong> Habilite Kubernetes audit logs para rastrear quem acessou o que no API server. Envie para SIEM</li>
+<li><strong>Pod Security Standards:</strong> Use Restricted policy (não Privileged). Bloqueia hostNetwork, hostPID, privileged containers, volume mounts perigosos</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Checklist de Runtime Security:</strong> (1) Falco para detecção de anomalias, (2) NetworkPolicies para microsegmentação, (3) Pod Security Standards no modo Restricted, (4) Imagens distroless/scratch (sem shell = sem shell injection), (5) ReadOnly filesystem nós pods, (6) Secrets montados como tmpfs (não env vars).</div>
+</div>
+
+<!-- ═══ DIAGRAMA COMPLETO ═══ -->
+<h3>Visao Geral: Segurança em Camadas (Defense in Depth)</h3>
+
+<div class="diagram">
+<div class="diagram-box cyan">Supply Chain<br><small>SBOM, SLSA<br>Sigstore</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box green">Build Time<br><small>SAST, SCA<br>Image Scan</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Deploy Time<br><small>Cosign Verify<br>Policy Engine</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Runtime<br><small>eBPF, Falco<br>NetworkPolicy</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Secrets<br><small>Vault, KMS<br>Dynamic Creds</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box red">Crypto<br><small>PQC Hybrid<br>Crypto-Agility</small></div>
+</div>
+
+<p>Cada camada protege contra falhas das anteriores. Supply chain security previne que código maliciosó entre. Build time scanning pega vulnerabilidades conhecidas. Deploy time verification garante que só artefatos assinados vao para produção. Runtime security detecta anomalias em execução. Secrets management previne vazamento de credenciais. PQC protege contra ameaças futuras.</p>
+
+<!-- ═══ TIPS ADICIONAIS ═══ -->
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Para System Design interviews:</strong> Quando mencionar segurança, va além de "usamos HTTPS e JWT". Mencione: supply chain (SBOM, signed images), secrets management (Vault com dynamic credentials), runtime security (Falco, NetworkPolicies), e encryption at rest com KMS. Isso demonstra maturidade arquitetural.</div>
+</div>
+
+<!-- ═══ Q&A ═══ -->
+<h3>Perguntas & Respostas</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Qual a diferença prática entre SBOM em SPDX vs CycloneDX? Qual escolher?</div>
+<div class="qa-a">
+<p><strong>SPDX</strong> é padrão ISO, mais focado em licenciamento e compliance. Ideal se você precisa de audit de licencas open-source (ex: garantir que nenhuma dependência GPL esta em software proprietário). <strong>CycloneDX</strong> é mantido pela OWASP, mais focado em segurança. Suporta VEX (Vulnerability Exploitability eXchange) nativamente, que permite marcar vulnerabilidades como "não aplicavel" ao seu contexto. Para a maioria dos casos de segurança, CycloneDX é mais prático. Ferramentas como Syft e Trivy geram ambos formatos — a escolha não é excludente.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Se criptografia simétrica (AES-256) resiste a quantum, por que precisamos de PQC?</div>
+<div class="qa-a">
+<p>AES-256 resiste a quantum para <strong>criptografia simétrica</strong> (ambas as partes já tem a chave). Mas para <strong>trocar essa chave de forma segura pela internet</strong>, você usa criptografia assimétrica (RSA, ECDH) — e essa parte e quebrada por quantum. Sem PQC para key exchange, você não consegue estabelecer a chave simétrica de forma segura. E por isso que ML-KEM (Kyber) é um KEM (Key Encapsulation Mechanism): ele resolve o problema da <strong>troca de chaves</strong> de forma quantum-safe. AES protege os dados; PQC protege como você compartilha a chave AES.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Em que cenários reais ZKPs fazem sentido para um engenheiro backend?</div>
+<div class="qa-a">
+<p>Cenários práticos: (1) <strong>KYC sem exposicao de dados:</strong> Prove que o cliente passou verificação de identidade sem armazenar documentos (reduz risco de breach). (2) <strong>Age verification:</strong> APIs que verificam idade mínima sem receber data de nascimento. (3) <strong>Audit compliance:</strong> Prove que suas transações atendem regras regulatorias sem expor dados financeiros internos. (4) <strong>zkLogin:</strong> Autenticação baseada em provas criptograficas (Google usa em passkeys). (5) <strong>Blockchain L2:</strong> zkSync e StarkNet usam ZKPs para comprimir milhares de transações em uma única prova verificavel na L1. Para a maioria dos backends, ZKPs são relevantes como conceito arquitetural para privacy-preserving APIs.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Vault vs AWS Secrets Manager — quando usar qual?</div>
+<div class="qa-a">
+<p><strong>AWS Secrets Manager:</strong> Escolha se você esta 100% na AWS, precisa apenas de secrets estáticos com rotacao, e quer custo operacional zero (managed service). Integracao nativa com RDS e Lambda. <strong>HashiCorp Vault:</strong> Escolha se você e multi-cloud, precisa de dynamic secrets (credenciais efemeras), encryption as a service (Transit engine), PKI management, ou tem requisitos de compliance complexos (FIPS 140-2, HSM integration). Vault é mais poderosó mas exige operação (ou use HCP Vault gerenciado). <strong>Regra prática:</strong> Se suas necessidades cabem no Secrets Manager, use-o (menor complexidade). Se precisa de dynamic credentials ou multi-cloud, Vault.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Segurança Avancada & PQC</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="52-finops.html">&#8592; Anterior: FinOps</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="54-testes-avancados.html" class="primary">Próximo: Testes Avancados &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 53: Segurança Avancada & PQC
+// ══════════════════════════════════════════
+const SECTION_NUM = 53;
+const STORAGE_KEY = 'fsm_quiz_53';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual ataque de supply chain comprometeu 18.000 organizacoes ao injetar backdoor no sistema de build de um software de monitoramento?",
+    options: [
+      "Log4Shell — vulnerabilidade no Log4j",
+      "SolarWinds Orion — backdoor no build system",
+      "Codecov — script de CI comprometido",
+      "ua-parser-js — pacote npm sequestrado"
+    ],
+    correct: 1,
+    explanation: "SolarWinds (2020) foi o ataque mais sofisticado: atacantes comprometerám o build system do Orion, inserindo backdoor nas atualizacoes oficiais. 18.000+ organizacoes (incluindo agencias do governo americano) instalaram a versão maliciosa. O ataque ficou oculto por 9 meses."
+  },
+  {
+    question: "O que é SBOM e qual executive order americana o tornou obrigatório para software governamental?",
+    options: [
+      "Security Bill of Methods — Executive Order 14028 (2021)",
+      "Software Bill of Materials — Executive Order 14028 (2021)",
+      "System Binary Object Map — Executive Order 13984 (2020)",
+      "Software Build Operations Manifest — NIST SP 800-218"
+    ],
+    correct: 1,
+    explanation: "SBOM (Software Bill of Materials) é a lista completa de todos os componentes do seu software (diretos e transitivos). O Executive Order 14028 (maio 2021) do governo americano exige SBOM para qualquer software vendido ao governo. Dois formatos principais: SPDX (ISO) e CycloneDX (OWASP)."
+  },
+  {
+    question: "Qual algoritmo PQC padronizado pelo NIST (FIPS 203) é usado para Key Encapsulation (troca de chaves)?",
+    options: [
+      "ML-DSA (Dilithium) — FIPS 204",
+      "SLH-DSA (SPHINCS+) — FIPS 205",
+      "ML-KEM (Kyber) — FIPS 203",
+      "FN-DSA (Falcon) — em revisao"
+    ],
+    correct: 2,
+    explanation: "ML-KEM (anteriormente CRYSTALS-Kyber) é o padrão NIST FIPS 203 para Key Encapsulation Mechanism. E baseado em lattices (Module-LWE) é usado para troca de chaves quantum-safe. Chrome e Cloudflare já usam hybrid X25519+Kyber para TLS 1.3 desde 2024."
+  },
+  {
+    question: "O que é o ataque 'Harvest Now, Decrypt Later' (HNDL)?",
+    options: [
+      "Atacante decripta dados em tempo real usando computadores quânticos atuais",
+      "Atacante coleta dados criptografados AGORA para decriptar quando computadores quânticos estiverem disponíveis",
+      "Atacante usa brute force distribuido para quebrar AES-256 em paralelo",
+      "Atacante explora vulnerabilidades em implementações de TLS 1.2"
+    ],
+    correct: 1,
+    explanation: "HNDL é a ameaça mais concreta do quantum computing hoje: adversarios (especialmente state-sponsored) coletam dados criptografados com RSA/ECC AGORA, armazenam, e planejam decriptar quando tiverem CRQCs. Dados com valor em 10+ anós (governamentais, medicos, financeiros) já estão em risco — por isso hybrid encryption e urgente."
+  },
+  {
+    question: "Qual a principal diferença entre zk-SNARKs e zk-STARKs?",
+    options: [
+      "SNARKs são mais rápidos; STARKs são mais seguros contra ataques clássicos",
+      "SNARKs exigem trusted setup e não são quantum-resistant; STARKs são transparent e quantum-resistant",
+      "SNARKs são baseados em hash functions; STARKs usam curvas elipticas",
+      "SNARKs geram provas maiores; STARKs geram provas mais compactas"
+    ],
+    correct: 1,
+    explanation: "zk-SNARKs exigem uma cerimonia de trusted setup (se comprometida, provas falsas são possiveis) e são baseadas em curvas elipticas (não quantum-resistant). zk-STARKs são transparent (sem trusted setup) é baseadas em hash functions (quantum-resistant). Trade-off: STARKs geram provas maiores (~45-200KB vs ~200-300 bytes dos SNARKs)."
+  },
+  {
+    question: "No HashiCorp Vault, o que são 'dynamic secrets' e qual seu principal benefício?",
+    options: [
+      "Secrets que mudam de valor a cada leitura, garantindo unicidade",
+      "Credenciais criadas sob demanda com TTL curto que são revogadas automáticamente",
+      "Secrets criptografados com chaves rotacionadas a cada hora",
+      "Secrets replicados entre multiplas regioes para alta disponibilidade"
+    ],
+    correct: 1,
+    explanation: "Dynamic secrets são credenciais (DB users, AWS IAM, certificados) criadas sob demanda quando a aplicação solicita, com TTL curto (ex: 1h). Quando o TTL expira, Vault revoga automáticamente (ex: DROP USER no PostgreSQL). Beneficio: se um secret vaza, ele já expirou. Zero credenciais estáticas de longa duracao."
+  },
+  {
+    question: "O que eBPF permite fazer que é revolucionario para runtime security?",
+    options: [
+      "Criptografar todo o tráfego de rede automáticamente no kernel",
+      "Executar programas sandboxed dentro do kernel Linux sem modifica-lo, observando syscalls e rede",
+      "Substituir firewalls tradicionais por machine learning no kernel",
+      "Isolar containers em microVMs para prevenir escapes"
+    ],
+    correct: 1,
+    explanation: "eBPF permite executar programas sandboxed DENTRO do kernel Linux sem recompilar ou modificar o kernel. Isso possibilita observar syscalls, file opens, conexões de rede e process executions com overhead mínimo (~1-5%). Cilium usa eBPF para networking no K8s, Tetragon para security, e Falco pode usar eBPF como data source."
+  },
+  {
+    question: "Qual estratégia de migração para PQC combina algoritmo clássico + quantum-safe para garantir segurança durante a transição?",
+    options: [
+      "Dupla criptografia: criptografar duas vezes com algoritmos diferentes",
+      "Hybrid encryption: combinar clássico (ex: X25519) + PQC (ex: ML-KEM) e derivar chave combinada",
+      "Migrar diretamente para PQC puro e descontinuar algoritmos clássicos",
+      "Usar apenas AES-256, que já é quantum-resistant"
+    ],
+    correct: 1,
+    explanation: "Hybrid encryption combina um algoritmo clássico (X25519) com PQC (ML-KEM-768) e usa KDF para derivar shared secret combinado. Se o PQC tiver vulnerabilidade desconhecida, o clássico protege. Se quantum chegar, o PQC protege. Chrome usa X25519Kyber768 para TLS, Signal usa PQXDH. AES e simetrico — não resolve troca de chaves."
+  },
+  {
+    question: "Qual ferramenta CNCF monitora syscalls do kernel em tempo real para detectar comportamentos suspeitos em containers?",
+    options: [
+      "Cilium — network observability via eBPF",
+      "gVisor — container sandboxing em userspace",
+      "Falco — runtime threat detection via syscall monitoring",
+      "Trivy — vulnerability scanner para images e SBOM"
+    ],
+    correct: 2,
+    explanation: "Falco (projeto CNCF) monitora syscalls do kernel e dispara alertas quando detecta comportamento anomalo: shell spawned em container, escrita em /etc, conexões inesperadas, acesso a K8s secrets. Cilium e para networking, gVisor para sandboxing, e Trivy para scanning estático."
+  },
+  {
+    question: "Qual nível SLSA exige build hermético (sem acesso a rede), reproducivel e two-person review?",
+    options: [
+      "SLSA 1 — build scripted com provenance",
+      "SLSA 2 — hosted build com signed provenance",
+      "SLSA 3 — hardened build com provenance não-falsificavel",
+      "SLSA 4 — hermetic, reproducible, two-person review"
+    ],
+    correct: 3,
+    explanation: "SLSA Level 4 é o nível mais alto: build hermético (sem acesso a rede durante build — previne dependency confusion), reproducivel (mesmo input = mesmo output), e two-person review obrigatório antes de merge. Poucos projetos atingem L4 — até L3 já é excelente para a maioria."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Segurança Avancada & PQC.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

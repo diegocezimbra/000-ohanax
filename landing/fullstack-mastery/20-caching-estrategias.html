@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>20 — Caching - Estratégias & Ferramentas | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="19-escalabilidade-load-balancing.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>20</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="21-performance-otimizacao.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:30.3%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 20</span>
+<h2>Caching — Estratégias & Ferramentas</h2>
+<div class="section-line"></div>
+
+<p>Caching é a técnica mais poderosa é mais perigosa de otimização em sistemas distribuídos. Quando bem aplicado, reduz latência de segundos para milissegundos, alivia a carga no banco de dados e permite escalar sem gastar fortunas em infraestrutura. Quando mal aplicado, causa dados inconsistentes, bugs impossivies de reproduzir e incidentes em produção que custam horas de debugging.</p>
+
+<p>A frase mais famosa da computação sobre o assunto e de Phil Karlton: <strong>"There are only two hard things in Computer Science: cache inválidation and naming things."</strong> Nesta seção, vamos dominar a primeira.</p>
+
+<p>Pense em cache como a memória de curto prazo do seu sistema. Assim como você não vai a estante toda vez que precisa de um número de telefone que usa diariamente — você memoriza — o cache armazena dados acessados frequentemente <strong>mais perto do consumidor</strong>. O custo e gerenciar quando essa "memória" fica desatualizada.</p>
+
+<!-- ═══ CACHING STRATEGIES ═══ -->
+<h3>Estratégias de Caching</h3>
+<p>Existem cinco estratégias fundamentais de caching. Cada uma faz trade-offs diferentes entre <strong>consistência</strong>, <strong>performance</strong> é <strong>complexidade</strong>. A escolha depende do padrão de acesso (read-heavy vs write-heavy) e da tolerância a dados stale.</p>
+
+<h4>1. Cache-Aside (Lazy Loading)</h4>
+<p>A estratégia mais comum é mais simples. A aplicação verifica o cache primeiro. Se não encontrar (cache miss), busca no banco, armazena no cache e retorna. O cache não sabe nada sobre o banco — a <strong>aplicação é responsável</strong> por popular e invalidar.</p>
+
+<div class="diagram">
+<div class="diagram-box green">App</div>
+<div class="diagram-arrow">&rarr; 1. GET</div>
+<div class="diagram-box orange">Redis</div>
+<div class="diagram-arrow">&rarr; miss?</div>
+<div class="diagram-box blue">PostgreSQL</div>
+<div class="diagram-arrow">&rarr; 3. SET</div>
+<div class="diagram-box orange">Redis</div>
+</div>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> Redis <span class="kw">from</span> <span class="str">'ioredis'</span>;
+
+<span class="kw">const</span> redis = <span class="kw">new</span> <span class="tp">Redis</span>({ host: <span class="str">'localhost'</span>, port: <span class="num">6379</span> });
+
+<span class="kw">interface</span> <span class="tp">Product</span> {
+  id: <span class="tp">string</span>;
+  name: <span class="tp">string</span>;
+  price: <span class="tp">number</span>;
+}
+
+<span class="cm">// Cache-Aside: a aplicação gerencia o cache manualmente</span>
+<span class="kw">async function</span> <span class="fn">getProduct</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Product</span>&gt; {
+  <span class="kw">const</span> cacheKey = <span class="str">`product:${id}`</span>;
+
+  <span class="cm">// 1. Tenta buscar no cache</span>
+  <span class="kw">const</span> cached = <span class="kw">await</span> redis.<span class="fn">get</span>(cacheKey);
+  <span class="kw">if</span> (cached) {
+    console.<span class="fn">log</span>(<span class="str">'Cache HIT'</span>);
+    <span class="kw">return</span> JSON.<span class="fn">parse</span>(cached);
+  }
+
+  <span class="cm">// 2. Cache miss — busca no banco</span>
+  console.<span class="fn">log</span>(<span class="str">'Cache MISS — buscando no DB'</span>);
+  <span class="kw">const</span> product = <span class="kw">await</span> db.<span class="fn">query</span>(<span class="str">'SELECT * FROM products WHERE id = $1'</span>, [id]);
+
+  <span class="cm">// 3. Popula o cache com TTL de 5 minutos</span>
+  <span class="kw">await</span> redis.<span class="fn">setex</span>(cacheKey, <span class="num">300</span>, JSON.<span class="fn">stringify</span>(product));
+
+  <span class="kw">return</span> product;
+}
+
+<span class="cm">// Invalidação: quando o produto e atualizado</span>
+<span class="kw">async function</span> <span class="fn">updateProduct</span>(id: <span class="tp">string</span>, data: <span class="tp">Partial</span>&lt;<span class="tp">Product</span>&gt;): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+  <span class="kw">await</span> db.<span class="fn">query</span>(<span class="str">'UPDATE products SET name=$1, price=$2 WHERE id=$3'</span>,
+    [data.name, data.price, id]);
+
+  <span class="cm">// Inválida o cache — próximo GET vai buscar dados frescos</span>
+  <span class="kw">await</span> redis.<span class="fn">del</span>(<span class="str">`product:${id}`</span>);
+}</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Quando usar:</strong> Padrão read-heavy (muito mais leituras que escritas). É a estratégia padrão para a maioria dos cenários — comece com cache-aside a menós que tenha um motivo específico para outra.</div>
+</div>
+
+<h4>2. Read-Through</h4>
+<p>Similar ao cache-aside, mas a <strong>camada de cache é responsável por buscar no banco</strong> quando ha um miss. A aplicação sempre fala só com o cache — nunca diretamente com o banco para leituras. Frameworks como NestJS CacheModule ou Spring Cache implementam isso automáticamente.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Read-Through: o cache busca automáticamente no banco em caso de miss</span>
+<span class="cm">// A aplicação NAO precisa saber sobre o banco de dados</span>
+
+<span class="kw">class</span> <span class="tp">ReadThroughCache</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> redis: <span class="tp">Redis</span>,
+    <span class="kw">private</span> loader: (key: <span class="tp">string</span>) =&gt; <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;,
+    <span class="kw">private</span> ttl: <span class="tp">number</span> = <span class="num">300</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">get</span>(key: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt; {
+    <span class="kw">const</span> cached = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">get</span>(key);
+    <span class="kw">if</span> (cached) <span class="kw">return</span> JSON.<span class="fn">parse</span>(cached);
+
+    <span class="cm">// Cache e responsável por buscar os dados</span>
+    <span class="kw">const</span> data = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">loader</span>(key);
+    <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">setex</span>(key, <span class="kw">this</span>.ttl, JSON.<span class="fn">stringify</span>(data));
+    <span class="kw">return</span> data;
+  }
+}
+
+<span class="cm">// Uso: aplicação só fala com o cache</span>
+<span class="kw">const</span> productCache = <span class="kw">new</span> <span class="tp">ReadThroughCache</span>&lt;<span class="tp">Product</span>&gt;(redis, <span class="kw">async</span> (key) =&gt; {
+  <span class="kw">const</span> id = key.<span class="fn">replace</span>(<span class="str">'product:'</span>, <span class="str">''</span>);
+  <span class="kw">return</span> db.<span class="fn">query</span>(<span class="str">'SELECT * FROM products WHERE id = $1'</span>, [id]);
+});
+
+<span class="kw">const</span> product = <span class="kw">await</span> productCache.<span class="fn">get</span>(<span class="str">'product:abc123'</span>);</code></pre>
+
+<h4>3. Write-Through</h4>
+<p>Toda escrita vai para o cache E para o banco <strong>síncronamente</strong>. O dado só e confirmado quando ambos foram atualizados. Garante <strong>consistência forte</strong> entre cache e banco, mas aumenta a latência de escrita (duas operações sequênciais).</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Write-Through: escrita síncrona em cache E banco</span>
+<span class="kw">class</span> <span class="tp">WriteThroughCache</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> redis: <span class="tp">Redis</span>,
+    <span class="kw">private</span> writer: (key: <span class="tp">string</span>, data: <span class="tp">T</span>) =&gt; <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;,
+    <span class="kw">private</span> ttl: <span class="tp">number</span> = <span class="num">300</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">set</span>(key: <span class="tp">string</span>, data: <span class="tp">T</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="cm">// 1. Escreve no banco PRIMEIRO (source of truth)</span>
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">writer</span>(key, data);
+
+    <span class="cm">// 2. Escreve no cache (só se o banco confirmou)</span>
+    <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">setex</span>(key, <span class="kw">this</span>.ttl, JSON.<span class="fn">stringify</span>(data));
+  }
+}
+
+<span class="cm">// Uso: toda atualização vai para cache + banco</span>
+<span class="kw">const</span> cache = <span class="kw">new</span> <span class="tp">WriteThroughCache</span>&lt;<span class="tp">Product</span>&gt;(redis, <span class="kw">async</span> (key, data) =&gt; {
+  <span class="kw">await</span> db.<span class="fn">query</span>(
+    <span class="str">'UPDATE products SET name=$1, price=$2 WHERE id=$3'</span>,
+    [data.name, data.price, data.id]
+  );
+});
+
+<span class="kw">await</span> cache.<span class="fn">set</span>(<span class="str">'product:abc'</span>, { id: <span class="str">'abc'</span>, name: <span class="str">'Widget'</span>, price: <span class="num">29.99</span> });</code></pre>
+
+<h4>4. Write-Behind (Write-Back)</h4>
+<p>Escrita vai <strong>apenas para o cache</strong>, é o cache faz flush assíncrono para o banco em intervalos ou quando atinge um batch size. Escritas são extremamente rápidas, mas ha <strong>risco de perda de dados</strong> se o cache cair antes do flush.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Write-Behind: escrita rápida no cache, flush assíncrono ao banco</span>
+<span class="kw">class</span> <span class="tp">WriteBehindCache</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="kw">private</span> dirtyKeys: <span class="tp">Set</span>&lt;<span class="tp">string</span>&gt; = <span class="kw">new</span> <span class="tp">Set</span>();
+  <span class="kw">private</span> flushInterval: <span class="tp">NodeJS.Timeout</span>;
+
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> redis: <span class="tp">Redis</span>,
+    <span class="kw">private</span> writer: (key: <span class="tp">string</span>, data: <span class="tp">T</span>) =&gt; <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;,
+    flushMs: <span class="tp">number</span> = <span class="num">5000</span>,
+  ) {
+    <span class="cm">// Flush a cada 5 segundos</span>
+    <span class="kw">this</span>.flushInterval = <span class="fn">setInterval</span>(() =&gt; <span class="kw">this</span>.<span class="fn">flush</span>(), flushMs);
+  }
+
+  <span class="kw">async</span> <span class="fn">set</span>(key: <span class="tp">string</span>, data: <span class="tp">T</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="cm">// Escrita APENAS no cache — muito rápido</span>
+    <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">set</span>(key, JSON.<span class="fn">stringify</span>(data));
+    <span class="kw">this</span>.dirtyKeys.<span class="fn">add</span>(key);
+  }
+
+  <span class="kw">privaté async</span> <span class="fn">flush</span>(): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">const</span> keys = [...<span class="kw">this</span>.dirtyKeys];
+    <span class="kw">this</span>.dirtyKeys.<span class="fn">clear</span>();
+
+    <span class="kw">for</span> (<span class="kw">const</span> key <span class="kw">of</span> keys) {
+      <span class="kw">const</span> data = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">get</span>(key);
+      <span class="kw">if</span> (data) <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">writer</span>(key, JSON.<span class="fn">parse</span>(data));
+    }
+  }
+}</code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Cuidado:</strong> Write-behind e ótimo para métricas, analytics e logs — dados que podem tolerar perda parcial. Nunca use para dados financeiros ou transações críticas onde perder uma escrita causa prejuizo real.</div>
+</div>
+
+<h4>5. Refresh-Ahead</h4>
+<p>O cache <strong>proativamente renova</strong> entradas antes do TTL expirar, baseado em padrões de acesso. Se um item e acessado frequentemente e está próximo de expirar, o cache busca dados frescos em background. O usuário <strong>nunca percebe um cache miss</strong>.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Refresh-Ahead: renova proativamente antes do TTL expirar</span>
+<span class="kw">class</span> <span class="tp">RefreshAheadCache</span>&lt;<span class="tp">T</span>&gt; {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> redis: <span class="tp">Redis</span>,
+    <span class="kw">private</span> loader: (key: <span class="tp">string</span>) =&gt; <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;,
+    <span class="kw">private</span> ttl: <span class="tp">number</span> = <span class="num">300</span>,
+    <span class="kw">private</span> refreshThreshold: <span class="tp">number</span> = <span class="num">0.2</span>, <span class="cm">// renova quando 80% do TTL passou</span>
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">get</span>(key: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span> | <span class="kw">null</span>&gt; {
+    <span class="kw">const</span> cached = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">get</span>(key);
+    <span class="kw">if</span> (!cached) <span class="kw">return null</span>;
+
+    <span class="cm">// Verifica TTL restante</span>
+    <span class="kw">const</span> remainingTtl = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">ttl</span>(key);
+    <span class="kw">const</span> threshold = <span class="kw">this</span>.ttl * <span class="kw">this</span>.refreshThreshold;
+
+    <span class="kw">if</span> (remainingTtl &gt; <span class="num">0</span> &amp;&amp; remainingTtl &lt; threshold) {
+      <span class="cm">// Renova em background — NAO bloqueia a resposta atual</span>
+      <span class="kw">this</span>.<span class="fn">refreshInBackground</span>(key).<span class="fn">catch</span>(() =&gt; {});
+    }
+
+    <span class="kw">return</span> JSON.<span class="fn">parse</span>(cached);
+  }
+
+  <span class="kw">privaté async</span> <span class="fn">refreshInBackground</span>(key: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">const</span> data = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">loader</span>(key);
+    <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">setex</span>(key, <span class="kw">this</span>.ttl, JSON.<span class="fn">stringify</span>(data));
+  }
+}</code></pre>
+
+<div class="card blue">
+<div class="card-title">Comparativo das Estratégias</div>
+<div class="table-wrap">
+<table>
+<tr><th>Estratégia</th><th>Leitura</th><th>Escrita</th><th>Consistência</th><th>Usó ideal</th></tr>
+<tr><td><strong>Cache-Aside</strong></td><td>App gerência</td><td>App inválida</td><td>Eventual</td><td>Maioria dos cenários</td></tr>
+<tr><td><strong>Read-Through</strong></td><td>Cache gerência</td><td>App inválida</td><td>Eventual</td><td>Simplificar código de leitura</td></tr>
+<tr><td><strong>Write-Through</strong></td><td>Sempre fresco</td><td>Síncrona dupla</td><td>Forte</td><td>Dados críticos read-heavy</td></tr>
+<tr><td><strong>Write-Behind</strong></td><td>Sempre fresco</td><td>Async ao banco</td><td>Eventual (risco)</td><td>Métricas, analytics, logs</td></tr>
+<tr><td><strong>Refresh-Ahead</strong></td><td>Sem cold miss</td><td>Background</td><td>Eventual</td><td>Hot data previsível</td></tr>
+</table>
+</div>
+</div>
+
+<!-- ═══ EVICTION POLICIES ═══ -->
+<h3>Políticas de Eviction</h3>
+<p>Quando o cache está cheio, precisa decidir o que remover. A política de eviction determina qual entrada será descartada. A escolha errada pode destruir seu hit rate.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Política</th><th>Descrição</th><th>Quando usar</th></tr>
+<tr><td><strong>LRU</strong> (Least Recently Used)</td><td>Remove o item acessado ha mais tempo</td><td>Padrão para a maioria dos cenários. Assume que dados recentes são mais relevantes</td></tr>
+<tr><td><strong>LFU</strong> (Least Frequently Used)</td><td>Remove o item menós acessado</td><td>Quando frequência importa mais que recencia. Ex: produtos populares</td></tr>
+<tr><td><strong>FIFO</strong> (First In, First Out)</td><td>Remove o item mais antigo</td><td>Dados com válidade natural (sessões, tokens)</td></tr>
+<tr><td><strong>TTL</strong> (Time-To-Live)</td><td>Remove após tempo predefinido</td><td>Sempre use com cache-aside. Garante dados frescos mesmo sem invalidação explícita</td></tr>
+<tr><td><strong>Random</strong></td><td>Remove aleatóriamente</td><td>Quase nunca. Só em benchmarks ou quando todas as chaves tem igual importância</td></tr>
+</table>
+</div>
+
+<h4>Configuração Redis: maxmemory-policy</h4>
+<pre data-lang="redis.conf"><code><span class="cm"># Limite de memória do Redis</span>
+maxmemory 2gb
+
+<span class="cm"># Politicas disponíveis:</span>
+maxmemory-policy allkeys-lru      <span class="cm"># LRU em TODAS as chaves (recomendado)</span>
+<span class="cm"># maxmemory-policy volatile-lru   # LRU apenas em chaves com TTL</span>
+<span class="cm"># maxmemory-policy allkeys-lfu   # LFU em todas as chaves</span>
+<span class="cm"># maxmemory-policy volatile-ttl  # Remove chaves com TTL mais próximo de expirar</span>
+<span class="cm"># maxmemory-policy noeviction    # Retorna erro quando cheio (PERIGOSO em produção)</span></code></pre>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Nunca use <code>noeviction</code> em produção</strong> sem monitoramento. Quando o Redis atinge o limite, ele retorna erro em toda escrita — causando falhas em cascata na aplicação. Use <code>allkeys-lru</code> como padrão seguro.</div>
+</div>
+
+<!-- ═══ CACHE LEVELS ═══ -->
+<h3>Níveis de Cache</h3>
+<p>Um sistema bem projetado usa <strong>múltiplas camadas de cache</strong>. Cada nível tem latência, capacidade e custo diferentes. O objetivo e interceptar a requisição o mais cedo possível, antes que chegue ao banco de dados.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Browser Cache<br><small>~0ms</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">CDN Cache<br><small>~5-50ms</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">App Cache (Redis)<br><small>~1-5ms</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">DB Query Cache<br><small>~10-50ms</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Database<br><small>~50-500ms</small></div>
+</div>
+
+<h4>1. Browser Cache</h4>
+<p>O cache mais rápido — zero latência de rede. Controlado por <strong>HTTP headers</strong> que o servidor envia.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// NestJS: configurando cache headers para assets estáticos</span>
+<span class="ann">@Controller</span>(<span class="str">'assets'</span>)
+<span class="kw">class</span> <span class="tp">AssetsController</span> {
+  <span class="ann">@Get</span>(<span class="str">'logo.png'</span>)
+  <span class="fn">getLogo</span>(<span class="ann">@Res</span>() res: <span class="tp">Response</span>) {
+    res.<span class="fn">set</span>({
+      <span class="cm">// Cache por 1 ano (assets imutaveis com hash no nome)</span>
+      <span class="str">'Cache-Control'</span>: <span class="str">'public, max-age=31536000, immutable'</span>,
+      <span class="str">'ETag'</span>: <span class="str">'v1.2.3-abc123'</span>,
+    });
+    <span class="kw">return</span> res.<span class="fn">sendFile</span>(<span class="str">'logo.png'</span>);
+  }
+}
+
+<span class="cm">// Service Worker: cache offline para PWA</span>
+self.<span class="fn">addEventListener</span>(<span class="str">'fetch'</span>, (event) =&gt; {
+  event.<span class="fn">respondWith</span>(
+    caches.<span class="fn">match</span>(event.request).<span class="fn">then</span>((cached) =&gt; {
+      <span class="kw">return</span> cached || <span class="fn">fetch</span>(event.request).<span class="fn">then</span>((response) =&gt; {
+        <span class="kw">const</span> clone = response.<span class="fn">clone</span>();
+        caches.<span class="fn">open</span>(<span class="str">'v1'</span>).<span class="fn">then</span>(c =&gt; c.<span class="fn">put</span>(event.request, clone));
+        <span class="kw">return</span> response;
+      });
+    })
+  );
+});</code></pre>
+
+<h4>2. CDN Cache (CloudFront, Cloudflare)</h4>
+<p>Edge servers distribuídos geograficamente. Cacheia conteúdo estático (JS, CSS, imagens) e pode cachear respostas de API com <code>s-maxage</code>. Reduz latência para usuários distantes do servidor de origem.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Configurar headers para CDN caching</span>
+<span class="ann">@Get</span>(<span class="str">'products/featured'</span>)
+<span class="fn">getFeaturedProducts</span>(<span class="ann">@Res</span>() res: <span class="tp">Response</span>) {
+  res.<span class="fn">set</span>({
+    <span class="cm">// Browser: cache 60s. CDN: cache 300s.</span>
+    <span class="str">'Cache-Control'</span>: <span class="str">'public, max-age=60, s-maxage=300'</span>,
+    <span class="cm">// CDN pode servir stale enquanto reválida</span>
+    <span class="str">'CDN-Cache-Control'</span>: <span class="str">'stale-while-reválidate=600'</span>,
+  });
+  <span class="kw">return</span> res.<span class="fn">json</span>(products);
+}</code></pre>
+
+<h4>3. Application Cache (Redis / Memcached)</h4>
+<p>Cache na camada da aplicação — o mais flexível. Redis é o padrão da indústria por suportar estruturas de dados ricas (não apenas strings) e persistência opcional.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Feature</th><th>Redis</th><th>Memcached</th></tr>
+<tr><td>Estruturas de dados</td><td>Strings, Hashes, Lists, Sets, Sorted Sets, Streams</td><td>Apenas strings (key-value)</td></tr>
+<tr><td>Persistência</td><td>Sim (RDB/AOF)</td><td>Não</td></tr>
+<tr><td>Pub/Sub</td><td>Sim</td><td>Não</td></tr>
+<tr><td>Cluster nativo</td><td>Sim</td><td>Não (sharding no cliente)</td></tr>
+<tr><td>Multithreading</td><td>Single-thread (IO threads no 6+)</td><td>Multi-thread</td></tr>
+<tr><td>Usó ideal</td><td>99% dos cenários</td><td>Cache simples de alto throughput</td></tr>
+</table>
+</div>
+
+<h4>4. Database Query Cache</h4>
+<p>Alguns bancos de dados tem cache interno de queries. No PostgreSQL, não ha query cache nativo (diferente do MySQL), mas você pode usar <strong>materialized views</strong> para dados pre-computados.</p>
+
+<h4>5. ORM-Level Cache (TypeORM)</h4>
+<pre data-lang="typescript"><code><span class="cm">// TypeORM: query cache built-in</span>
+<span class="kw">const</span> products = <span class="kw">await</span> productRepo.<span class="fn">find</span>({
+  where: { category: <span class="str">'electronics'</span> },
+  cache: {
+    id: <span class="str">'products_electronics'</span>,
+    milliseconds: <span class="num">60000</span>, <span class="cm">// cache por 60 segundos</span>
+  },
+});
+
+<span class="cm">// Invalidar cache do TypeORM manualmente</span>
+<span class="kw">await</span> connection.queryResultCache?.<span class="fn">remove</span>([<span class="str">'products_electronics'</span>]);</code></pre>
+
+<!-- ═══ REDIS DEEP DIVE ═══ -->
+<h3>Redis Deep Dive</h3>
+<p>Redis não é apenas um key-value store — é um <strong>servidor de estruturas de dados</strong>. Entender quais estruturas usar para cada cenário é o que diferencia um dev junior de um senior.</p>
+
+<h4>Estruturas de Dados para Caching</h4>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> Redis <span class="kw">from</span> <span class="str">'ioredis'</span>;
+<span class="kw">const</span> redis = <span class="kw">new</span> <span class="tp">Redis</span>();
+
+<span class="cm">// ─── STRING: cache simples (JSON serializado) ───</span>
+<span class="kw">await</span> redis.<span class="fn">setex</span>(<span class="str">'user:123'</span>, <span class="num">300</span>, JSON.<span class="fn">stringify</span>({ name: <span class="str">'Ana'</span>, role: <span class="str">'admin'</span> }));
+<span class="kw">const</span> user = JSON.<span class="fn">parse</span>(<span class="kw">await</span> redis.<span class="fn">get</span>(<span class="str">'user:123'</span>) || <span class="str">'null'</span>);
+
+<span class="cm">// ─── HASH: cache parcial (atualizar campos sem reescrever tudo) ───</span>
+<span class="kw">await</span> redis.<span class="fn">hset</span>(<span class="str">'product:456'</span>, {
+  name: <span class="str">'Notebook Dell'</span>,
+  price: <span class="str">'4999.90'</span>,
+  stock: <span class="str">'42'</span>,
+  views: <span class="str">'0'</span>,
+});
+<span class="cm">// Incrementar views sem buscar o objeto inteiro</span>
+<span class="kw">await</span> redis.<span class="fn">hincrby</span>(<span class="str">'product:456'</span>, <span class="str">'views'</span>, <span class="num">1</span>);
+<span class="cm">// Buscar apenas um campo</span>
+<span class="kw">const</span> price = <span class="kw">await</span> redis.<span class="fn">hget</span>(<span class="str">'product:456'</span>, <span class="str">'price'</span>);
+
+<span class="cm">// ─── SORTED SET: ranking/leaderboard com score ───</span>
+<span class="kw">await</span> redis.<span class="fn">zadd</span>(<span class="str">'trending:products'</span>, <span class="num">150</span>, <span class="str">'product:a'</span>);
+<span class="kw">await</span> redis.<span class="fn">zadd</span>(<span class="str">'trending:products'</span>, <span class="num">320</span>, <span class="str">'product:b'</span>);
+<span class="kw">await</span> redis.<span class="fn">zadd</span>(<span class="str">'trending:products'</span>, <span class="num">89</span>, <span class="str">'product:c'</span>);
+<span class="cm">// Top 10 produtos mais populares</span>
+<span class="kw">const</span> top10 = <span class="kw">await</span> redis.<span class="fn">zrevrange</span>(<span class="str">'trending:products'</span>, <span class="num">0</span>, <span class="num">9</span>, <span class="str">'WITHSCORES'</span>);
+
+<span class="cm">// ─── SET: cache de conjuntos (tags, permissões, sessões ativas) ───</span>
+<span class="kw">await</span> redis.<span class="fn">sadd</span>(<span class="str">'user:123:permissions'</span>, <span class="str">'read'</span>, <span class="str">'write'</span>, <span class="str">'admin'</span>);
+<span class="kw">const</span> canWrite = <span class="kw">await</span> redis.<span class="fn">sismember</span>(<span class="str">'user:123:permissions'</span>, <span class="str">'write'</span>); <span class="cm">// 1</span>
+
+<span class="cm">// ─── LIST: filas simples, historico recente ───</span>
+<span class="kw">await</span> redis.<span class="fn">lpush</span>(<span class="str">'recent:searches:user123'</span>, <span class="str">'notebook'</span>, <span class="str">'monitor 4k'</span>);
+<span class="kw">await</span> redis.<span class="fn">ltrim</span>(<span class="str">'recent:searches:user123'</span>, <span class="num">0</span>, <span class="num">9</span>); <span class="cm">// manter só 10 últimas</span></code></pre>
+
+<h4>TTL Management</h4>
+<pre data-lang="typescript"><code><span class="cm">// Definir TTL ao criar</span>
+<span class="kw">await</span> redis.<span class="fn">setex</span>(<span class="str">'session:abc'</span>, <span class="num">3600</span>, <span class="str">'data'</span>); <span class="cm">// 1 hora</span>
+
+<span class="cm">// Adicionar TTL a chave existente</span>
+<span class="kw">await</span> redis.<span class="fn">expire</span>(<span class="str">'product:456'</span>, <span class="num">300</span>); <span class="cm">// 5 minutos</span>
+
+<span class="cm">// Verificar TTL restante</span>
+<span class="kw">const</span> ttl = <span class="kw">await</span> redis.<span class="fn">ttl</span>(<span class="str">'session:abc'</span>); <span class="cm">// segundos restantes</span>
+
+<span class="cm">// Remover TTL (chave vira permanente)</span>
+<span class="kw">await</span> redis.<span class="fn">persist</span>(<span class="str">'important:config'</span>);
+
+<span class="cm">// TTL com jitter para evitar cache avalanche</span>
+<span class="kw">function</span> <span class="fn">ttlWithJitter</span>(baseTtl: <span class="tp">number</span>): <span class="tp">number</span> {
+  <span class="kw">const</span> jitter = Math.<span class="fn">floor</span>(Math.<span class="fn">random</span>() * baseTtl * <span class="num">0.1</span>); <span class="cm">// +/- 10%</span>
+  <span class="kw">return</span> baseTtl + jitter;
+}
+
+<span class="kw">await</span> redis.<span class="fn">setex</span>(<span class="str">'product:789'</span>, <span class="fn">ttlWithJitter</span>(<span class="num">300</span>), data);</code></pre>
+
+<h4>Redis Cluster vs Sentinel</h4>
+<div class="card">
+<div class="card-title">Redis Cluster vs Sentinel</div>
+<ul>
+<li><strong>Redis Sentinel</strong> — Alta disponibilidade (HA) para Redis standalone. Monitora o master, faz failover automático para réplica se o master cair. <strong>Não faz sharding</strong> — todos os dados ficam em um no. Ideal para datasets que cabem em uma máquina (&lt; 25GB).</li>
+<li><strong>Redis Cluster</strong> — Sharding automático + HA. Distribui dados entre múltiplos masters (16384 hash slots). Cada master tem réplicas. Ideal para datasets grandes que precisam de mais memória que uma única máquina fornece.</li>
+</ul>
+</div>
+
+<h4>Pub/Sub para Invalidação de Cache</h4>
+<pre data-lang="typescript"><code><span class="cm">// Servidor 1: publica evento de invalidação</span>
+<span class="kw">async function</span> <span class="fn">updateProductAndInválidate</span>(id: <span class="tp">string</span>, data: <span class="tp">Partial</span>&lt;<span class="tp">Product</span>&gt;) {
+  <span class="kw">await</span> db.<span class="fn">query</span>(<span class="str">'UPDATE products SET ...'</span>);
+  <span class="kw">await</span> redis.<span class="fn">del</span>(<span class="str">`product:${id}`</span>);
+
+  <span class="cm">// Notifica TODAS as instancias para invalidar cache local</span>
+  <span class="kw">await</span> redis.<span class="fn">publish</span>(<span class="str">'cache:inválidate'</span>, JSON.<span class="fn">stringify</span>({
+    type: <span class="str">'product'</span>,
+    id,
+    timestamp: Date.<span class="fn">now</span>(),
+  }));
+}
+
+<span class="cm">// Servidor 2, 3, N: escutam e inválidam cache local (in-memory)</span>
+<span class="kw">const</span> subscriber = <span class="kw">new</span> <span class="tp">Redis</span>();
+subscriber.<span class="fn">subscribe</span>(<span class="str">'cache:inválidate'</span>);
+
+subscriber.<span class="fn">on</span>(<span class="str">'message'</span>, (channel, message) =&gt; {
+  <span class="kw">const</span> { type, id } = JSON.<span class="fn">parse</span>(message);
+  localMemoryCache.<span class="fn">delete</span>(<span class="str">`${type}:${id}`</span>);
+});</code></pre>
+
+<!-- ═══ CACHE INVALIDATION PATTERNS ═══ -->
+<h3>Padrões de Invalidação de Cache</h3>
+<p>Invalidação é a parte mais difícil do caching. Existem três padrões principais, e você geralmente usa uma <strong>combinação</strong> deles.</p>
+
+<h4>1. Time-Based (TTL)</h4>
+<p>O mais simples. Defina um TTL e aceite que os dados podem estar stale por até X segundos. Funciona para dados que não precisam de consistência imediata (catálogo de produtos, posts de blog).</p>
+
+<pre data-lang="typescript"><code><span class="cm">// TTL simples — produto pode estar stale por até 5 minutos</span>
+<span class="kw">await</span> redis.<span class="fn">setex</span>(<span class="str">`product:${id}`</span>, <span class="num">300</span>, JSON.<span class="fn">stringify</span>(product));</code></pre>
+
+<h4>2. Event-Based (Inválidaté on Write)</h4>
+<p>Sempre que o dado e modificado, o cache e inválidado (deletado ou atualizado). Garante consistência mais rápida, mas exige disciplina — <strong>toda escrita</strong> precisa invalidar o cache correspondente.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Event-based: inválida cache quando dado muda</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">ProductService</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> repo: <span class="tp">ProductRepository</span>,
+    <span class="kw">private</span> redis: <span class="tp">Redis</span>,
+    <span class="kw">private</span> events: <span class="tp">EventEmitter2</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">update</span>(id: <span class="tp">string</span>, dto: <span class="tp">UpdateProductDto</span>) {
+    <span class="kw">const</span> product = <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">save</span>({ id, ...dto });
+
+    <span class="cm">// Inválida caches relacionados</span>
+    <span class="kw">await</span> Promise.<span class="fn">all</span>([
+      <span class="kw">this</span>.redis.<span class="fn">del</span>(<span class="str">`product:${id}`</span>),
+      <span class="kw">this</span>.redis.<span class="fn">del</span>(<span class="str">`products:category:${product.categoryId}`</span>),
+      <span class="kw">this</span>.redis.<span class="fn">del</span>(<span class="str">'products:featured'</span>),
+    ]);
+
+    <span class="cm">// Emite evento para outros serviços invalidarem seus caches</span>
+    <span class="kw">this</span>.events.<span class="fn">emit</span>(<span class="str">'product.updated'</span>, { id, product });
+    <span class="kw">return</span> product;
+  }
+}</code></pre>
+
+<h4>3. Version-Based (Cache Key com Versão)</h4>
+<p>A chave do cache inclui uma versão ou hash. Quando o dado muda, a versão muda, é a chave antiga simplesmente expira por TTL. Não precisa deletar explicitamente — o cache antigo morre sozinho.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Version-based: chave inclui versão</span>
+<span class="kw">async function</span> <span class="fn">getProductCatalog</span>(version: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Product</span>[]&gt; {
+  <span class="kw">const</span> cacheKey = <span class="str">`catalog:v${version}`</span>;
+  <span class="kw">const</span> cached = <span class="kw">await</span> redis.<span class="fn">get</span>(cacheKey);
+  <span class="kw">if</span> (cached) <span class="kw">return</span> JSON.<span class="fn">parse</span>(cached);
+
+  <span class="kw">const</span> catalog = <span class="kw">await</span> db.<span class="fn">query</span>(<span class="str">'SELECT * FROM products WHERE active = true'</span>);
+  <span class="kw">await</span> redis.<span class="fn">setex</span>(cacheKey, <span class="num">3600</span>, JSON.<span class="fn">stringify</span>(catalog));
+  <span class="kw">return</span> catalog;
+}
+
+<span class="cm">// Quando catálogo muda: incrementar versão no banco</span>
+<span class="cm">// Chave antiga (catalog:v41) expira sozinha via TTL</span>
+<span class="cm">// Nova chave (catalog:v42) e criada no próximo acesso</span></code></pre>
+
+<h4>Stale-While-Reválidate</h4>
+<p>Retorna o dado stale imediatamente e reválida em background. O usuário nunca espera, mas pode ver dados levemente desatualizados por uma janela curta.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Stale-While-Reválidaté pattern</span>
+<span class="kw">async function</span> <span class="fn">getWithSWR</span>(key: <span class="tp">string</span>, loader: () =&gt; <span class="tp">Promise</span>&lt;<span class="tp">any</span>&gt;, ttl = <span class="num">300</span>, staleTtl = <span class="num">600</span>) {
+  <span class="kw">const</span> raw = <span class="kw">await</span> redis.<span class="fn">get</span>(key);
+
+  <span class="kw">if</span> (raw) {
+    <span class="kw">const</span> { data, cachedAt } = JSON.<span class="fn">parse</span>(raw);
+    <span class="kw">const</span> age = (Date.<span class="fn">now</span>() - cachedAt) / <span class="num">1000</span>;
+
+    <span class="kw">if</span> (age &gt; ttl &amp;&amp; age &lt;= staleTtl) {
+      <span class="cm">// Stale mas dentro da janela — reválida em background</span>
+      <span class="fn">loader</span>().<span class="fn">then</span>(<span class="kw">async</span> (fresh) =&gt; {
+        <span class="kw">const</span> payload = { data: fresh, cachedAt: Date.<span class="fn">now</span>() };
+        <span class="kw">await</span> redis.<span class="fn">setex</span>(key, staleTtl, JSON.<span class="fn">stringify</span>(payload));
+      });
+    }
+
+    <span class="kw">return</span> data; <span class="cm">// Retorna imediatamente (possívelmente stale)</span>
+  }
+
+  <span class="cm">// Cache miss total</span>
+  <span class="kw">const</span> fresh = <span class="kw">await</span> <span class="fn">loader</span>();
+  <span class="kw">const</span> payload = { data: fresh, cachedAt: Date.<span class="fn">now</span>() };
+  <span class="kw">await</span> redis.<span class="fn">setex</span>(key, staleTtl, JSON.<span class="fn">stringify</span>(payload));
+  <span class="kw">return</span> fresh;
+}</code></pre>
+
+<!-- ═══ CACHE PROBLEMS ═══ -->
+<h3>Problemas Clássicos de Cache</h3>
+<p>Três problemas que toda entrevista de system design pergunta — é que acontecem em produção com frequência alarmante.</p>
+
+<h4>1. Cache Stampede (Thundering Herd)</h4>
+<p><strong>Problema:</strong> Uma chave popular expira. 1000 requisições simultâneas percebem o cache miss e TODAS vao ao banco ao mesmo tempo. O banco sobrecarrega e pode cair.</p>
+
+<p><strong>Solução: Locking (Singleflight)</strong></p>
+
+<pre data-lang="typescript"><code><span class="cm">// Cache Stampede prevention com distributed lock</span>
+<span class="kw">async function</span> <span class="fn">getWithLock</span>(key: <span class="tp">string</span>, loader: () =&gt; <span class="tp">Promise</span>&lt;<span class="tp">any</span>&gt;, ttl = <span class="num">300</span>) {
+  <span class="cm">// 1. Tenta cache</span>
+  <span class="kw">const</span> cached = <span class="kw">await</span> redis.<span class="fn">get</span>(key);
+  <span class="kw">if</span> (cached) <span class="kw">return</span> JSON.<span class="fn">parse</span>(cached);
+
+  <span class="cm">// 2. Tenta adquirir lock (NX = só se não existe, EX = TTL do lock)</span>
+  <span class="kw">const</span> lockKey = <span class="str">`lock:${key}`</span>;
+  <span class="kw">const</span> acquired = <span class="kw">await</span> redis.<span class="fn">set</span>(lockKey, <span class="str">'1'</span>, <span class="str">'EX'</span>, <span class="num">10</span>, <span class="str">'NX'</span>);
+
+  <span class="kw">if</span> (acquired) {
+    <span class="cm">// 3a. Ganhou o lock — busca no banco e popula cache</span>
+    <span class="kw">try</span> {
+      <span class="kw">const</span> data = <span class="kw">await</span> <span class="fn">loader</span>();
+      <span class="kw">await</span> redis.<span class="fn">setex</span>(key, ttl, JSON.<span class="fn">stringify</span>(data));
+      <span class="kw">return</span> data;
+    } <span class="kw">finally</span> {
+      <span class="kw">await</span> redis.<span class="fn">del</span>(lockKey);
+    }
+  }
+
+  <span class="cm">// 3b. Não ganhou o lock — espera e tenta o cache de novo</span>
+  <span class="kw">await</span> <span class="kw">new</span> <span class="tp">Promise</span>(r =&gt; <span class="fn">setTimeout</span>(r, <span class="num">100</span>));
+  <span class="kw">return</span> <span class="fn">getWithLock</span>(key, loader, ttl); <span class="cm">// retry</span>
+}</code></pre>
+
+<h4>2. Cache Penetration</h4>
+<p><strong>Problema:</strong> Requisições para IDs que <strong>não existem</strong> no banco. Toda requisição é um cache miss que vai ao banco, encontra nada, e não cacheia (porque o dado não existe). Atacantes podem explorar isso.</p>
+
+<p><strong>Solução 1: Cache Null</strong> — Cacheia o "não existe" por um TTL curto.</p>
+<p><strong>Solução 2: Bloom Filter</strong> — Verifica rapidamente se o ID pode existir antes de ir ao banco.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Solucao 1: Cache null results</span>
+<span class="kw">async function</span> <span class="fn">getProductSafe</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Product</span> | <span class="kw">null</span>&gt; {
+  <span class="kw">const</span> cacheKey = <span class="str">`product:${id}`</span>;
+  <span class="kw">const</span> cached = <span class="kw">await</span> redis.<span class="fn">get</span>(cacheKey);
+
+  <span class="kw">if</span> (cached === <span class="str">'NULL'</span>) <span class="kw">return null</span>; <span class="cm">// Sabemos que não existe</span>
+  <span class="kw">if</span> (cached) <span class="kw">return</span> JSON.<span class="fn">parse</span>(cached);
+
+  <span class="kw">const</span> product = <span class="kw">await</span> db.<span class="fn">findById</span>(id);
+
+  <span class="kw">if</span> (product) {
+    <span class="kw">await</span> redis.<span class="fn">setex</span>(cacheKey, <span class="num">300</span>, JSON.<span class="fn">stringify</span>(product));
+  } <span class="kw">else</span> {
+    <span class="cm">// Cacheia o "não existe" por 60 segundos</span>
+    <span class="kw">await</span> redis.<span class="fn">setex</span>(cacheKey, <span class="num">60</span>, <span class="str">'NULL'</span>);
+  }
+
+  <span class="kw">return</span> product;
+}
+
+<span class="cm">// Solucao 2: Bloom Filter (Redis module)</span>
+<span class="cm">// BF.ADD productFilter "product:123"</span>
+<span class="cm">// BF.EXISTS productFilter "product:fake" → 0 (definitivamente não existe)</span>
+<span class="kw">async function</span> <span class="fn">getProductWithBloom</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Product</span> | <span class="kw">null</span>&gt; {
+  <span class="cm">// Bloom filter: se diz "não", e 100% certo. Se diz "sim", PODE existir.</span>
+  <span class="kw">const</span> mightExist = <span class="kw">await</span> redis.<span class="fn">call</span>(<span class="str">'BF.EXISTS'</span>, <span class="str">'productFilter'</span>, id);
+  <span class="kw">if</span> (!mightExist) <span class="kw">return null</span>; <span class="cm">// Definitivamente não existe — não vai ao banco</span>
+
+  <span class="kw">return</span> <span class="fn">getProduct</span>(id); <span class="cm">// Pode existir — segue fluxo normal</span>
+}</code></pre>
+
+<h4>3. Cache Avalanche</h4>
+<p><strong>Problema:</strong> Muitas chaves expiram ao mesmo tempo (ex: todas com TTL de 300s foram criadas no mesmo segundo). O banco recebe uma avalanche de requisições simultâneas.</p>
+
+<p><strong>Solução: TTL Jitter</strong> — Adicione variação aleatória ao TTL para distribuir as expirações.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Cache Avalanche prevention com TTL jitter</span>
+<span class="kw">function</span> <span class="fn">jitteredTtl</span>(baseTtl: <span class="tp">number</span>, jitterPercent = <span class="num">0.2</span>): <span class="tp">number</span> {
+  <span class="kw">const</span> jitter = Math.<span class="fn">floor</span>(Math.<span class="fn">random</span>() * baseTtl * jitterPercent);
+  <span class="kw">const</span> sign = Math.<span class="fn">random</span>() &gt; <span class="num">0.5</span> ? <span class="num">1</span> : -<span class="num">1</span>;
+  <span class="kw">return</span> baseTtl + (jitter * sign);
+}
+
+<span class="cm">// Base TTL 300s → resultado entre 240s e 360s</span>
+<span class="cm">// Chaves expiram em momentos diferentes, distribuindo a carga</span>
+<span class="kw">async function</span> <span class="fn">cacheProducts</span>(products: <span class="tp">Product</span>[]) {
+  <span class="kw">const</span> pipeline = redis.<span class="fn">pipeline</span>();
+
+  <span class="kw">for</span> (<span class="kw">const</span> product <span class="kw">of</span> products) {
+    pipeline.<span class="fn">setex</span>(
+      <span class="str">`product:${product.id}`</span>,
+      <span class="fn">jitteredTtl</span>(<span class="num">300</span>),
+      JSON.<span class="fn">stringify</span>(product),
+    );
+  }
+
+  <span class="kw">await</span> pipeline.<span class="fn">exec</span>(); <span class="cm">// Batch — muito mais eficiente que N chamadas</span>
+}</code></pre>
+
+<div class="card orange">
+<div class="card-title">Resumo dos 3 Problemas</div>
+<ul>
+<li><strong>Stampede</strong> — Uma chave popular expira, N requisições vao ao banco. Solução: <strong>lock/singleflight</strong></li>
+<li><strong>Penetration</strong> — Queries para dados inexistentes passam direto ao banco. Solução: <strong>cache null + bloom filter</strong></li>
+<li><strong>Avalanche</strong> — Muitas chaves expiram juntas. Solução: <strong>TTL jitter</strong></li>
+</ul>
+</div>
+
+<!-- ═══ HTTP CACHING ═══ -->
+<h3>HTTP Caching</h3>
+<p>O protocolo HTTP tem um sistema de caching robusto built-in. Entender os headers é essencial para frontend, backend e infra.</p>
+
+<h4>Cache-Control Directives</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Diretiva</th><th>Descrição</th><th>Exemplo</th></tr>
+<tr><td><code>max-age=N</code></td><td>Cache por N segundos no browser</td><td><code>max-age=3600</code> (1 hora)</td></tr>
+<tr><td><code>s-maxage=N</code></td><td>Cache por N segundos no CDN/proxy (sobrescreve max-age para CDN)</td><td><code>s-maxage=86400</code></td></tr>
+<tr><td><code>no-cache</code></td><td>Pode cachear, mas DEVE revalidar com o servidor antes de usar</td><td>Dados que mudam frequentemente</td></tr>
+<tr><td><code>no-store</code></td><td>Não cachear em nenhum lugar. Nenhum rastro.</td><td>Dados sensíveis (tokens, senhas)</td></tr>
+<tr><td><code>private</code></td><td>Apenas browser pode cachear (não CDN/proxy)</td><td>Dados específicos do usuário</td></tr>
+<tr><td><code>public</code></td><td>Qualquer cache pode armazenar (browser + CDN)</td><td>Assets estáticos, dados públicos</td></tr>
+<tr><td><code>immutable</code></td><td>Conteúdo nunca muda (não reválida nem no refresh)</td><td>Assets com hash: <code>app.a1b2c3.js</code></td></tr>
+<tr><td><code>stale-while-reválidate=N</code></td><td>Serve stale por N segundos enquanto reválida em background</td><td>API responses com tolerância a stale</td></tr>
+</table>
+</div>
+
+<h4>ETag e Conditional Requests</h4>
+<pre data-lang="http"><code><span class="cm"># Primeira requisição — servidor retorna ETag</span>
+GET /api/products/123 HTTP/1.1
+
+HTTP/1.1 200 OK
+<span class="str">Cache-Control: no-cache</span>
+<span class="str">ETag: "a1b2c3d4e5f6"</span>
+<span class="str">Content-Type: application/json</span>
+
+{"id":"123","name":"Widget","price":29.99}
+
+
+<span class="cm"># Segunda requisição — browser envia If-None-Match</span>
+GET /api/products/123 HTTP/1.1
+<span class="str">If-None-Match: "a1b2c3d4e5f6"</span>
+
+<span class="cm"># Dado não mudou — servidor retorna 304 (sem body = economia de banda)</span>
+HTTP/1.1 304 Not Modified
+<span class="str">ETag: "a1b2c3d4e5f6"</span>
+
+
+<span class="cm"># Se dado mudou — servidor retorna 200 com novo ETag</span>
+HTTP/1.1 200 OK
+<span class="str">ETag: "x9y8z7w6v5u4"</span>
+
+{"id":"123","name":"Widget Pro","price":39.99}</code></pre>
+
+<h4>Implementação em NestJS</h4>
+<pre data-lang="typescript"><code><span class="cm">// NestJS: ETag + Cache-Control em API endpoint</span>
+<span class="ann">@Get</span>(<span class="str">'products/:id'</span>)
+<span class="kw">async</span> <span class="fn">getProduct</span>(
+  <span class="ann">@Param</span>(<span class="str">'id'</span>) id: <span class="tp">string</span>,
+  <span class="ann">@Req</span>() req: <span class="tp">Request</span>,
+  <span class="ann">@Res</span>() res: <span class="tp">Response</span>,
+) {
+  <span class="kw">const</span> product = <span class="kw">await</span> <span class="kw">this</span>.service.<span class="fn">findById</span>(id);
+  <span class="kw">const</span> etag = <span class="fn">createHash</span>(<span class="str">'md5'</span>)
+    .<span class="fn">update</span>(JSON.<span class="fn">stringify</span>(product))
+    .<span class="fn">digest</span>(<span class="str">'hex'</span>);
+
+  <span class="cm">// Se o cliente já tem essa versão, retorna 304</span>
+  <span class="kw">if</span> (req.headers[<span class="str">'if-none-match'</span>] === etag) {
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">304</span>).<span class="fn">end</span>();
+  }
+
+  res.<span class="fn">set</span>({
+    <span class="str">'ETag'</span>: etag,
+    <span class="str">'Cache-Control'</span>: <span class="str">'private, no-cache'</span>, <span class="cm">// Deve revalidar com servidor</span>
+    <span class="str">'Last-Modified'</span>: product.updatedAt.<span class="fn">toUTCString</span>(),
+  });
+
+  <span class="kw">return</span> res.<span class="fn">json</span>(product);
+}</code></pre>
+
+<div class="card blue">
+<div class="card-title">Cheat Sheet: Qual Cache-Control Usar?</div>
+<ul>
+<li><strong>Assets estáticos com hash</strong> (app.a1b2c3.js): <code>public, max-age=31536000, immutable</code></li>
+<li><strong>HTML da SPA</strong> (index.html): <code>no-cache</code> (sempre reválida para pegar nova versão)</li>
+<li><strong>API pública</strong> (catálogo): <code>public, max-age=60, s-maxage=300, stale-while-reválidate=600</code></li>
+<li><strong>API privada</strong> (dados do usuário): <code>private, no-cache</code> (reválida com ETag)</li>
+<li><strong>Dados sensíveis</strong> (tokens, pagamentos): <code>no-store</code></li>
+</ul>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Caching para E-Commerce</h3>
+<p><strong>Cenário:</strong> Você está projetando a estratégia de caching para uma página de produto de um e-commerce com 50.000 visitas/hora. O produto tem nome, descrição, preço, imagens, reviews e estoque em tempo real.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Browser<br><small>Assets imutaveis<br>1 ano cache</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">CDN (CloudFront)<br><small>Imagens + HTML<br>s-maxage=300</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Redis L1<br><small>Produto: 5min TTL<br>Reviews: 10min TTL</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">PostgreSQL<br><small>Source of Truth</small></div>
+</div>
+
+<h4>Estratégia por Tipo de Dado</h4>
+<ul>
+<li><strong>Dados estáticos</strong> (nome, descrição, imagens): CDN com <code>s-maxage=300</code>. Invalidação via CDN purge quando produto e editado.</li>
+<li><strong>Preço</strong>: Redis com TTL 60s + event-based inválidation. Preço errado em cache = problema grave (promocao aplicada mas cache mostra preço antigo).</li>
+<li><strong>Estoque</strong>: <strong>Nunca cachear</strong> por muito tempo. Redis com TTL 5s ou leitura direta do banco. Mostrar "Disponível" quando na verdade esgotou = péssima UX.</li>
+<li><strong>Reviews</strong>: Redis com TTL 600s. Reviews não mudam com frequência. Cache-aside com invalidação quando novo review e postado.</li>
+<li><strong>Preço personalizado</strong> (cupom, desconto por usuário): <strong>Nunca no CDN</strong> (dados privados). Redis com chave <code>price:{productId}:{userId}</code>.</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Endpoint de produto com caching multi-nível</span>
+<span class="ann">@Get</span>(<span class="str">'products/:id'</span>)
+<span class="kw">async</span> <span class="fn">getProduct</span>(<span class="ann">@Param</span>(<span class="str">'id'</span>) id: <span class="tp">string</span>, <span class="ann">@Res</span>() res: <span class="tp">Response</span>) {
+  <span class="cm">// L1: Redis (dados do produto — muda pouco)</span>
+  <span class="kw">let</span> product = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">get</span>(<span class="str">`product:${id}`</span>);
+  <span class="kw">if</span> (!product) {
+    product = <span class="kw">await</span> <span class="kw">this</span>.productRepo.<span class="fn">findOne</span>(id);
+    <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">setex</span>(<span class="str">`product:${id}`</span>, <span class="fn">jitteredTtl</span>(<span class="num">300</span>), JSON.<span class="fn">stringify</span>(product));
+  }
+
+  <span class="cm">// L2: Estoque — TTL curto, não confia em cache longo</span>
+  <span class="kw">const</span> stock = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">getStockWithShortTtl</span>(id); <span class="cm">// TTL 5s</span>
+
+  <span class="cm">// Headers para CDN (dados publicos, 60s no browser, 300s no CDN)</span>
+  res.<span class="fn">set</span>(<span class="str">'Cache-Control'</span>, <span class="str">'public, max-age=60, s-maxage=300, stale-while-reválidate=600'</span>);
+
+  <span class="kw">return</span> res.<span class="fn">json</span>({ ...product, stock });
+}
+
+<span class="cm">// Invalidação quando produto e atualizado</span>
+<span class="ann">@OnEvent</span>(<span class="str">'product.updated'</span>)
+<span class="kw">async</span> <span class="fn">onProductUpdated</span>(event: { id: <span class="tp">string</span> }) {
+  <span class="cm">// Inválida Redis</span>
+  <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">del</span>(<span class="str">`product:${event.id}`</span>);
+
+  <span class="cm">// Inválida CDN (CloudFront inválidation)</span>
+  <span class="kw">await</span> <span class="kw">this</span>.cloudfront.<span class="fn">createInválidation</span>({
+    DistributionId: <span class="str">'EDFDVBD6EXAMPLE'</span>,
+    InválidationBatch: {
+      Paths: { Quantity: <span class="num">1</span>, Items: [<span class="str">`/api/products/${event.id}`</span>] },
+      CallerReference: Date.<span class="fn">now</span>().<span class="fn">toString</span>(),
+    },
+  });
+}</code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Cachear dados do usuário no CDN:</strong> <code>Cache-Control: public</code> em endpoints que retornam dados específicos do usuário (perfil, carrinho, histórico) faz o CDN servir dados do usuário A para o usuário B. Use <code>private</code> ou <code>no-store</code> para dados pessoais.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Cache sem TTL:</strong> Nunca crie uma chave no Redis sem TTL (a menós que sejá intencional, como configuração). Dados sem TTL ficam stale para sempre e consomem memória indefinidamente. Use <code>setex</code> ao inves de <code>set</code>.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Cache key collisions:</strong> Chaves genéricas como <code>products</code> ou <code>user_data</code> podem colidir entre tenants, ambientes ou queries diferentes. Use chaves específicas: <code>tenant:{tid}:product:{pid}:v{version}</code>. Namespacing previne bugs sutis.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Não monitorar hit/miss ratio:</strong> Um cache com 20% de hit raté está consumindo recursos (Redis, rede) sem entregar benefício. Monitore <code>INFO stats</code> no Redis (keyspace_hits / keyspace_misses). Hit raté saudável: &gt; 80% para cache de leitura.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Comece SEM cache. Meça a performance real. Identifique o gargalo (queries lentas, latência alta). Adicione cache no ponto exato do gargalo. Cache prematuro adiciona complexidade sem benefício mensurável — e cria bugs de consistência gratuitamente.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem um endpoint que retorna o perfil do usuário logado. Ele faz 3 queries ao banco. Qual estratégia de caching você usaria e quais HTTP headers?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>Cache-Aside com Redis</strong>, chave <code>user:{userId}:profile</code>, TTL de 60-300 segundos. Invalidação event-based quando o usuário atualiza o perfil. HTTP headers: <code>Cache-Control: private, no-cache</code> com <code>ETag</code> — o browser reválida com o servidor a cada requisição, mas recebe 304 se não mudou (economia de banda). <strong>Nunca</strong> use <code>public</code> ou <code>s-maxage</code> para dados específicos do usuário — CDN serviria dados de outro usuário.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu Redis tem 2GB é o dataset cresceu para 5GB. Você nota que muitas chaves raramente acessadas estão consumindo espaço. O que fazer?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Configure <code>maxmemory 2gb</code> é <code>maxmemory-policy allkeys-lru</code>. O Redis automáticamente remove as chaves menós recentemente acessadas quando atinge o limite. Garanta que todas as chaves tenham TTL (para ajudar o LRU). Monitore <code>INFO memory</code> é <code>INFO stats</code> para verificar hit rate. Se o hit raté cair muito, considere Redis Cluster para distribuir os dados em mais memória.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Uma promocao Black Friday começa a meia-noite. Você espera que o cache de 10.000 produtos expire ao mesmo tempo, causando avalanche no banco. Como prevenir?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Três abordagens combinadas: (1) <strong>TTL Jitter</strong> — ao inves de TTL fixo de 300s, use <code>300 + random(-60, +60)</code> para distribuir expirações. (2) <strong>Refresh-Ahead / Warm-up</strong> — antes da meia-noite, rode um job que pre-popula o cache de todos os produtos em promocao com TTL longo (1 hora). (3) <strong>Stale-While-Reválidate</strong> — se uma chave expirar, serve o dado stale enquanto busca o fresco em background. Isso garante que mesmo se o cache expirar, o banco não recebe 10.000 requisições simultâneas.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Caching: Estratégias & Ferramentas</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="19-escalabilidade-load-balancing.html">&#8592; Escalabilidade & Load Balancing</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="21-performance-otimizacao.html" class="primary">Próximo: Performance & Otimização &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 20: Caching
+// ══════════════════════════════════════════
+const SECTION_NUM = 20;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Na estratégia Cache-Aside, quem é responsável por popular o cache após um cache miss?",
+    options: [
+      "O banco de dados envia os dados ao cache automáticamente",
+      "A aplicação busca no banco e escreve no cache",
+      "O Redis busca no banco via read-through built-in",
+      "O CDN propaga o dado para o cache local"
+    ],
+    correct: 1,
+    explanation: "No Cache-Aside (Lazy Loading), a aplicação é responsável por gerenciar o cache. Ela verifica o cache, busca no banco em caso de miss, e popula o cache manualmente. O cache não sabe nada sobre o banco de dados."
+  },
+  {
+    question: "Qual estratégia de caching oferece escritas mais rápidas mas com risco de perda de dados?",
+    options: [
+      "Write-Through",
+      "Cache-Aside",
+      "Write-Behind (Write-Back)",
+      "Read-Through"
+    ],
+    correct: 2,
+    explanation: "Write-Behind escreve apenas no cache e faz flush assíncrono ao banco. As escritas são extremamente rápidas, mas se o Redis cair antes do flush, os dados em memória são perdidos. Ideal para métricas e analytics, nunca para dados financeiros."
+  },
+  {
+    question: "O que é Cache Stampede (Thundering Herd) é como preveni-lo?",
+    options: [
+      "Muitas chaves expiram ao mesmo tempo. Solução: TTL jitter",
+      "Uma chave popular expira e N requisições vao ao banco. Solução: distributed lock",
+      "Queries para IDs inexistentes passam direto ao banco. Solução: bloom filter",
+      "O cache fica cheio e para de aceitar escritas. Solução: eviction policy"
+    ],
+    correct: 1,
+    explanation: "Cache Stampede ocorre quando uma chave popular expira e milhares de requisições simultâneas detectam o cache miss e vao ao banco. A solução é usar um lock distribuído (singleflight) — apenas uma requisição busca no banco, as demais esperam."
+  },
+  {
+    question: "Qual política de eviction do Redis é recomendada como padrão seguro para produção?",
+    options: [
+      "noeviction — retorna erro quando cheio",
+      "volatile-ttl — remove chaves com TTL mais próximo",
+      "allkeys-lru — remove a chave menós recentemente usada",
+      "allkeys-random — remove aleatóriamente"
+    ],
+    correct: 2,
+    explanation: "allkeys-lru é o padrão seguro porque remove automáticamente as chaves menós usadas quando a memória atinge o limite. noeviction e perigosó porque retorna erro em escritas, causando falhas em cascata na aplicação."
+  },
+  {
+    question: "Qual header HTTP diz ao CDN para cachear por 5 minutos, mas ao browser para cachear por apenas 1 minuto?",
+    options: [
+      "Cache-Control: public, max-age=300, s-maxage=60",
+      "Cache-Control: public, max-age=60, s-maxage=300",
+      "Cache-Control: private, max-age=60, s-maxage=300",
+      "Cache-Control: no-cache, s-maxage=300"
+    ],
+    correct: 1,
+    explanation: "max-age controla o cache do browser, s-maxage controla o cache do CDN/proxy (sobrescreve max-age para servidores intermediários). max-age=60 (browser 1min), s-maxage=300 (CDN 5min). Precisa de 'public' para o CDN poder cachear."
+  },
+  {
+    question: "Você está cacheando o perfil do usuário logado. Qual Cache-Control é o correto?",
+    options: [
+      "public, max-age=300",
+      "public, s-maxage=300, stale-while-reválidate=60",
+      "private, no-cache",
+      "no-store, max-age=0"
+    ],
+    correct: 2,
+    explanation: "Dados específicos do usuário DEVEM usar 'private' (não vai para CDN) com 'no-cache' (reválida com servidor via ETag). Usar 'public' faria o CDN servir o perfil do usuário A para o usuário B — bug gravissimo de privacidade."
+  },
+  {
+    question: "O que é Cache Penetration e qual a solução mais eficaz?",
+    options: [
+      "Chaves expiram em massa. Solução: TTL jitter",
+      "Cache fica fragmentado. Solução: defragmentação",
+      "Requisições para dados inexistentes sempre vao ao banco. Solução: cache null + bloom filter",
+      "O cache está cheio. Solução: aumentar maxmemory"
+    ],
+    correct: 2,
+    explanation: "Cache Penetration acontece quando requisições buscam IDs que não existem no banco. Cada requisição é um miss que vai ao banco. Soluções: cachear o valor 'null' com TTL curto (60s) e/ou usar Bloom Filter para rejeitar IDs que definitivamente não existem."
+  },
+  {
+    question: "Qual a principal diferença entre Redis Sentinel e Redis Cluster?",
+    options: [
+      "Sentinel e para produção, Cluster e para desenvolvimento",
+      "Sentinel e HA sem sharding; Cluster e HA com sharding automático",
+      "Sentinel suporta pub/sub, Cluster não",
+      "Sentinel e single-thread, Cluster e multi-thread"
+    ],
+    correct: 1,
+    explanation: "Redis Sentinel fornece alta disponibilidade (failover automático) para Redis standalone — todos os dados ficam em um no. Redis Cluster distribui dados entre múltiplos masters (sharding via hash slots) E fornece HA. Use Sentinel para datasets < 25GB, Cluster para datasets maiores."
+  },
+  {
+    question: "Em um e-commerce, qual dado de produto você NUNCA deve cachear por mais de alguns segundos?",
+    options: [
+      "Nome e descrição do produto",
+      "Imagens do produto",
+      "Reviews dos usuários",
+      "Quantidade em estoque"
+    ],
+    correct: 3,
+    explanation: "Estoque muda em tempo real (cada compra decrementa). Cachear estoque por minutos significa mostrar 'Disponível' quando o produto já esgotou, gerando frustacao e pedidos cancelados. Use TTL de 5-10 segundos ou leitura direta do banco para estoque."
+  },
+  {
+    question: "Qual pattern retorna dados potencialmente stale imediatamente e atualiza o cache em background?",
+    options: [
+      "Write-Through",
+      "Cache-Aside",
+      "Stale-While-Reválidate",
+      "Refresh-Ahead com TTL fixo"
+    ],
+    correct: 2,
+    explanation: "Stale-While-Reválidaté retorna o dado cacheado imediatamente (mesmo que stale) e dispara uma revalidação em background. O usuário nunca espera, mas pode ver dados levemente desatualizados por uma janela curta. Disponível tanto como HTTP header quanto como pattern de aplicação."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina estratégias de caching.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>21 — Performance & Otimização | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="20-caching-estrategias.html">&#8592; Caching</a>
+<div class="nav-center">Seção <span>21</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="22-rest-graphql-grpc-websocket.html">APIs &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:31.8%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 21</span>
+<h2>Performance & Otimização</h2>
+<div class="section-line"></div>
+
+<p>Performance não é um "nice-to-have" — é um requisito funcional. Cada 100ms de latência adicional custa conversões, receita e paciência do usuário. Mas otimizar sem medir e adivinhação. Nesta seção, vamos cobrir <strong>raté limiting</strong>, <strong>otimizações de backend</strong>, <strong>CDN</strong>, <strong>profiling</strong> é um mini system design completo. Tudo com código real, métricas concretas e decisões fundamentadas.</p>
+
+<p>A regra de ouro: <strong>"Meça primeiro. Otimize depois. Meça de novo."</strong> Sem dados, você está otimizando no escuro — e provavelmente otimizando a coisa errada.</p>
+
+<!-- ═══ RATE LIMITING ═══ -->
+<h3>Raté Limiting — Algoritmos em Profundidade</h3>
+
+<p>Raté limiting protege sua API contra abuso, DDoS, e usó excessivo. Mas existem vários algoritmos com tradeoffs muito diferentes. Entender cada um é essencial para escolher o certo pro seu cenário.</p>
+
+<h4>1. Token Bucket</h4>
+<p>O algoritmo mais popular (usado pelo AWS API Gateway, Stripe, etc). Imagine um balde com capacidade máxima de tokens. Tokens são adicionados a uma taxa constante. Cada request consome um token. Se o balde está vazio, o request e rejeitado.</p>
+
+<p><strong>Passó a passo:</strong></p>
+<ol>
+<li>Inicialize o balde com <code>maxTokens</code> tokens</li>
+<li>A cada intervalo, adicione <code>refillRate</code> tokens (sem exceder <code>maxTokens</code>)</li>
+<li>Quando um request chega, verifique se ha tokens disponíveis</li>
+<li>Se sim: consuma 1 token e permita o request</li>
+<li>Se não: rejeite com 429 Too Many Requests</li>
+</ol>
+
+<p><strong>Vantagem:</strong> Permite bursts (picos rápidos) até o limite do balde, depois estabiliza na taxa de refill.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Token Bucket — Implementação em memória</span>
+<span class="kw">class</span> <span class="tp">TokenBucket</span> {
+  <span class="kw">private</span> tokens: <span class="tp">number</span>;
+  <span class="kw">private</span> lastRefill: <span class="tp">number</span>;
+
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> maxTokens: <span class="tp">number</span>,
+    <span class="kw">private</span> refillRate: <span class="tp">number</span>, <span class="cm">// tokens por segundo</span>
+  ) {
+    <span class="kw">this</span>.tokens = maxTokens;
+    <span class="kw">this</span>.lastRefill = Date.<span class="fn">now</span>();
+  }
+
+  <span class="fn">tryConsume</span>(): <span class="tp">boolean</span> {
+    <span class="kw">this</span>.<span class="fn">refill</span>();
+
+    <span class="kw">if</span> (<span class="kw">this</span>.tokens >= <span class="num">1</span>) {
+      <span class="kw">this</span>.tokens -= <span class="num">1</span>;
+      <span class="kw">return true</span>;
+    }
+    <span class="kw">return false</span>;
+  }
+
+  <span class="kw">private</span> <span class="fn">refill</span>(): <span class="tp">void</span> {
+    <span class="kw">const</span> now = Date.<span class="fn">now</span>();
+    <span class="kw">const</span> elapsed = (now - <span class="kw">this</span>.lastRefill) / <span class="num">1000</span>;
+    <span class="kw">const</span> newTokens = elapsed * <span class="kw">this</span>.refillRate;
+
+    <span class="kw">this</span>.tokens = Math.<span class="fn">min</span>(
+      <span class="kw">this</span>.maxTokens,
+      <span class="kw">this</span>.tokens + newTokens,
+    );
+    <span class="kw">this</span>.lastRefill = now;
+  }
+}
+
+<span class="cm">// Uso: 100 requests max, refill de 10/s</span>
+<span class="kw">const</span> bucket = <span class="kw">new</span> <span class="tp">TokenBucket</span>(<span class="num">100</span>, <span class="num">10</span>);
+
+<span class="kw">if</span> (!bucket.<span class="fn">tryConsume</span>()) {
+  <span class="kw">throw new</span> <span class="tp">HttpException</span>(<span class="str">'Too Many Requests'</span>, <span class="num">429</span>);
+}</code></pre>
+
+<h4>2. Leaky Bucket</h4>
+<p>Variação do Token Bucket. Requests entram no balde e são processados a uma taxa fixa e constante. Se o balde transborda, requests são descartados. <strong>Diferença-chave:</strong> não permite bursts — a saída é sempre suave e constante. Ideal para APIs que precisam de throughput previsível.</p>
+
+<h4>3. Fixed Window</h4>
+<p>Divide o tempo em janelas fixas (ex: 1 minuto). Conta requests por janela. Simples de implementar, mas tem um problema grave: no limite entre duas janelas, um usuário pode fazer o dobro de requests (ex: 100 no final da janela 1 + 100 no início da janela 2 = 200 em 1 segundo).</p>
+
+<h4>4. Sliding Window Log</h4>
+<p>Armazena o timestamp de cada request. Para verificar o limite, conta quantos timestamps estão dentro da janela deslizante atual. <strong>Preciso</strong>, mas consome muita memória (armazena cada timestamp individual). Não escala bem para milhões de requests.</p>
+
+<h4>5. Sliding Window Counter</h4>
+<p>Combina Fixed Window com Sliding Window. Usa contadores da janela atual e anterior com pesó proporcional ao tempo. Ex: se estamos a 30% da janela atual, o contador e: <code>atual + (anterior * 0.7)</code>. <strong>Melhor tradeoff</strong> entre precisão e usó de memória.</p>
+
+<h4>Redis-based Raté Limiter (produção)</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// Raté limiter distribuido com Redis — Sliding Window Counter</span>
+<span class="kw">import</span> Redis <span class="kw">from</span> <span class="str">'ioredis'</span>;
+
+<span class="kw">class</span> <span class="tp">RedisRateLimiter</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> redis: <span class="tp">Redis</span>,
+    <span class="kw">private</span> limit: <span class="tp">number</span>,
+    <span class="kw">private</span> windowMs: <span class="tp">number</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">isAllowed</span>(key: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;{ allowed: <span class="tp">boolean</span>; remaining: <span class="tp">number</span> }&gt; {
+    <span class="kw">const</span> now = Date.<span class="fn">now</span>();
+    <span class="kw">const</span> windowStart = now - <span class="kw">this</span>.windowMs;
+
+    <span class="cm">// Lua script atomico — evita race conditions</span>
+    <span class="kw">const</span> script = <span class="str">`
+      redis.call('ZREMRANGEBYSCORE', KEYS[1], 0, ARGV[1])
+      local count = redis.call('ZCARD', KEYS[1])
+      if count &lt; tonumber(ARGV[2]) then
+        redis.call('ZADD', KEYS[1], ARGV[3], ARGV[3])
+        redis.call('PEXPIRE', KEYS[1], ARGV[4])
+        return {1, tonumber(ARGV[2]) - count - 1}
+      end
+      return {0, 0}
+    `</span>;
+
+    <span class="kw">const</span> result = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">eval</span>(
+      script, <span class="num">1</span>, key,
+      windowStart.<span class="fn">toString</span>(),
+      <span class="kw">this</span>.limit.<span class="fn">toString</span>(),
+      now.<span class="fn">toString</span>(),
+      <span class="kw">this</span>.windowMs.<span class="fn">toString</span>(),
+    ) <span class="kw">as</span> <span class="tp">number</span>[];
+
+    <span class="kw">return</span> { allowed: result[<span class="num">0</span>] === <span class="num">1</span>, remaining: result[<span class="num">1</span>] };
+  }
+}
+
+<span class="cm">// Middleware NestJS</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">RateLimitGuard</span> <span class="kw">implements</span> <span class="tp">CanActivate</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> limiter: <span class="tp">RedisRateLimiter</span>) {}
+
+  <span class="kw">async</span> <span class="fn">canActivate</span>(ctx: <span class="tp">ExecutionContext</span>): <span class="tp">Promise</span>&lt;<span class="tp">boolean</span>&gt; {
+    <span class="kw">const</span> req = ctx.<span class="fn">switchToHttp</span>().<span class="fn">getRequest</span>();
+    <span class="kw">const</span> key = <span class="str">`rate:${req.ip}`</span>;
+    <span class="kw">const</span> { allowed, remaining } = <span class="kw">await</span> <span class="kw">this</span>.limiter.<span class="fn">isAllowed</span>(key);
+
+    req.res.<span class="fn">setHeader</span>(<span class="str">'X-RateLimit-Remaining'</span>, remaining);
+
+    <span class="kw">if</span> (!allowed) {
+      <span class="kw">throw new</span> <span class="tp">HttpException</span>(<span class="str">'Too Many Requests'</span>, <span class="num">429</span>);
+    }
+    <span class="kw">return true</span>;
+  }
+}</code></pre>
+
+<h4>Tabela Comparativa — Algoritmos de Raté Limiting</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Algoritmo</th><th>Memória</th><th>Precisão</th><th>Burst</th><th>Complexidade</th><th>Usó Ideal</th></tr>
+<tr><td><strong>Token Bucket</strong></td><td>Baixa</td><td>Boa</td><td>Permite bursts</td><td>Simples</td><td>APIs públicas, API Gateway</td></tr>
+<tr><td><strong>Leaky Bucket</strong></td><td>Baixa</td><td>Boa</td><td>Sem bursts</td><td>Simples</td><td>Processamento de filas</td></tr>
+<tr><td><strong>Fixed Window</strong></td><td>Muito baixa</td><td>Fraca (edges)</td><td>Burst na borda</td><td>Trivial</td><td>Prototipos, sistemas simples</td></tr>
+<tr><td><strong>Sliding Window Log</strong></td><td>Alta</td><td>Exata</td><td>Sem bursts</td><td>Media</td><td>Auditoria, compliance</td></tr>
+<tr><td><strong>Sliding Window Counter</strong></td><td>Baixa</td><td>Muito boa</td><td>Controlado</td><td>Media</td><td>Produção (melhor tradeoff)</td></tr>
+</table>
+</div>
+
+<!-- ═══ BACKEND OPTIMIZATIONS ═══ -->
+<h3>Otimizações de Backend</h3>
+
+<h4>Paginação: Offset vs Cursor</h4>
+
+<p><strong>Offset-based</strong> (clássico): simples de implementar, mas desastrosó para datasets grandes. O banco precisa ler e descartar todas as linhas anteriores ao offset. <code>OFFSET 100000</code> = escanear 100k linhas para retornar 20.</p>
+
+<pre data-lang="sql"><code><span class="cm">-- Offset-based: simples, mas lento em datasets grandes</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> products
+<span class="kw">ORDER BY</span> created_at <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">20</span> <span class="kw">OFFSET</span> <span class="num">100000</span>;
+<span class="cm">-- Tempo: ~2.3s em tabela com 1M linhas (escaneia 100k + 20)</span>
+
+<span class="cm">-- Cursor-based (keyset): usa índice, sempre rápido</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> products
+<span class="kw">WHERE</span> created_at &lt; <span class="str">'2025-03-15T10:30:00Z'</span>
+<span class="kw">ORDER BY</span> created_at <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">20</span>;
+<span class="cm">-- Tempo: ~3ms (usa índice em created_at, não escaneia nada)</span></code></pre>
+
+<pre data-lang="typescript"><code><span class="cm">// API com cursor-based págination</span>
+<span class="kw">interface</span> <span class="tp">PaginatedResponse</span>&lt;<span class="tp">T</span>&gt; {
+  data: <span class="tp">T</span>[];
+  cursor: <span class="tp">string</span> | <span class="kw">null</span>; <span class="cm">// null = última página</span>
+  hasMore: <span class="tp">boolean</span>;
+}
+
+<span class="ann">@Get</span>(<span class="str">'products'</span>)
+<span class="kw">async</span> <span class="fn">listProducts</span>(
+  <span class="ann">@Query</span>(<span class="str">'cursor'</span>) cursor?: <span class="tp">string</span>,
+  <span class="ann">@Query</span>(<span class="str">'limit'</span>) limit = <span class="num">20</span>,
+): <span class="tp">Promise</span>&lt;<span class="tp">PaginatedResponse</span>&lt;<span class="tp">Product</span>&gt;&gt; {
+  <span class="kw">const</span> query = <span class="kw">this</span>.repo
+    .<span class="fn">createQueryBuilder</span>(<span class="str">'p'</span>)
+    .<span class="fn">orderBy</span>(<span class="str">'p.createdAt'</span>, <span class="str">'DESC'</span>)
+    .<span class="fn">take</span>(limit + <span class="num">1</span>); <span class="cm">// +1 para saber se tem mais</span>
+
+  <span class="kw">if</span> (cursor) {
+    <span class="kw">const</span> decoded = Buffer.<span class="fn">from</span>(cursor, <span class="str">'base64'</span>).<span class="fn">toString</span>();
+    query.<span class="fn">where</span>(<span class="str">'p.createdAt &lt; :cursor'</span>, { cursor: decoded });
+  }
+
+  <span class="kw">const</span> items = <span class="kw">await</span> query.<span class="fn">getMany</span>();
+  <span class="kw">const</span> hasMore = items.length > limit;
+  <span class="kw">const</span> data = hasMore ? items.<span class="fn">slice</span>(<span class="num">0</span>, limit) : items;
+
+  <span class="kw">const</span> nextCursor = hasMore
+    ? Buffer.<span class="fn">from</span>(data[data.length - <span class="num">1</span>].createdAt.<span class="fn">toISOString</span>()).<span class="fn">toString</span>(<span class="str">'base64'</span>)
+    : <span class="kw">null</span>;
+
+  <span class="kw">return</span> { data, cursor: nextCursor, hasMore };
+}</code></pre>
+
+<h4>Compressão: Gzip vs Brotli vs zstd</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Algoritmo</th><th>Compressão</th><th>Velocidade</th><th>Suporte</th><th>Usó Ideal</th></tr>
+<tr><td><strong>Gzip</strong></td><td>Boa (~70%)</td><td>Rápida</td><td>Universal</td><td>Fallback padrão, APIs</td></tr>
+<tr><td><strong>Brotli</strong></td><td>Excelente (~80%)</td><td>Lenta (compress) / Rápida (decompress)</td><td>Navegadores modernos</td><td>Assets estáticos (pre-comprimidos)</td></tr>
+<tr><td><strong>zstd</strong></td><td>Excelente (~78%)</td><td>Muito rápida</td><td>Limitado (CDNs)</td><td>Transferência server-to-server</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Regra prática:</strong> Use Brotli para assets estáticos (pre-comprimidos no build). Use Gzip para respostas dinâmicas de API. Brotli nível 11 é muito lento para compressão em tempo real, mas nível 4-6 é um bom tradeoff.</div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// NestJS/Express — Compressão com fallback</span>
+<span class="kw">import</span> compression <span class="kw">from</span> <span class="str">'compression'</span>;
+<span class="kw">import</span> shrinkRay <span class="kw">from</span> <span class="str">'shrink-ray-current'</span>; <span class="cm">// Brotli + Gzip</span>
+
+<span class="cm">// Opcao 1: Gzip puro (simples, universal)</span>
+app.<span class="fn">use</span>(<span class="fn">compression</span>({
+  level: <span class="num">6</span>,
+  threshold: <span class="num">1024</span>, <span class="cm">// só comprime respostas > 1KB</span>
+  filter: (req, res) => {
+    <span class="kw">if</span> (req.headers[<span class="str">'x-no-compression'</span>]) <span class="kw">return false</span>;
+    <span class="kw">return</span> compression.<span class="fn">filter</span>(req, res);
+  },
+}));
+
+<span class="cm">// Opcao 2: Brotli com fallback para Gzip</span>
+app.<span class="fn">use</span>(<span class="fn">shrinkRay</span>({
+  brotli: { quality: <span class="num">4</span> }, <span class="cm">// nível 4 = bom tradeoff</span>
+}));</code></pre>
+
+<h4>HTTP/2 Multiplexing & HTTP/3 (QUIC)</h4>
+
+<p><strong>HTTP/1.1</strong> abre uma conexão TCP por request (ou reútiliza com keep-alive, mas de forma serial). Navegadores abrem ~6 conexões paralelas por domínio. <strong>HTTP/2</strong> resolve isso com <strong>multiplexing</strong>: múltiplos requests e responses fluem simultaneamente sobre uma única conexão TCP, usando streams independentes.</p>
+
+<ul>
+<li><strong>Multiplexing</strong> — Sem head-of-line blocking no nível HTTP (mas ainda existe no TCP)</li>
+<li><strong>Header Compression (HPACK)</strong> — Headers repetidos são comprimidos (cookies, user-agent)</li>
+<li><strong>Server Push</strong> — O servidor envia recursos antes do cliente pedir (ex: CSS junto com HTML). Na prática, pouco usado — CDNs e preload hints são mais eficazes</li>
+</ul>
+
+<p><strong>HTTP/3 (QUIC):</strong> Substitui TCP por UDP com protocolo QUIC. Elimina head-of-line blocking totalmente — se um stream perde um pacote, os outros não são bloqueados. Conexão mais rápida (0-RTT handshake). Já suportado por CloudFlare, Google, é a maioria dos navegadores modernos.</p>
+
+<h4>Batch Processing & DataLoader Pattern</h4>
+
+<p>Em APIs GraphQL e REST, é comum fazer N requests ao banco para resolver N itens. O <strong>DataLoader</strong> agrupa essas chamadas individuais em um único batch query, executado no próximo tick do event loop.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// DataLoader — agrupa requests individuais em batch</span>
+<span class="kw">import</span> DataLoader <span class="kw">from</span> <span class="str">'dataloader'</span>;
+
+<span class="cm">// Sem DataLoader: 50 users = 50 queries</span>
+<span class="cm">// Com DataLoader: 50 users = 1 query com WHERE id IN (...)</span>
+
+<span class="kw">const</span> userLoader = <span class="kw">new</span> <span class="tp">DataLoader</span>&lt;<span class="tp">string</span>, <span class="tp">User</span>&gt;(
+  <span class="kw">async</span> (ids: <span class="kw">readonly</span> <span class="tp">string</span>[]) => {
+    <span class="cm">// Uma única query para todos os IDs</span>
+    <span class="kw">const</span> users = <span class="kw">await</span> userRepo.<span class="fn">find</span>({
+      <span class="kw">where</span>: { id: <span class="fn">In</span>([...ids]) },
+    });
+
+    <span class="cm">// Retorna na mesma ordem que os IDs foram pedidos</span>
+    <span class="kw">const</span> userMap = <span class="kw">new</span> <span class="tp">Map</span>(users.<span class="fn">map</span>(u => [u.id, u]));
+    <span class="kw">return</span> ids.<span class="fn">map</span>(id => userMap.<span class="fn">get</span>(id) ?? <span class="kw">new</span> <span class="tp">Error</span>(<span class="str">`User ${id} not found`</span>));
+  },
+  { cache: <span class="kw">true</span> } <span class="cm">// Cache per-request (não global!)</span>
+);
+
+<span class="cm">// Usó — cada chamada individual e agrupada automáticamente</span>
+<span class="kw">const</span> user1 = <span class="kw">await</span> userLoader.<span class="fn">load</span>(<span class="str">'uuid-1'</span>); <span class="cm">// agrupado</span>
+<span class="kw">const</span> user2 = <span class="kw">await</span> userLoader.<span class="fn">load</span>(<span class="str">'uuid-2'</span>); <span class="cm">// agrupado</span>
+<span class="cm">// Resultado: SELECT * FROM users WHERE id IN ('uuid-1','uuid-2')</span></code></pre>
+
+<h4>Problema N+1 — Detectar e Corrigir</h4>
+
+<p>O <strong>N+1 Query Problem</strong> é o assassino silenciosó de performance. Acontece quando você busca N registros e depois faz 1 query adicional para cada registro para buscar dados relacionados. Resultado: 1 + N queries ao banco.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; N+1 — 1 query para posts + N queries para autores</span>
+<span class="kw">const</span> posts = <span class="kw">await</span> postRepo.<span class="fn">find</span>(); <span class="cm">// SELECT * FROM posts (1 query)</span>
+
+<span class="kw">for</span> (<span class="kw">const</span> post <span class="kw">of</span> posts) {
+  <span class="cm">// SELECT * FROM users WHERE id = ? (N queries!)</span>
+  post.author = <span class="kw">await</span> userRepo.<span class="fn">findOne</span>({ <span class="kw">where</span>: { id: post.authorId } });
+}
+<span class="cm">// 100 posts = 101 queries ao banco. Em 1000 posts = 1001 queries.</span>
+
+<span class="cm">// &#9989; Solucao 1: Eager loading (JOIN)</span>
+<span class="kw">const</span> posts = <span class="kw">await</span> postRepo.<span class="fn">find</span>({
+  relations: [<span class="str">'author'</span>],
+}); <span class="cm">// SELECT posts.*, users.* FROM posts LEFT JOIN users ON ... (1 query)</span>
+
+<span class="cm">// &#9989; Solucao 2: Query Builder com JOIN explicito</span>
+<span class="kw">const</span> posts = <span class="kw">await</span> postRepo
+  .<span class="fn">createQueryBuilder</span>(<span class="str">'post'</span>)
+  .<span class="fn">leftJoinAndSelect</span>(<span class="str">'post.author'</span>, <span class="str">'author'</span>)
+  .<span class="fn">getMany</span>();
+
+<span class="cm">// &#9989; Solucao 3: DataLoader (GraphQL ou quando JOIN não é viavel)</span>
+<span class="cm">// Ver exemplo acima — agrupa IDs e faz WHERE id IN (...)</span></code></pre>
+
+<p><strong>Como detectar N+1:</strong> Use <code>EXPLAIN ANALYZE</code> no PostgreSQL ou habilite query logging no TypeORM:</p>
+
+<pre data-lang="typescript"><code><span class="cm">// typeorm config — log queries lentas</span>
+{
+  logging: [<span class="str">'query'</span>],
+  maxQueryExecutionTime: <span class="num">1000</span>, <span class="cm">// loga queries > 1s</span>
+}
+
+<span class="cm">// Ou no NestJS, use um interceptor de contagem de queries</span>
+<span class="cm">// Se uma rota executa > 10 queries, algo esta errado</span></code></pre>
+
+<h4>Database Index Tuning</h4>
+
+<p>Índices são a diferença entre uma query de 3 segundos é uma de 3 milissegundos. Mas índices errados consomem disco, desaceleram writes e não ajudam em nada. Use <code>EXPLAIN ANALYZE</code> para entender o plano de execução.</p>
+
+<pre data-lang="sql"><code><span class="cm">-- EXPLAIN ANALYZE — entenda o plano de execução</span>
+<span class="kw">EXPLAIN ANALYZE</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders
+<span class="kw">WHERE</span> status = <span class="str">'pending'</span> <span class="kw">AND</span> created_at > <span class="str">'2025-01-01'</span>
+<span class="kw">ORDER BY</span> created_at <span class="kw">DESC</span>;
+
+<span class="cm">-- Resultado sem índice:</span>
+<span class="cm">-- Seq Scan on orders  (cost=0.00..25432.00 rows=5120)</span>
+<span class="cm">-- Planning: 0.2ms  Execution: 2340ms  ← LENTO</span>
+
+<span class="cm">-- Composite Index — cobre WHERE + ORDER BY</span>
+<span class="kw">CREATE INDEX</span> idx_orders_status_created
+<span class="kw">ON</span> orders (status, created_at <span class="kw">DESC</span>);
+
+<span class="cm">-- Resultado com índice:</span>
+<span class="cm">-- Index Scan using idx_orders_status_created  (cost=0.42..156.20)</span>
+<span class="cm">-- Planning: 0.3ms  Execution: 2.1ms  ← 1000x mais rápido</span>
+
+<span class="cm">-- Covering Index — inclui colunas do SELECT no índice</span>
+<span class="cm">-- O banco não precisa acessar a tabela (Index-Only Scan)</span>
+<span class="kw">CREATE INDEX</span> idx_orders_covering
+<span class="kw">ON</span> orders (status, created_at <span class="kw">DESC</span>)
+<span class="kw">INCLUDE</span> (total, user_id);
+
+<span class="cm">-- Partial Index — índice apenas para subconjunto de dados</span>
+<span class="cm">-- Menor, mais rápido, mais eficiente</span>
+<span class="kw">CREATE INDEX</span> idx_orders_pending
+<span class="kw">ON</span> orders (created_at <span class="kw">DESC</span>)
+<span class="kw">WHERE</span> status = <span class="str">'pending'</span>;
+<span class="cm">-- So indexa orders pendentes (~5% da tabela)</span></code></pre>
+
+<div class="card blue">
+<div class="card-title">Regras de Índice</div>
+<ul>
+<li><strong>Colunas em WHERE e ORDER BY</strong> são candidatas a índice</li>
+<li><strong>Ordem importa</strong> no composite index: (status, created_at) != (created_at, status)</li>
+<li><strong>Seletividade</strong>: coluna com poucos valores distintos (ex: boolean) é um índice ruim sozinha</li>
+<li><strong>Partial indexes</strong> para subconjuntos frequentemente consultados</li>
+<li><strong>Covering indexes</strong> eliminam acesso a tabela (Index-Only Scan)</li>
+<li><strong>Não indexe tudo</strong>: cada índice desacelera INSERT/UPDATE/DELETE</li>
+</ul>
+</div>
+
+<h4>Connection Pooling</h4>
+
+<p>Abrir uma conexão com o banco e caro (~20-50ms de handshake TCP + autenticação). Connection pooling mantém um conjunto de conexões abertas e reútiliza-as entre requests. Essencial em qualquer API de produção.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// TypeORM — connection pool config</span>
+{
+  type: <span class="str">'postgres'</span>,
+  host: <span class="str">'localhost'</span>,
+  extra: {
+    max: <span class="num">20</span>,          <span class="cm">// máximo de conexões no pool</span>
+    min: <span class="num">5</span>,           <span class="cm">// mínimo de conexões mantidas</span>
+    idleTimeoutMillis: <span class="num">30000</span>, <span class="cm">// fecha conexão ociosa após 30s</span>
+    connectionTimeoutMillis: <span class="num">5000</span>, <span class="cm">// timeout para obter conexão</span>
+  },
+}</code></pre>
+
+<pre data-lang="bash"><code><span class="cm"># PgBouncer — pool externo para PostgreSQL</span>
+<span class="cm"># Util quando múltiplos serviços compartilham o mesmo DB</span>
+<span class="cm"># Modos: session (1:1), transaction (compartilha entre txs), statement</span>
+
+<span class="cm"># pgbouncer.ini</span>
+[databases]
+mydb = host=localhost port=5432 dbname=mydb
+
+[pgbouncer]
+pool_mode = transaction     <span class="cm"># mais eficiente para APIs</span>
+max_client_conn = 1000      <span class="cm"># aceita até 1000 clientes</span>
+default_pool_size = 25      <span class="cm"># 25 conexões reais ao Postgres</span>
+reserve_pool_size = 5       <span class="cm"># +5 em caso de pico</span></code></pre>
+
+<!-- ═══ CDN ═══ -->
+<h3>CDN — Content Delivery Network</h3>
+
+<p>Uma CDN coloca seus assets (e até respostas de API) em servidores distribuídos pelo mundo. O usuário recebe conteúdo do servidor mais próximo (edge), reduzindo latência drasticamente. A diferença entre servir um JS bundle de us-east-1 para um usuário em São Paulo pode ser 200ms vs 20ms.</p>
+
+<h4>Push vs Pull CDN</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Tipo</th><th>Como Funciona</th><th>Prós</th><th>Contras</th><th>Exemplo</th></tr>
+<tr><td><strong>Pull CDN</strong></td><td>CDN busca no origin server no primeiro request e cacheia</td><td>Simples, automático</td><td>Primeiro request lento (cache miss)</td><td>CloudFront, Cloudflare</td></tr>
+<tr><td><strong>Push CDN</strong></td><td>Você faz upload dos assets para a CDN antecipadamente</td><td>Sem cache miss, controle total</td><td>Mais complexo de gerenciar</td><td>S3 + CloudFront</td></tr>
+</table>
+</div>
+
+<h4>Cache-Control para Assets Estáticos</h4>
+
+<pre data-lang="text"><code><span class="cm"># Assets com hash no nome (main.a3f8c2.js) — cache longo</span>
+Cache-Control: public, max-age=31536000, immutable
+
+<span class="cm"># index.html — nunca cacheia (precisa buscar novos hashes)</span>
+Cache-Control: no-cache, no-store, must-reválidate
+
+<span class="cm"># API responses — cache curto com revalidação</span>
+Cache-Control: public, max-age=60, stale-while-reválidate=300
+
+<span class="cm"># Dados privados do usuário — nunca cacheia em CDN</span>
+Cache-Control: private, no-store</code></pre>
+
+<div class="card">
+<div class="card-title">CDN Providers — Quando Usar Cada</div>
+<ul>
+<li><strong>CloudFront (AWS)</strong> — Integrado com S3, Lambda@Edge para lógica no edge. Bom se já usa AWS</li>
+<li><strong>Cloudflare</strong> — Plano free generoso, Workers para computação no edge, DDoS protection incluso</li>
+<li><strong>Fastly</strong> — VCL customizavel, purge instantâneo, Compute@Edge com WASM</li>
+<li><strong>Vercel Edge</strong> — Ótimo para Next.js, edge functions integradas, deploy automático</li>
+</ul>
+</div>
+
+<!-- ═══ PROFILING ═══ -->
+<h3>Profiling & Monitoramento</h3>
+
+<p>Você não pode otimizar o que não mede. Profiling identifica onde o tempo está sendo gasto. Monitoramento garante que você saiba quando algo degrada em produção.</p>
+
+<h4>Node.js Profiling</h4>
+
+<pre data-lang="bash"><code><span class="cm"># clinic.js — diagnóstico automático</span>
+npx clinic doctor -- node dist/main.js
+<span class="cm"># Gera relatório com CPU, event loop delay, GC, I/O</span>
+
+<span class="cm"># 0x — flame graphs para encontrar CPU bottlenecks</span>
+npx 0x dist/main.js
+<span class="cm"># Gera SVG interátivo: cada barra = uma função</span>
+<span class="cm"># Barra larga = função que consome muito CPU</span>
+
+<span class="cm"># Node.js built-in profiler</span>
+node --prof dist/main.js
+node --prof-process isolate-*.log > profile.txt</code></pre>
+
+<h4>Database Slow Query Log</h4>
+
+<pre data-lang="sql"><code><span class="cm">-- PostgreSQL: habilitar log de queries lentas</span>
+<span class="kw">ALTER SYSTEM SET</span> log_min_duration_statement = <span class="num">500</span>;
+<span class="cm">-- Loga queries que levam mais de 500ms</span>
+
+<span class="cm">-- Ver queries mais lentas (pg_stat_statements)</span>
+<span class="kw">SELECT</span>
+  query,
+  calls,
+  mean_exec_time::integer <span class="kw">AS</span> avg_ms,
+  total_exec_time::integer <span class="kw">AS</span> total_ms
+<span class="kw">FROM</span> pg_stat_statements
+<span class="kw">ORDER BY</span> mean_exec_time <span class="kw">DESC</span>
+<span class="kw">LIMIT</span> <span class="num">10</span>;</code></pre>
+
+<h4>APM Tools (Application Performance Monitoring)</h4>
+
+<div class="card purple">
+<div class="card-title">Ferramentas de APM</div>
+<ul>
+<li><strong>Datadog</strong> — APM + logs + métricas unificados. Tracing distribuído. Caro mas completo</li>
+<li><strong>New Relic</strong> — APM clássico, bom free tier. Transaction tracing, error tracking</li>
+<li><strong>Grafana + Prometheus</strong> — Open-source. Métricas (Prometheus) + dashboards (Grafana). Sem lock-in</li>
+<li><strong>OpenTelemetry</strong> — Standard aberto para instrumentação. Vendor-agnostic. Exporta para qualquer APM</li>
+<li><strong>Sentry</strong> — Error tracking com performance monitoring. Free tier generoso. Bom para startups</li>
+</ul>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Mínimo viável de monitoramento:</strong> 1) Métricas de infraestrutura (CPU, memória, disco). 2) Response time p50/p95/p99. 3) Error rate. 4) Slow query log. Se você não tem esses 4, está voando cego.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Otimizando um Endpoint Lento</h3>
+
+<p><strong>Cenário:</strong> Você herdou uma API onde o endpoint <code>GET /dashboard/summary</code> leva 3 segundos para responder. O PM está reclamando. O que fazer?</p>
+
+<div class="diagram">
+<div class="diagram-box red">3.2s<br><small>Antes</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Profile<br><small>Identificar</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Fix N+1<br><small>+ Índices</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Cache<br><small>Redis 60s</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">45ms<br><small>Depois</small></div>
+</div>
+
+<p><strong>Passó 1 — Profile:</strong> Habilite query logging no TypeORM. Descubra que o endpoint executa 47 queries (N+1 em orders + users + products).</p>
+
+<pre data-lang="typescript"><code><span class="cm">// ANTES: 47 queries, 3.2 segundos</span>
+<span class="kw">async</span> <span class="fn">getDashboardSummary</span>(companyId: <span class="tp">string</span>) {
+  <span class="kw">const</span> orders = <span class="kw">await</span> <span class="kw">this</span>.orderRepo.<span class="fn">find</span>({
+    <span class="kw">where</span>: { companyId },
+  });
+
+  <span class="cm">// N+1: busca user e products para cada order</span>
+  <span class="kw">for</span> (<span class="kw">const</span> order <span class="kw">of</span> orders) {
+    order.user = <span class="kw">await</span> <span class="kw">this</span>.userRepo.<span class="fn">findOne</span>({ <span class="kw">where</span>: { id: order.userId } });
+    order.items = <span class="kw">await</span> <span class="kw">this</span>.itemRepo.<span class="fn">find</span>({ <span class="kw">where</span>: { orderId: order.id } });
+  }
+
+  <span class="kw">return</span> <span class="kw">this</span>.<span class="fn">calculateMetrics</span>(orders);
+}</code></pre>
+
+<p><strong>Passó 2 — Fix N+1 + índices:</strong> Use JOIN e crie índices compostos.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// DEPOIS: 1 query com JOIN, 180ms</span>
+<span class="kw">async</span> <span class="fn">getDashboardSummary</span>(companyId: <span class="tp">string</span>) {
+  <span class="kw">const</span> orders = <span class="kw">await</span> <span class="kw">this</span>.orderRepo
+    .<span class="fn">createQueryBuilder</span>(<span class="str">'o'</span>)
+    .<span class="fn">leftJoinAndSelect</span>(<span class="str">'o.user'</span>, <span class="str">'u'</span>)
+    .<span class="fn">leftJoinAndSelect</span>(<span class="str">'o.items'</span>, <span class="str">'i'</span>)
+    .<span class="fn">where</span>(<span class="str">'o.companyId = :companyId'</span>, { companyId })
+    .<span class="fn">getMany</span>();
+
+  <span class="kw">return</span> <span class="kw">this</span>.<span class="fn">calculateMetrics</span>(orders);
+}</code></pre>
+
+<pre data-lang="sql"><code><span class="cm">-- Índice para a query mais frequente</span>
+<span class="kw">CREATE INDEX</span> idx_orders_company
+<span class="kw">ON</span> orders (company_id, created_at <span class="kw">DESC</span>);</code></pre>
+
+<p><strong>Passó 3 — Cache:</strong> Dashboard muda a cada poucos minutos. Cache de 60s é aceitável.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Cache com Redis — 60s TTL</span>
+<span class="kw">async</span> <span class="fn">getDashboardSummary</span>(companyId: <span class="tp">string</span>) {
+  <span class="kw">const</span> cacheKey = <span class="str">`dashboard:${companyId}`</span>;
+  <span class="kw">const</span> cached = <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">get</span>(cacheKey);
+
+  <span class="kw">if</span> (cached) {
+    <span class="kw">return</span> JSON.<span class="fn">parse</span>(cached); <span class="cm">// 2ms</span>
+  }
+
+  <span class="kw">const</span> result = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">computeDashboard</span>(companyId); <span class="cm">// 180ms</span>
+  <span class="kw">await</span> <span class="kw">this</span>.redis.<span class="fn">setex</span>(cacheKey, <span class="num">60</span>, JSON.<span class="fn">stringify</span>(result));
+
+  <span class="kw">return</span> result;
+}</code></pre>
+
+<p><strong>Passó 4 — CDN para assets:</strong> O dashboard carrega 2MB de JS. Mova assets para CloudFront com cache longo.</p>
+
+<p><strong>Resultado:</strong></p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Etapa</th><th>Queries</th><th>Tempo</th><th>Melhoria</th></tr>
+<tr><td>Original</td><td>47</td><td>3200ms</td><td>--</td></tr>
+<tr><td>Fix N+1 + JOIN</td><td>1</td><td>180ms</td><td>17.8x</td></tr>
+<tr><td>+ Índice composto</td><td>1</td><td>45ms</td><td>71x</td></tr>
+<tr><td>+ Cache Redis (hit)</td><td>0</td><td>2ms</td><td>1600x</td></tr>
+</table>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Otimização prematura:</strong> "Premature optimization is the root of all evil" — Donald Knuth. Otimizar antes de medir e desperdicar tempo no lugar errado. Você gasta 3 dias otimizando uma função que representa 0.1% do tempo total, enquanto uma query N+1 consome 90%.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Otimizar sem medir:</strong> "Eu acho que essa função e lenta" não é evidência. Use profiler, EXPLAIN ANALYZE, APM. Dados concretos antes de qualquer mudança. Muitas vezes, o bottleneck está no lugar que você menós espera (rede, serialization, GC).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Cachear tudo sem estratégia de invalidação:</strong> "There are only two hard things in computer science: cache inválidation and naming things." Cache sem TTL ou invalidação = dados stale para sempre. Defina TTL, use eventos para invalidar, e documente a estratégia.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Índices demais:</strong> Cada índice desacelera INSERT, UPDATE e DELETE. Uma tabela com 15 índices vai ter writes muito lentos. Crie índices com base em queries reais (pg_stat_statements), não em suposicoes.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra 80/20:</strong> 80% dos ganhos de performance vem de 20% das otimizações. Identifique os maiores bottlenecks (N+1, falta de índice, falta de cache) e resolva-os primeiro. Não tente otimizar tudo de uma vez.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Sua API REST retorna uma lista de 50 produtos, e para cada produto busca o vendedor no banco. Você observou 51 queries sendo executadas. Qual o problema é como resolver?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Esse é o clássico problema <strong>N+1 Query</strong>. A primeira query busca os 50 produtos, e depois 50 queries individuais buscam cada vendedor. Três soluções: (1) <strong>Eager loading com JOIN</strong>: use <code>relations: ['seller']</code> no TypeORM para trazer tudo em 1 query com LEFT JOIN. (2) <strong>DataLoader</strong>: agrupe os IDs dos vendedores e faca <code>WHERE id IN (...)</code> em uma única query. (3) <strong>Query Builder</strong>: <code>.leftJoinAndSelect('product.seller', 'seller')</code>. A solução ideal depende do contexto — JOINs simples para relações diretas, DataLoader para grafos complexos (GraphQL).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Você precisa implementar raté limiting para uma API pública que aceita 1000 requests/minuto por IP. O sistema roda em 4 instâncias. Qual algoritmo e qual armazenamento você escolheria?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Algoritmo: <strong>Sliding Window Counter</strong> — melhor tradeoff entre precisão e usó de memória. Armazenamento: <strong>Redis</strong> — obrigatório quando ha múltiplas instâncias, pois o raté limit precisa ser compartilhado. Raté limiting em memória local não funciona com múltiplas instâncias (cada uma permitiria 1000, totalizando 4000). Implementação: Use Lua scripts no Redis para operações atômicas (ZADD + ZCARD + ZREMRANGEBYSCORE). Retorne headers <code>X-RateLimit-Remaining</code> é <code>Retry-After</code> para o cliente saber quando tentar novamente.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Uma query SELECT com WHERE status = 'active' AND city = 'São Paulo' ORDER BY created_at DESC está levando 4 segundos em uma tabela com 2M de linhas. Como você investigaria e resolveria?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Passó 1: Execute <code>EXPLAIN ANALYZE</code> para ver o plano de execução. Se mostrar "Seq Scan", não ha índice sendo usado. Passó 2: Crie um <strong>composite index</strong> na ordem das colunas do WHERE + ORDER BY: <code>CREATE INDEX idx_status_city_created ON tabela (status, city, created_at DESC)</code>. A ordem importa — colunas de igualdade (status, city) vem antes de colunas de ordenação (created_at). Passó 3: Se a combinação status='active' é muito frequente, considere um <strong>partial index</strong>: <code>CREATE INDEX idx_active_city ON tabela (city, created_at DESC) WHERE status = 'active'</code> — menor é mais rápido. Passó 4: Execute EXPLAIN ANALYZE novamente para confirmar que o índice está sendo usado (deve mostrar "Index Scan").</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Performance & Otimização</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="20-caching-estrategias.html">&#8592; Caching & Estratégias</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="22-rest-graphql-grpc-websocket.html" class="primary">Próximo: REST, GraphQL, gRPC & WebSocket &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 21: Performance & Otimização
+// ══════════════════════════════════════════
+const SECTION_NUM = 21;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual algoritmo de raté limiting permite bursts até o limite do balde e depois estabiliza na taxa de refill?",
+    options: [
+      "Fixed Window",
+      "Leaky Bucket",
+      "Token Bucket",
+      "Sliding Window Log"
+    ],
+    correct: 2,
+    explanation: "O Token Bucket permite bursts (picos rápidos) até o número máximo de tokens no balde, e depois estabiliza na taxa de refill. Diferente do Leaky Bucket, que processa requests a uma taxa constante sem permitir bursts."
+  },
+  {
+    question: "Uma API REST busca 100 posts e depois faz 1 query por post para buscar o autor. Quantas queries são executadas no total e qual o nome desse problema?",
+    options: [
+      "100 queries — Problema de Cartesian Product",
+      "101 queries — Problema N+1",
+      "200 queries — Problema de Double Fetch",
+      "2 queries — Problema de Lazy Loading"
+    ],
+    correct: 1,
+    explanation: "O problema N+1 executa 1 query para buscar os N registros principais + N queries adicionais para buscar dados relacionados. No caso: 1 (posts) + 100 (autores) = 101 queries. Solução: eager loading com JOIN ou DataLoader."
+  },
+  {
+    question: "Qual a principal vantagem da páginação cursor-based sobre offset-based em datasets grandes?",
+    options: [
+      "Permite pular para qualquer página diretamente",
+      "Usa menós memória no cliente",
+      "O banco não precisa escanear e descartar linhas anteriores",
+      "E mais simples de implementar"
+    ],
+    correct: 2,
+    explanation: "Cursor-based usa WHERE com índice (ex: WHERE created_at < cursor), indo direto ao ponto. Offset-based faz o banco escanear e descartar todas as linhas até o offset. OFFSET 100000 = escanear 100k linhas para retornar 20."
+  },
+  {
+    question: "Qual tipo de índice no PostgreSQL indexa apenas um subconjunto dos dados da tabela?",
+    options: [
+      "Composite Index",
+      "Covering Index",
+      "Partial Index",
+      "Hash Index"
+    ],
+    correct: 2,
+    explanation: "Um Partial Index usa uma cláusula WHERE na definição do índice (ex: WHERE status = 'active'). Isso cria um índice menor é mais rápido, pois só indexa as linhas que atendem a condição."
+  },
+  {
+    question: "Você implementou raté limiting em memória local e sua API roda em 4 instâncias com load balancer. Limite de 100 req/min. Qual o problema?",
+    options: [
+      "Raté limiting em memória é muito lento",
+      "Cada instância permite 100 req/min, totalizando até 400 req/min",
+      "O load balancer vai descartar as conexões",
+      "Não ha problema, o load balancer distribui igualmente"
+    ],
+    correct: 1,
+    explanation: "Com raté limiting em memória local, cada instância mantém seu próprio contador. Se o load balancer distribui requests entre 4 instâncias, cada uma permite 100, totalizando até 400 req/min. A solução é usar armazenamento compartilhado como Redis."
+  },
+  {
+    question: "Quando é mais apropriado usar compressão Brotli ao inves de Gzip?",
+    options: [
+      "Para compressão de respostas dinâmicas de API em tempo real",
+      "Para assets estáticos pre-comprimidos durante o build",
+      "Para transferência entre microsserviços internos",
+      "Para compressão de uploads do usuário"
+    ],
+    correct: 1,
+    explanation: "Brotli oferece compressão ~15-20% melhor que Gzip, mas e significativamente mais lento para comprimir (especialmente em níveis altos). Para assets estáticos, você comprime uma vez no build é serve milhões de vezes. Para API responses dinâmicas, Gzip é mais adequado por ser rápido."
+  },
+  {
+    question: "O que o padrão DataLoader resolve em aplicações GraphQL?",
+    options: [
+      "Validação de tipos em runtime",
+      "Batching e caching de queries ao banco, resolvendo N+1",
+      "Compressão de payloads GraphQL",
+      "Raté limiting de resolvers individuais"
+    ],
+    correct: 1,
+    explanation: "O DataLoader agrupa (batch) múltiplas chamadas individuais ao banco em uma única query com WHERE id IN (...), executada no próximo tick do event loop. Além disso, cacheia resultados dentro do mesmo request, evitando buscas duplicadas."
+  },
+  {
+    question: "Qual header Cache-Control e apropriado para um arquivo JavaScript com hash no nome (ex: main.a3f8c2.js)?",
+    options: [
+      "Cache-Control: no-cache, no-store",
+      "Cache-Control: private, max-age=3600",
+      "Cache-Control: public, max-age=31536000, immutable",
+      "Cache-Control: public, max-age=60, must-reválidate"
+    ],
+    correct: 2,
+    explanation: "Arquivos com hash no nome (content hash) mudam de nome quando o conteúdo muda. Isso significa que o arquivo atual NUNCA muda — pode ser cacheado para sempre. 'immutable' diz ao navegador para não revalidar. 31536000 = 1 ano."
+  },
+  {
+    question: "Sobre HTTP/2 Multiplexing, qual afirmacao está CORRETA?",
+    options: [
+      "Abre uma conexão TCP separada para cada request",
+      "Permite múltiplos requests e responses simultâneos sobre uma única conexão TCP",
+      "Elimina completamente o head-of-line blocking em todas as camadas",
+      "Requer que o servidor suporte Server Push obrigatóriamente"
+    ],
+    correct: 1,
+    explanation: "HTTP/2 multiplexa múltiplos streams (requests/responses) sobre uma única conexão TCP. Isso elimina head-of-line blocking no nível HTTP, mas o TCP ainda pode ter esse problema (resolvido pelo HTTP/3 com QUIC sobre UDP)."
+  },
+  {
+    question: "Qual é a abordagem CORRETA para otimização de performance?",
+    options: [
+      "Otimizar cada função antes de medir, por precaucao",
+      "Cachear tudo com TTL infinito para máxima performance",
+      "Medir primeiro, identificar bottlenecks reais, otimizar, medir de novo",
+      "Adicionar índices em todas as colunas do banco de dados"
+    ],
+    correct: 2,
+    explanation: "A regra de ouro: meca, identifique o bottleneck real, otimize, e meca novamente. Otimizar sem medir e adivinhação — você pode gastar dias otimizando algo que representa 0.1% do tempo total enquanto ignora o verdadeiro gargalo."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Performance & Otimização.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

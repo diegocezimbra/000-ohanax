@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>57 — Acessibilidade (a11y) | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="56-documentacao-adrs.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>57</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="58-mobile-development.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:86.4%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 57</span>
+<h2>Acessibilidade (a11y)</h2>
+<div class="section-line"></div>
+
+<p>Acessibilidade web (a11y — "a" + 11 letras + "y") é a prática de garantir que <strong>todas as pessoas</strong>, incluindo aquelas com deficiências visuais, auditivas, motoras ou cognitivas, possam usar sua aplicação. Não é um nice-to-have — é um <strong>requisito legal</strong> em muitos paises (ADA nós EUA, EAA na Europa, LBI no Brasil) é um <strong>diferencial competitivo</strong>. 15% da populacao mundial vive com alguma forma de deficiência.</p>
+
+<p>Para o desenvolvedor full-stack, acessibilidade permeia todas as camadas: do HTML semântico no frontend até as APIs que fornecem dados estruturados para tecnologias assistivas. Um sistema inacessível não é um sistema completo — é um sistema <strong>quebrado para parte dos usuários</strong>.</p>
+
+<p>Nesta seção cobrimos: WCAG 2.2, ARIA, HTML semântico, screen readers, navegação por teclado, testes automatizados é como tornar um SPA existente acessível.</p>
+
+<!-- ═══ WCAG 2.2 ═══ -->
+<h3>1. WCAG 2.2 — Web Content Accessibility Guidelines</h3>
+
+<p>WCAG é o padrão internacional publicado pelo W3C que define como tornar conteúdo web acessível. A versão 2.2 (outubro 2023) adiciona 9 novos criterios focados em <strong>usuários com deficiências cognitivas e motoras</strong>.</p>
+
+<h4>Princípios POUR</h4>
+<p>Toda diretriz WCAG se encaixa em um dos 4 princípios fundamentais:</p>
+
+<div class="diagram">
+<div class="diagram-box green"><strong>P</strong>erceivable<br><small>Conteúdo perceptivel<br>pelos sentidos</small></div>
+<div class="diagram-arrow">+</div>
+<div class="diagram-box blue"><strong>O</strong>perable<br><small>Interface operavel<br>por qualquer input</small></div>
+<div class="diagram-arrow">+</div>
+<div class="diagram-box purple"><strong>U</strong>nderstandable<br><small>Conteúdo e interface<br>compreensiveis</small></div>
+<div class="diagram-arrow">+</div>
+<div class="diagram-box orange"><strong>R</strong>obust<br><small>Compativel com<br>tecnologias assistivas</small></div>
+</div>
+
+<ul>
+<li><strong>Perceivable (Perceptivel):</strong> Informacao e componentes de UI devem ser apresentados de formas que os usuários consigam perceber. Ex: texto alternativo para imagens, legendas para videos, contraste suficiente</li>
+<li><strong>Operable (Operavel):</strong> Componentes de interface e navegação devem ser operaveis. Ex: tudo acessível por teclado, tempo suficiente para ler, sem conteúdo que causa convulsoes</li>
+<li><strong>Understandable (Compreensivel):</strong> Informacao e operação da interface devem ser compreensiveis. Ex: texto legivel, comportamento previsível, prevenção de erros em formulários</li>
+<li><strong>Robust (Robusto):</strong> Conteúdo deve ser robusto o suficiente para ser interpretado por diversas tecnologias assistivas. Ex: HTML válido, roles ARIA corretos</li>
+</ul>
+
+<h4>Niveis de Conformidade: A, AA, AAA</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Nivel</th><th>Descricao</th><th>Quando Usar</th><th>Exemplo de Criterio</th></tr>
+<tr><td><strong>A</strong></td><td>Mínimo absoluto. Sem isso, conteúdo é completamente inacessível</td><td>Baseline para qualquer projeto</td><td>1.1.1 Text alternatives, 2.1.1 Keyboard</td></tr>
+<tr><td><strong>AA</strong></td><td>Padrão da industria. Exigido por legislacao na maioria dos paises</td><td>Obrigatorio para projetos comerciais</td><td>1.4.3 Contrast (4.5:1), 1.4.4 Resize text</td></tr>
+<tr><td><strong>AAA</strong></td><td>Nivel máximo. Extremamente difícil de atingir em todo o site</td><td>Setores específicos (governo, saude)</td><td>1.4.6 Enhanced contrast (7:1), 1.4.8 Visual presentation</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Na prática:</strong> Mire em <strong>WCAG 2.2 nível AA</strong>. E o que legislacoes como ADA, EAA (European Accessibility Act, 2025) e LBI (Lei Brasileira de Inclusao) exigem. AAA completo e quase impossível para sites complexos — aplique seletivamente onde fizer sentido.</div>
+</div>
+
+<h4>Criterios Mais Criticos</h4>
+<ul>
+<li><strong>1.1.1 Non-text Content (A):</strong> Todo conteúdo não-textual (imagens, icones, gráficos) deve ter alternativa em texto. <code>alt</code> em imagens, <code>aria-label</code> em icones</li>
+<li><strong>1.4.3 Contrast Minimum (AA):</strong> Texto normal precisa de ratio 4.5:1 contra o fundo. Texto grande (18pt ou 14pt bold) precisa de 3:1</li>
+<li><strong>2.1.1 Keyboard (A):</strong> Toda funcionalidade deve ser operavel via teclado, sem exigir timing específico de teclas individuais</li>
+<li><strong>2.4.7 Focus Visible (AA):</strong> Qualquer interface operavel por teclado deve ter um indicador de foco visível</li>
+<li><strong>4.1.2 Name, Role, Value (A):</strong> Para todos os componentes de UI, nome e role devem ser determinaveis programaticamente. Estados e valores devem ser notificaveis</li>
+</ul>
+
+<h4>Novos Criterios WCAG 2.2</h4>
+<ul>
+<li><strong>2.4.11 Focus Not Obscured (Minimum) (AA):</strong> O elemento com foco não pode ser completamente escondido por outros conteúdos (sticky headers, modais)</li>
+<li><strong>2.4.13 Focus Appearance (AAA):</strong> O indicador de foco deve ter area mínima de 2px e contraste de 3:1</li>
+<li><strong>2.5.7 Dragging Movements (AA):</strong> Funcionalidades que usam drag-and-drop devem ter alternativa single-pointer (clique). Drag não pode ser o único meio de interáção</li>
+<li><strong>2.5.8 Target Size (Minimum) (AA):</strong> Alvos de clique/toque devem ter no mínimo 24x24 CSS pixels (ou ter spacing suficiente)</li>
+<li><strong>3.3.7 Redundant Entry (A):</strong> Informacao já fornecida pelo usuário não deve ser pedida novamente no mesmo processo (auto-preenchimento)</li>
+</ul>
+
+<!-- ═══ ARIA ═══ -->
+<h3>2. ARIA — Accessible Rich Internet Applications</h3>
+
+<p>ARIA e uma específicacao do W3C que adiciona semântica extra ao HTML para tornar conteúdo dinâmico e componentes customizados acessiveis a tecnologias assistivas. ARIA funciona atraves de <strong>atributos</strong> que informam screen readers sobre o papel, estado e propriedades dos elementos.</p>
+
+<h4>A Regra Numero 1 de ARIA</h4>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Se você pode usar um elemento HTML nativo com a semântica e comportamento que precisa, use-o. NAO adicione ARIA desnecessariamente.</strong> ARIA mal aplicado e PIOR que nenhum ARIA — pode confundir screen readers é criar experiências piores. Um <code>&lt;button&gt;</code> nativo já tem role, keyboard handling e focus management. Um <code>&lt;div role="button"&gt;</code> precisa de tudo isso manualmente.</div>
+</div>
+
+<pre data-lang="HTML"><code><span class="cm">&lt;!-- ERRADO: div com ARIA reimplementando um button --&gt;</span>
+<span class="kw">&lt;div</span> <span class="fn">role</span>=<span class="str">"button"</span>
+     <span class="fn">tabindex</span>=<span class="str">"0"</span>
+     <span class="fn">aria-pressed</span>=<span class="str">"false"</span>
+     <span class="fn">onkeydown</span>=<span class="str">"handleKeyDown(event)"</span>
+     <span class="fn">onclick</span>=<span class="str">"handleClick()"</span><span class="kw">&gt;</span>
+  Salvar
+<span class="kw">&lt;/div&gt;</span>
+
+<span class="cm">&lt;!-- CORRETO: button nativo -- semântica, keyboard, focus: GRATIS --&gt;</span>
+<span class="kw">&lt;button</span> <span class="fn">type</span>=<span class="str">"button"</span> <span class="fn">onclick</span>=<span class="str">"handleClick()"</span><span class="kw">&gt;</span>
+  Salvar
+<span class="kw">&lt;/button&gt;</span></code></pre>
+
+<h4>ARIA Roles</h4>
+<p>Roles definem <strong>o que um elemento e</strong> para tecnologias assistivas:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Role</th><th>Descricao</th><th>HTML Nativo Equivalente</th></tr>
+<tr><td><code>button</code></td><td>Elemento clicavel que dispara acao</td><td><code>&lt;button&gt;</code></td></tr>
+<tr><td><code>dialog</code></td><td>Janela modal ou não-modal</td><td><code>&lt;dialog&gt;</code></td></tr>
+<tr><td><code>navigation</code></td><td>Bloco de links de navegação</td><td><code>&lt;nav&gt;</code></td></tr>
+<tr><td><code>tablist</code> / <code>tab</code> / <code>tabpanel</code></td><td>Interface de abas</td><td>Nenhum nativo</td></tr>
+<tr><td><code>alert</code></td><td>Mensagem importante e urgente</td><td>Nenhum nativo</td></tr>
+<tr><td><code>alertdialog</code></td><td>Dialog que requer resposta do usuário</td><td>Nenhum nativo</td></tr>
+<tr><td><code>progressbar</code></td><td>Indicador de progresso</td><td><code>&lt;progress&gt;</code></td></tr>
+<tr><td><code>tree</code> / <code>treeitem</code></td><td>Estrutura hierárquica (file explorer)</td><td>Nenhum nativo</td></tr>
+</table>
+</div>
+
+<h4>ARIA States & Properties</h4>
+<p>States e properties comúnicam o <strong>estado atual</strong> de um componente:</p>
+
+<pre data-lang="HTML"><code><span class="cm">&lt;!-- aria-expanded: menu dropdown aberto/fechado --&gt;</span>
+<span class="kw">&lt;button</span> <span class="fn">aria-expanded</span>=<span class="str">"false"</span> <span class="fn">aria-controls</span>=<span class="str">"menu-1"</span><span class="kw">&gt;</span>
+  Menu
+<span class="kw">&lt;/button&gt;</span>
+<span class="kw">&lt;ul</span> <span class="fn">id</span>=<span class="str">"menu-1"</span> <span class="fn">role</span>=<span class="str">"menu"</span> <span class="fn">hidden</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;li</span> <span class="fn">role</span>=<span class="str">"menuitem"</span><span class="kw">&gt;</span>Opcao 1<span class="kw">&lt;/li&gt;</span>
+  <span class="kw">&lt;li</span> <span class="fn">role</span>=<span class="str">"menuitem"</span><span class="kw">&gt;</span>Opcao 2<span class="kw">&lt;/li&gt;</span>
+<span class="kw">&lt;/ul&gt;</span>
+
+<span class="cm">&lt;!-- aria-hidden: ocultar de screen readers (icone decorativo) --&gt;</span>
+<span class="kw">&lt;button&gt;</span>
+  <span class="kw">&lt;svg</span> <span class="fn">aria-hidden</span>=<span class="str">"true"</span><span class="kw">&gt;</span>...<span class="kw">&lt;/svg&gt;</span>
+  <span class="kw">&lt;span&gt;</span>Fechar<span class="kw">&lt;/span&gt;</span>
+<span class="kw">&lt;/button&gt;</span>
+
+<span class="cm">&lt;!-- aria-label: nome acessível quando não ha texto visível --&gt;</span>
+<span class="kw">&lt;button</span> <span class="fn">aria-label</span>=<span class="str">"Fechar modal"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;svg</span> <span class="fn">aria-hidden</span>=<span class="str">"true"</span><span class="kw">&gt;</span>...<span class="kw">&lt;/svg&gt;</span>
+<span class="kw">&lt;/button&gt;</span>
+
+<span class="cm">&lt;!-- aria-describedby: descricao adicional (instruções de campo) --&gt;</span>
+<span class="kw">&lt;input</span> <span class="fn">type</span>=<span class="str">"password"</span> <span class="fn">aria-describedby</span>=<span class="str">"pwd-hint"</span><span class="kw"> /&gt;</span>
+<span class="kw">&lt;p</span> <span class="fn">id</span>=<span class="str">"pwd-hint"</span><span class="kw">&gt;</span>Mínimo 8 caracteres, 1 maiuscula, 1 número<span class="kw">&lt;/p&gt;</span></code></pre>
+
+<h4>ARIA Landmarks</h4>
+<p>Landmarks permitem que usuários de screen readers <strong>pulem entre seções</strong> da página rapidamente:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Landmark Role</th><th>HTML Equivalente</th><th>Uso</th></tr>
+<tr><td><code>banner</code></td><td><code>&lt;header&gt;</code> (top-level)</td><td>Cabecalho do site</td></tr>
+<tr><td><code>navigation</code></td><td><code>&lt;nav&gt;</code></td><td>Blocos de navegação</td></tr>
+<tr><td><code>main</code></td><td><code>&lt;main&gt;</code></td><td>Conteúdo principal (1 por página)</td></tr>
+<tr><td><code>complementary</code></td><td><code>&lt;aside&gt;</code></td><td>Conteúdo complementar (sidebar)</td></tr>
+<tr><td><code>contentinfo</code></td><td><code>&lt;footer&gt;</code> (top-level)</td><td>Rodape do site</td></tr>
+<tr><td><code>search</code></td><td><code>&lt;search&gt;</code> (HTML 5.2+)</td><td>Area de busca</td></tr>
+<tr><td><code>form</code></td><td><code>&lt;form&gt;</code> (com aria-label)</td><td>Formulario nomeado</td></tr>
+</table>
+</div>
+
+<h4>Exemplo Completo: Tabs Acessiveis em React</h4>
+
+<pre data-lang="TSX"><code><span class="kw">function</span> <span class="fn">AccessibleTabs</span>({ <span class="fn">tabs</span> }: { <span class="fn">tabs</span>: <span class="tp">TabItem</span>[] }) {
+  <span class="kw">const</span> [<span class="fn">activeIndex</span>, <span class="fn">setActiveIndex</span>] = <span class="fn">useState</span>(<span class="num">0</span>);
+  <span class="kw">const</span> <span class="fn">tabRefs</span> = <span class="fn">useRef</span>&lt;<span class="tp">HTMLButtonElement</span>[]&gt;([]);
+
+  <span class="kw">const</span> <span class="fn">handleKeyDown</span> = (<span class="fn">e</span>: <span class="tp">KeyboardEvent</span>, <span class="fn">index</span>: <span class="tp">number</span>) =&gt; {
+    <span class="kw">let</span> <span class="fn">newIndex</span> = <span class="fn">index</span>;
+
+    <span class="kw">if</span> (<span class="fn">e</span>.<span class="fn">key</span> === <span class="str">'ArrowRight'</span>) {
+      <span class="fn">newIndex</span> = (<span class="fn">index</span> + <span class="num">1</span>) % <span class="fn">tabs</span>.<span class="fn">length</span>;
+    } <span class="kw">else if</span> (<span class="fn">e</span>.<span class="fn">key</span> === <span class="str">'ArrowLeft'</span>) {
+      <span class="fn">newIndex</span> = (<span class="fn">index</span> - <span class="num">1</span> + <span class="fn">tabs</span>.<span class="fn">length</span>) % <span class="fn">tabs</span>.<span class="fn">length</span>;
+    } <span class="kw">else if</span> (<span class="fn">e</span>.<span class="fn">key</span> === <span class="str">'Home'</span>) {
+      <span class="fn">newIndex</span> = <span class="num">0</span>;
+    } <span class="kw">else if</span> (<span class="fn">e</span>.<span class="fn">key</span> === <span class="str">'End'</span>) {
+      <span class="fn">newIndex</span> = <span class="fn">tabs</span>.<span class="fn">length</span> - <span class="num">1</span>;
+    } <span class="kw">else</span> { <span class="kw">return</span>; }
+
+    <span class="fn">e</span>.<span class="fn">preventDefault</span>();
+    <span class="fn">setActiveIndex</span>(<span class="fn">newIndex</span>);
+    <span class="fn">tabRefs</span>.<span class="fn">current</span>[<span class="fn">newIndex</span>]?.<span class="fn">focus</span>();
+  };
+
+  <span class="kw">return</span> (
+    <span class="kw">&lt;div&gt;</span>
+      <span class="cm">{/* role="tablist" agrupa as tabs */}</span>
+      <span class="kw">&lt;div</span> <span class="fn">role</span>=<span class="str">"tablist"</span> <span class="fn">aria-label</span>=<span class="str">"Seções de conteúdo"</span><span class="kw">&gt;</span>
+        {<span class="fn">tabs</span>.<span class="fn">map</span>((<span class="fn">tab</span>, <span class="fn">i</span>) =&gt; (
+          <span class="kw">&lt;button</span>
+            <span class="fn">key</span>={<span class="fn">tab</span>.<span class="fn">id</span>}
+            <span class="fn">ref</span>={(<span class="fn">el</span>) =&gt; (<span class="fn">tabRefs</span>.<span class="fn">current</span>[<span class="fn">i</span>] = <span class="fn">el</span>!)}
+            <span class="fn">role</span>=<span class="str">"tab"</span>
+            <span class="fn">id</span>={<span class="str">`tab-</span>${<span class="fn">tab</span>.<span class="fn">id</span>}<span class="str">`</span>}
+            <span class="fn">aria-selected</span>={<span class="fn">i</span> === <span class="fn">activeIndex</span>}
+            <span class="fn">aria-controls</span>={<span class="str">`panel-</span>${<span class="fn">tab</span>.<span class="fn">id</span>}<span class="str">`</span>}
+            <span class="fn">tabIndex</span>={<span class="fn">i</span> === <span class="fn">activeIndex</span> ? <span class="num">0</span> : -<span class="num">1</span>}
+            <span class="fn">onClick</span>={() =&gt; <span class="fn">setActiveIndex</span>(<span class="fn">i</span>)}
+            <span class="fn">onKeyDown</span>={(<span class="fn">e</span>) =&gt; <span class="fn">handleKeyDown</span>(<span class="fn">e</span>, <span class="fn">i</span>)}
+          <span class="kw">&gt;</span>
+            {<span class="fn">tab</span>.<span class="fn">label</span>}
+          <span class="kw">&lt;/button&gt;</span>
+        ))}
+      <span class="kw">&lt;/div&gt;</span>
+
+      <span class="cm">{/* Panels -- apenas o ativo e visível */}</span>
+      {<span class="fn">tabs</span>.<span class="fn">map</span>((<span class="fn">tab</span>, <span class="fn">i</span>) =&gt; (
+        <span class="kw">&lt;div</span>
+          <span class="fn">key</span>={<span class="fn">tab</span>.<span class="fn">id</span>}
+          <span class="fn">role</span>=<span class="str">"tabpanel"</span>
+          <span class="fn">id</span>={<span class="str">`panel-</span>${<span class="fn">tab</span>.<span class="fn">id</span>}<span class="str">`</span>}
+          <span class="fn">aria-labelledby</span>={<span class="str">`tab-</span>${<span class="fn">tab</span>.<span class="fn">id</span>}<span class="str">`</span>}
+          <span class="fn">hidden</span>={<span class="fn">i</span> !== <span class="fn">activeIndex</span>}
+          <span class="fn">tabIndex</span>={<span class="num">0</span>}
+        <span class="kw">&gt;</span>
+          {<span class="fn">tab</span>.<span class="fn">content</span>}
+        <span class="kw">&lt;/div&gt;</span>
+      ))}
+    <span class="kw">&lt;/div&gt;</span>
+  );
+}</code></pre>
+
+<!-- ═══ HTML SEMANTICO ═══ -->
+<h3>3. HTML Semantico</h3>
+
+<p>HTML semântico é a base da acessibilidade. Usar os elementos corretos da tecnologias assistivas o <strong>significado</strong> do conteúdo, não apenas sua aparencia. Screen readers tratam um <code>&lt;nav&gt;</code> muito diferente de um <code>&lt;div class="nav"&gt;</code>.</p>
+
+<h4>Elementos Semanticos vs Divs</h4>
+
+<pre data-lang="HTML"><code><span class="cm">&lt;!-- ERRADO: div-soup (screen reader ve tudo como "grupo genérico") --&gt;</span>
+<span class="kw">&lt;div</span> <span class="fn">class</span>=<span class="str">"header"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;div</span> <span class="fn">class</span>=<span class="str">"nav"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;div</span> <span class="fn">class</span>=<span class="str">"nav-item"</span><span class="kw">&gt;</span>Home<span class="kw">&lt;/div&gt;</span>
+    <span class="kw">&lt;div</span> <span class="fn">class</span>=<span class="str">"nav-item"</span><span class="kw">&gt;</span>Sobre<span class="kw">&lt;/div&gt;</span>
+  <span class="kw">&lt;/div&gt;</span>
+<span class="kw">&lt;/div&gt;</span>
+<span class="kw">&lt;div</span> <span class="fn">class</span>=<span class="str">"main"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;div</span> <span class="fn">class</span>=<span class="str">"article"</span><span class="kw">&gt;</span>...<span class="kw">&lt;/div&gt;</span>
+  <span class="kw">&lt;div</span> <span class="fn">class</span>=<span class="str">"sidebar"</span><span class="kw">&gt;</span>...<span class="kw">&lt;/div&gt;</span>
+<span class="kw">&lt;/div&gt;</span>
+<span class="kw">&lt;div</span> <span class="fn">class</span>=<span class="str">"footer"</span><span class="kw">&gt;</span>...<span class="kw">&lt;/div&gt;</span>
+
+<span class="cm">&lt;!-- CORRETO: HTML semântico (screen reader navega por landmarks) --&gt;</span>
+<span class="kw">&lt;header&gt;</span>
+  <span class="kw">&lt;nav</span> <span class="fn">aria-label</span>=<span class="str">"Principal"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;a</span> <span class="fn">href</span>=<span class="str">"/"</span><span class="kw">&gt;</span>Home<span class="kw">&lt;/a&gt;</span>
+    <span class="kw">&lt;a</span> <span class="fn">href</span>=<span class="str">"/sobre"</span><span class="kw">&gt;</span>Sobre<span class="kw">&lt;/a&gt;</span>
+  <span class="kw">&lt;/nav&gt;</span>
+<span class="kw">&lt;/header&gt;</span>
+<span class="kw">&lt;main&gt;</span>
+  <span class="kw">&lt;article&gt;</span>...<span class="kw">&lt;/article&gt;</span>
+  <span class="kw">&lt;aside</span> <span class="fn">aria-label</span>=<span class="str">"Conteúdo relacionado"</span><span class="kw">&gt;</span>...<span class="kw">&lt;/aside&gt;</span>
+<span class="kw">&lt;/main&gt;</span>
+<span class="kw">&lt;footer&gt;</span>...<span class="kw">&lt;/footer&gt;</span></code></pre>
+
+<h4>Hierarquia de Headings (h1-h6)</h4>
+<p>Screen readers constroem um <strong>outline do documento</strong> a partir dos headings. Usuarios navegam por headings como um índice. A hierarquia deve ser lógica e sequêncial:</p>
+
+<ul>
+<li>Apenas <strong>1 h1 por página</strong> — o título principal</li>
+<li>Não pule níveis: h1 &rarr; h2 &rarr; h3, nunca h1 &rarr; h3</li>
+<li>Headings não são para estilizacao — use CSS para tamanho de fonte, headings para estrutura</li>
+<li>NVDA e VoiceOver permitem listar todos os headings com um atalho — se seus headings não fazem sentido fora de contexto, estão errados</li>
+</ul>
+
+<h4>Formularios Acessiveis</h4>
+
+<pre data-lang="HTML"><code><span class="cm">&lt;!-- Label associado ao input via htmlFor/id --&gt;</span>
+<span class="kw">&lt;form&gt;</span>
+  <span class="kw">&lt;fieldset&gt;</span>
+    <span class="kw">&lt;legend&gt;</span>Dados Pessoais<span class="kw">&lt;/legend&gt;</span>
+
+    <span class="kw">&lt;label</span> <span class="fn">for</span>=<span class="str">"name"</span><span class="kw">&gt;</span>Nome completo<span class="kw">&lt;/label&gt;</span>
+    <span class="kw">&lt;input</span>
+      <span class="fn">type</span>=<span class="str">"text"</span>
+      <span class="fn">id</span>=<span class="str">"name"</span>
+      <span class="fn">name</span>=<span class="str">"name"</span>
+      <span class="fn">required</span>
+      <span class="fn">aria-required</span>=<span class="str">"true"</span>
+      <span class="fn">autocomplete</span>=<span class="str">"name"</span>
+    <span class="kw">/&gt;</span>
+
+    <span class="kw">&lt;label</span> <span class="fn">for</span>=<span class="str">"email"</span><span class="kw">&gt;</span>E-mail<span class="kw">&lt;/label&gt;</span>
+    <span class="kw">&lt;input</span>
+      <span class="fn">type</span>=<span class="str">"email"</span>
+      <span class="fn">id</span>=<span class="str">"email"</span>
+      <span class="fn">name</span>=<span class="str">"email"</span>
+      <span class="fn">required</span>
+      <span class="fn">aria-required</span>=<span class="str">"true"</span>
+      <span class="fn">aria-describedby</span>=<span class="str">"email-error"</span>
+      <span class="fn">aria-invalid</span>=<span class="str">"false"</span>
+      <span class="fn">autocomplete</span>=<span class="str">"email"</span>
+    <span class="kw">/&gt;</span>
+    <span class="kw">&lt;p</span> <span class="fn">id</span>=<span class="str">"email-error"</span> <span class="fn">role</span>=<span class="str">"alert"</span> <span class="fn">hidden</span><span class="kw">&gt;</span>
+      E-mail inválido
+    <span class="kw">&lt;/p&gt;</span>
+  <span class="kw">&lt;/fieldset&gt;</span>
+
+  <span class="kw">&lt;fieldset&gt;</span>
+    <span class="kw">&lt;legend&gt;</span>Preferência de contato<span class="kw">&lt;/legend&gt;</span>
+    <span class="kw">&lt;label&gt;&lt;input</span> <span class="fn">type</span>=<span class="str">"radio"</span> <span class="fn">name</span>=<span class="str">"contact"</span> <span class="fn">value</span>=<span class="str">"email"</span><span class="kw">&gt;</span> E-mail<span class="kw">&lt;/label&gt;</span>
+    <span class="kw">&lt;label&gt;&lt;input</span> <span class="fn">type</span>=<span class="str">"radio"</span> <span class="fn">name</span>=<span class="str">"contact"</span> <span class="fn">value</span>=<span class="str">"phone"</span><span class="kw">&gt;</span> Telefone<span class="kw">&lt;/label&gt;</span>
+  <span class="kw">&lt;/fieldset&gt;</span>
+
+  <span class="kw">&lt;button</span> <span class="fn">type</span>=<span class="str">"submit"</span><span class="kw">&gt;</span>Enviar<span class="kw">&lt;/button&gt;</span>
+<span class="kw">&lt;/form&gt;</span></code></pre>
+
+<h4>Tabelas Acessiveis</h4>
+
+<pre data-lang="HTML"><code><span class="kw">&lt;table&gt;</span>
+  <span class="kw">&lt;caption&gt;</span>Vendas por região — Q4 2025<span class="kw">&lt;/caption&gt;</span>
+  <span class="kw">&lt;thead&gt;</span>
+    <span class="kw">&lt;tr&gt;</span>
+      <span class="kw">&lt;th</span> <span class="fn">scope</span>=<span class="str">"col"</span><span class="kw">&gt;</span>Regiao<span class="kw">&lt;/th&gt;</span>
+      <span class="kw">&lt;th</span> <span class="fn">scope</span>=<span class="str">"col"</span><span class="kw">&gt;</span>Receita<span class="kw">&lt;/th&gt;</span>
+      <span class="kw">&lt;th</span> <span class="fn">scope</span>=<span class="str">"col"</span><span class="kw">&gt;</span>Crescimento<span class="kw">&lt;/th&gt;</span>
+    <span class="kw">&lt;/tr&gt;</span>
+  <span class="kw">&lt;/thead&gt;</span>
+  <span class="kw">&lt;tbody&gt;</span>
+    <span class="kw">&lt;tr&gt;</span>
+      <span class="kw">&lt;th</span> <span class="fn">scope</span>=<span class="str">"row"</span><span class="kw">&gt;</span>Sudeste<span class="kw">&lt;/th&gt;</span>
+      <span class="kw">&lt;td&gt;</span>R$ 2.4M<span class="kw">&lt;/td&gt;</span>
+      <span class="kw">&lt;td&gt;</span>+12%<span class="kw">&lt;/td&gt;</span>
+    <span class="kw">&lt;/tr&gt;</span>
+    <span class="kw">&lt;tr&gt;</span>
+      <span class="kw">&lt;th</span> <span class="fn">scope</span>=<span class="str">"row"</span><span class="kw">&gt;</span>Sul<span class="kw">&lt;/th&gt;</span>
+      <span class="kw">&lt;td&gt;</span>R$ 1.1M<span class="kw">&lt;/td&gt;</span>
+      <span class="kw">&lt;td&gt;</span>+8%<span class="kw">&lt;/td&gt;</span>
+    <span class="kw">&lt;/tr&gt;</span>
+  <span class="kw">&lt;/tbody&gt;</span>
+<span class="kw">&lt;/table&gt;</span></code></pre>
+
+<!-- ═══ SCREEN READERS ═══ -->
+<h3>4. Screen Readers</h3>
+
+<p>Screen readers são softwares que convertem conteúdo da tela em <strong>fala sintetizada ou braille</strong>. Eles não "veem" a tela — interpretam a <strong>accessibility tree</strong>, uma representacao estruturada que o browser gera a partir do DOM e dos atributos ARIA.</p>
+
+<h4>Principais Screen Readers</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Screen Reader</th><th>Plataforma</th><th>Custo</th><th>Market Share</th></tr>
+<tr><td><strong>NVDA</strong></td><td>Windows</td><td>Gratuito (open source)</td><td>~30%</td></tr>
+<tr><td><strong>JAWS</strong></td><td>Windows</td><td>$95/ano (licenca)</td><td>~40%</td></tr>
+<tr><td><strong>VoiceOver</strong></td><td>macOS / iOS</td><td>Gratuito (built-in)</td><td>~25%</td></tr>
+<tr><td><strong>TalkBack</strong></td><td>Android</td><td>Gratuito (built-in)</td><td>~5%</td></tr>
+</table>
+</div>
+
+<h4>Testing Manual com Screen Reader</h4>
+<p>Todo desenvolvedor deveria testar com screen reader pelo menós uma vez por sprint. Procedimento básico:</p>
+
+<ol>
+<li><strong>Ative o screen reader</strong> (VoiceOver: Cmd+F5 no Mac, NVDA: instale e inicie no Windows)</li>
+<li><strong>Feche os olhos</strong> (ou desligue o monitor) e tente completar o fluxo principal</li>
+<li><strong>Verifique:</strong> Todo elemento interátivo tem nome acessível? A ordem de leitura faz sentido? Formularios anunciam erros? Modais prendem o foco corretamente?</li>
+<li><strong>Navegue por headings</strong> (NVDA: H, VoiceOver: VO+Cmd+H) — o outline faz sentido?</li>
+<li><strong>Navegue por landmarks</strong> (NVDA: D, VoiceOver: VO+Cmd+M) — as regioes da página estão marcadas?</li>
+</ol>
+
+<h4>Live Regions (aria-live)</h4>
+<p>Live regions notificam screen readers sobre <strong>mudanças dinâmicas</strong> no conteúdo — sem que o usuário precise navegar até o elemento alterádo:</p>
+
+<pre data-lang="HTML"><code><span class="cm">&lt;!-- aria-live="polite" = anuncia quando screen reader estiver ociosó --&gt;</span>
+<span class="kw">&lt;div</span> <span class="fn">aria-live</span>=<span class="str">"polite"</span> <span class="fn">aria-atomic</span>=<span class="str">"true"</span><span class="kw">&gt;</span>
+  3 resultados encontrados
+<span class="kw">&lt;/div&gt;</span>
+
+<span class="cm">&lt;!-- aria-live="assertive" = interrompe e anuncia IMEDIATAMENTE --&gt;</span>
+<span class="kw">&lt;div</span> <span class="fn">aria-live</span>=<span class="str">"assertive"</span> <span class="fn">role</span>=<span class="str">"alert"</span><span class="kw">&gt;</span>
+  Erro: sessão expirada. Faca login novamente.
+<span class="kw">&lt;/div&gt;</span>
+
+<span class="cm">&lt;!-- aria-atomic="true" = le o conteúdo INTEIRO (não só o que mudou) --&gt;</span>
+<span class="cm">&lt;!-- aria-atomic="false" = le apenas a parte que mudou --&gt;</span></code></pre>
+
+<pre data-lang="TSX"><code><span class="cm">// React: Live region para status de busca</span>
+<span class="kw">function</span> <span class="fn">SearchResults</span>({ <span class="fn">query</span>, <span class="fn">results</span> }: <span class="tp">Props</span>) {
+  <span class="kw">return</span> (
+    <span class="kw">&lt;&gt;</span>
+      <span class="cm">{/* Visualmente oculto, mas anunciado pelo screen reader */}</span>
+      <span class="kw">&lt;div</span>
+        <span class="fn">role</span>=<span class="str">"status"</span>
+        <span class="fn">aria-live</span>=<span class="str">"polite"</span>
+        <span class="fn">aria-atomic</span>=<span class="str">"true"</span>
+        <span class="fn">className</span>=<span class="str">"sr-only"</span>
+      <span class="kw">&gt;</span>
+        {<span class="fn">results</span>.<span class="fn">length</span>} resultados para "<span class="fn">{query}</span>"
+      <span class="kw">&lt;/div&gt;</span>
+
+      {<span class="fn">results</span>.<span class="fn">map</span>(<span class="fn">r</span> =&gt; <span class="kw">&lt;ResultCard</span> <span class="fn">key</span>={<span class="fn">r</span>.<span class="fn">id</span>} <span class="fn">data</span>={<span class="fn">r</span>} <span class="kw">/&gt;</span>)}
+    <span class="kw">&lt;/&gt;</span>
+  );
+}</code></pre>
+
+<h4>Focus Management em SPAs</h4>
+<p>Em Single Page Applications, navegação por rotas não causa page reload — o screen reader <strong>não sabe que o conteúdo mudou</strong>. Você precisa gerenciar o foco manualmente:</p>
+
+<pre data-lang="TSX"><code><span class="cm">// React: Mover foco para o conteúdo principal ao mudar de rota</span>
+<span class="kw">function</span> <span class="fn">RouteAnnouncer</span>() {
+  <span class="kw">const</span> <span class="fn">location</span> = <span class="fn">useLocation</span>();
+  <span class="kw">const</span> <span class="fn">mainRef</span> = <span class="fn">useRef</span>&lt;<span class="tp">HTMLElement</span>&gt;(<span class="kw">null</span>);
+
+  <span class="fn">useEffect</span>(() =&gt; {
+    <span class="cm">// Mover foco para &lt;main&gt; após navegação</span>
+    <span class="fn">mainRef</span>.<span class="fn">current</span>?.<span class="fn">focus</span>();
+
+    <span class="cm">// Atualizar título da página</span>
+    <span class="fn">document</span>.<span class="fn">title</span> = <span class="fn">getPageTitle</span>(<span class="fn">location</span>.<span class="fn">pathname</span>);
+  }, [<span class="fn">location</span>]);
+
+  <span class="kw">return</span> (
+    <span class="kw">&lt;main</span>
+      <span class="fn">ref</span>={<span class="fn">mainRef</span>}
+      <span class="fn">tabIndex</span>={-<span class="num">1</span>}
+      <span class="fn">style</span>={{ <span class="fn">outline</span>: <span class="str">'none'</span> }}
+    <span class="kw">&gt;</span>
+      <span class="kw">&lt;Outlet /&gt;</span>
+    <span class="kw">&lt;/main&gt;</span>
+  );
+}</code></pre>
+
+<!-- ═══ KEYBOARD NAVIGATION ═══ -->
+<h3>5. Navegacao por Teclado</h3>
+
+<p>Apróximadamente 10% dos usuários dependem exclusivamente do teclado para navegar — incluindo usuários de screen readers, pessoas com deficiências motoras e power users. Se sua aplicação não funciona sem mouse, ela esta <strong>quebrada</strong> para essas pessoas.</p>
+
+<h4>Tab Order e tabindex</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>tabindex</th><th>Comportamento</th><th>Quando Usar</th></tr>
+<tr><td><code>tabindex="0"</code></td><td>Elemento entra no tab order natural (baseado na posicao no DOM)</td><td>Para elementos não-focaveis que precisam receber foco (custom widgets)</td></tr>
+<tr><td><code>tabindex="-1"</code></td><td>Focavel programaticamente (via JS), mas NAO aparece no tab order</td><td>Para gerenciar foco em modais, skip targets, headings após navegação</td></tr>
+<tr><td><code>tabindex="1+"</code></td><td>Forca posicao no tab order (ANTES de todos tabindex=0)</td><td><strong>NUNCA use.</strong> Quebra a ordem natural e causa confusao</td></tr>
+</table>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Nunca use tabindex positivo (1, 2, 3...).</strong> Ele cria uma ordem de tabulacao personalizada que conflita com a ordem natural do DOM. O resultado e navegação imprevisível. Se a ordem de tab esta errada, corrijá a <strong>ordem dos elementos no DOM</strong>, não o tabindex.</div>
+</div>
+
+<h4>Focus Traps (Armadilhas de Foco)</h4>
+<p>Quando um modal abre, o foco deve ficar <strong>presó dentro dele</strong> até que sejá fechado. Se o usuário pressionar Tab além do último elemento focavel, o foco deve voltar ao primeiro. Isso impede que o usuário "escape" para o conteúdo atras do overlay.</p>
+
+<pre data-lang="TSX"><code><span class="cm">// Hook de focus trap para modais</span>
+<span class="kw">function</span> <span class="fn">useFocusTrap</span>(<span class="fn">ref</span>: <span class="tp">RefObject</span>&lt;<span class="tp">HTMLElement</span>&gt;) {
+  <span class="fn">useEffect</span>(() =&gt; {
+    <span class="kw">const</span> <span class="fn">element</span> = <span class="fn">ref</span>.<span class="fn">current</span>;
+    <span class="kw">if</span> (!<span class="fn">element</span>) <span class="kw">return</span>;
+
+    <span class="kw">const</span> <span class="fn">focusableSelector</span> = [
+      <span class="str">'a[href]'</span>, <span class="str">'button:not([disabled])'</span>,
+      <span class="str">'input:not([disabled])'</span>, <span class="str">'select:not([disabled])'</span>,
+      <span class="str">'textarea:not([disabled])'</span>, <span class="str">'[tabindex]:not([tabindex="-1"])'</span>,
+    ].<span class="fn">join</span>(<span class="str">','</span>);
+
+    <span class="kw">const</span> <span class="fn">handleKeyDown</span> = (<span class="fn">e</span>: <span class="tp">KeyboardEvent</span>) =&gt; {
+      <span class="kw">if</span> (<span class="fn">e</span>.<span class="fn">key</span> !== <span class="str">'Tab'</span>) <span class="kw">return</span>;
+
+      <span class="kw">const</span> <span class="fn">focusable</span> = <span class="fn">element</span>.<span class="fn">querySelectorAll</span>(<span class="fn">focusableSelector</span>);
+      <span class="kw">const</span> <span class="fn">first</span> = <span class="fn">focusable</span>[<span class="num">0</span>] <span class="kw">as</span> <span class="tp">HTMLElement</span>;
+      <span class="kw">const</span> <span class="fn">last</span> = <span class="fn">focusable</span>[<span class="fn">focusable</span>.<span class="fn">length</span> - <span class="num">1</span>] <span class="kw">as</span> <span class="tp">HTMLElement</span>;
+
+      <span class="kw">if</span> (<span class="fn">e</span>.<span class="fn">shiftKey</span> && <span class="fn">document</span>.<span class="fn">activeElement</span> === <span class="fn">first</span>) {
+        <span class="fn">e</span>.<span class="fn">preventDefault</span>();
+        <span class="fn">last</span>.<span class="fn">focus</span>(); <span class="cm">// Shift+Tab no primeiro → vai pro último</span>
+      } <span class="kw">else if</span> (!<span class="fn">e</span>.<span class="fn">shiftKey</span> && <span class="fn">document</span>.<span class="fn">activeElement</span> === <span class="fn">last</span>) {
+        <span class="fn">e</span>.<span class="fn">preventDefault</span>();
+        <span class="fn">first</span>.<span class="fn">focus</span>(); <span class="cm">// Tab no último → volta pro primeiro</span>
+      }
+    };
+
+    <span class="fn">element</span>.<span class="fn">addEventListener</span>(<span class="str">'keydown'</span>, <span class="fn">handleKeyDown</span>);
+    <span class="kw">return</span> () =&gt; <span class="fn">element</span>.<span class="fn">removeEventListener</span>(<span class="str">'keydown'</span>, <span class="fn">handleKeyDown</span>);
+  }, [<span class="fn">ref</span>]);
+}</code></pre>
+
+<h4>Skip Links</h4>
+<p>Skip links permitem que usuários de teclado <strong>pulem direto para o conteúdo principal</strong>, evitando navegar por toda a barra de navegação a cada página:</p>
+
+<pre data-lang="HTML"><code><span class="cm">&lt;!-- Primeiro elemento do body. Visivel apenas quando recebe foco --&gt;</span>
+<span class="kw">&lt;a</span> <span class="fn">href</span>=<span class="str">"#main-content"</span> <span class="fn">class</span>=<span class="str">"skip-link"</span><span class="kw">&gt;</span>
+  Pular para o conteúdo principal
+<span class="kw">&lt;/a&gt;</span>
+
+<span class="kw">&lt;header&gt;</span>...<span class="kw">&lt;/header&gt;</span>
+<span class="kw">&lt;nav&gt;</span>...<span class="kw">&lt;/nav&gt;</span>
+
+<span class="kw">&lt;main</span> <span class="fn">id</span>=<span class="str">"main-content"</span> <span class="fn">tabindex</span>=<span class="str">"-1"</span><span class="kw">&gt;</span>
+  ...
+<span class="kw">&lt;/main&gt;</span></code></pre>
+
+<pre data-lang="CSS"><code><span class="cm">/* Oculto por padrão, aparece quando recebe foco via Tab */</span>
+.<span class="fn">skip-link</span> {
+  <span class="fn">position</span>: <span class="kw">absolute</span>;
+  <span class="fn">top</span>: -<span class="num">100px</span>;
+  <span class="fn">left</span>: <span class="num">16px</span>;
+  <span class="fn">background</span>: <span class="str">#1a1a2e</span>;
+  <span class="fn">color</span>: <span class="str">#fff</span>;
+  <span class="fn">padding</span>: <span class="num">12px</span> <span class="num">24px</span>;
+  <span class="fn">border-radius</span>: <span class="num">8px</span>;
+  <span class="fn">z-index</span>: <span class="num">9999</span>;
+  <span class="fn">text-decoration</span>: <span class="kw">none</span>;
+  <span class="fn">font-weight</span>: <span class="num">600</span>;
+}
+.<span class="fn">skip-link</span>:<span class="kw">focus</span> {
+  <span class="fn">top</span>: <span class="num">16px</span>;
+}</code></pre>
+
+<h4>Roving Tabindex Pattern</h4>
+<p>Para grupos de elementos relacionados (toolbars, tablists, menus), apenas <strong>um item</strong> fica no tab order (tabindex=0) por vez. Os outros ficam com tabindex=-1. Setas movem o foco dentro do grupo:</p>
+
+<pre data-lang="TSX"><code><span class="cm">// Roving tabindex para toolbar</span>
+<span class="kw">function</span> <span class="fn">Toolbar</span>({ <span class="fn">items</span> }: { <span class="fn">items</span>: <span class="tp">ToolbarItem</span>[] }) {
+  <span class="kw">const</span> [<span class="fn">focusedIndex</span>, <span class="fn">setFocusedIndex</span>] = <span class="fn">useState</span>(<span class="num">0</span>);
+
+  <span class="kw">const</span> <span class="fn">handleKeyDown</span> = (<span class="fn">e</span>: <span class="tp">KeyboardEvent</span>) =&gt; {
+    <span class="kw">if</span> (<span class="fn">e</span>.<span class="fn">key</span> === <span class="str">'ArrowRight'</span>) {
+      <span class="fn">setFocusedIndex</span>(<span class="fn">prev</span> =&gt; (<span class="fn">prev</span> + <span class="num">1</span>) % <span class="fn">items</span>.<span class="fn">length</span>);
+    } <span class="kw">else if</span> (<span class="fn">e</span>.<span class="fn">key</span> === <span class="str">'ArrowLeft'</span>) {
+      <span class="fn">setFocusedIndex</span>(<span class="fn">prev</span> =&gt;
+        (<span class="fn">prev</span> - <span class="num">1</span> + <span class="fn">items</span>.<span class="fn">length</span>) % <span class="fn">items</span>.<span class="fn">length</span>
+      );
+    }
+  };
+
+  <span class="kw">return</span> (
+    <span class="kw">&lt;div</span> <span class="fn">role</span>=<span class="str">"toolbar"</span> <span class="fn">aria-label</span>=<span class="str">"Acoes"</span> <span class="fn">onKeyDown</span>={<span class="fn">handleKeyDown</span>}<span class="kw">&gt;</span>
+      {<span class="fn">items</span>.<span class="fn">map</span>((<span class="fn">item</span>, <span class="fn">i</span>) =&gt; (
+        <span class="kw">&lt;button</span>
+          <span class="fn">key</span>={<span class="fn">item</span>.<span class="fn">id</span>}
+          <span class="fn">tabIndex</span>={<span class="fn">i</span> === <span class="fn">focusedIndex</span> ? <span class="num">0</span> : -<span class="num">1</span>}
+          <span class="fn">ref</span>={<span class="fn">el</span> =&gt; {
+            <span class="kw">if</span> (<span class="fn">i</span> === <span class="fn">focusedIndex</span>) <span class="fn">el</span>?.<span class="fn">focus</span>();
+          }}
+        <span class="kw">&gt;</span>
+          {<span class="fn">item</span>.<span class="fn">label</span>}
+        <span class="kw">&lt;/button&gt;</span>
+      ))}
+    <span class="kw">&lt;/div&gt;</span>
+  );
+}</code></pre>
+
+<!-- ═══ TESTING ═══ -->
+<h3>6. Testing de Acessibilidade</h3>
+
+<p>Acessibilidade precisa ser testada em <strong>multiplas camadas</strong>: automatizado (rápido, pega ~30% dos problemas), semi-automatizado (guiado por ferramentas), e manual (screen reader + teclado — pega os outros 70%). Nenhuma camada sozinha é suficiente.</p>
+
+<h4>Ferramentas Automatizadas</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Tipo</th><th>O Que Detecta</th><th>Limitacao</th></tr>
+<tr><td><strong>axe-core</strong></td><td>Library (JS)</td><td>Violacoes WCAG em DOM real</td><td>Não testa interáção nem contexto</td></tr>
+<tr><td><strong>Lighthouse</strong></td><td>DevTools / CI</td><td>Score de acessibilidade, contrastes, labels</td><td>Análise superficial, não testa SPAs dinâmicos</td></tr>
+<tr><td><strong>pa11y</strong></td><td>CLI / CI</td><td>Violacoes WCAG com output estruturado</td><td>Mesmos limites de análise estática</td></tr>
+<tr><td><strong>eslint-plugin-jsx-a11y</strong></td><td>Linter (React)</td><td>Erros de a11y no JSX em tempo de desenvolvimento</td><td>Análise estática, não ve DOM renderizado</td></tr>
+</table>
+</div>
+
+<h4>axe-core com Playwright</h4>
+
+<pre data-lang="TypeScript"><code><span class="cm">// playwright.config.ts -- setup para testes de a11y</span>
+<span class="kw">import</span> { <span class="fn">test</span>, <span class="fn">expect</span> } <span class="kw">from</span> <span class="str">'@playwright/test'</span>;
+<span class="kw">import</span> <span class="fn">AxeBuilder</span> <span class="kw">from</span> <span class="str">'@axe-core/playwright'</span>;
+
+<span class="fn">test</span>.<span class="fn">describe</span>(<span class="str">'Acessibilidade'</span>, () =&gt; {
+
+  <span class="fn">test</span>(<span class="str">'página inicial não tem violações WCAG AA'</span>, <span class="kw">async</span> ({ <span class="fn">page</span> }) =&gt; {
+    <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">goto</span>(<span class="str">'/'</span>);
+
+    <span class="kw">const</span> <span class="fn">results</span> = <span class="kw">await</span> <span class="kw">new</span> <span class="fn">AxeBuilder</span>({ <span class="fn">page</span> })
+      .<span class="fn">withTags</span>([<span class="str">'wcag2a'</span>, <span class="str">'wcag2aa'</span>, <span class="str">'wcag22aa'</span>])
+      .<span class="fn">exclude</span>(<span class="str">'#third-party-widget'</span>) <span class="cm">// ignorar widgets de terceiros</span>
+      .<span class="fn">analyze</span>();
+
+    <span class="fn">expect</span>(<span class="fn">results</span>.<span class="fn">violations</span>).<span class="fn">toEqual</span>([]);
+  });
+
+  <span class="fn">test</span>(<span class="str">'formulário de cadastro acessível'</span>, <span class="kw">async</span> ({ <span class="fn">page</span> }) =&gt; {
+    <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">goto</span>(<span class="str">'/register'</span>);
+
+    <span class="cm">// Preencher formulário via teclado</span>
+    <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">keyboard</span>.<span class="fn">press</span>(<span class="str">'Tab'</span>); <span class="cm">// skip link</span>
+    <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">keyboard</span>.<span class="fn">press</span>(<span class="str">'Tab'</span>); <span class="cm">// primeiro campo</span>
+    <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">keyboard</span>.<span class="fn">type</span>(<span class="str">'Joao Silva'</span>);
+    <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">keyboard</span>.<span class="fn">press</span>(<span class="str">'Tab'</span>);
+    <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">keyboard</span>.<span class="fn">type</span>(<span class="str">'joao@email.com'</span>);
+
+    <span class="cm">// Verificar a11y do formulário preenchido</span>
+    <span class="kw">const</span> <span class="fn">results</span> = <span class="kw">await</span> <span class="kw">new</span> <span class="fn">AxeBuilder</span>({ <span class="fn">page</span> })
+      .<span class="fn">include</span>(<span class="str">'form'</span>)
+      .<span class="fn">analyze</span>();
+
+    <span class="fn">expect</span>(<span class="fn">results</span>.<span class="fn">violations</span>).<span class="fn">toEqual</span>([]);
+  });
+
+  <span class="fn">test</span>(<span class="str">'modal prende foco corretamente'</span>, <span class="kw">async</span> ({ <span class="fn">page</span> }) =&gt; {
+    <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">goto</span>(<span class="str">'/dashboard'</span>);
+    <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">click</span>(<span class="str">'button:has-text("Novo Item")'</span>);
+
+    <span class="cm">// Verificar que foco esta dentro do modal</span>
+    <span class="kw">const</span> <span class="fn">focused</span> = <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">evaluate</span>(() =&gt;
+      <span class="fn">document</span>.<span class="fn">activeElement</span>?.<span class="fn">closest</span>(<span class="str">'[role="dialog"]'</span>) !== <span class="kw">null</span>
+    );
+    <span class="fn">expect</span>(<span class="fn">focused</span>).<span class="fn">toBe</span>(<span class="kw">true</span>);
+
+    <span class="cm">// Pressionar Escape fecha o modal</span>
+    <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">keyboard</span>.<span class="fn">press</span>(<span class="str">'Escape'</span>);
+    <span class="kw">const</span> <span class="fn">modalVisible</span> = <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">isVisible</span>(<span class="str">'[role="dialog"]'</span>);
+    <span class="fn">expect</span>(<span class="fn">modalVisible</span>).<span class="fn">toBe</span>(<span class="kw">false</span>);
+  });
+});</code></pre>
+
+<h4>ESLint Plugin jsx-a11y</h4>
+
+<pre data-lang="TypeScript"><code><span class="cm">// eslint.config.js (flat config)</span>
+<span class="kw">import</span> <span class="fn">jsxA11y</span> <span class="kw">from</span> <span class="str">'eslint-plugin-jsx-a11y'</span>;
+
+<span class="kw">export default</span> [
+  {
+    <span class="fn">plugins</span>: { <span class="str">'jsx-a11y'</span>: <span class="fn">jsxA11y</span> },
+    <span class="fn">rules</span>: {
+      <span class="cm">// Imagens devem ter alt text</span>
+      <span class="str">'jsx-a11y/alt-text'</span>: <span class="str">'error'</span>,
+      <span class="cm">// Labels devem estar associados a inputs</span>
+      <span class="str">'jsx-a11y/label-has-associated-control'</span>: <span class="str">'error'</span>,
+      <span class="cm">// Click handlers precisam de keyboard handlers</span>
+      <span class="str">'jsx-a11y/click-events-have-key-events'</span>: <span class="str">'error'</span>,
+      <span class="cm">// Elementos interátivos precisam de role</span>
+      <span class="str">'jsx-a11y/no-static-element-interáctions'</span>: <span class="str">'error'</span>,
+      <span class="cm">// Não use autofocus (desorientador para screen readers)</span>
+      <span class="str">'jsx-a11y/no-autofocus'</span>: <span class="str">'warn'</span>,
+      <span class="cm">// Heading order lógico</span>
+      <span class="str">'jsx-a11y/heading-has-content'</span>: <span class="str">'error'</span>,
+      <span class="cm">// Não use role redundante (button com role="button")</span>
+      <span class="str">'jsx-a11y/no-redundant-roles'</span>: <span class="str">'warn'</span>,
+    },
+  },
+];</code></pre>
+
+<h4>CSS: Classe sr-only (Screen Reader Only)</h4>
+<p>Padrão universal para ocultar conteúdo visualmente mas mante-lo disponível para screen readers:</p>
+
+<pre data-lang="CSS"><code><span class="cm">/* Oculta visualmente, mas MANTÉM na accessibility tree */</span>
+.<span class="fn">sr-only</span> {
+  <span class="fn">position</span>: <span class="kw">absolute</span>;
+  <span class="fn">width</span>: <span class="num">1px</span>;
+  <span class="fn">height</span>: <span class="num">1px</span>;
+  <span class="fn">padding</span>: <span class="num">0</span>;
+  <span class="fn">margin</span>: -<span class="num">1px</span>;
+  <span class="fn">overflow</span>: <span class="kw">hidden</span>;
+  <span class="fn">clip</span>: <span class="fn">rect</span>(<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>);
+  <span class="fn">white-space</span>: <span class="kw">nowrap</span>;
+  <span class="fn">border</span>: <span class="num">0</span>;
+}
+
+<span class="cm">/* NAO use display:none ou visibility:hidden --
+   esses REMOVEM o elemento da accessibility tree! */</span></code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>7. Mini System Design: Tornando um SPA Existente Acessivel</h3>
+
+<p><strong>Cenário:</strong> Você tem um SPA React com 50+ componentes, zero acessibilidade. O time juridico exige conformidade WCAG 2.2 AA em 3 meses. Como planejar a migração?</p>
+
+<div class="diagram">
+<div class="diagram-box red">Fase 1: Audit<br><small>Semana 1-2</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Fase 2: Fundacao<br><small>Semana 3-4</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Fase 3: Componentes<br><small>Semana 5-8</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Fase 4: Validação<br><small>Semana 9-12</small></div>
+</div>
+
+<p><strong>Fase 1 — Audit (Semanas 1-2):</strong></p>
+<ol>
+<li>Rodar <code>axe-core</code> em todas as páginas e catalogar violações por severidade</li>
+<li>Testar os 5 fluxos mais críticos com teclado-only e screen reader</li>
+<li>Gerar relatório com número de violações por categoria WCAG</li>
+<li>Priorizar: Critical (blocker) &gt; Serious (A/AA) &gt; Moderaté &gt; Minor</li>
+</ol>
+
+<p><strong>Fase 2 — Fundacao (Semanas 3-4):</strong></p>
+<ol>
+<li>Adicionar <code>eslint-plugin-jsx-a11y</code> no CI (block on error)</li>
+<li>Substituir <code>&lt;div&gt;</code> por elementos semânticos no layout (header, nav, main, footer)</li>
+<li>Implementar skip link global</li>
+<li>Adicionar RouteAnnouncer para gerenciar foco em navegação SPA</li>
+<li>Criar classe <code>sr-only</code> no design system</li>
+</ol>
+
+<p><strong>Fase 3 — Componentes (Semanas 5-8):</strong></p>
+<ol>
+<li>Auditar e corrigir Design System components (Button, Input, Select, Modal, Table)</li>
+<li>Adicionar focus trap em todos os modais e dialogs</li>
+<li>Garantir que todos os formulários tenham labels, error messages com aria-describedby, e aria-invalid</li>
+<li>Implementar roving tabindex em tabs, toolbars, menus</li>
+<li>Adicionar alt text em todas as imagens, aria-hidden em icones decorativos</li>
+</ol>
+
+<p><strong>Fase 4 — Validação (Semanas 9-12):</strong></p>
+<ol>
+<li>Testes automatizados com Playwright + axe em TODAS as páginas no CI</li>
+<li>Testes manuais com NVDA/VoiceOver nós 10 fluxos mais críticos</li>
+<li>Contratar auditoria externa (opcional mas recomendado para conformidade legal)</li>
+<li>Documentar decisões e criterios AAA não atingidos com justificativa</li>
+</ol>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Comece pelo Design System. Se Button, Input, Modal e Select forem acessiveis, 60% da aplicação herda acessibilidade automáticamente. Sempre conserte a fundacao antes dos detalhes.</div>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>8. Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>ARIA excessivo ("ARIA soup"):</strong> Adicionar <code>role="button"</code> em um <code>&lt;button&gt;</code> é redundante. Adicionar <code>aria-label</code> que repete o texto visível e confusó (screen reader le duas vezes). ARIA deve <strong>complementar</strong> HTML semântico, não substituir ou duplicar.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Usar <code>display: none</code> para "esconder" conteúdo de screen readers:</strong> <code>display: none</code> é <code>visibility: hidden</code> removem o elemento da accessibility tree. Para ocultar visualmente mantendo acessível, use a classe <code>sr-only</code>. Para ocultar de screen readers mas manter visível, use <code>aria-hidden="true"</code>.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Confiar apenas em testes automatizados:</strong> Ferramentas como axe-core detectam ~30% dos problemas de acessibilidade (contrastes, labels faltando, roles incorretos). Os outros 70% exigem teste manual: ordem de leitura lógica, contexto semântico, usabilidade real com screen reader. Automatizado é necessário mas insuficiente.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Overlay de acessibilidade (widgets "acessiveis"):</strong> Widgets que prometem tornar seu site acessível com "uma linha de JavaScript" (AccessiBe, UserWay, etc.) não funcionam. Eles não corrigem HTML semântico, não adicionam roles corretos, é frequentemente <strong>pioram</strong> a experiência para usuários de screen readers. Não ha atalho — acessibilidade real exige mudança no código.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Desabilitar outline de foco (<code>outline: none</code> global):</strong> Muitos desenvolvedores removem o outline de foco porque "e feio". Isso torna a navegação por teclado impossível — o usuário não sabe onde esta o foco. Se não gosta do outline padrão, customize-o com <code>:focus-visible</code> (que mostra outline só para navegação por teclado, não para cliques de mouse).</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Use <code>:focus-visible</code> ao inves de <code>:focus</code>:</strong> <code>:focus-visible</code> aplica estilos de foco apenas quando o navegador determina que o indicador é necessário (navegação por teclado). Cliques de mouse não ativam <code>:focus-visible</code>. Assim você tem foco visível para quem precisa sem afetar a estetica para usuários de mouse.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>9. Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você recebeu este componente React. Identifique TODOS os problemas de acessibilidade e corrija-os.</div>
+<div class="qa-a">
+<p><strong>Componente original (com problemas):</strong></p>
+<pre data-lang="TSX"><code><span class="cm">// Problematico</span>
+<span class="kw">&lt;div</span> <span class="fn">onClick</span>={<span class="fn">handleDelete</span>} <span class="fn">style</span>={{ <span class="fn">color</span>: <span class="str">'red'</span>, <span class="fn">cursor</span>: <span class="str">'pointer'</span> }}<span class="kw">&gt;</span>
+  <span class="kw">&lt;img</span> <span class="fn">src</span>=<span class="str">"/trash.png"</span> <span class="kw">/&gt;</span>
+<span class="kw">&lt;/div&gt;</span></code></pre>
+
+<p><strong>Problemas:</strong> (1) <code>&lt;div&gt;</code> não é focavel por teclado e não tem role — use <code>&lt;button&gt;</code>. (2) <code>&lt;img&gt;</code> sem <code>alt</code> — screen reader não sabe o que e. (3) Sem <code>aria-label</code> — não ha nome acessível. (4) Não ha keyboard handler.</p>
+
+<p><strong>Correcao:</strong></p>
+<pre data-lang="TSX"><code><span class="kw">&lt;button</span>
+  <span class="fn">onClick</span>={<span class="fn">handleDelete</span>}
+  <span class="fn">aria-label</span>=<span class="str">"Excluir item"</span>
+  <span class="fn">className</span>=<span class="str">"btn-delete"</span>
+<span class="kw">&gt;</span>
+  <span class="kw">&lt;img</span> <span class="fn">src</span>=<span class="str">"/trash.png"</span> <span class="fn">alt</span>=<span class="str">""</span> <span class="fn">aria-hidden</span>=<span class="str">"true"</span> <span class="kw">/&gt;</span>
+<span class="kw">&lt;/button&gt;</span></code></pre>
+<p>O icone e decorativo (o button já tem aria-label), então recebe <code>alt=""</code> é <code>aria-hidden="true"</code>.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu site tem um carousel de imagens controlado por botoes "anterior" e "próximo". Como torna-lo acessível?</div>
+<div class="qa-a">
+<p><strong>Solucao completa:</strong></p>
+<ol>
+<li><strong>Container:</strong> <code>&lt;section aria-roledescription="carousel" aria-label="Galeria de produtos"&gt;</code></li>
+<li><strong>Live region:</strong> <code>&lt;div aria-live="polite" aria-atomic="true"&gt;Slide 2 de 5&lt;/div&gt;</code> (atualiza ao mudar slide)</li>
+<li><strong>Botoes:</strong> <code>&lt;button aria-label="Slide anterior"&gt;</code> é <code>&lt;button aria-label="Próximo slide"&gt;</code></li>
+<li><strong>Slides:</strong> Cada slide com <code>role="group"</code> é <code>aria-roledescription="slide"</code>. Slide inativo com <code>aria-hidden="true"</code></li>
+<li><strong>Imagens:</strong> Toda imagem com <code>alt</code> descritivo ("Camiseta azul marinho, vista frontal")</li>
+<li><strong>Keyboard:</strong> Setas esquerda/direita para navegar. Pausar autoplay quando focus esta no carousel ou quando prefers-reduced-motion esta ativo</li>
+<li><strong>Autoplay:</strong> Botao de pausa obrigatório. Respeitar <code>prefers-reduced-motion: reduce</code></li>
+</ol>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Escreva um teste Playwright que verifica se um modal de confirmacao de exclusao e acessível (focus trap, Escape fecha, screen reader anuncia).</div>
+<div class="qa-a">
+<pre data-lang="TypeScript"><code><span class="fn">test</span>(<span class="str">'modal de exclusao e acessível'</span>, <span class="kw">async</span> ({ <span class="fn">page</span> }) =&gt; {
+  <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">goto</span>(<span class="str">'/items'</span>);
+  <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">click</span>(<span class="str">'button:has-text("Excluir")'</span>);
+
+  <span class="cm">// 1. Modal tem role="dialog" ou role="alertdialog"</span>
+  <span class="kw">const</span> <span class="fn">modal</span> = <span class="fn">page</span>.<span class="fn">locator</span>(<span class="str">'[role="alertdialog"]'</span>);
+  <span class="kw">await</span> <span class="fn">expect</span>(<span class="fn">modal</span>).<span class="fn">toBeVisible</span>();
+
+  <span class="cm">// 2. Modal tem aria-labelledby (título) e aria-describedby</span>
+  <span class="kw">await</span> <span class="fn">expect</span>(<span class="fn">modal</span>).<span class="fn">toHaveAttribute</span>(<span class="str">'aria-labelledby'</span>);
+  <span class="kw">await</span> <span class="fn">expect</span>(<span class="fn">modal</span>).<span class="fn">toHaveAttribute</span>(<span class="str">'aria-describedby'</span>);
+
+  <span class="cm">// 3. Foco esta dentro do modal</span>
+  <span class="kw">const</span> <span class="fn">focusInModal</span> = <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">evaluate</span>(() =&gt;
+    <span class="fn">document</span>.<span class="fn">activeElement</span>?.<span class="fn">closest</span>(<span class="str">'[role="alertdialog"]'</span>) !== <span class="kw">null</span>
+  );
+  <span class="fn">expect</span>(<span class="fn">focusInModal</span>).<span class="fn">toBe</span>(<span class="kw">true</span>);
+
+  <span class="cm">// 4. Focus trap: Tab não sai do modal</span>
+  <span class="kw">const</span> <span class="fn">buttons</span> = <span class="fn">modal</span>.<span class="fn">locator</span>(<span class="str">'button'</span>);
+  <span class="kw">const</span> <span class="fn">count</span> = <span class="kw">await</span> <span class="fn">buttons</span>.<span class="fn">count</span>();
+  <span class="kw">for</span> (<span class="kw">let</span> <span class="fn">i</span> = <span class="num">0</span>; <span class="fn">i</span> &lt; <span class="fn">count</span> + <span class="num">1</span>; <span class="fn">i</span>++) {
+    <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">keyboard</span>.<span class="fn">press</span>(<span class="str">'Tab'</span>);
+  }
+  <span class="kw">const</span> <span class="fn">stillInModal</span> = <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">evaluate</span>(() =&gt;
+    <span class="fn">document</span>.<span class="fn">activeElement</span>?.<span class="fn">closest</span>(<span class="str">'[role="alertdialog"]'</span>) !== <span class="kw">null</span>
+  );
+  <span class="fn">expect</span>(<span class="fn">stillInModal</span>).<span class="fn">toBe</span>(<span class="kw">true</span>);
+
+  <span class="cm">// 5. Escape fecha o modal</span>
+  <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">keyboard</span>.<span class="fn">press</span>(<span class="str">'Escape'</span>);
+  <span class="kw">await</span> <span class="fn">expect</span>(<span class="fn">modal</span>).<span class="fn">not</span>.<span class="fn">toBeVisible</span>();
+
+  <span class="cm">// 6. Foco retorna ao botao que abriu o modal</span>
+  <span class="kw">const</span> <span class="fn">trigger</span> = <span class="fn">page</span>.<span class="fn">locator</span>(<span class="str">'button:has-text("Excluir")'</span>);
+  <span class="kw">await</span> <span class="fn">expect</span>(<span class="fn">trigger</span>).<span class="fn">toBeFocused</span>();
+
+  <span class="cm">// 7. axe-core sem violações</span>
+  <span class="kw">await</span> <span class="fn">page</span>.<span class="fn">click</span>(<span class="str">'button:has-text("Excluir")'</span>);
+  <span class="kw">const</span> <span class="fn">results</span> = <span class="kw">await</span> <span class="kw">new</span> <span class="fn">AxeBuilder</span>({ <span class="fn">page</span> }).<span class="fn">analyze</span>();
+  <span class="fn">expect</span>(<span class="fn">results</span>.<span class="fn">violations</span>).<span class="fn">toEqual</span>([]);
+});</code></pre>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Acessibilidade (a11y)</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="56-documentacao-adrs.html">&#8592; Anterior: Documentação & ADRs</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="58-mobile-development.html" class="primary">Próximo: Mobile Development &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 57: Acessibilidade (a11y)
+// ══════════════════════════════════════════
+const SECTION_NUM = 57;
+const STORAGE_KEY = 'fsm_quiz_57';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a regra #1 de ARIA?",
+    options: [
+      "Sempre adicionar role em todos os elementos para garantir acessibilidade",
+      "Se HTML semântico nativo resolve, NAO use ARIA — ARIA e para complementar, não substituir",
+      "ARIA deve ser usado em todo elemento interátivo, sem exceção",
+      "ARIA só funciona com screen readers, então pode ser ignorado em projetos web"
+    ],
+    correct: 1,
+    explanation: "A primeira regra de ARIA e: se você pode usar um elemento HTML nativo com a semântica e comportamento que precisa, use-o. Um <button> nativo já tem role, keyboard handling e focus management. ARIA mal aplicado é pior que nenhum ARIA."
+  },
+  {
+    question: "Qual nível de conformidade WCAG e exigido pela maioria das legislacoes (ADA, EAA, LBI)?",
+    options: [
+      "Nivel A — o mínimo absoluto",
+      "Nivel AA — padrão da industria",
+      "Nivel AAA — nível máximo de acessibilidade",
+      "Não ha nível específico — cada pais define o seu"
+    ],
+    correct: 1,
+    explanation: "WCAG 2.2 nível AA é o padrão exigido pela maioria das legislacoes mundiais. Nivel A e insuficiente (mínimo absoluto). Nivel AAA e quase impossível de atingir em sites complexos e não é exigido legalmente."
+  },
+  {
+    question: "Qual é a diferença entre aria-live='polite' e aria-live='assertive'?",
+    options: [
+      "polite interrompe o screen reader; assertive espera ele terminar",
+      "polite espera o screen reader ficar ocioso; assertive interrompe imediatamente",
+      "polite e para mensagens de erro; assertive e para notificações de sucesso",
+      "Não ha diferença prática — ambos anunciam ao mesmo tempo"
+    ],
+    correct: 1,
+    explanation: "aria-live='polite' espera o screen reader terminar o que esta lendo antes de anunciar a mudança. aria-live='assertive' interrompe imediatamente. Use 'assertive' apenas para mensagens criticas (erros, alertas de segurança)."
+  },
+  {
+    question: "Por que tabindex com valores positivos (1, 2, 3...) deve ser evitado?",
+    options: [
+      "Valores positivos são ignorados pelos browsers modernos",
+      "Eles criam uma ordem de tabulacao customizada que conflita com a ordem natural do DOM",
+      "Tabindex só aceita valores 0 e -1 na específicacao HTML5",
+      "Valores positivos desabilitam o foco no elemento"
+    ],
+    correct: 1,
+    explanation: "tabindex positivo força o elemento para o início da ordem de tabulacao, antes de TODOS os tabindex=0. Isso cria navegação imprevisível e confusa. Se a ordem de Tab esta errada, corrijá a ordem dos elementos no DOM, não o tabindex."
+  },
+  {
+    question: "O que é um focus trap é quando ele deve ser usado?",
+    options: [
+      "Um bug que impede o usuário de navegar — deve ser evitado sempre",
+      "Uma técnica que prende o foco dentro de um componente (modal) até que sejá fechado",
+      "Um CSS que remove o outline de foco de todos os elementos",
+      "Um atributo ARIA que impede elementos de receberem foco"
+    ],
+    correct: 1,
+    explanation: "Focus trap mantém o foco ciclando dentro de um modal/dialog até que ele sejá fechado. Quando Tab chega no último elemento, volta ao primeiro. Isso impede que usuários de teclado naveguem para conteúdo atras do overlay que não deveriam acessar."
+  },
+  {
+    question: "Qual a forma correta de ocultar um icone decorativo de screen readers?",
+    options: [
+      "display: none no CSS do icone",
+      "aria-hidden='true' no elemento do icone",
+      "role='presentation' no container pai",
+      "Nenhuma — todos os icones devem ser anunciados"
+    ],
+    correct: 1,
+    explanation: "aria-hidden='true' remove o elemento da accessibility tree mas mantém ele visível na tela. display:none oculta de TODOS (visual e screen reader). Para icones decorativos (que acompanham texto), aria-hidden='true' e correto."
+  },
+  {
+    question: "Qual criterio WCAG 2.2 exige que funcionalidades de drag-and-drop tenham alternativa single-pointer?",
+    options: [
+      "2.1.1 Keyboard",
+      "2.5.7 Dragging Movements",
+      "2.5.8 Target Size",
+      "2.4.11 Focus Not Obscured"
+    ],
+    correct: 1,
+    explanation: "WCAG 2.5.7 Dragging Movements (AA) exige que toda funcionalidade que depende de drag tenha uma alternativa operavel com um único click/tap. Isso beneficia usuários com deficiências motoras que não conseguem executar movimentos de arrastar."
+  },
+  {
+    question: "Qual porcentagem apróximada dos problemas de acessibilidade ferramentas automáticas (axe-core, Lighthouse) conseguem detectar?",
+    options: [
+      "Apróximadamente 10% — quase nada útil",
+      "Apróximadamente 30% — necessário mas insuficiente",
+      "Apróximadamente 70% — cobre a maioria dos problemas",
+      "Apróximadamente 95% — práticamente completo"
+    ],
+    correct: 1,
+    explanation: "Ferramentas automáticas detectam ~30% dos problemas: contrastes, labels faltando, roles incorretos, atributos inválidos. Os outros 70% exigem teste manual: ordem de leitura lógica, contexto semântico, usabilidade real com screen reader e teclado."
+  },
+  {
+    question: "Qual a diferença entre :focus e :focus-visible em CSS?",
+    options: [
+      ":focus funciona apenas em Firefox; :focus-visible funciona em todos os browsers",
+      ":focus aplica em qualquer foco (click + teclado); :focus-visible aplica apenas quando o browser julga necessário (geralmente teclado)",
+      ":focus-visible é a versão deprecated de :focus",
+      "Não ha diferença — são aliases do mesmo seletor"
+    ],
+    correct: 1,
+    explanation: ":focus aplica estilos sempre que o elemento recebe foco (incluindo cliques de mouse). :focus-visible aplica apenas quando o browser determina que o indicador de foco é necessário (tipicamente navegação por teclado). Use :focus-visible para ter outline visível para quem precisa sem afetar usuários de mouse."
+  },
+  {
+    question: "Ao mudar de rota em um SPA (React Router), o que deve acontecer para acessibilidade?",
+    options: [
+      "Nada — o browser gerencia automáticamente como em páginas tradicionais",
+      "O foco deve ser movido para o conteúdo principal é o título da página deve ser atualizado",
+      "Um alert() deve informar o usuário sobre a nova página",
+      "Toda a página deve fazer reload completo para atualizar a accessibility tree"
+    ],
+    correct: 1,
+    explanation: "Em SPAs, navegação por rotas não causa page reload — o screen reader NAO sabe que o conteúdo mudou. Você precisa: (1) mover o foco para o <main> ou heading da nova página, (2) atualizar document.title, é opcionalmente (3) usar um live region para anunciar a navegação."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Acessibilidade web.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

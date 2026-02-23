@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>06 — DDD - Domain-Driven Design | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="05-design-patterns-comportamentais.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>06</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="07-clean-hexagonal-onion.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:9.1%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 06</span>
+<h2>DDD - Domain-Driven Design</h2>
+<div class="section-line"></div>
+
+<p>Domain-Driven Design (DDD) é uma abordagem de desenvolvimento de software criada por Eric Evans em 2003 que coloca o <strong>domínio do negócio</strong> no centro de todas as decisões de design. Não é um framework, não é uma arquitetura — é uma <strong>filosofia de modelagem</strong> que alinha o código diretamente com a linguagem e os conceitos do negócio.</p>
+
+<p>A premissa fundamental: <strong>software complexo só funciona bem quando os desenvolvedores entendem profundamente o domínio</strong>. Se você esta construindo um sistema de logistica e não entende o que é um romaneio, uma NF-e ou um lead time de entrega, seu código vai refletir essa ignorancia — com abstrações erradas, nomes confusos e regras de negócio espalhadas.</p>
+
+<p>DDD se divide em duas grandes areas: <strong>Strategic Design</strong> (como dividir e organizar domínios) e <strong>Tactical Design</strong> (como modelar os objetos dentro de cada domínio). Ambos são igualmente importantes.</p>
+
+<!-- ═══ STRATEGIC DESIGN ═══ -->
+<h3>Strategic Design</h3>
+<p>O Strategic Design trata de <strong>como dividir um sistema complexo em partes menores e gerenciaveis</strong>. E a visao macro — antes de escrever qualquer código, você precisa entender os limites do seu domínio.</p>
+
+<h4>Ubiquitous Language (Linguagem Ubiqua)</h4>
+<p>O conceito mais importante do DDD. A <strong>Ubiquitous Language</strong> é um vocabulário compartilhado entre desenvolvedores e especialistas do domínio. Cada termo tem um significado precisó e único dentro de um contexto. Se o time de negócio chama de "pedido", o código tem uma classe <code>Pedido</code> (ou <code>Order</code>) — nunca <code>Request</code>, nunca <code>Transaction</code>, nunca <code>SalesItem</code>.</p>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Regra de ouro:</strong> Se um desenvolvedor é um especialista de domínio não conseguem conversar olhando para o código e se entenderem, a Ubiquitous Language falhou. O código é a documentação viva do domínio.</div>
+</div>
+
+<h4>Bounded Context (Contexto Delimitado)</h4>
+<p>Um <strong>Bounded Context</strong> é uma fronteira explicita onde um modelo de domínio e válido. Dentro de um contexto, os termos tem significados precisos. O mesmo termo pode ter significados diferentes em contextos diferentes — e isso e <strong>intencional</strong>.</p>
+
+<p><strong>Exemplo clássico:</strong> A palavra "Produto" significa coisas diferentes em contextos diferentes:</p>
+<ul>
+<li><strong>Catalogo:</strong> Produto tem nome, descricao, imagens, categorias, SEO</li>
+<li><strong>Estoque:</strong> Produto tem SKU, quantidade, localizacao no armazem, lote</li>
+<li><strong>Financeiro:</strong> Produto tem preço de custo, margem, impostos, NCM</li>
+<li><strong>Logistica:</strong> Produto tem peso, dimensões, frágilidade, empilhamento máximo</li>
+</ul>
+
+<p>Cada contexto tem seu proprio modelo de <code>Produto</code> com apenas os atributos que importam para aquele domínio. Tentar criar um único modelo <code>Produto</code> com 200 campos é o caminho para o caos — o famosó <strong>God Object</strong>.</p>
+
+<h4>Context Mapping (Mapa de Contextos)</h4>
+<p>Quando Bounded Contexts precisam se comúnicar, usamos <strong>Context Maps</strong> para definir as relacoes entre eles. Os padrões de relacionamento são:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Padrão</th><th>Descricao</th><th>Quando Usar</th></tr>
+<tr><td><strong>Shared Kernel</strong></td><td>Dois contextos compartilham um subconjunto do modelo. Mudancas exigem acordo mutuo.</td><td>Times próximos com alta confiança. Cuidado: cria acoplamento.</td></tr>
+<tr><td><strong>Customer-Supplier</strong></td><td>Um contexto (Supplier) fornece dados para outro (Customer). O Customer pode negociar o que precisa.</td><td>Relacao entre times internós onde o consumidor tem voz.</td></tr>
+<tr><td><strong>Conformist</strong></td><td>O contexto downstream aceita o modelo do upstream sem poder de negociação.</td><td>Integracao com API de terceiros que você não controla.</td></tr>
+<tr><td><strong>Anti-Corruption Layer (ACL)</strong></td><td>Camada de traducao que protege seu domínio de modelos externós corrompidos ou legados.</td><td>Integracao com sistemas legados ou APIs externas com modelos diferentes.</td></tr>
+<tr><td><strong>Open Host Service</strong></td><td>Um contexto expoe um protocolo aberto (API) para múltiplos consumidores.</td><td>Quando vários contextos precisam consumir o mesmo serviço.</td></tr>
+<tr><td><strong>Published Language</strong></td><td>Um formato de dados padronizado para comunicação (JSON Schema, Protobuf, eventos).</td><td>Comúnicação entre contextos via mensageria ou APIs publicas.</td></tr>
+</table>
+</div>
+
+<!-- Diagram: Bounded Contexts com Context Map -->
+<div class="diagram">
+<div class="diagram-box green">Catalogo<br><small>(Bounded Context)</small></div>
+<div class="diagram-arrow">&larr; Customer-Supplier &rarr;</div>
+<div class="diagram-box blue">Pedidos<br><small>(Bounded Context)</small></div>
+<div class="diagram-arrow">&larr; ACL &rarr;</div>
+<div class="diagram-box orange">Gateway de<br>Pagamento<br><small>(Externo)</small></div>
+</div>
+<div class="diagram">
+<div class="diagram-box blue">Pedidos<br><small>(Bounded Context)</small></div>
+<div class="diagram-arrow">&larr; Shared Kernel &rarr;</div>
+<div class="diagram-box purple">Envio<br><small>(Bounded Context)</small></div>
+<div class="diagram-arrow">&larr; Conformist &rarr;</div>
+<div class="diagram-box red">Correios API<br><small>(Externo)</small></div>
+</div>
+
+<h4>Event Storming</h4>
+<p><strong>Event Storming</strong> é uma técnica colaborativa de workshop onde desenvolvedores e especialistas de domínio descobrem o domínio juntos usando post-its. Criada por Alberto Brandolini, é a forma mais eficiente de mapear Bounded Contexts e descobrir Domain Events.</p>
+
+<p><strong>Como funciona:</strong></p>
+<ol>
+<li><strong>Post-its laranjas (Domain Events):</strong> Identifique tudo que acontece no domínio — "Pedido Criado", "Pagamento Aprovado", "Estoque Reservado"</li>
+<li><strong>Post-its azuis (Commands):</strong> O que dispara cada evento — "Criar Pedido", "Processar Pagamento"</li>
+<li><strong>Post-its amarelos (Aggregates):</strong> Agrupe eventos que pertencem a mesma entidade — todos os eventos de Pedido ficam juntos</li>
+<li><strong>Post-its rosa (Hotspots):</strong> Pontos de conflito, duvidas, regras complexas que precisam de discussão</li>
+<li><strong>Trace as fronteiras:</strong> Onde os agrupamentos se separam naturalmente, você tem seus Bounded Contexts</li>
+</ol>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Dica prática:</strong> Event Storming não precisa de ferramentas caras. Uma parede grande, post-its coloridos e 3-4 horas com as pessoas certas na sala (devs + especialistas de domínio) produzem mais resultado do que semanas de reunioes tradicionais.</div>
+</div>
+
+<!-- ═══ TACTICAL DESIGN ═══ -->
+<h3>Tactical Design</h3>
+<p>O Tactical Design é a parte <strong>hands-on</strong> — como modelar os objetos dentro de cada Bounded Context. Aqui é onde os building blocks do DDD entram em acao.</p>
+
+<h4>Entity (Entidade)</h4>
+<p>Um objeto definido pela sua <strong>identidade</strong>, não pelos seus atributos. Dois usuários com o mesmo nome e email são entidades diferentes se possuem IDs diferentes. Entidades tem ciclo de vida e mudam ao longo do tempo.</p>
+
+<h4>Value Object (Objeto de Valor)</h4>
+<p>Um objeto definido pelos seus <strong>atributos</strong>, sem identidade propria. Dois objetos <code>Money(100, 'BRL')</code> são iguais se o valor é a moeda são iguais. Value Objects são <strong>imutaveis</strong> — qualquer mudança cria uma nova instancia.</p>
+
+<h4>Aggregaté (Agregado)</h4>
+<p>Um cluster de Entities e Value Objects que são tratados como uma <strong>unidade de consistência</strong>. Toda modificacao passa pelo <strong>Aggregaté Root</strong> — a entidade principal que garante as invariantes do agregado. Regra de ouro: <strong>apenas o Aggregaté Root e referênciado externamente</strong>.</p>
+
+<h4>Domain Service</h4>
+<p>Operacao de domínio que <strong>não pertence naturalmente a nenhuma Entity ou Value Object</strong>. Quando a lógica envolve multiplas entidades e não faz sentido em nenhuma delas, use um Domain Service. Exemplo: calcular frete envolve Pedido + Endereco + Transportadora.</p>
+
+<h4>Application Service</h4>
+<p>Orquestra o caso de uso. <strong>Não contém lógica de negócio</strong> — apenas coordena chamadas entre Domain Services, Repositories e infraestrutura. E a cola entre o mundo externo (HTTP, mensageria) é o domínio.</p>
+
+<h4>Repository</h4>
+<p>Abstracao para persistência de Aggregates. O domínio define a <strong>interface</strong> do Repository; a infraestrutura implementa (TypeORM, Prisma, MongoDB). O domínio nunca sabe como os dados são armazenados.</p>
+
+<h4>Domain Event</h4>
+<p>Algo que <strong>aconteceu no domínio</strong> é e relevante para outros contextos. "PedidoCriado", "PagamentoAprovado", "EstoqueReservado". Domain Events são imutaveis e carregam dados do momento em que ocorreram.</p>
+
+<h4>Factory</h4>
+<p>Encapsula a <strong>lógica complexa de criação</strong> de Aggregates ou Entities. Quando a construção de um objeto envolve válidacoes, defaults, ou dependências complexas, uma Factory isola essa complexidade.</p>
+
+<div class="card blue">
+<div class="card-title">Resumo dos Building Blocks</div>
+<ul>
+<li><strong>Entity:</strong> Identidade + comportamento + ciclo de vida</li>
+<li><strong>Value Object:</strong> Imutável + igualdade por valor + auto-validação</li>
+<li><strong>Aggregate:</strong> Fronteira de consistência + Aggregaté Root como ponto de entrada</li>
+<li><strong>Domain Service:</strong> Logica de domínio que não pertence a nenhuma entidade</li>
+<li><strong>Application Service:</strong> Orquestracao de caso de usó (sem lógica de negócio)</li>
+<li><strong>Repository:</strong> Interface de persistência definida pelo domínio</li>
+<li><strong>Domain Event:</strong> Fato que aconteceu, imutável, relevante para outros</li>
+<li><strong>Factory:</strong> Criacao complexa encapsulada</li>
+</ul>
+</div>
+
+<!-- ═══ EXEMPLOS DE CODIGO ═══ -->
+<h3>Exemplos de Código</h3>
+
+<h4>Value Object — Money, Email, CPF</h4>
+<pre data-lang="typescript"><code><span class="cm">// Value Object — imutável, igualdade por valor, auto-validação</span>
+<span class="kw">class</span> <span class="tp">Money</span> {
+  <span class="kw">privaté constructor</span>(
+    <span class="kw">readonly</span> amount: <span class="tp">number</span>,
+    <span class="kw">readonly</span> currency: <span class="tp">string</span>,
+  ) {}
+
+  <span class="kw">static</span> <span class="fn">create</span>(amount: <span class="tp">number</span>, currency: <span class="tp">string</span>): <span class="tp">Money</span> {
+    <span class="kw">if</span> (amount &lt; <span class="num">0</span>) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Valor não pode ser negativo'</span>);
+    <span class="kw">if</span> (!currency || currency.length !== <span class="num">3</span>) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Moeda inválida'</span>);
+    <span class="kw">return new</span> <span class="tp">Money</span>(amount, currency.toUpperCase());
+  }
+
+  <span class="fn">add</span>(other: <span class="tp">Money</span>): <span class="tp">Money</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>.currency !== other.currency)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Não pode somar moedas diferentes'</span>);
+    <span class="kw">return</span> Money.<span class="fn">create</span>(<span class="kw">this</span>.amount + other.amount, <span class="kw">this</span>.currency);
+  }
+
+  <span class="fn">multiply</span>(factor: <span class="tp">number</span>): <span class="tp">Money</span> {
+    <span class="kw">return</span> Money.<span class="fn">create</span>(
+      Math.<span class="fn">round</span>(<span class="kw">this</span>.amount * factor * <span class="num">100</span>) / <span class="num">100</span>,
+      <span class="kw">this</span>.currency,
+    );
+  }
+
+  <span class="fn">equals</span>(other: <span class="tp">Money</span>): <span class="tp">boolean</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.amount === other.amount &amp;&amp; <span class="kw">this</span>.currency === other.currency;
+  }
+}
+
+<span class="kw">class</span> <span class="tp">Email</span> {
+  <span class="kw">privaté constructor</span>(<span class="kw">readonly</span> value: <span class="tp">string</span>) {}
+
+  <span class="kw">static</span> <span class="fn">create</span>(value: <span class="tp">string</span>): <span class="tp">Email</span> {
+    <span class="kw">const</span> regex = <span class="str">/^[^\s@]+@[^\s@]+\.[^\s@]+$/</span>;
+    <span class="kw">if</span> (!regex.<span class="fn">test</span>(value)) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Email inválido'</span>);
+    <span class="kw">return new</span> <span class="tp">Email</span>(value.toLowerCase());
+  }
+
+  <span class="fn">equals</span>(other: <span class="tp">Email</span>): <span class="tp">boolean</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.value === other.value;
+  }
+}
+
+<span class="kw">class</span> <span class="tp">CPF</span> {
+  <span class="kw">privaté constructor</span>(<span class="kw">readonly</span> value: <span class="tp">string</span>) {}
+
+  <span class="kw">static</span> <span class="fn">create</span>(value: <span class="tp">string</span>): <span class="tp">CPF</span> {
+    <span class="kw">const</span> cleaned = value.<span class="fn">replace</span>(<span class="str">/\D/g</span>, <span class="str">''</span>);
+    <span class="kw">if</span> (cleaned.length !== <span class="num">11</span>) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'CPF deve ter 11 digitos'</span>);
+    <span class="kw">if</span> (!CPF.<span class="fn">isValid</span>(cleaned)) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'CPF inválido'</span>);
+    <span class="kw">return new</span> <span class="tp">CPF</span>(cleaned);
+  }
+
+  <span class="kw">privaté static</span> <span class="fn">isValid</span>(cpf: <span class="tp">string</span>): <span class="tp">boolean</span> {
+    <span class="cm">// Algoritmo de validação de digitos verificadores</span>
+    <span class="kw">if</span> (<span class="str">/^(\d)\1+$/</span>.<span class="fn">test</span>(cpf)) <span class="kw">return false</span>;
+    <span class="kw">let</span> sum = <span class="num">0</span>, remainder: <span class="tp">number</span>;
+    <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt;= <span class="num">9</span>; i++) sum += parseInt(cpf[i - <span class="num">1</span>]) * (<span class="num">11</span> - i);
+    remainder = (sum * <span class="num">10</span>) % <span class="num">11</span>;
+    <span class="kw">if</span> (remainder === <span class="num">10</span>) remainder = <span class="num">0</span>;
+    <span class="kw">if</span> (remainder !== parseInt(cpf[<span class="num">9</span>])) <span class="kw">return false</span>;
+    sum = <span class="num">0</span>;
+    <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">1</span>; i &lt;= <span class="num">10</span>; i++) sum += parseInt(cpf[i - <span class="num">1</span>]) * (<span class="num">12</span> - i);
+    remainder = (sum * <span class="num">10</span>) % <span class="num">11</span>;
+    <span class="kw">if</span> (remainder === <span class="num">10</span>) remainder = <span class="num">0</span>;
+    <span class="kw">return</span> remainder === parseInt(cpf[<span class="num">10</span>]);
+  }
+
+  <span class="fn">formatted</span>(): <span class="tp">string</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.value.<span class="fn">replace</span>(<span class="str">/(\d{3})(\d{3})(\d{3})(\d{2})/</span>, <span class="str">'$1.$2.$3-$4'</span>);
+  }
+}</code></pre>
+
+<h4>Entity com identidade e comportamento</h4>
+<pre data-lang="typescript"><code><span class="cm">// Entity — definida pela identidade, com comportamento rico</span>
+<span class="kw">class</span> <span class="tp">Customer</span> {
+  <span class="kw">privaté constructor</span>(
+    <span class="kw">privaté readonly</span> _id: <span class="tp">string</span>,
+    <span class="kw">private</span> _name: <span class="tp">string</span>,
+    <span class="kw">private</span> _email: <span class="tp">Email</span>,
+    <span class="kw">private</span> _cpf: <span class="tp">CPF</span>,
+    <span class="kw">private</span> _status: <span class="tp">CustomerStatus</span>,
+    <span class="kw">private</span> _createdAt: <span class="tp">Date</span>,
+  ) {}
+
+  <span class="kw">static</span> <span class="fn">create</span>(props: <span class="tp">CreateCustomerProps</span>): <span class="tp">Customer</span> {
+    <span class="kw">return new</span> <span class="tp">Customer</span>(
+      <span class="fn">generateUUID</span>(),
+      props.name,
+      Email.<span class="fn">create</span>(props.email),
+      CPF.<span class="fn">create</span>(props.cpf),
+      <span class="tp">CustomerStatus</span>.ACTIVE,
+      <span class="kw">new</span> <span class="tp">Date</span>(),
+    );
+  }
+
+  <span class="cm">// Comportamento — não apenas getters/setters</span>
+  <span class="fn">deactivate</span>(): <span class="tp">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>._status === <span class="tp">CustomerStatus</span>.DEACTIVATED)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Cliente já esta desativado'</span>);
+    <span class="kw">this</span>._status = <span class="tp">CustomerStatus</span>.DEACTIVATED;
+  }
+
+  <span class="fn">changeEmail</span>(newEmail: <span class="tp">string</span>): <span class="tp">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>._status === <span class="tp">CustomerStatus</span>.DEACTIVATED)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Não pode alterár email de cliente desativado'</span>);
+    <span class="kw">this</span>._email = Email.<span class="fn">create</span>(newEmail);
+  }
+
+  <span class="cm">// Igualdade por identidade</span>
+  <span class="fn">equals</span>(other: <span class="tp">Customer</span>): <span class="tp">boolean</span> {
+    <span class="kw">return</span> <span class="kw">this</span>._id === other._id;
+  }
+
+  <span class="kw">get</span> id() { <span class="kw">return</span> <span class="kw">this</span>._id; }
+  <span class="kw">get</span> name() { <span class="kw">return</span> <span class="kw">this</span>._name; }
+  <span class="kw">get</span> email() { <span class="kw">return</span> <span class="kw">this</span>._email; }
+  <span class="kw">get</span> status() { <span class="kw">return</span> <span class="kw">this</span>._status; }
+}</code></pre>
+
+<h4>Aggregaté Root — Order com OrderItems</h4>
+<pre data-lang="typescript"><code><span class="cm">// Aggregaté Root — fronteira de consistência</span>
+<span class="cm">// Toda operação nós items DEVE passar pelo Order</span>
+<span class="kw">class</span> <span class="tp">Order</span> {
+  <span class="kw">private</span> _items: <span class="tp">OrderItem</span>[] = [];
+  <span class="kw">private</span> _status: <span class="tp">OrderStatus</span> = <span class="tp">OrderStatus</span>.DRAFT;
+  <span class="kw">private</span> _events: <span class="tp">DomainEvent</span>[] = [];
+
+  <span class="kw">privaté constructor</span>(
+    <span class="kw">privaté readonly</span> _id: <span class="tp">string</span>,
+    <span class="kw">privaté readonly</span> _customerId: <span class="tp">string</span>,
+    <span class="kw">privaté readonly</span> _createdAt: <span class="tp">Date</span>,
+  ) {}
+
+  <span class="kw">static</span> <span class="fn">create</span>(customerId: <span class="tp">string</span>): <span class="tp">Order</span> {
+    <span class="kw">return new</span> <span class="tp">Order</span>(<span class="fn">generateUUID</span>(), customerId, <span class="kw">new</span> <span class="tp">Date</span>());
+  }
+
+  <span class="cm">// ── Invariantes do Aggregaté ──</span>
+  <span class="fn">addItem</span>(productId: <span class="tp">string</span>, name: <span class="tp">string</span>, price: <span class="tp">Money</span>, qty: <span class="tp">number</span>): <span class="tp">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>._status !== <span class="tp">OrderStatus</span>.DRAFT)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'So pode adicionar itens em pedidos rascunho'</span>);
+    <span class="kw">if</span> (qty &lt;= <span class="num">0</span>)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Quantidade deve ser positiva'</span>);
+    <span class="kw">if</span> (<span class="kw">this</span>._items.length >= <span class="num">50</span>)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Máximo de 50 itens por pedido'</span>);
+
+    <span class="kw">const</span> existing = <span class="kw">this</span>._items.<span class="fn">find</span>(i => i.productId === productId);
+    <span class="kw">if</span> (existing) {
+      existing.<span class="fn">increaseQuantity</span>(qty);
+    } <span class="kw">else</span> {
+      <span class="kw">this</span>._items.<span class="fn">push</span>(<span class="tp">OrderItem</span>.<span class="fn">create</span>(productId, name, price, qty));
+    }
+  }
+
+  <span class="fn">removeItem</span>(productId: <span class="tp">string</span>): <span class="tp">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>._status !== <span class="tp">OrderStatus</span>.DRAFT)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'So pode remover itens de pedidos rascunho'</span>);
+    <span class="kw">this</span>._items = <span class="kw">this</span>._items.<span class="fn">filter</span>(i => i.productId !== productId);
+  }
+
+  <span class="fn">place</span>(): <span class="tp">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>._items.length === <span class="num">0</span>)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Não pode finalizar pedido sem itens'</span>);
+    <span class="kw">if</span> (<span class="kw">this</span>._status !== <span class="tp">OrderStatus</span>.DRAFT)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pedido já foi finalizado'</span>);
+
+    <span class="kw">this</span>._status = <span class="tp">OrderStatus</span>.PLACED;
+
+    <span class="cm">// Emite Domain Event</span>
+    <span class="kw">this</span>._events.<span class="fn">push</span>(<span class="kw">new</span> <span class="tp">OrderPlacedEvent</span>({
+      orderId: <span class="kw">this</span>._id,
+      customerId: <span class="kw">this</span>._customerId,
+      total: <span class="kw">this</span>.total,
+      itemCount: <span class="kw">this</span>._items.length,
+      occurredAt: <span class="kw">new</span> <span class="tp">Date</span>(),
+    }));
+  }
+
+  <span class="fn">cancel</span>(): <span class="tp">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>._status === <span class="tp">OrderStatus</span>.SHIPPED)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Não pode cancelar pedido já enviado'</span>);
+    <span class="kw">this</span>._status = <span class="tp">OrderStatus</span>.CANCELLED;
+  }
+
+  <span class="kw">get</span> total(): <span class="tp">Money</span> {
+    <span class="kw">return</span> <span class="kw">this</span>._items.<span class="fn">reduce</span>(
+      (sum, item) => sum.<span class="fn">add</span>(item.subtotal),
+      Money.<span class="fn">create</span>(<span class="num">0</span>, <span class="str">'BRL'</span>),
+    );
+  }
+
+  <span class="kw">get</span> id() { <span class="kw">return</span> <span class="kw">this</span>._id; }
+  <span class="kw">get</span> status() { <span class="kw">return</span> <span class="kw">this</span>._status; }
+  <span class="kw">get</span> items(): <span class="tp">ReadonlyArray</span>&lt;<span class="tp">OrderItem</span>&gt; { <span class="kw">return</span> [...<span class="kw">this</span>._items]; }
+  <span class="kw">get</span> domainEvents(): <span class="tp">ReadonlyArray</span>&lt;<span class="tp">DomainEvent</span>&gt; { <span class="kw">return</span> [...<span class="kw">this</span>._events]; }
+  <span class="fn">clearEvents</span>() { <span class="kw">this</span>._events = []; }
+}
+
+<span class="cm">// OrderItem — entidade interna do Aggregaté (NÃO é acessada externamente)</span>
+<span class="kw">class</span> <span class="tp">OrderItem</span> {
+  <span class="kw">privaté constructor</span>(
+    <span class="kw">readonly</span> productId: <span class="tp">string</span>,
+    <span class="kw">readonly</span> name: <span class="tp">string</span>,
+    <span class="kw">readonly</span> unitPrice: <span class="tp">Money</span>,
+    <span class="kw">private</span> _quantity: <span class="tp">number</span>,
+  ) {}
+
+  <span class="kw">static</span> <span class="fn">create</span>(productId: <span class="tp">string</span>, name: <span class="tp">string</span>, price: <span class="tp">Money</span>, qty: <span class="tp">number</span>): <span class="tp">OrderItem</span> {
+    <span class="kw">return new</span> <span class="tp">OrderItem</span>(productId, name, price, qty);
+  }
+
+  <span class="fn">increaseQuantity</span>(amount: <span class="tp">number</span>): <span class="tp">void</span> {
+    <span class="kw">this</span>._quantity += amount;
+  }
+
+  <span class="kw">get</span> quantity() { <span class="kw">return</span> <span class="kw">this</span>._quantity; }
+  <span class="kw">get</span> subtotal(): <span class="tp">Money</span> { <span class="kw">return</span> <span class="kw">this</span>.unitPrice.<span class="fn">multiply</span>(<span class="kw">this</span>._quantity); }
+}</code></pre>
+
+<h4>Domain Event</h4>
+<pre data-lang="typescript"><code><span class="cm">// Domain Event — imutável, registra algo que aconteceu</span>
+<span class="kw">interface</span> <span class="tp">DomainEvent</span> {
+  <span class="kw">readonly</span> eventName: <span class="tp">string</span>;
+  <span class="kw">readonly</span> occurredAt: <span class="tp">Date</span>;
+}
+
+<span class="kw">class</span> <span class="tp">OrderPlacedEvent</span> <span class="kw">implements</span> <span class="tp">DomainEvent</span> {
+  <span class="kw">readonly</span> eventName = <span class="str">'order.placed'</span>;
+  <span class="kw">readonly</span> orderId: <span class="tp">string</span>;
+  <span class="kw">readonly</span> customerId: <span class="tp">string</span>;
+  <span class="kw">readonly</span> total: <span class="tp">Money</span>;
+  <span class="kw">readonly</span> itemCount: <span class="tp">number</span>;
+  <span class="kw">readonly</span> occurredAt: <span class="tp">Date</span>;
+
+  <span class="kw">constructor</span>(props: {
+    orderId: <span class="tp">string</span>;
+    customerId: <span class="tp">string</span>;
+    total: <span class="tp">Money</span>;
+    itemCount: <span class="tp">number</span>;
+    occurredAt: <span class="tp">Date</span>;
+  }) {
+    <span class="kw">this</span>.orderId = props.orderId;
+    <span class="kw">this</span>.customerId = props.customerId;
+    <span class="kw">this</span>.total = props.total;
+    <span class="kw">this</span>.itemCount = props.itemCount;
+    <span class="kw">this</span>.occurredAt = props.occurredAt;
+    Object.<span class="fn">freeze</span>(<span class="kw">this</span>); <span class="cm">// Garante imutabilidade</span>
+  }
+}
+
+<span class="cm">// Outros eventos do domínio de Pedidos</span>
+<span class="kw">class</span> <span class="tp">OrderCancelledEvent</span> <span class="kw">implements</span> <span class="tp">DomainEvent</span> {
+  <span class="kw">readonly</span> eventName = <span class="str">'order.cancelled'</span>;
+  <span class="kw">constructor</span>(
+    <span class="kw">readonly</span> orderId: <span class="tp">string</span>,
+    <span class="kw">readonly</span> reason: <span class="tp">string</span>,
+    <span class="kw">readonly</span> occurredAt: <span class="tp">Date</span>,
+  ) { Object.<span class="fn">freeze</span>(<span class="kw">this</span>); }
+}
+
+<span class="kw">class</span> <span class="tp">PaymentApprovedEvent</span> <span class="kw">implements</span> <span class="tp">DomainEvent</span> {
+  <span class="kw">readonly</span> eventName = <span class="str">'payment.approved'</span>;
+  <span class="kw">constructor</span>(
+    <span class="kw">readonly</span> orderId: <span class="tp">string</span>,
+    <span class="kw">readonly</span> amount: <span class="tp">Money</span>,
+    <span class="kw">readonly</span> method: <span class="tp">string</span>,
+    <span class="kw">readonly</span> occurredAt: <span class="tp">Date</span>,
+  ) { Object.<span class="fn">freeze</span>(<span class="kw">this</span>); }
+}</code></pre>
+
+<h4>Repository Interface</h4>
+<pre data-lang="typescript"><code><span class="cm">// Repository — interface definida no DOMINIO</span>
+<span class="cm">// A implementação (TypeORM, Prisma, etc.) fica na camada de INFRAESTRUTURA</span>
+<span class="kw">interface</span> <span class="tp">IOrderRepository</span> {
+  <span class="fn">findById</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span> | <span class="kw">null</span>&gt;;
+  <span class="fn">findByCustomerId</span>(customerId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>[]&gt;;
+  <span class="fn">save</span>(order: <span class="tp">Order</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+  <span class="fn">delete</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+}
+
+<span class="cm">// Implementação concreta — camada de infraestrutura</span>
+<span class="kw">class</span> <span class="tp">TypeOrmOrderRepository</span> <span class="kw">implements</span> <span class="tp">IOrderRepository</span> {
+  <span class="kw">constructor</span>(
+    <span class="ann">@InjectRepository</span>(<span class="tp">OrderEntity</span>)
+    <span class="kw">private</span> repo: <span class="tp">Repository</span>&lt;<span class="tp">OrderEntity</span>&gt;,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">findById</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span> | <span class="kw">null</span>&gt; {
+    <span class="kw">const</span> entity = <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">findOne</span>({
+      where: { id },
+      relations: [<span class="str">'items'</span>],
+    });
+    <span class="kw">return</span> entity ? <span class="tp">OrderMapper</span>.<span class="fn">toDomain</span>(entity) : <span class="kw">null</span>;
+  }
+
+  <span class="kw">async</span> <span class="fn">save</span>(order: <span class="tp">Order</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">const</span> entity = <span class="tp">OrderMapper</span>.<span class="fn">toEntity</span>(order);
+    <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">save</span>(entity);
+  }
+
+  <span class="cm">// ... demais métodos</span>
+}</code></pre>
+
+<h4>Application Service orquestrando caso de uso</h4>
+<pre data-lang="typescript"><code><span class="cm">// Application Service — orquestra, NAO contém lógica de negócio</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">PlaceOrderUseCase</span> {
+  <span class="kw">constructor</span>(
+    <span class="ann">@Inject</span>(<span class="str">'ORDER_REPOSITORY'</span>)
+    <span class="kw">private</span> orderRepo: <span class="tp">IOrderRepository</span>,
+    <span class="ann">@Inject</span>(<span class="str">'EVENT_BUS'</span>)
+    <span class="kw">private</span> eventBus: <span class="tp">IEventBus</span>,
+    <span class="kw">private</span> inventoryService: <span class="tp">InventoryDomainService</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">execute</span>(dto: <span class="tp">PlaceOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">OrderResponse</span>&gt; {
+    <span class="cm">// 1. Busca o pedido (rascunho)</span>
+    <span class="kw">const</span> order = <span class="kw">await</span> <span class="kw">this</span>.orderRepo.<span class="fn">findById</span>(dto.orderId);
+    <span class="kw">if</span> (!order) <span class="kw">throw new</span> <span class="tp">NotFoundException</span>(<span class="str">'Pedido não encontrado'</span>);
+
+    <span class="cm">// 2. Verifica estoque via Domain Service</span>
+    <span class="kw">await</span> <span class="kw">this</span>.inventoryService.<span class="fn">reserveItems</span>(order.items);
+
+    <span class="cm">// 3. Delega lógica de negócio para o Aggregate</span>
+    order.<span class="fn">place</span>(); <span class="cm">// Toda validação esta DENTRO do domínio</span>
+
+    <span class="cm">// 4. Persiste</span>
+    <span class="kw">await</span> <span class="kw">this</span>.orderRepo.<span class="fn">save</span>(order);
+
+    <span class="cm">// 5. Publica Domain Events</span>
+    <span class="kw">for</span> (<span class="kw">const</span> event <span class="kw">of</span> order.domainEvents) {
+      <span class="kw">await</span> <span class="kw">this</span>.eventBus.<span class="fn">publish</span>(event);
+    }
+    order.<span class="fn">clearEvents</span>();
+
+    <span class="cm">// 6. Retorna DTO (nunca expoe a entidade de domínio)</span>
+    <span class="kw">return</span> <span class="tp">OrderMapper</span>.<span class="fn">toResponse</span>(order);
+  }
+}</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: E-commerce com DDD</h3>
+<p><strong>Cenário:</strong> Você esta modelando um sistema de e-commerce. Precisa definir os Bounded Contexts, seus relacionamentos, é como cada contexto e modelado internamente.</p>
+
+<h4>Bounded Contexts Identificados</h4>
+
+<div class="diagram">
+<div class="diagram-box green">Catalogo<br><small>Produtos, Categorias,<br>Busca, SEO</small></div>
+<div class="diagram-box blue">Pedidos<br><small>Carrinho, Order,<br>OrderItems</small></div>
+<div class="diagram-box purple">Pagamentos<br><small>Transacoes,<br>Reembolsos</small></div>
+<div class="diagram-box orange">Envio<br><small>Rastreio, Frete,<br>Transportadoras</small></div>
+<div class="diagram-box cyan">Usuarios<br><small>Autenticação,<br>Perfil, Enderecos</small></div>
+</div>
+
+<h4>Context Map — Relacionamentos</h4>
+<div class="diagram">
+<div class="diagram-box green">Catalogo</div>
+<div class="diagram-arrow">&xrarr; Customer-Supplier &xrarr;</div>
+<div class="diagram-box blue">Pedidos</div>
+<div class="diagram-arrow">&xrarr; ACL &xrarr;</div>
+<div class="diagram-box purple">Pagamentos</div>
+</div>
+<div class="diagram">
+<div class="diagram-box purple">Pagamentos</div>
+<div class="diagram-arrow">&xrarr; ACL &xrarr;</div>
+<div class="diagram-box red">Gateway Externo<br><small>(Stripe / PagSeguro)</small></div>
+</div>
+<div class="diagram">
+<div class="diagram-box blue">Pedidos</div>
+<div class="diagram-arrow">&xrarr; Domain Events &xrarr;</div>
+<div class="diagram-box orange">Envio</div>
+<div class="diagram-arrow">&xrarr; Conformist &xrarr;</div>
+<div class="diagram-box red">Correios API<br><small>(Externo)</small></div>
+</div>
+
+<p><strong>Por que ACL entre Pagamentos e Gateway externo?</strong></p>
+<p>O gateway externo (Stripe, PagSeguro) tem seu proprio modelo de dados: <code>charges</code>, <code>payment_intents</code>, <code>refunds</code>. Se você usar os modelos deles diretamente no seu domínio, seu código fica <strong>acoplado</strong> ao fornecedor. Quando precisar trocar de Stripe para PagSeguro, vai reescrever tudo.</p>
+
+<p>A <strong>Anti-Corruption Layer</strong> traduz entre o modelo externo é o seu modelo de domínio:</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Anti-Corruption Layer — traduz modelo externo para domínio</span>
+<span class="kw">class</span> <span class="tp">StripePaymentAdapter</span> <span class="kw">implements</span> <span class="tp">IPaymentGateway</span> {
+  <span class="kw">async</span> <span class="fn">charge</span>(payment: <span class="tp">Payment</span>): <span class="tp">Promise</span>&lt;<span class="tp">PaymentResult</span>&gt; {
+    <span class="cm">// Traduz do nossó modelo para o modelo do Stripe</span>
+    <span class="kw">const</span> intent = <span class="kw">await</span> stripe.paymentIntents.<span class="fn">create</span>({
+      amount: payment.amount.cents,  <span class="cm">// nossó Money -> centavos Stripe</span>
+      currency: payment.amount.currency.toLowerCase(),
+      metadata: { orderId: payment.orderId },
+    });
+
+    <span class="cm">// Traduz resposta do Stripe para nossó modelo</span>
+    <span class="kw">return</span> <span class="tp">PaymentResult</span>.<span class="fn">create</span>({
+      transactionId: intent.id,
+      status: <span class="kw">this</span>.<span class="fn">mapStatus</span>(intent.status),
+      amount: payment.amount,
+    });
+  }
+
+  <span class="kw">private</span> <span class="fn">mapStatus</span>(stripeStatus: <span class="tp">string</span>): <span class="tp">PaymentStatus</span> {
+    <span class="kw">const</span> map: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">PaymentStatus</span>&gt; = {
+      <span class="str">'succeeded'</span>: <span class="tp">PaymentStatus</span>.APPROVED,
+      <span class="str">'requires_payment_method'</span>: <span class="tp">PaymentStatus</span>.FAILED,
+      <span class="str">'processing'</span>: <span class="tp">PaymentStatus</span>.PENDING,
+    };
+    <span class="kw">return</span> map[stripeStatus] ?? <span class="tp">PaymentStatus</span>.UNKNOWN;
+  }
+}</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Comúnicação entre contextos:</strong> Pedidos publica <code>OrderPlacedEvent</code>. Envio escuta esse evento e inicia o processo de separacao. Pagamentos escuta e reserva o valor. Cada contexto reage independentemente — não ha acoplamento direto entre eles.</div>
+</div>
+
+<!-- ═══ ARMADILHAS COMUNS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Anemic Domain Model:</strong> O anti-pattern mais comum. Entidades que são apenas sacos de getters e setters sem comportamento. Toda lógica fica nós Services, e as entidades são meros DTOs glorificados. Se seu <code>Order</code> só tem <code>getStatus()</code> é <code>setStatus()</code>, é a validação de transição de status esta no <code>OrderService</code>, você tem um modelo anemico. A lógica de negócio pertence a entidade.</div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; ANEMICO — entidade sem comportamento</span>
+<span class="kw">class</span> <span class="tp">Order</span> {
+  id: <span class="tp">string</span>;
+  status: <span class="tp">string</span>;
+  items: <span class="tp">OrderItem</span>[];
+  total: <span class="tp">number</span>;
+  <span class="cm">// Apenas dados. Zero lógica. Zero proteção de invariantes.</span>
+}
+
+<span class="cm">// Service faz TUDO — entidade e um DTO</span>
+<span class="kw">class</span> <span class="tp">OrderService</span> {
+  <span class="fn">placeOrder</span>(order: <span class="tp">Order</span>) {
+    <span class="kw">if</span> (order.items.length === <span class="num">0</span>) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Sem itens'</span>);
+    <span class="kw">if</span> (order.status !== <span class="str">'draft'</span>) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Ja finalizado'</span>);
+    order.status = <span class="str">'placed'</span>;
+    order.total = order.items.<span class="fn">reduce</span>((s, i) => s + i.price * i.qty, <span class="num">0</span>);
+  }
+}
+
+<span class="cm">// &#9989; RICO — entidade com comportamento e proteção de invariantes</span>
+<span class="kw">class</span> <span class="tp">Order</span> {
+  <span class="kw">private</span> _status: <span class="tp">OrderStatus</span>;
+  <span class="kw">private</span> _items: <span class="tp">OrderItem</span>[];
+
+  <span class="fn">place</span>(): <span class="tp">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>._items.length === <span class="num">0</span>)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Sem itens'</span>);
+    <span class="kw">if</span> (<span class="kw">this</span>._status !== <span class="tp">OrderStatus</span>.DRAFT)
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Ja finalizado'</span>);
+    <span class="kw">this</span>._status = <span class="tp">OrderStatus</span>.PLACED;
+  }
+
+  <span class="kw">get</span> total(): <span class="tp">Money</span> {
+    <span class="kw">return</span> <span class="kw">this</span>._items.<span class="fn">reduce</span>(
+      (sum, item) => sum.<span class="fn">add</span>(item.subtotal),
+      Money.<span class="fn">create</span>(<span class="num">0</span>, <span class="str">'BRL'</span>),
+    );
+  }
+}</code></pre>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Bounded Contexts demais em time pequeno:</strong> Um time de 3 devs com 8 Bounded Contexts vai gastar mais tempo gerenciando fronteiras do que entregando valor. Para times pequenos, comece com menós contextos e divida conforme a complexidade cresce. Monolito modular é perfeitamente válido.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>DDD para domínios CRUD:</strong> Se o sistema e básicamente CRUD (cadastro de usuários, listagem de produtos simples, sem regras de negócio complexas), DDD e overkill. DDD brilha em domínios com <strong>lógica de negócio rica e complexa</strong>. Para CRUD, use arquitetura simples — Controller > Service > Repository — e invista seu tempo em algo mais útil.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Confundir Domain Service com Application Service:</strong> Domain Service contém lógica de negócio que não pertence a nenhuma entidade (ex: calcular desconto entre Pedido + Cupom + Cliente VIP). Application Service <strong>orquestra</strong> — chama repositories, domain services, envia eventos — mas não contém lógica de negócio. Se seu Application Service tem <code>if (order.total > 500)</code>, a lógica esta no lugar errado.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática para saber onde colocar a lógica:</strong> Se a regra depende apenas de dados de UMA entidade, vai na entidade. Se depende de multiplas entidades/value objects, vai no Domain Service. Se e orquestração (chamar repo, publicar evento, logar), vai no Application Service.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você esta modelando um sistema bancario. "Conta" aparece em vários contextos: abertura de conta, transações, emprestimos, investimentos. Como organizaria os Bounded Contexts?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Crie Bounded Contexts separados: <strong>Onboarding</strong> (abertura de conta — dados pessoais, documentos, compliance KYC), <strong>Transacoes</strong> (saldo, transferencias, extratos, TED/PIX), <strong>Credito</strong> (emprestimos, score, parcelas, inadimplencia), <strong>Investimentos</strong> (carteira, rentabilidade, risco). Cada contexto tem seu proprio modelo de "Conta" com apenas os atributos relevantes. A comunicação entre eles seria via Domain Events (ex: <code>ContaAprovadaEvent</code> do Onboarding dispara criação de conta no contexto de Transacoes) e ACL para integrações externas (Banco Central, Bolsa).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Você tem uma classe Order que permite alterár items mesmo depois de pago. Qual conceito do DDD esta faltando? Como corrigir?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Esta faltando a proteção de <strong>invariantes do Aggregate</strong>. O Aggregaté Root (Order) deve ser o guardiao da consistência. Correcao: torne os items privados, exponha métodos como <code>addItem()</code> é <code>removeItem()</code> que verificam o status do pedido antes de permitir a modificacao. O método <code>addItem()</code> deve lancar exceção se <code>status !== DRAFT</code>. Nunca exponha o array de items diretamente — retorne uma copia readonly via <code>get items(): ReadonlyArray&lt;OrderItem&gt;</code>.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Seu time esta debatendo onde colocar a regra "desconto de 15% para clientes VIP em pedidos acima de R$300". Entidade? Domain Service? Application Service? Justifique.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>Domain Service</strong>. A regra depende de dados de duas entidades (Customer.isVIP + Order.total), então não pertence naturalmente a nenhuma delas. Crie um <code>DiscountDomainService</code> com método <code>calculateDiscount(customer, order): Money</code>. O Application Service orquestra: busca o Customer, busca o Order, chama o Domain Service, aplica o desconto e salva. A regra <code>if (customer.isVIP && order.total > 300)</code> fica no Domain Service, não no Application Service.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — DDD - Domain-Driven Design</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="05-design-patterns-comportamentais.html">&#8592; Design Patterns Comportamentais</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="07-clean-hexagonal-onion.html" class="primary">Próximo: Clean / Hexagonal / Onion &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 06: DDD - Domain-Driven Design
+// ══════════════════════════════════════════
+const SECTION_NUM = 6;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "O que é Ubiquitous Language no contexto de DDD?",
+    options: [
+      "Uma linguagem de programacao universal usada em todos os projetos",
+      "Um vocabulário compartilhado entre desenvolvedores e especialistas do domínio, refletido no código",
+      "A documentação técnica escrita em ingles para times internacionais",
+      "O usó de nomes em ingles para todas as classes e métodos"
+    ],
+    correct: 1,
+    explanation: "Ubiquitous Language é o vocabulário compartilhado entre devs e especialistas de domínio. Cada termo tem significado precisó dentro do Bounded Context e e refletido diretamente no código."
+  },
+  {
+    question: "Qual é a principal diferença entre Entity e Value Object?",
+    options: [
+      "Entity e imutável, Value Object e mutável",
+      "Entity é definida pela identidade, Value Object é definido pelos atributos",
+      "Entity não tem métodos, Value Object tem comportamento",
+      "Entity é usada no banco de dados, Value Object apenas em memória"
+    ],
+    correct: 1,
+    explanation: "Entity tem identidade única (dois objetos com mesmos atributos mas IDs diferentes são entidades diferentes). Value Object é definido pelos valores — dois Money(100, 'BRL') são iguais. Value Objects são imutaveis."
+  },
+  {
+    question: "O que é um Aggregaté Root no DDD?",
+    options: [
+      "A classe base de todas as entidades do sistema",
+      "A entidade principal de um Aggregaté que garante as invariantes e é o único ponto de acesso externo",
+      "O serviço que gerencia todas as entidades de um módulo",
+      "A interface que todas as entidades devem implementar"
+    ],
+    correct: 1,
+    explanation: "O Aggregaté Root é a entidade principal que controla o acesso a todas as entidades internas do Aggregate. Toda modificacao no Aggregaté passa pelo Root, que garante a consistência das invariantes."
+  },
+  {
+    question: "Quando usar Anti-Corruption Layer (ACL)?",
+    options: [
+      "Sempre que dois Bounded Contexts se comúnicam",
+      "Apenas para validação de dados de entrada",
+      "Para proteger seu domínio de modelos externós corrompidos ou legados, traduzindo entre os modelos",
+      "Para criptografar dados entre microsserviços"
+    ],
+    correct: 2,
+    explanation: "A ACL e uma camada de traducao que protege seu domínio de modelos externos. Exemplo: traduzir o modelo do Stripe (payment_intents, charges) para seu modelo de domínio (Payment, Transaction), evitando acoplamento com fornecedores."
+  },
+  {
+    question: "Qual é o problema do Anemic Domain Model?",
+    options: [
+      "As entidades tem muita lógica e ficam dificeis de testar",
+      "As entidades são apenas sacos de getters/setters sem comportamento, com toda lógica nós Services",
+      "As entidades herdam de uma classe base muito grande",
+      "As entidades não usam Value Objects"
+    ],
+    correct: 1,
+    explanation: "No Anemic Domain Model, entidades são meros DTOs — sem comportamento, sem proteção de invariantes. Toda lógica fica espalhada nós Services. Isso viola o princípio do DDD de que a lógica de negócio pertence as entidades de domínio."
+  },
+  {
+    question: "Qual a diferença entre Domain Service e Application Service?",
+    options: [
+      "Domain Service acessa o banco; Application Service não",
+      "Domain Service contém lógica de negócio que não pertence a entidades; Application Service orquestra o caso de usó sem lógica de negócio",
+      "Não existe diferença — são nomes diferentes para o mesmo conceito",
+      "Domain Service e síncrono; Application Service e assíncrono"
+    ],
+    correct: 1,
+    explanation: "Domain Service contém lógica de domínio que envolve multiplas entidades (ex: calcular desconto com dados de Customer + Order). Application Service é o orquestrador — chama repos, domain services, publica eventos — mas não contém regras de negócio."
+  },
+  {
+    question: "O que é um Bounded Context?",
+    options: [
+      "Uma biblioteca de classes compartilhadas entre todos os módulos",
+      "Um padrão de design para limitar o número de classes por módulo",
+      "Uma fronteira explicita onde um modelo de domínio e válido, com termos tendo significados precisos",
+      "Um container Docker que isola cada microsserviço"
+    ],
+    correct: 2,
+    explanation: "Bounded Context é a fronteira onde um modelo de domínio e válido. O termo 'Produto' pode significar coisas diferentes em Catalogo (nome, imagens) vs Estoque (SKU, quantidade). Cada contexto tem seu proprio modelo."
+  },
+  {
+    question: "Em DDD, por que Value Objects devem ser imutaveis?",
+    options: [
+      "Para economizar memória, pois são compartilhados entre threads",
+      "Porque a imutabilidade garante que o valor não muda acidentalmente, tornando-os seguros para compartilhar e comparar",
+      "Porque o TypeScript não permite mutacao de objetos",
+      "Para permitir heranca entre Value Objects"
+    ],
+    correct: 1,
+    explanation: "Value Objects são definidos pelos seus valores. Se você pudesse mutar um Money(100, 'BRL') para Money(200, 'BRL'), qualquer referência ao objeto original seria corrompida. Imutabilidade garante integridade — qualquer mudança cria uma nova instancia."
+  },
+  {
+    question: "O que é Event Storming?",
+    options: [
+      "Uma técnica de strêss test para sistemas baseados em eventos",
+      "Um framework JavaScript para processamento de eventos em tempo real",
+      "Uma técnica colaborativa de workshop para descobrir domínios usando post-its, identificando eventos, comandos e aggregates",
+      "Um padrão de arquitetura onde todos os serviços se comúnicam apenas por eventos"
+    ],
+    correct: 2,
+    explanation: "Event Storming é um workshop colaborativo criado por Alberto Brandolini. Devs e especialistas de domínio usam post-its coloridos para mapear Domain Events, Commands, Aggregates e Hotspots, descobrindo naturalmente os Bounded Contexts."
+  },
+  {
+    question: "Quando DDD NAO é a abordagem adequada?",
+    options: [
+      "Em sistemas com muitas regras de negócio complexas",
+      "Em domínios com CRUD simples, sem lógica de negócio complexa",
+      "Em sistemas que precisam escalar horizontalmente",
+      "Em projetos com equipes distribuidas"
+    ],
+    correct: 1,
+    explanation: "DDD adiciona complexidade (Value Objects, Aggregates, Domain Events, Repositories). Para domínios CRUD simples (cadastro básico, listagem), essa complexidade não se justifica. DDD brilha em domínios com lógica de negócio rica e regras complexas."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Domain-Driven Design.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

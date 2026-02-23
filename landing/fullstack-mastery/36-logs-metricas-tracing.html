@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>36 — Logs, Métricas & Tracing | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="35-gitops-progressive-delivery.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>36</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="37-sli-slo-sla-error-budgets.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:54.5%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 36</span>
+<h2>Logs, Métricas & Tracing</h2>
+<div class="section-line"></div>
+
+<p>Você não pode melhorar o que não consegue medir, e não pode depurar o que não consegue ver. Em sistemas distribuídos modernos, a <strong>observabilidade</strong> é o que separa equipes que reagem de equipes que antecipam. Logs, métricas e tracing são os três pilares que transformam caixas-pretas em sistemas transparentes — onde cada request pode ser rastreada, cada anomalia detectada, e cada degradação de performance identificada antes que o usuário perceba.</p>
+
+<p>Observabilidade não é monitoramento. <strong>Monitoramento</strong> responde perguntas que você já sabe fazer ("CPU está acima de 90%?"). <strong>Observabilidade</strong> permite fazer perguntas que você não sabia que precisava fazer ("por que requests de usuários do Brasil estão 3x mais lentas apenas na terça-feira?"). E a capacidade de entender o estado interno do sistema a partir de suas saídas externas.</p>
+
+<!-- ═══ 3 PILARES ═══ -->
+<h3>Os 3 Pilares da Observabilidade</h3>
+
+<p>Cada pilar responde uma pergunta fundamental diferente sobre o comportamento do sistema. Nenhum sozinho é suficiente — você precisa dos três trabalhando juntos para ter observabilidade real.</p>
+
+<div class="diagram">
+<div class="diagram-box green">LOGS<br><small>O que aconteceu?</small></div>
+<div class="diagram-arrow">+</div>
+<div class="diagram-box blue">MÉTRICAS<br><small>Como está o sistema?</small></div>
+<div class="diagram-arrow">+</div>
+<div class="diagram-box purple">TRACES<br><small>Qual foi o caminho?</small></div>
+<div class="diagram-arrow">=</div>
+<div class="diagram-box orange">OBSERVABILIDADE<br><small>Entendimento completo</small></div>
+</div>
+
+<div class="card">
+<div class="card-title">Analogia: Hospital</div>
+<ul>
+<li><strong>Logs</strong> = Prontuário do paciente — registro detalhado de cada evento ("paciente relatou dor as 14h", "medicamento X administrado as 15h")</li>
+<li><strong>Métricas</strong> = Monitor de sinais vitais — valores numericos em tempo real (batimentos, pressão, saturação de O2)</li>
+<li><strong>Traces</strong> = Jornada do paciente — o caminho completo (recepção &rarr; triagem &rarr; exame &rarr; consulta &rarr; farmacia)</li>
+</ul>
+</div>
+
+<!-- ═══ LOGS ═══ -->
+<h3>Logs — O que Aconteceu?</h3>
+
+<p>Logs são registros imutáveis de eventos discretos que aconteceram no sistema. São o pilar mais antigo é mais básico da observabilidade. Cada linha de log é um <strong>evento</strong> com timestamp, nível de severidade e contexto sobre o que ocorreu.</p>
+
+<h4>Structured Logging vs Text Logging</h4>
+
+<p>A diferença entre logs úteis e logs inúteis geralmente não é o que você registra, mas <strong>como</strong> você registra. Logs em texto puro são faceis de ler no terminal, mas impossíveis de pesquisar em escala. Logs estruturados (JSON) são parseáveis por máquinas.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Log não estruturado — impossível de parsear em escala</span>
+console.<span class="fn">log</span>(<span class="str">'User 123 placed order 456 for $99.90 at 2024-01-15T10:30:00Z'</span>);
+<span class="cm">// Como buscar todos os pedidos acima de $50? Regex frágil...</span>
+
+<span class="cm">// &#9989; Log estruturado (JSON) — parseável, pesquisável, indexável</span>
+logger.<span class="fn">info</span>(<span class="str">'Order placed successfully'</span>, {
+  userId: <span class="str">'123'</span>,
+  orderId: <span class="str">'456'</span>,
+  amount: <span class="num">99.90</span>,
+  currency: <span class="str">'BRL'</span>,
+  timestamp: <span class="str">'2024-01-15T10:30:00Z'</span>,
+  correlationId: <span class="str">'req-abc-def-789'</span>,
+});</code></pre>
+
+<h4>Log Levels — Quando Usar Cada Um</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Level</th><th>Quando Usar</th><th>Exemplo</th></tr>
+<tr><td><strong style="color:var(--red)">ERROR</strong></td><td>Algo falhou e precisa de atenção. O sistema não conseguiu completar a operação solicitada.</td><td><code>Failed to process payment: gateway timeout</code></td></tr>
+<tr><td><strong style="color:var(--yellow)">WARN</strong></td><td>Algo inesperado aconteceu, mas o sistema conseguiu continuar. Pode virar ERROR no futuro.</td><td><code>Retry attempt 2/3 for external API call</code></td></tr>
+<tr><td><strong style="color:var(--blue)">INFO</strong></td><td>Eventos significativos de negócio. Fluxo normal do sistema. O que você quer ver em produção.</td><td><code>Order created, User logged in</code></td></tr>
+<tr><td><strong style="color:var(--accent)">DEBUG</strong></td><td>Detalhes técnicos para diagnóstico. Desativado em produção (muito volume).</td><td><code>Cache miss for key user:123</code></td></tr>
+<tr><td><strong style="color:var(--text3)">TRACE</strong></td><td>Máximo detalhe. Entrada/saída de cada função. Somente para debugging local intenso.</td><td><code>Entering válidateOrder(), args: {...}</code></td></tr>
+</table>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Em produção, use INFO como nível padrão. ERROR e WARN sempre ativos. DEBUG apenas quando investigando um problema específico (e desative depois). TRACE quase nunca em produção.</div>
+</div>
+
+<h4>Correlation ID — Rastreamento entre Serviços</h4>
+
+<p>Em arquiteturas de microsserviços, uma única request do usuário pode atravessar 5, 10, 20 serviços. Sem um <strong>Correlation ID</strong> (ou Request ID), e impossível correlacionar os logs de um serviço com os de outro. O padrão: gere um UUID no API Gateway e propague via header <code>X-Correlation-ID</code> em toda a cadeia.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// NestJS — Middleware para Correlation ID</span>
+<span class="kw">import</span> { Injectable, NestMiddleware } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+<span class="kw">import</span> { v4 <span class="kw">as</span> uuid } <span class="kw">from</span> <span class="str">'uuid'</span>;
+
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">CorrelationIdMiddleware</span> <span class="kw">implements</span> <span class="tp">NestMiddleware</span> {
+  <span class="fn">use</span>(req: <span class="tp">Request</span>, res: <span class="tp">Response</span>, next: <span class="tp">Function</span>) {
+    <span class="kw">const</span> correlationId = req.headers[<span class="str">'x-correlation-id'</span>] || <span class="fn">uuid</span>();
+    req[<span class="str">'correlationId'</span>] = correlationId;
+    res.<span class="fn">setHeader</span>(<span class="str">'X-Correlation-ID'</span>, correlationId);
+    <span class="fn">next</span>();
+  }
+}</code></pre>
+
+<h4>NestJS + Winston — Structured Logging</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// logger.config.ts — Winston structured logger para NestJS</span>
+<span class="kw">import</span> { WinstonModule } <span class="kw">from</span> <span class="str">'nest-winston'</span>;
+<span class="kw">import</span> * <span class="kw">as</span> winston <span class="kw">from</span> <span class="str">'winston'</span>;
+
+<span class="kw">export const</span> loggerConfig = <span class="fn">WinstonModule</span>.<span class="fn">forRoot</span>({
+  transports: [
+    <span class="kw">new</span> winston.transports.<span class="fn">Console</span>({
+      format: winston.format.<span class="fn">combine</span>(
+        winston.format.<span class="fn">timestamp</span>(),
+        winston.format.<span class="fn">json</span>(),    <span class="cm">// Structured JSON output</span>
+      ),
+    }),
+  ],
+  <span class="cm">// Default metadata em todos os logs</span>
+  defaultMeta: {
+    service: <span class="str">'order-service'</span>,
+    environment: process.env.<span class="tp">NODE_ENV</span>,
+    version: process.env.<span class="tp">APP_VERSION</span>,
+  },
+});
+
+<span class="cm">// Usó no serviço</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">OrderService</span> {
+  <span class="kw">constructor</span>(
+    <span class="ann">@Inject</span>(<span class="tp">WINSTON_MODULE_PROVIDER</span>)
+    <span class="kw">privaté readonly</span> logger: <span class="tp">Logger</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">createOrder</span>(dto: <span class="tp">CreateOrderDto</span>, correlationId: <span class="tp">string</span>) {
+    <span class="kw">this</span>.logger.<span class="fn">info</span>(<span class="str">'Creating order'</span>, {
+      correlationId,
+      userId: dto.userId,
+      itemCount: dto.items.length,
+    });
+
+    <span class="kw">try</span> {
+      <span class="kw">const</span> order = <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">save</span>(dto);
+      <span class="kw">this</span>.logger.<span class="fn">info</span>(<span class="str">'Order created successfully'</span>, {
+        correlationId,
+        orderId: order.id,
+        total: order.total,
+      });
+      <span class="kw">return</span> order;
+    } <span class="kw">catch</span> (error) {
+      <span class="kw">this</span>.logger.<span class="fn">error</span>(<span class="str">'Failed to creaté order'</span>, {
+        correlationId,
+        userId: dto.userId,
+        error: error.message,
+        stack: error.stack,
+      });
+      <span class="kw">throw</span> error;
+    }
+  }
+}
+
+<span class="cm">// Output JSON (cada linha e um JSON parseável):</span>
+<span class="cm">// {"level":"info","message":"Creating order","correlationId":"req-abc-789",</span>
+<span class="cm">//  "userId":"u-123","itemCount":3,"service":"order-service","timestamp":"2024-..."}</span></code></pre>
+
+<h4>Stacks de Log Aggregation</h4>
+
+<div class="card blue">
+<div class="card-title">ELK Stack — Elasticsearch + Logstash + Kibana</div>
+<ul>
+<li><strong>Elasticsearch</strong> — Engine de busca distribuída. Indexa e armazena logs. Suporta queries complexas em bilhoes de documentos</li>
+<li><strong>Logstash</strong> — Pipeline de ingestão. Recebe logs de múltiplas fontes, transforma (parse, enrich, filter) e envia para o Elasticsearch</li>
+<li><strong>Kibana</strong> — UI de visualização. Dashboards, busca, alertas. Interface para explorar logs</li>
+<li><strong>Beats</strong> — Agentes leves (Filebeat, Metricbeat) que enviam dados para Logstash ou Elasticsearch diretamente</li>
+</ul>
+<p style="color:var(--text2);font-size:.85rem;margin-top:8px"><strong>Pros:</strong> Extremamente poderoso, busca full-text, maturidade de 10+ anos. <strong>Cons:</strong> Pesado, caro em recursos (JVM), complexo de operar.</p>
+</div>
+
+<div class="card purple">
+<div class="card-title">Loki + Grafana — Alternativa Leve</div>
+<ul>
+<li><strong>Grafana Loki</strong> — "Prometheus, mas para logs". Não indexa o conteúdo do log (como ELK) — indexa apenas labels (metadados). Muito mais barato de operar</li>
+<li><strong>Promtail</strong> — Agente que coleta logs e envia para Loki (equivalente ao Filebeat)</li>
+<li><strong>Grafana</strong> — Mesma UI que você já usa para métricas. Unifica logs + métricas em um único lugar</li>
+</ul>
+<p style="color:var(--text2);font-size:.85rem;margin-top:8px"><strong>Pros:</strong> 10x mais barato que ELK, fácil de operar, integra com Grafana. <strong>Cons:</strong> Busca menós poderosa (sem full-text index), não ideal para analytics em logs.</p>
+</div>
+
+<div class="diagram">
+<div class="diagram-box green">Aplicação<br><small>(JSON logs)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Promtail / Filebeat<br><small>(Coleta)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Loki / Elasticsearch<br><small>(Armazenamento)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Grafana / Kibana<br><small>(Visualização)</small></div>
+</div>
+
+<!-- ═══ METRICAS ═══ -->
+<h3>Métricas — Como Esta o Sistema?</h3>
+
+<p>Métricas são <strong>valores numericos agregados ao longo do tempo</strong>. Ao contrário de logs (eventos individuais), métricas são compactadas — você não armazena cada request, mas sim "quantas requests por segundo" ou "qual a latência no percentil 99". Isso as torna muito mais baratas de armazenar e consultar do que logs.</p>
+
+<h4>Tipos de Métricas</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Tipo</th><th>Comportamento</th><th>Exemplo</th><th>Uso</th></tr>
+<tr><td><strong style="color:var(--accent)">Counter</strong></td><td>Valor que só incrementa (nunca diminui). Reseta quando o processo reinicia.</td><td><code>http_requests_total</code></td><td>Total de requests, erros, bytes enviados</td></tr>
+<tr><td><strong style="color:var(--blue)">Gauge</strong></td><td>Valor que pode subir e descer. Representa estado atual.</td><td><code>active_connections</code></td><td>Conexões ativas, temperatura, memória usada</td></tr>
+<tr><td><strong style="color:var(--purple)">Histogram</strong></td><td>Distribuição de valores em buckets. Permite calcular percentis.</td><td><code>http_request_duration_seconds</code></td><td>Latência de requests, tamanho de payloads</td></tr>
+<tr><td><strong style="color:var(--orange)">Summary</strong></td><td>Similar a Histogram, mas calcula quantis no cliente (não no servidor).</td><td><code>rpc_duration_seconds</code></td><td>Latência pré-calculada (p50, p90, p99)</td></tr>
+</table>
+</div>
+
+<h4>Prometheus + PromQL</h4>
+
+<p>Prometheus é o padrão da industria para coleta de métricas. Funciona no modelo <strong>pull</strong> — o Prometheus "raspa" (scrape) endpoints <code>/metrics</code> dos seus serviços em intervalos regulares (tipicamente 15s ou 30s).</p>
+
+<pre data-lang="promql"><code><span class="cm"># Taxa de requests por segundo nós últimos 5 minutos</span>
+<span class="fn">rate</span>(<span class="tp">http_requests_total</span>[<span class="num">5m</span>])
+
+<span class="cm"># Taxa de erros (5xx) como percentual do total</span>
+<span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>{<span class="str">status</span>=~<span class="str">"5.."</span>}[<span class="num">5m</span>]))
+/
+<span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>[<span class="num">5m</span>]))
+
+<span class="cm"># Latência no percentil 99 (p99)</span>
+<span class="fn">histogram_quantile</span>(<span class="num">0.99</span>,
+  <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_request_duration_seconds_bucket</span>[<span class="num">5m</span>])) <span class="kw">by</span> (<span class="str">le</span>)
+)
+
+<span class="cm"># Memória usada por serviço</span>
+<span class="tp">process_resident_memory_bytes</span> / <span class="num">1024</span> / <span class="num">1024</span>
+
+<span class="cm"># Top 5 endpoints mais lentos</span>
+<span class="fn">topk</span>(<span class="num">5</span>,
+  <span class="fn">histogram_quantile</span>(<span class="num">0.95</span>,
+    <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_request_duration_seconds_bucket</span>[<span class="num">5m</span>])) <span class="kw">by</span> (<span class="str">le</span>, <span class="str">handler</span>)
+  )
+)</code></pre>
+
+<h4>Golden Signals (Google SRE)</h4>
+
+<p>O livro <strong>Site Reliability Engineering</strong> do Google define 4 sinais de ouro que você deve monitorar em todo serviço:</p>
+
+<div class="card">
+<div class="card-title">The Four Golden Signals</div>
+<ul>
+<li><strong>Latency</strong> — Tempo que uma request leva para ser processada. Separar latência de requests bem-sucedidas das com erro (um 500 rápido pode mascarar lentidao real)</li>
+<li><strong>Traffic</strong> — Demanda no sistema. Requests por segundo, queries por segundo, sessões ativas. Ajuda a entender carga</li>
+<li><strong>Errors</strong> — Taxa de requests que falham. Erros explicitos (HTTP 5xx) e implicitos (200 com conteúdo errado, ou latência acima do SLO)</li>
+<li><strong>Saturation</strong> — Quao "cheio" o serviço esta. CPU, memória, disco, fila de conexões. Prediz problemas antes que acontecam</li>
+</ul>
+</div>
+
+<h4>RED Method (para Microsserviços)</h4>
+
+<p>Simplificação dos Golden Signals focada em request-driven services. Criado por Tom Wilkie (Grafana):</p>
+<ul>
+<li><strong>Rate</strong> — Requests por segundo</li>
+<li><strong>Errors</strong> — Requests que falharam por segundo</li>
+<li><strong>Duration</strong> — Distribuição de latência das requests (histograma)</li>
+</ul>
+
+<h4>USE Method (para Infraestrutura)</h4>
+
+<p>Criado por Brendan Gregg. Para cada recursó de infra (CPU, memória, disco, rede):</p>
+<ul>
+<li><strong>Utilization</strong> — Percentual de tempo que o recursó esta ocupado (ex: CPU 75%)</li>
+<li><strong>Saturation</strong> — Trabalho que está na fila esperando (ex: 12 processos na run queue)</li>
+<li><strong>Errors</strong> — Quantidade de eventos de erro (ex: disk read errors)</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">&#8505;</span>
+<div><strong>Quando usar qual:</strong> RED Method para seus microsserviços (application layer). USE Method para a infra subjacente (CPU, disco, rede). Golden Signals como framework geral que engloba ambos.</div>
+</div>
+
+<h4>TypeScript: Custom Metrics com prom-client</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// metrics.service.ts — Custom Prometheus metrics no NestJS</span>
+<span class="kw">import</span> { Injectable, OnModuleInit } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+<span class="kw">import</span> * <span class="kw">as</span> client <span class="kw">from</span> <span class="str">'prom-client'</span>;
+
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">MetricsService</span> <span class="kw">implements</span> <span class="tp">OnModuleInit</span> {
+  <span class="kw">private</span> httpRequestsTotal: <span class="tp">client.Counter</span>;
+  <span class="kw">private</span> httpRequestDuration: <span class="tp">client.Histogram</span>;
+  <span class="kw">private</span> activeConnections: <span class="tp">client.Gauge</span>;
+
+  <span class="fn">onModuleInit</span>() {
+    <span class="cm">// Coleta métricas default do Node.js (event loop, heap, GC)</span>
+    client.<span class="fn">collectDefaultMetrics</span>();
+
+    <span class="cm">// Counter — total de requests HTTP</span>
+    <span class="kw">this</span>.httpRequestsTotal = <span class="kw">new</span> client.<span class="fn">Counter</span>({
+      name: <span class="str">'http_requests_total'</span>,
+      help: <span class="str">'Total number of HTTP requests'</span>,
+      labelNames: [<span class="str">'method'</span>, <span class="str">'route'</span>, <span class="str">'status_code'</span>],
+    });
+
+    <span class="cm">// Histogram — distribuição de latência</span>
+    <span class="kw">this</span>.httpRequestDuration = <span class="kw">new</span> client.<span class="fn">Histogram</span>({
+      name: <span class="str">'http_request_duration_seconds'</span>,
+      help: <span class="str">'HTTP request duration in seconds'</span>,
+      labelNames: [<span class="str">'method'</span>, <span class="str">'route'</span>, <span class="str">'status_code'</span>],
+      buckets: [<span class="num">0.01</span>, <span class="num">0.05</span>, <span class="num">0.1</span>, <span class="num">0.25</span>, <span class="num">0.5</span>, <span class="num">1</span>, <span class="num">2.5</span>, <span class="num">5</span>, <span class="num">10</span>],
+    });
+
+    <span class="cm">// Gauge — conexões ativas</span>
+    <span class="kw">this</span>.activeConnections = <span class="kw">new</span> client.<span class="fn">Gauge</span>({
+      name: <span class="str">'active_connections'</span>,
+      help: <span class="str">'Number of active connections'</span>,
+    });
+  }
+
+  <span class="cm">// Chamado pelo middleware de métricas em cada request</span>
+  <span class="fn">recordRequest</span>(method: <span class="tp">string</span>, route: <span class="tp">string</span>, statusCode: <span class="tp">number</span>, durationSec: <span class="tp">number</span>) {
+    <span class="kw">const</span> labels = { method, route, status_code: String(statusCode) };
+    <span class="kw">this</span>.httpRequestsTotal.<span class="fn">inc</span>(labels);
+    <span class="kw">this</span>.httpRequestDuration.<span class="fn">observe</span>(labels, durationSec);
+  }
+
+  <span class="fn">connectionOpened</span>() { <span class="kw">this</span>.activeConnections.<span class="fn">inc</span>(); }
+  <span class="fn">connectionClosed</span>() { <span class="kw">this</span>.activeConnections.<span class="fn">dec</span>(); }
+
+  <span class="cm">// Endpoint /metrics para Prometheus scrape</span>
+  <span class="kw">async</span> <span class="fn">getMetrics</span>(): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+    <span class="kw">return</span> client.register.<span class="fn">metrics</span>();
+  }
+}
+
+<span class="cm">// metrics.controller.ts</span>
+<span class="ann">@Controller</span>(<span class="str">'metrics'</span>)
+<span class="kw">export class</span> <span class="tp">MetricsController</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> metricsService: <span class="tp">MetricsService</span>) {}
+
+  <span class="ann">@Get</span>()
+  <span class="kw">async</span> <span class="fn">getMetrics</span>(<span class="ann">@Res</span>() res: <span class="tp">Response</span>) {
+    res.<span class="fn">set</span>(<span class="str">'Content-Type'</span>, client.register.contentType);
+    res.<span class="fn">send</span>(<span class="kw">await</span> <span class="kw">this</span>.metricsService.<span class="fn">getMetrics</span>());
+  }
+}</code></pre>
+
+<!-- ═══ DISTRIBUTED TRACING ═══ -->
+<h3>Distributed Tracing — Qual Foi o Caminho?</h3>
+
+<p>Em um monolito, um stack trace mostra a sequência de chamadas. Em microsserviços, uma request atravessa múltiplos processos, cada um com seu próprio stack trace. <strong>Distributed tracing</strong> reconstroi o caminho completo da request através de todos os serviços, mostrando exatamente onde o tempo foi gasto.</p>
+
+<h4>Conceitos Fundamentais</h4>
+
+<ul>
+<li><strong>Span</strong> — Uma unidade de trabalho. Tem nome, início, duração, status e metadados. Exemplo: "query ao PostgreSQL" (durou 45ms). Spans podem ter spans filhos (hierarquia)</li>
+<li><strong>Trace</strong> — Coleção de spans que representam uma request completa. Toda a jornada: API Gateway &rarr; Auth Service &rarr; Order Service &rarr; Payment Service &rarr; Database</li>
+<li><strong>Context Propagation</strong> — Como o trace-id e passado entre serviços. Tipicamente via headers HTTP (<code>traceparent</code>, <code>W3C Trace Context</code>). Sem propagação, cada serviço cria um trace isolado</li>
+<li><strong>Baggage</strong> — Metadados adicionais propagados com o trace (ex: tenant-id, feature-flag). Útil, mas cuidado com o tamanho</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box green">API Gateway<br><small>Span A (root)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Auth Service<br><small>Span B (child of A)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Order Service<br><small>Span C (child of A)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Payment API<br><small>Span D (child of C)</small></div>
+</div>
+
+<pre data-lang="json"><code><span class="cm">// Exemplo de um Span (simplificado)</span>
+{
+  <span class="str">"traceId"</span>:    <span class="str">"abc123def456"</span>,
+  <span class="str">"spanId"</span>:     <span class="str">"span-789"</span>,
+  <span class="str">"parentSpanId"</span>: <span class="str">"span-456"</span>,
+  <span class="str">"operationName"</span>: <span class="str">"POST /orders"</span>,
+  <span class="str">"serviceName"</span>: <span class="str">"order-service"</span>,
+  <span class="str">"startTime"</span>:  <span class="str">"2024-01-15T10:30:00.000Z"</span>,
+  <span class="str">"duration"</span>:   <span class="num">245</span>,
+  <span class="str">"status"</span>:     <span class="str">"OK"</span>,
+  <span class="str">"attributes"</span>: {
+    <span class="str">"http.method"</span>: <span class="str">"POST"</span>,
+    <span class="str">"http.status_code"</span>: <span class="num">201</span>,
+    <span class="str">"db.system"</span>: <span class="str">"postgresql"</span>,
+    <span class="str">"db.statement"</span>: <span class="str">"INSERT INTO orders..."</span>
+  }
+}</code></pre>
+
+<h4>Ferramentas de Tracing</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Tipo</th><th>Destaque</th></tr>
+<tr><td><strong>Jaeger</strong></td><td>Open source (CNCF)</td><td>Criado pelo Uber. UI intuitiva, sampling adaptativo, maturidade</td></tr>
+<tr><td><strong>Zipkin</strong></td><td>Open source</td><td>Criado pelo Twitter. Mais antigo, mais simples, boa integração com Spring</td></tr>
+<tr><td><strong>Grafana Tempo</strong></td><td>Open source</td><td>Backend de traces sem index (como Loki para logs). Barato, integra com Grafana</td></tr>
+<tr><td><strong>AWS X-Ray</strong></td><td>Managed (AWS)</td><td>Nativo em Lambda/ECS/EKS. Zero setup no ecossistema AWS</td></tr>
+<tr><td><strong>Honeycomb</strong></td><td>SaaS</td><td>Pioneiro em observabilidade. Queries arbitrarias em traces de alta cardinalidade</td></tr>
+<tr><td><strong>Datadog APM</strong></td><td>SaaS</td><td>All-in-one: logs + métricas + traces. Caro, mas muito completo</td></tr>
+</table>
+</div>
+
+<!-- ═══ OPENTELEMETRY ═══ -->
+<h3>OpenTelemetry (OTel) — O Futuro da Observabilidade</h3>
+
+<p>Antes do OpenTelemetry, cada ferramenta tinha seu próprio SDK: Jaeger client, Zipkin client, Datadog client, X-Ray SDK. Trocar de ferramenta significava reescrever toda a instrumentação. <strong>OpenTelemetry</strong> é o padrão <strong>vendor-neutral</strong> da CNCF que unifica tudo: um único SDK para gerar logs, métricas e traces, enviando para qualquer backend.</p>
+
+<div class="card">
+<div class="card-title">Por que OpenTelemetry e Importante</div>
+<ul>
+<li><strong>Vendor-neutral</strong> — Instrumente uma vez, envie para qualquer backend (Jaeger, Datadog, Grafana, New Relic, etc.)</li>
+<li><strong>Unified SDK</strong> — Uma única biblioteca para logs + métricas + traces (em vez de 3 SDKs diferentes)</li>
+<li><strong>Auto-instrumentation</strong> — Instrumentação automática para HTTP, gRPC, bancos de dados, message queues sem alterár código</li>
+<li><strong>Industry standard</strong> — Adotado pela AWS, Google, Microsoft, Datadog, Grafana, Elastic e todos os major players</li>
+<li><strong>OTLP Protocol</strong> — Protocolo padrão (OpenTelemetry Protocol) para transmitir dados de telemetria</li>
+</ul>
+</div>
+
+<h4>Arquitetura do OTel Collector</h4>
+
+<div class="diagram">
+<div class="diagram-box green">App + OTel SDK<br><small>(Instrumentação)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">OTel Collector<br><small>(Receive, Process, Export)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Jaeger / Tempo<br><small>(Traces)</small></div>
+</div>
+<div class="diagram" style="margin-top:4px">
+<div class="diagram-box green" style="visibility:hidden">Placeholder</div>
+<div class="diagram-arrow" style="visibility:hidden">&rarr;</div>
+<div class="diagram-box blue" style="visibility:hidden">Placeholder</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Prometheus / Mimir<br><small>(Métricas)</small></div>
+</div>
+<div class="diagram" style="margin-top:4px">
+<div class="diagram-box green" style="visibility:hidden">Placeholder</div>
+<div class="diagram-arrow" style="visibility:hidden">&rarr;</div>
+<div class="diagram-box blue" style="visibility:hidden">Placeholder</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Loki / Elasticsearch<br><small>(Logs)</small></div>
+</div>
+
+<p>O <strong>OTel Collector</strong> é um componente central que recebe telemetria de todas as aplicações via OTLP, processa (batching, filtering, enrichment, sampling) e exporta para os backends corretos. Desacopla a aplicação do backend — você pode trocar de Jaeger para Tempo sem tocar no código.</p>
+
+<h4>TypeScript: OpenTelemetry Setup para NestJS</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// tracing.ts — Bootstrap OTel ANTES de importar NestJS</span>
+<span class="kw">import</span> { NodeSDK } <span class="kw">from</span> <span class="str">'@opentelemetry/sdk-node'</span>;
+<span class="kw">import</span> { OTLPTraceExporter } <span class="kw">from</span> <span class="str">'@opentelemetry/exporter-trace-otlp-http'</span>;
+<span class="kw">import</span> { OTLPMetricExporter } <span class="kw">from</span> <span class="str">'@opentelemetry/exporter-metrics-otlp-http'</span>;
+<span class="kw">import</span> { PeriodicExportingMetricReader } <span class="kw">from</span> <span class="str">'@opentelemetry/sdk-metrics'</span>;
+<span class="kw">import</span> { getNodeAutoInstrumentations } <span class="kw">from</span> <span class="str">'@opentelemetry/auto-instrumentations-node'</span>;
+<span class="kw">import</span> { Resource } <span class="kw">from</span> <span class="str">'@opentelemetry/resources'</span>;
+<span class="kw">import</span> { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION }
+  <span class="kw">from</span> <span class="str">'@opentelemetry/semantic-conventions'</span>;
+
+<span class="kw">const</span> sdk = <span class="kw">new</span> <span class="fn">NodeSDK</span>({
+  resource: <span class="kw">new</span> <span class="fn">Resource</span>({
+    [ATTR_SERVICE_NAME]: <span class="str">'order-service'</span>,
+    [ATTR_SERVICE_VERSION]: <span class="str">'1.2.0'</span>,
+    environment: process.env.<span class="tp">NODE_ENV</span> || <span class="str">'development'</span>,
+  }),
+
+  <span class="cm">// Traces → OTel Collector via OTLP</span>
+  traceExporter: <span class="kw">new</span> <span class="fn">OTLPTraceExporter</span>({
+    url: <span class="str">'http://otel-collector:4318/v1/traces'</span>,
+  }),
+
+  <span class="cm">// Metrics → OTel Collector via OTLP</span>
+  metricReader: <span class="kw">new</span> <span class="fn">PeriodicExportingMetricReader</span>({
+    exporter: <span class="kw">new</span> <span class="fn">OTLPMetricExporter</span>({
+      url: <span class="str">'http://otel-collector:4318/v1/metrics'</span>,
+    }),
+    exportIntervalMillis: <span class="num">15000</span>,
+  }),
+
+  <span class="cm">// Auto-instrumentação: HTTP, Express, pg, Redis, etc.</span>
+  instrumentations: [
+    <span class="fn">getNodeAutoInstrumentations</span>({
+      <span class="cm">// Desabilita instrumentação de fs (muito ruido)</span>
+      <span class="str">'@opentelemetry/instrumentation-fs'</span>: { enabled: <span class="kw">false</span> },
+    }),
+  ],
+});
+
+<span class="cm">// DEVE ser chamado ANTES de qualquer import do NestJS</span>
+sdk.<span class="fn">start</span>();
+
+<span class="cm">// Graceful shutdown</span>
+process.<span class="fn">on</span>(<span class="str">'SIGTERM'</span>, () => sdk.<span class="fn">shutdown</span>());
+
+<span class="cm">// main.ts — Importe tracing PRIMEIRO</span>
+<span class="kw">import</span> <span class="str">'./tracing'</span>;  <span class="cm">// &larr; Antes de tudo!</span>
+<span class="kw">import</span> { NestFactory } <span class="kw">from</span> <span class="str">'@nestjs/core'</span>;
+<span class="kw">import</span> { AppModule } <span class="kw">from</span> <span class="str">'./app.module'</span>;</code></pre>
+
+<h4>Custom Spans Manuais</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// Quando a auto-instrumentação não é suficiente</span>
+<span class="kw">import</span> { trace, SpanStatusCode } <span class="kw">from</span> <span class="str">'@opentelemetry/api'</span>;
+
+<span class="kw">const</span> tracer = trace.<span class="fn">getTracer</span>(<span class="str">'order-service'</span>);
+
+<span class="kw">async function</span> <span class="fn">processOrder</span>(orderId: <span class="tp">string</span>) {
+  <span class="cm">// Cria um span customizado</span>
+  <span class="kw">return</span> tracer.<span class="fn">startActiveSpan</span>(<span class="str">'processOrder'</span>, <span class="kw">async</span> (span) => {
+    <span class="kw">try</span> {
+      span.<span class="fn">setAttribute</span>(<span class="str">'order.id'</span>, orderId);
+
+      <span class="cm">// Span filho para validação</span>
+      <span class="kw">await</span> tracer.<span class="fn">startActiveSpan</span>(<span class="str">'válidateOrder'</span>, <span class="kw">async</span> (childSpan) => {
+        <span class="kw">await</span> <span class="fn">válidate</span>(orderId);
+        childSpan.<span class="fn">end</span>();
+      });
+
+      <span class="cm">// Span filho para pagamento</span>
+      <span class="kw">await</span> tracer.<span class="fn">startActiveSpan</span>(<span class="str">'chargePayment'</span>, <span class="kw">async</span> (childSpan) => {
+        childSpan.<span class="fn">setAttribute</span>(<span class="str">'payment.gateway'</span>, <span class="str">'stripe'</span>);
+        <span class="kw">await</span> <span class="fn">chargePayment</span>(orderId);
+        childSpan.<span class="fn">end</span>();
+      });
+
+      span.<span class="fn">setStatus</span>({ code: SpanStatusCode.<span class="tp">OK</span> });
+    } <span class="kw">catch</span> (error) {
+      span.<span class="fn">setStatus</span>({ code: SpanStatusCode.<span class="tp">ERROR</span>, message: error.message });
+      span.<span class="fn">recordException</span>(error);
+      <span class="kw">throw</span> error;
+    } <span class="kw">finally</span> {
+      span.<span class="fn">end</span>();
+    }
+  });
+}</code></pre>
+
+<!-- ═══ ALERTING ═══ -->
+<h3>Alerting — De Dados a Ação</h3>
+
+<p>Métricas e dashboards só tem valor se alguém esta olhando. <strong>Alertas</strong> transformam dados em ação — notificando as pessoas certas quando algo está errado. Mas alertas mal configurados criam <strong>alert fatigue</strong>, onde a equipe ignora alertas porque recebe centenas de falsos positivos por dia.</p>
+
+<h4>Princípios de Alertas Eficazes</h4>
+
+<div class="card orange">
+<div class="card-title">Regras de Ouro para Alerting</div>
+<ul>
+<li><strong>Alerte sobre sintomas, não causas</strong> — "Taxa de erro acima de 1%" (sintoma) é melhor que "CPU acima de 80%" (causa). CPU alta pode ser normal sob carga</li>
+<li><strong>Cada alerta deve ser actionable</strong> — Se o alerta disparar, deve existir algo que alguém pode fazer. Se não ha ação, não é alerta — e informação (use dashboard)</li>
+<li><strong>Urgência real</strong> — Página alguém as 3h da manha SOMENTE se ha impacto real no usuário. Tudo o resto pode esperar até o dia seguinte</li>
+<li><strong>Runbooks</strong> — Cada alerta deve ter um link para um runbook com passos de investigação e resolução. Ninguém deveria ter que adivinhar o que fazer</li>
+<li><strong>Deduplicação e agrupamento</strong> — Se 10 pods falham pelo mesmo motivo, envie 1 alerta agrupado, não 10</li>
+</ul>
+</div>
+
+<h4>Alert Routing e Escalation</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Severidade</th><th>Canal</th><th>Tempo de Resposta</th><th>Exemplo</th></tr>
+<tr><td><strong style="color:var(--red)">P1 - Critical</strong></td><td>PagerDuty/OpsGenie (telefone + SMS)</td><td>5 minutos</td><td>Serviço completamente fora do ar</td></tr>
+<tr><td><strong style="color:var(--orange)">P2 - High</strong></td><td>Slack + PagerDuty (notificação)</td><td>30 minutos</td><td>Taxa de erro acima de 5%</td></tr>
+<tr><td><strong style="color:var(--yellow)">P3 - Medium</strong></td><td>Slack channel</td><td>4 horas (horário comercial)</td><td>Latência p99 degradada</td></tr>
+<tr><td><strong style="color:var(--text3)">P4 - Low</strong></td><td>Email / ticket automático</td><td>Próximo sprint</td><td>Disco em 70% de capacidade</td></tr>
+</table>
+</div>
+
+<pre data-lang="yaml"><code><span class="cm"># Prometheus alerting rules (alertmanager)</span>
+<span class="str">groups</span>:
+  - <span class="str">name</span>: <span class="str">order-service-alerts</span>
+    <span class="str">rules</span>:
+      <span class="cm"># P1: Serviço fora do ar</span>
+      - <span class="str">alert</span>: <span class="tp">OrderServiceDown</span>
+        <span class="str">expr</span>: <span class="fn">up</span>{<span class="str">job</span>=<span class="str">"order-service"</span>} == <span class="num">0</span>
+        <span class="str">for</span>: <span class="num">1m</span>
+        <span class="str">labels</span>:
+          <span class="str">severity</span>: <span class="str">critical</span>
+        <span class="str">annotations</span>:
+          <span class="str">summary</span>: <span class="str">"Order Service is DOWN"</span>
+          <span class="str">runbook</span>: <span class="str">"https://wiki.internal/runbooks/order-service-down"</span>
+
+      <span class="cm"># P2: Taxa de erro alta</span>
+      - <span class="str">alert</span>: <span class="tp">HighErrorRate</span>
+        <span class="str">expr</span>: |
+          <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>{<span class="str">job</span>=<span class="str">"order-service"</span>,<span class="str">status_code</span>=~<span class="str">"5.."</span>}[<span class="num">5m</span>]))
+          /
+          <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_requests_total</span>{<span class="str">job</span>=<span class="str">"order-service"</span>}[<span class="num">5m</span>])) > <span class="num">0.05</span>
+        <span class="str">for</span>: <span class="num">5m</span>
+        <span class="str">labels</span>:
+          <span class="str">severity</span>: <span class="str">high</span>
+        <span class="str">annotations</span>:
+          <span class="str">summary</span>: <span class="str">"Error raté above 5% for 5 minutes"</span>
+
+      <span class="cm"># P3: Latência degradada</span>
+      - <span class="str">alert</span>: <span class="tp">HighLatency</span>
+        <span class="str">expr</span>: |
+          <span class="fn">histogram_quantile</span>(<span class="num">0.99</span>,
+            <span class="fn">sum</span>(<span class="fn">rate</span>(<span class="tp">http_request_duration_seconds_bucket</span>{
+              <span class="str">job</span>=<span class="str">"order-service"</span>}[<span class="num">5m</span>])) <span class="kw">by</span> (<span class="str">le</span>)) > <span class="num">2</span>
+        <span class="str">for</span>: <span class="num">10m</span>
+        <span class="str">labels</span>:
+          <span class="str">severity</span>: <span class="str">medium</span></code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Observabilidade para Microsserviços</h3>
+
+<p><strong>Cenário:</strong> Você está implementando observabilidade para uma plataforma de e-commerce com 12 microsserviços. Precisa de traces para debug, métricas para dashboards/alertas e logs para auditoria. O sistema processa 50k requests/segundo em pico.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Microsserviços<br><small>(OTel SDK)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">OTel Collector<br><small>(Batching + Sampling)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Grafana Tempo<br><small>(Traces)</small></div>
+</div>
+<div class="diagram" style="margin-top:4px">
+<div class="diagram-box green" style="visibility:hidden">Placeholder</div>
+<div class="diagram-arrow" style="visibility:hidden">&rarr;</div>
+<div class="diagram-box blue" style="visibility:hidden">Placeholder</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Prometheus + Mimir<br><small>(Métricas)</small></div>
+</div>
+<div class="diagram" style="margin-top:4px">
+<div class="diagram-box green" style="visibility:hidden">Placeholder</div>
+<div class="diagram-arrow" style="visibility:hidden">&rarr;</div>
+<div class="diagram-box blue" style="visibility:hidden">Placeholder</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Grafana Loki<br><small>(Logs)</small></div>
+</div>
+<div class="diagram" style="margin-top:4px">
+<div class="diagram-box green" style="visibility:hidden">Placeholder</div>
+<div class="diagram-arrow" style="visibility:hidden">&rarr;</div>
+<div class="diagram-box blue" style="visibility:hidden">Placeholder</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Grafana<br><small>(Dashboards + Alertas)</small></div>
+</div>
+
+<div class="card">
+<div class="card-title">Decisões de Arquitetura</div>
+<ul>
+<li><strong>OTel SDK em cada serviço</strong> — Auto-instrumentação para HTTP/gRPC/DB + spans customizados para lógica de negócio crítica</li>
+<li><strong>OTel Collector como gateway</strong> — Centraliza batching, retry, sampling e routing. Aplicação não precisa saber para onde os dados vão</li>
+<li><strong>Tail-based sampling no Collector</strong> — Em 50k req/s, armazenar 100% dos traces e inviável. Sampling: 100% dos traces com erro, 100% dos traces lentos (>2s), 5% dos traces normais</li>
+<li><strong>Grafana como pane de vidro único</strong> — Logs (Loki) + Métricas (Prometheus) + Traces (Tempo) na mesma UI. Clique em um log &rarr; ve o trace. Clique em um pico de latência &rarr; ve os spans</li>
+<li><strong>Prometheus com Mimir</strong> — Prometheus local para scrape, Mimir para armazenamento de longo prazo (multi-tenant, S3-backed)</li>
+<li><strong>Alertas via Grafana Alerting</strong> — Regras no Grafana que consultam Prometheus. Roteamento via labels para PagerDuty (P1/P2), Slack (P3), email (P4)</li>
+</ul>
+</div>
+
+<pre data-lang="yaml"><code><span class="cm"># otel-collector-config.yaml</span>
+<span class="str">receivers</span>:
+  <span class="str">otlp</span>:
+    <span class="str">protocols</span>:
+      <span class="str">grpc</span>:
+        <span class="str">endpoint</span>: <span class="str">"0.0.0.0:4317"</span>
+      <span class="str">http</span>:
+        <span class="str">endpoint</span>: <span class="str">"0.0.0.0:4318"</span>
+
+<span class="str">processors</span>:
+  <span class="str">batch</span>:
+    <span class="str">timeout</span>: <span class="num">5s</span>
+    <span class="str">send_batch_size</span>: <span class="num">1024</span>
+  <span class="str">tail_sampling</span>:
+    <span class="str">policies</span>:
+      - <span class="str">name</span>: <span class="str">errors</span>
+        <span class="str">type</span>: <span class="str">status_code</span>
+        <span class="str">status_code</span>: { <span class="str">status_codes</span>: [<span class="str">ERROR</span>] }
+      - <span class="str">name</span>: <span class="str">slow-requests</span>
+        <span class="str">type</span>: <span class="str">latency</span>
+        <span class="str">latency</span>: { <span class="str">threshold_ms</span>: <span class="num">2000</span> }
+      - <span class="str">name</span>: <span class="str">probabilistic</span>
+        <span class="str">type</span>: <span class="str">probabilistic</span>
+        <span class="str">probabilistic</span>: { <span class="str">sampling_percentage</span>: <span class="num">5</span> }
+
+<span class="str">exporters</span>:
+  <span class="str">otlp/tempo</span>:
+    <span class="str">endpoint</span>: <span class="str">"tempo:4317"</span>
+    <span class="str">tls</span>: { <span class="str">insecure</span>: <span class="kw">true</span> }
+  <span class="str">prometheusremotewrite</span>:
+    <span class="str">endpoint</span>: <span class="str">"http://mimir:9009/api/v1/push"</span>
+  <span class="str">loki</span>:
+    <span class="str">endpoint</span>: <span class="str">"http://loki:3100/loki/api/v1/push"</span>
+
+<span class="str">service</span>:
+  <span class="str">pipelines</span>:
+    <span class="str">traces</span>:
+      <span class="str">receivers</span>: [<span class="str">otlp</span>]
+      <span class="str">processors</span>: [<span class="str">batch</span>, <span class="str">tail_sampling</span>]
+      <span class="str">exporters</span>: [<span class="str">otlp/tempo</span>]
+    <span class="str">metrics</span>:
+      <span class="str">receivers</span>: [<span class="str">otlp</span>]
+      <span class="str">processors</span>: [<span class="str">batch</span>]
+      <span class="str">exporters</span>: [<span class="str">prometheusremotewrite</span>]
+    <span class="str">logs</span>:
+      <span class="str">receivers</span>: [<span class="str">otlp</span>]
+      <span class="str">processors</span>: [<span class="str">batch</span>]
+      <span class="str">exporters</span>: [<span class="str">loki</span>]</code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Logging de dados sensíveis (PII):</strong> Logar emails, CPFs, tokens, senhas é uma violação de LGPD/GDPR é um risco de segurança. Use mascaramento automático: <code>email: "u***@gmail.com"</code>. Implemente um LogSanitizer que filtra campos sensíveis antes de persistir.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Alert fatigue:</strong> 200 alertas por dia = zero alertas úteis. A equipe para de olhar. Cada alerta que não exige ação imediata deve ser removido ou rebaixado para dashboard. Revise alertas mensalmente — se um alerta nunca exigiu ação em 30 dias, delete-o.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Não usar structured logging:</strong> Logs em texto puro (<code>console.log</code>) são inúteis em escala. Você não consegue filtrar, agregar ou pesquisar eficientemente. Sempre use JSON estruturado em produção.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Missing correlation IDs:</strong> Sem correlation ID, quando um usuário reporta um erro, você tem que adivinhar qual request foi a dele entre milhões. Um UUID propagado em todos os serviços transforma horas de investigação em segundos.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Sampling agressivo demais:</strong> Se você faz sample de 1% dos traces, provavelmente perde traces de erros raros. Use <strong>tail-based sampling</strong>: mantenha 100% dos traces com erro e amostra apenas os bem-sucedidos.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Métricas de alta cardinalidade:</strong> Adicionar <code>userId</code> como label no Prometheus cria uma série temporal por usuário — milhões de series. Prometheus não foi projetado para isso. Use labels de baixa cardinalidade: <code>method</code>, <code>route</code>, <code>status_code</code>. Para dados de alta cardinalidade, use traces.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Comece pelo mínimo viável: métricas RED (rate, errors, duration) + logs estruturados com correlation ID + alertas apenas para P1/P2. Só adicione complexidade quando precisar. Observabilidade é uma jornada, não um destino.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Seu serviço de pagamentos esta lento, mas você só tem logs em texto puro (console.log). Como você redesenharia o sistema de logs para investigar problemas de latência?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> 1) Migrar para structured logging (JSON) com Winston ou Pino. 2) Adicionar campos obrigatórios em cada log: <code>correlationId</code>, <code>timestamp</code>, <code>service</code>, <code>method</code>, <code>route</code>, <code>durationMs</code>. 3) Adicionar um middleware que loga o início e fim de cada request com duração. 4) Agregar logs com Loki ou ELK. 5) Criar dashboard no Grafana filtrando por <code>durationMs > 1000</code> para identificar requests lentas. 6) Usar o <code>correlationId</code> para rastrear o caminho completo da request entre serviços.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Você recebe 150 alertas por dia no Slack é a equipe ignora todos. Como você resolveria o problema de alert fatigue?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> 1) Auditar todos os 150 alertas — categorizar em: actionable, informacional e ruido. 2) Deletar alertas que nunca exigiram ação nós últimos 30 dias. 3) Alertas informacionais viram métricas em dashboard (não notificação). 4) Alertas actionable classificados em P1-P4 com routing diferente (P1=PagerDuty, P2=Slack urgente, P3=Slack normal, P4=email). 5) Cada alerta remanescente deve ter um runbook linkado. 6) Regra: se você não vai acordar alguém por isso, não é P1/P2.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você precisa implementar tracing distribuído em 8 microsserviços NestJS. Qual a abordagem mais eficiente considerando que você pode querer trocar o backend de tracing no futuro?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> 1) Usar OpenTelemetry SDK (vendor-neutral) — nunca acoplar a Jaeger/Datadog diretamente. 2) Instalar <code>@opentelemetry/sdk-node</code> + <code>@opentelemetry/auto-instrumentations-node</code> em cada serviço. 3) Auto-instrumentação cobre HTTP, gRPC, PostgreSQL, Redis automáticamente. 4) Deploy um OTel Collector como gateway central. 5) Configurar o Collector para exportar para o backend atual (ex: Jaeger). 6) Para trocar no futuro (ex: Grafana Tempo), basta mudar a config do Collector — zero mudança nós serviços. 7) Implementar tail-based sampling no Collector: 100% dos erros, 10% do resto.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Logs, Métricas & Tracing</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="35-gitops-progressive-delivery.html">&#8592; GitOps & Progressive Delivery</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="37-sli-slo-sla-error-budgets.html" class="primary">Próximo: SLI, SLO, SLA & Error Budgets &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 36: Logs, Métricas & Tracing
+// ══════════════════════════════════════════
+const SECTION_NUM = 36;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Quais são os 3 pilares da observabilidade?",
+    options: [
+      "CPU, Memória e Disco",
+      "Logs, Métricas e Traces",
+      "Prometheus, Grafana e Jaeger",
+      "Alertas, Dashboards e Runbooks"
+    ],
+    correct: 1,
+    explanation: "Os 3 pilares da observabilidade são Logs (o que aconteceu?), Métricas (como está o sistema?) e Traces (qual foi o caminho?). Prometheus/Grafana/Jaeger são ferramentas, não pilares."
+  },
+  {
+    question: "Qual a principal vantagem de structured logging (JSON) sobre logs em texto puro?",
+    options: [
+      "Ocupa menós espaço em disco",
+      "E mais fácil de ler diretamente no terminal",
+      "E parseável por máquinas, permitindo busca, filtragem e agregação em escala",
+      "E obrigatório pelo protocolo OTLP"
+    ],
+    correct: 2,
+    explanation: "Logs estruturados em JSON são parseáveis por máquinas (Elasticsearch, Loki), permitindo queries, filtros e agregações em bilhoes de logs. Logs em texto puro dependem de regex frágil."
+  },
+  {
+    question: "O que é um Correlation ID e por que ele é essencial em microsserviços?",
+    options: [
+      "E o ID do container Docker, usado para saber em qual pod o serviço roda",
+      "E um UUID propagado entre serviços para correlacionar logs de uma mesma request",
+      "E o ID do commit Git que gerou o deploy atual",
+      "E o trace-id gerado automáticamente pelo Prometheus"
+    ],
+    correct: 1,
+    explanation: "O Correlation ID (ou Request ID) é um UUID gerado no API Gateway e propagado via header (X-Correlation-ID) em toda a cadeia de microsserviços. Permite vincular todos os logs de uma request entre múltiplos serviços."
+  },
+  {
+    question: "Qual tipo de métrica do Prometheus você usaria para medir o número de requests HTTP por segundo?",
+    options: [
+      "Gauge",
+      "Histogram",
+      "Counter",
+      "Summary"
+    ],
+    correct: 2,
+    explanation: "Counter é um valor que só incrementa. Para obter 'requests por segundo', você usa rate(http_requests_total[5m]) sobre o Counter. Gauge e para valores que sobem e descem (como conexões ativas)."
+  },
+  {
+    question: "No RED Method, o que significam as letras R, E e D?",
+    options: [
+      "Resources, Events, Dependencies",
+      "Rate, Errors, Duration",
+      "Requests, Exceptions, Downtime",
+      "Reliability, Efficiency, Diagnostics"
+    ],
+    correct: 1,
+    explanation: "RED Method: Raté (requests por segundo), Errors (requests com erro por segundo), Duration (distribuição de latência). E uma simplificação dos Golden Signals focada em microsserviços request-driven."
+  },
+  {
+    question: "Qual a principal vantagem do OpenTelemetry sobre usar SDKs específicos (Jaeger client, Datadog SDK)?",
+    options: [
+      "E mais rápido porque usa menós memória",
+      "E vendor-neutral — instrumente uma vez, envie para qualquer backend",
+      "Só funciona com Grafana, que é a melhor ferramenta",
+      "Não precisa de Collector, envia direto para o backend"
+    ],
+    correct: 1,
+    explanation: "OpenTelemetry e vendor-neutral (padrão CNCF). Você instrumenta uma vez e pode trocar o backend (Jaeger, Datadog, Tempo) mudando apenas a configuração do Collector, sem alterár código."
+  },
+  {
+    question: "Sobre tail-based sampling no OTel Collector, qual afirmação esta CORRETA?",
+    options: [
+      "Amostra traces aleatóriamente antes de serem processados",
+      "Mantém 100% dos traces com erro e amostra uma porcentagem dos bem-sucedidos",
+      "Descarta todos os traces que levaram mais de 2 segundos",
+      "E aplicado dentro da aplicação, não no Collector"
+    ],
+    correct: 1,
+    explanation: "Tail-based sampling decide DEPOIS que o trace completa: mantém 100% dos traces com erro (para debug), 100% dos lentos (para performance), e amostra uma porcentagem dos normais (para reduzir custo)."
+  },
+  {
+    question: "O que é alert fatigue é como resolve-lá?",
+    options: [
+      "E quando o Prometheus fica sobrecarregado com muitas regras de alerta",
+      "E quando a equipe ignora alertas porque recebe muitos falsos positivos — resolve-se auditando alertas e mantendo apenas os actionable",
+      "E quando os alertas demoram para disparar porque o intervalo de scrape e longo",
+      "E quando não ha alertas suficientes e problemas passam despercebidos"
+    ],
+    correct: 1,
+    explanation: "Alert fatigue ocorre quando a equipe recebe tantos alertas (muitos falsos positivos) que passa a ignora-los. Solução: auditar, remover alertas sem ação, classificar severidade (P1-P4) é garantir runbooks."
+  },
+  {
+    question: "Qual a diferença fundamental entre Grafana Loki e Elasticsearch para logs?",
+    options: [
+      "Loki só funciona com Kubernetes, Elasticsearch funciona em qualquer ambiente",
+      "Loki indexa apenas labels/metadados (barato), Elasticsearch indexa o conteúdo completo (poderosó mas caro)",
+      "Elasticsearch e open source e Loki e pago",
+      "Não ha diferença — ambos funcionam da mesma forma"
+    ],
+    correct: 1,
+    explanation: "Loki NÃO indexa o conteúdo do log (como Prometheus faz com métricas — só indexa labels). Isso o torna 10x mais barato de operar. Elasticsearch faz full-text indexing, mais poderosó para busca mas muito mais caro em recursos."
+  },
+  {
+    question: "Por que você NÃO deve usar userId como label em métricas do Prometheus?",
+    options: [
+      "Porque userId e informação sensível (PII) e não deve aparecer em métricas",
+      "Porque cria alta cardinalidade — uma série temporal por usuário, potencialmente milhões, sobrecarregando o Prometheus",
+      "Porque o Prometheus não suporta labels do tipo string",
+      "Porque userId muda a cada request e inválida o cache de métricas"
+    ],
+    correct: 1,
+    explanation: "Alta cardinalidade é o inimigo do Prometheus. Cada combinação única de labels cria uma série temporal. Com 1M usuários, userId como label cria 1M series — Prometheus não foi projetado para isso. Use labels de baixa cardinalidade (method, route, status_code)."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Logs, Métricas & Tracing.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

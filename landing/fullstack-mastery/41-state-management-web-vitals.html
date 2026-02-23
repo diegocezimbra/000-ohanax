@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>41 — Staté Management & Web Vitals | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="40-ssr-ssg-isr-micro-frontends.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>41</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="42-llms-rag-prompt-engineering.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:62.1%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 41</span>
+<h2>Staté Management & Web Vitals</h2>
+<div class="section-line"></div>
+
+<p>Duas competências que separam frontends amadores de profissionais: <strong>gerenciar estado de forma previsível</strong> é <strong>entregar performance percebida excelente</strong>. Staté management errado transforma qualquer app em um ninho de bugs de re-render e race conditions. Web Vitals ruins significam que o Google penaliza seu ranking e usuários abandonam antes do primeiro clique.</p>
+
+<p>Esta seção cobre os 5 tipos de estado, as bibliotecas dominantes do ecossistema React, os 3 Core Web Vitals do Google e técnicas práticas de performance frontend — tudo com TypeScript e exemplos prontos para produção.</p>
+
+<!-- ═══ STATE TYPES ═══ -->
+<h3>Os 5 Tipos de Estado</h3>
+<p>Antes de escolher uma biblioteca, você precisa identificar <strong>qual tipo de estado</strong> esta gerenciando. Cada tipo tem soluções otimizadas — usar a ferramenta errada é a raiz de 90% dos problemas de performance em SPAs.</p>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Tipo</th><th>Descrição</th><th>Ferramentas</th><th>Exemplo</th></tr></thead>
+<tbody>
+<tr><td><strong>Local</strong></td><td>Estado de um único componente</td><td><code>useState</code>, <code>useReducer</code></td><td>Toggle de modal, input controlado</td></tr>
+<tr><td><strong>Global</strong></td><td>Compartilhado entre componentes distantes</td><td>Zustand, Redux Toolkit, Jotai, MobX</td><td>Tema, carrinho de compras, sidebar aberta</td></tr>
+<tr><td><strong>Server</strong></td><td>Dados que vem do backend (cache + sync)</td><td>TanStack Query, SWR, Apollo Client</td><td>Lista de produtos, perfil do usuário</td></tr>
+<tr><td><strong>URL</strong></td><td>Estado codificado na URL</td><td><code>useSearchParams</code>, nuqs</td><td>Filtros, páginação, tabs ativas</td></tr>
+<tr><td><strong>Form</strong></td><td>Estado de formulários complexos</td><td>React Hook Form, Formik, Zod</td><td>Checkout multi-step, cadastro</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Árvore de Decisão: Qual Tipo de Estado Usar?</h4>
+<div class="diagram">
+<div class="diagram-box green">Dado vem do backend?<br><small>SIM &rarr; Server State</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Precisa persistir na URL?<br><small>SIM &rarr; URL State</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">E um formulário?<br><small>SIM &rarr; Form State</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Compartilhado entre rotas?<br><small>SIM &rarr; Global State</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Não? &rarr; Local State</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Comece SEMPRE com local state. Só promova para global quando dois componentes distantes (sem relação pai-filho) precisam compartilhar o mesmo dado. E se o dado vem do backend, NÃO coloque em Redux/Zustand — use TanStack Query.</div>
+</div>
+
+<!-- ═══ REACT STATE MANAGEMENT DEEP ═══ -->
+<h3>React Staté Management — Abordagem Completa</h3>
+
+<h4>useStaté e useReducer — Estado Local</h4>
+<p><code>useState</code> para estado simples (boolean, string, número). <code>useReducer</code> quando o estado é um objeto complexo ou tem transicoes lógicas (tipo máquina de estados). Regra prática: se você tem mais de 3 <code>useState</code> relacionados, considere <code>useReducer</code>.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// useStaté — simples e direto</span>
+<span class="kw">const</span> [count, setCount] = <span class="fn">useState</span>&lt;<span class="tp">number</span>&gt;(<span class="num">0</span>);
+<span class="kw">const</span> [user, setUser] = <span class="fn">useState</span>&lt;<span class="tp">User</span> | <span class="kw">null</span>&gt;(<span class="kw">null</span>);
+
+<span class="cm">// useReducer — estado complexo com transicoes claras</span>
+<span class="kw">interface</span> <span class="tp">FormState</span> {
+  status: <span class="str">'idle'</span> | <span class="str">'loading'</span> | <span class="str">'success'</span> | <span class="str">'error'</span>;
+  data: <span class="tp">FormData</span> | <span class="kw">null</span>;
+  error: <span class="tp">string</span> | <span class="kw">null</span>;
+}
+
+<span class="kw">type</span> <span class="tp">FormAction</span> =
+  | { type: <span class="str">'SUBMIT'</span> }
+  | { type: <span class="str">'SUCCESS'</span>; payload: <span class="tp">FormData</span> }
+  | { type: <span class="str">'ERROR'</span>; payload: <span class="tp">string</span> }
+  | { type: <span class="str">'RESET'</span> };
+
+<span class="kw">function</span> <span class="fn">formReducer</span>(state: <span class="tp">FormState</span>, action: <span class="tp">FormAction</span>): <span class="tp">FormState</span> {
+  <span class="kw">switch</span> (action.type) {
+    <span class="kw">case</span> <span class="str">'SUBMIT'</span>:
+      <span class="kw">return</span> { ...state, status: <span class="str">'loading'</span>, error: <span class="kw">null</span> };
+    <span class="kw">case</span> <span class="str">'SUCCESS'</span>:
+      <span class="kw">return</span> { status: <span class="str">'success'</span>, data: action.payload, error: <span class="kw">null</span> };
+    <span class="kw">case</span> <span class="str">'ERROR'</span>:
+      <span class="kw">return</span> { ...state, status: <span class="str">'error'</span>, error: action.payload };
+    <span class="kw">case</span> <span class="str">'RESET'</span>:
+      <span class="kw">return</span> { status: <span class="str">'idle'</span>, data: <span class="kw">null</span>, error: <span class="kw">null</span> };
+  }
+}
+
+<span class="kw">const</span> [state, dispatch] = <span class="fn">useReducer</span>(formReducer, {
+  status: <span class="str">'idle'</span>, data: <span class="kw">null</span>, error: <span class="kw">null</span>
+});</code></pre>
+
+<h4>Context API — Quando e Suficiente (e Quando Não E)</h4>
+<p>Context é perfeito para <strong>dados que mudam raramente</strong>: tema, locale, usuário autenticado. O problema é que <strong>toda mudança no valor do Context causa re-render em TODOS os consumidores</strong>, mesmo os que não usam o dado que mudou.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Context BOM — dados que mudam raramente</span>
+<span class="kw">interface</span> <span class="tp">ThemeContextType</span> {
+  theme: <span class="str">'light'</span> | <span class="str">'dark'</span>;
+  toggleTheme: () =&gt; <span class="tp">void</span>;
+}
+
+<span class="kw">const</span> ThemeContext = <span class="fn">createContext</span>&lt;<span class="tp">ThemeContextType</span>&gt;(<span class="kw">undefined</span>!);
+
+<span class="kw">export function</span> <span class="fn">ThemeProvider</span>({ children }: { children: <span class="tp">ReactNode</span> }) {
+  <span class="kw">const</span> [theme, setTheme] = <span class="fn">useState</span>&lt;<span class="str">'light'</span> | <span class="str">'dark'</span>&gt;(<span class="str">'dark'</span>);
+
+  <span class="cm">// useMemo CRÍTICO — sem isso, todo re-render do Provider</span>
+  <span class="cm">// cria um novo objeto e re-renderiza TODOS os consumidores</span>
+  <span class="kw">const</span> value = <span class="fn">useMemo</span>(() =&gt; ({
+    theme,
+    toggleTheme: () =&gt; <span class="fn">setTheme</span>(t =&gt; t === <span class="str">'light'</span> ? <span class="str">'dark'</span> : <span class="str">'light'</span>),
+  }), [theme]);
+
+  <span class="kw">return</span> &lt;ThemeContext.Provider value={value}&gt;{children}&lt;/ThemeContext.Provider&gt;;
+}
+
+<span class="cm">// Hook tipado com validação</span>
+<span class="kw">export function</span> <span class="fn">useTheme</span>() {
+  <span class="kw">const</span> ctx = <span class="fn">useContext</span>(ThemeContext);
+  <span class="kw">if</span> (!ctx) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'useTheme must be used within ThemeProvider'</span>);
+  <span class="kw">return</span> ctx;
+}</code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Armadilha do Context:</strong> Se você coloca estado de alta frequência (posição do mouse, valor de input sendo digitado, itens de uma lista que muda todo segundo) em Context, você causa re-renders massivos. Para esses casos, use Zustand ou Jotai — eles usam subscriptions seletivas, re-renderizando APENAS os componentes que leem o slice que mudou.</div>
+</div>
+
+<h4>Zustand — O Novo Padrão para Estado Global</h4>
+<p>Zustand e mínimalista, sem boilerplate, com TypeScript nativo. Um store é uma função. Sem providers, sem reducers, sem actions files. E por isso que está <strong>substituindo Redux</strong> em projetos novos.</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { creaté } <span class="kw">from</span> <span class="str">'zustand'</span>;
+<span class="kw">import</span> { persist, devtools } <span class="kw">from</span> <span class="str">'zustand/middleware'</span>;
+
+<span class="kw">interface</span> <span class="tp">CartItem</span> {
+  id: <span class="tp">string</span>;
+  name: <span class="tp">string</span>;
+  price: <span class="tp">number</span>;
+  quantity: <span class="tp">number</span>;
+}
+
+<span class="kw">interface</span> <span class="tp">CartStore</span> {
+  items: <span class="tp">CartItem</span>[];
+  total: <span class="tp">number</span>;
+  addItem: (item: <span class="tp">Omit</span>&lt;<span class="tp">CartItem</span>, <span class="str">'quantity'</span>&gt;) =&gt; <span class="tp">void</span>;
+  removeItem: (id: <span class="tp">string</span>) =&gt; <span class="tp">void</span>;
+  clearCart: () =&gt; <span class="tp">void</span>;
+}
+
+<span class="kw">export const</span> <span class="fn">useCartStore</span> = <span class="fn">create</span>&lt;<span class="tp">CartStore</span>&gt;()(
+  <span class="fn">devtools</span>(
+    <span class="fn">persist</span>(
+      (set, get) =&gt; ({
+        items: [],
+        total: <span class="num">0</span>,
+
+        addItem: (item) =&gt; <span class="fn">set</span>((state) =&gt; {
+          <span class="kw">const</span> existing = state.items.<span class="fn">find</span>(i =&gt; i.id === item.id);
+          <span class="kw">const</span> items = existing
+            ? state.items.<span class="fn">map</span>(i =&gt;
+                i.id === item.id ? { ...i, quantity: i.quantity + <span class="num">1</span> } : i
+              )
+            : [...state.items, { ...item, quantity: <span class="num">1</span> }];
+          <span class="kw">return</span> {
+            items,
+            total: items.<span class="fn">reduce</span>((sum, i) =&gt; sum + i.price * i.quantity, <span class="num">0</span>),
+          };
+        }),
+
+        removeItem: (id) =&gt; <span class="fn">set</span>((state) =&gt; {
+          <span class="kw">const</span> items = state.items.<span class="fn">filter</span>(i =&gt; i.id !== id);
+          <span class="kw">return</span> { items, total: items.<span class="fn">reduce</span>((s, i) =&gt; s + i.price * i.quantity, <span class="num">0</span>) };
+        }),
+
+        clearCart: () =&gt; <span class="fn">set</span>({ items: [], total: <span class="num">0</span> }),
+      }),
+      { name: <span class="str">'cart-storage'</span> } <span class="cm">// persiste no localStorage</span>
+    )
+  )
+);
+
+<span class="cm">// Usó no componente — sem Provider, sem wrapper</span>
+<span class="kw">function</span> <span class="fn">CartBadge</span>() {
+  <span class="cm">// Re-renderiza APENAS quando items.length muda (selector)</span>
+  <span class="kw">const</span> count = <span class="fn">useCartStore</span>(state =&gt; state.items.length);
+  <span class="kw">return</span> &lt;span&gt;{count}&lt;/span&gt;;
+}
+
+<span class="kw">function</span> <span class="fn">CartTotal</span>() {
+  <span class="cm">// Re-renderiza APENAS quando total muda</span>
+  <span class="kw">const</span> total = <span class="fn">useCartStore</span>(state =&gt; state.total);
+  <span class="kw">return</span> &lt;span&gt;R$ {total.<span class="fn">toFixed</span>(<span class="num">2</span>)}&lt;/span&gt;;
+}</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Middleware Zustand:</strong> <code>persist</code> salva no localStorage automáticamente. <code>devtools</code> integra com Redux DevTools. <code>immer</code> permite mutações diretas (Zustand já usa imutabilidade por padrão, mas Immer simplifica updates aninhados profundos).</div>
+</div>
+
+<h4>Redux Toolkit — Quando Redux Ainda é a Escolha Certa</h4>
+<p>Redux faz sentido quando você precisa de: <strong>time-travel debugging</strong>, <strong>máquinas de estado complexas</strong> com muitas transicoes, <strong>middleware customizado</strong> (logging, analytics), ou quando a equipe já é produtiva com Redux. Redux Toolkit (RTK) eliminou 90% do boilerplaté antigo.</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { createSlice, createAsyncThunk, <span class="tp">PayloadAction</span> } <span class="kw">from</span> <span class="str">'@reduxjs/toolkit'</span>;
+
+<span class="kw">interface</span> <span class="tp">Product</span> {
+  id: <span class="tp">string</span>;
+  name: <span class="tp">string</span>;
+  price: <span class="tp">number</span>;
+}
+
+<span class="kw">interface</span> <span class="tp">ProductsState</span> {
+  items: <span class="tp">Product</span>[];
+  status: <span class="str">'idle'</span> | <span class="str">'loading'</span> | <span class="str">'succeeded'</span> | <span class="str">'failed'</span>;
+  error: <span class="tp">string</span> | <span class="kw">null</span>;
+}
+
+<span class="cm">// Async thunk — substitui o saga/thunk manual antigo</span>
+<span class="kw">export const</span> fetchProducts = <span class="fn">createAsyncThunk</span>(
+  <span class="str">'products/fetchAll'</span>,
+  <span class="kw">async</span> (_, { rejectWithValue }) =&gt; {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/products'</span>);
+      <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Failed to fetch'</span>);
+      <span class="kw">return</span> (<span class="kw">await</span> res.<span class="fn">json</span>()) <span class="kw">as</span> <span class="tp">Product</span>[];
+    } <span class="kw">catch</span> (err) {
+      <span class="kw">return</span> <span class="fn">rejectWithValue</span>((err <span class="kw">as</span> <span class="tp">Error</span>).message);
+    }
+  }
+);
+
+<span class="kw">const</span> productsSlice = <span class="fn">createSlice</span>({
+  name: <span class="str">'products'</span>,
+  initialState: { items: [], status: <span class="str">'idle'</span>, error: <span class="kw">null</span> } <span class="kw">as</span> <span class="tp">ProductsState</span>,
+  reducers: {
+    productAdded: (state, action: <span class="tp">PayloadAction</span>&lt;<span class="tp">Product</span>&gt;) =&gt; {
+      state.items.<span class="fn">push</span>(action.payload); <span class="cm">// Immer permite "mutação" segura</span>
+    },
+    productRemoved: (state, action: <span class="tp">PayloadAction</span>&lt;<span class="tp">string</span>&gt;) =&gt; {
+      state.items = state.items.<span class="fn">filter</span>(p =&gt; p.id !== action.payload);
+    },
+  },
+  extraReducers: (builder) =&gt; {
+    builder
+      .<span class="fn">addCase</span>(fetchProducts.pending, (state) =&gt; {
+        state.status = <span class="str">'loading'</span>;
+      })
+      .<span class="fn">addCase</span>(fetchProducts.fulfilled, (state, action) =&gt; {
+        state.status = <span class="str">'succeeded'</span>;
+        state.items = action.payload;
+      })
+      .<span class="fn">addCase</span>(fetchProducts.rejected, (state, action) =&gt; {
+        state.status = <span class="str">'failed'</span>;
+        state.error = action.payload <span class="kw">as</span> <span class="tp">string</span>;
+      });
+  },
+});
+
+<span class="kw">export const</span> { productAdded, productRemoved } = productsSlice.actions;
+<span class="kw">export default</span> productsSlice.reducer;</code></pre>
+
+<h4>TanStack Query — Server Staté Management</h4>
+<p>Se você está usando Redux/Zustand para guardar dados que vieram de uma API, você está fazendo errado. <strong>TanStack Query</strong> (ex React Query) resolve caching, invalidação, refetching, págination, optimistic updates — tudo o que você implementaria manualmente (e com bugs).</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { useQuery, useMutation, useQueryClient } <span class="kw">from</span> <span class="str">'@tanstack/react-query'</span>;
+
+<span class="kw">interface</span> <span class="tp">Todo</span> {
+  id: <span class="tp">string</span>;
+  title: <span class="tp">string</span>;
+  completed: <span class="tp">boolean</span>;
+}
+
+<span class="cm">// Fetching com cache automático, refetch em foco, retry</span>
+<span class="kw">function</span> <span class="fn">useTodos</span>() {
+  <span class="kw">return</span> <span class="fn">useQuery</span>({
+    queryKey: [<span class="str">'todos'</span>],
+    queryFn: <span class="kw">async</span> (): <span class="tp">Promise</span>&lt;<span class="tp">Todo</span>[]&gt; =&gt; {
+      <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/todos'</span>);
+      <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Network error'</span>);
+      <span class="kw">return</span> res.<span class="fn">json</span>();
+    },
+    staleTime: <span class="num">5</span> * <span class="num">60</span> * <span class="num">1000</span>, <span class="cm">// 5 min — não refetch se dados frescos</span>
+    gcTime: <span class="num">30</span> * <span class="num">60</span> * <span class="num">1000</span>,   <span class="cm">// 30 min — mantém cache em memória</span>
+  });
+}
+
+<span class="cm">// Mutation com optimistic update</span>
+<span class="kw">function</span> <span class="fn">useToggleTodo</span>() {
+  <span class="kw">const</span> queryClient = <span class="fn">useQueryClient</span>();
+
+  <span class="kw">return</span> <span class="fn">useMutation</span>({
+    mutationFn: <span class="kw">async</span> (todo: <span class="tp">Todo</span>) =&gt; {
+      <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">`/api/todos/${todo.id}`</span>, {
+        method: <span class="str">'PATCH'</span>,
+        body: JSON.<span class="fn">stringify</span>({ completed: !todo.completed }),
+      });
+      <span class="kw">return</span> res.<span class="fn">json</span>();
+    },
+
+    <span class="cm">// Optimistic updaté — UI atualiza ANTES da resposta do server</span>
+    onMutate: <span class="kw">async</span> (todo) =&gt; {
+      <span class="kw">await</span> queryClient.<span class="fn">cancelQueries</span>({ queryKey: [<span class="str">'todos'</span>] });
+      <span class="kw">const</span> previous = queryClient.<span class="fn">getQueryData</span>&lt;<span class="tp">Todo</span>[]&gt;([<span class="str">'todos'</span>]);
+
+      queryClient.<span class="fn">setQueryData</span>&lt;<span class="tp">Todo</span>[]&gt;([<span class="str">'todos'</span>], (old) =&gt;
+        old?.<span class="fn">map</span>(t =&gt; t.id === todo.id ? { ...t, completed: !t.completed } : t)
+      );
+
+      <span class="kw">return</span> { previous }; <span class="cm">// Contexto para rollback</span>
+    },
+
+    <span class="cm">// Rollback em caso de erro</span>
+    onError: (_err, _todo, context) =&gt; {
+      queryClient.<span class="fn">setQueryData</span>([<span class="str">'todos'</span>], context?.previous);
+    },
+
+    <span class="cm">// Sempre revalidar após mutation (belt & suspenders)</span>
+    onSettled: () =&gt; {
+      queryClient.<span class="fn">inválidateQueries</span>({ queryKey: [<span class="str">'todos'</span>] });
+    },
+  });
+}</code></pre>
+
+<div class="card blue">
+<div class="card-title">TanStack Query vs SWR</div>
+<ul>
+<li><strong>TanStack Query:</strong> Mais features (mutations, optimistic updates, infinite queries, parallel queries, devtools). Melhor para apps complexos</li>
+<li><strong>SWR:</strong> Mais simples, menor bundle, feito pela Vercel. Bom para projetos Next.js simples com poucas mutations</li>
+<li><strong>Ambos:</strong> Caching, reválidation on focus, retry, deduplication de requests</li>
+<li><strong>Escolha:</strong> Se você faz CRUD com optimistic updates, TanStack Query. Se você só le dados, SWR é suficiente</li>
+</ul>
+</div>
+
+<h4>Jotai — Estado Atômico (Bottom-Up)</h4>
+<p>Jotai usa <strong>atomos</strong> — unidades mínimas de estado. Cada componente se subscreve apenas nós atomos que precisa. Zero re-renders desnecessários. Ideal para estado granular compartilhado sem a cerimonia de stores.</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { atom, useAtom, useAtomValue } <span class="kw">from</span> <span class="str">'jotai'</span>;
+
+<span class="cm">// Atomos — unidades mínimas de estado</span>
+<span class="kw">const</span> countAtom = <span class="fn">atom</span>(<span class="num">0</span>);
+<span class="kw">const</span> nameAtom = <span class="fn">atom</span>(<span class="str">'World'</span>);
+
+<span class="cm">// Atomo derivado (computed) — recomputa automáticamente</span>
+<span class="kw">const</span> greetingAtom = <span class="fn">atom</span>((get) =&gt; <span class="str">`Hello, ${</span><span class="fn">get</span>(nameAtom)<span class="str">}! Count: ${</span><span class="fn">get</span>(countAtom)<span class="str">}`</span>);
+
+<span class="cm">// Atomo async — busca dados</span>
+<span class="kw">const</span> userAtom = <span class="fn">atom</span>(<span class="kw">async</span> () =&gt; {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/me'</span>);
+  <span class="kw">return</span> res.<span class="fn">json</span>() <span class="kw">as</span> <span class="tp">Promise</span>&lt;<span class="tp">User</span>&gt;;
+});
+
+<span class="cm">// Componente — re-renderiza SOMENTE quando countAtom muda</span>
+<span class="kw">function</span> <span class="fn">Counter</span>() {
+  <span class="kw">const</span> [count, setCount] = <span class="fn">useAtom</span>(countAtom);
+  <span class="kw">return</span> &lt;button onClick={() =&gt; <span class="fn">setCount</span>(c =&gt; c + <span class="num">1</span>)}&gt;{count}&lt;/button&gt;;
+}</code></pre>
+
+<!-- ═══ CORE WEB VITALS ═══ -->
+<h3>Core Web Vitals — As 3 Métricas do Google</h3>
+<p>Core Web Vitals são as 3 métricas que o Google usa para medir experiência real do usuário. Elas impactam diretamente o <strong>ranking de SEO</strong>. Desde 2024, o <strong>INP substituiu o FID</strong> como métrica oficial.</p>
+
+<div class="diagram">
+<div class="diagram-box green">LCP &lt; 2.5s<br><small>Largest Contentful Paint</small></div>
+<div class="diagram-box blue">INP &lt; 200ms<br><small>Interáction to Next Paint</small></div>
+<div class="diagram-box purple">CLS &lt; 0.1<br><small>Cumulative Layout Shift</small></div>
+</div>
+
+<h4>LCP (Largest Contentful Paint) &lt; 2.5s</h4>
+<p>Mede <strong>quanto tempo leva para o maior elemento visível</strong> (imagem hero, bloco de texto, video) ser renderizado. E a métrica que mais reflete a percepção de "a página carregou".</p>
+
+<p><strong>O que causa LCP lento:</strong></p>
+<ul>
+<li><strong>Imagens grandes sem otimização</strong> — PNG/JPG de 2MB sem compressão, sem srcset, sem lazy loading</li>
+<li><strong>Recursos bloqueantes de render</strong> — CSS/JS sincronós no &lt;head&gt; que bloqueiam a primeira pintura</li>
+<li><strong>TTFB lento (Time To First Byte)</strong> — server demora para responder. CDN, SSR, cache resolvem</li>
+<li><strong>Web fonts sem preload</strong> — navegador descobre a font tarde no pipeline de render</li>
+</ul>
+
+<p><strong>Como otimizar LCP:</strong></p>
+<pre data-lang="html"><code><span class="cm">&lt;!-- 1. Preload da imagem hero (LCP element) --&gt;</span>
+&lt;<span class="kw">link</span> <span class="fn">rel</span>=<span class="str">"preload"</span> <span class="fn">as</span>=<span class="str">"image"</span> <span class="fn">href</span>=<span class="str">"/hero.webp"</span>
+      <span class="fn">fetchpriority</span>=<span class="str">"high"</span>&gt;
+
+<span class="cm">&lt;!-- 2. Imagem otimizada com srcset e formato moderno --&gt;</span>
+&lt;<span class="kw">picture</span>&gt;
+  &lt;<span class="kw">source</span> <span class="fn">srcset</span>=<span class="str">"hero.avif"</span> <span class="fn">type</span>=<span class="str">"image/avif"</span>&gt;
+  &lt;<span class="kw">source</span> <span class="fn">srcset</span>=<span class="str">"hero.webp"</span> <span class="fn">type</span>=<span class="str">"image/webp"</span>&gt;
+  &lt;<span class="kw">img</span> <span class="fn">src</span>=<span class="str">"hero.jpg"</span> <span class="fn">alt</span>=<span class="str">"Hero"</span>
+       <span class="fn">width</span>=<span class="str">"1200"</span> <span class="fn">height</span>=<span class="str">"600"</span>
+       <span class="fn">fetchpriority</span>=<span class="str">"high"</span>
+       <span class="fn">decoding</span>=<span class="str">"async"</span>&gt;
+&lt;/<span class="kw">picture</span>&gt;
+
+<span class="cm">&lt;!-- 3. Preload de font crítica --&gt;</span>
+&lt;<span class="kw">link</span> <span class="fn">rel</span>=<span class="str">"preload"</span> <span class="fn">as</span>=<span class="str">"font"</span> <span class="fn">type</span>=<span class="str">"font/woff2"</span>
+      <span class="fn">href</span>=<span class="str">"/fonts/Inter.woff2"</span> <span class="fn">crossorigin</span>&gt;
+
+<span class="cm">&lt;!-- 4. CSS crítico inline, não-crítico async --&gt;</span>
+&lt;<span class="kw">style</span>&gt;<span class="cm">/* CSS crítico acima do fold inline aqui */</span>&lt;/<span class="kw">style</span>&gt;
+&lt;<span class="kw">link</span> <span class="fn">rel</span>=<span class="str">"stylesheet"</span> <span class="fn">href</span>=<span class="str">"/styles.css"</span> <span class="fn">media</span>=<span class="str">"print"</span>
+      <span class="fn">onload</span>=<span class="str">"this.media='all'"</span>&gt;</code></pre>
+
+<h4>INP (Interáction to Next Paint) &lt; 200ms</h4>
+<p>Mede <strong>a latência de TODAS as interáções do usuário</strong> durante a sessão (cliques, toques, teclas) e reporta o pior percentil p75. Diferente do antigo FID (que media apenas a primeira interáção), INP captura o quadro completo de responsividade.</p>
+
+<p><strong>O que causa INP alto:</strong></p>
+<ul>
+<li><strong>JavaScript bloqueante</strong> — long tasks (&gt; 50ms) na main thread impedindo a UI de responder</li>
+<li><strong>Hydration pesada</strong> — frameworks SSR que fazem hydration de toda a página de uma vez</li>
+<li><strong>Event handlers caros</strong> — click handler que faz sort de 10.000 items síncronamente</li>
+<li><strong>Layout thrashing</strong> — ler e escrever no DOM alternadamente em loop</li>
+</ul>
+
+<p><strong>Como otimizar INP:</strong></p>
+<pre data-lang="typescript"><code><span class="cm">// 1. Quebrar long tasks com scheduler</span>
+<span class="kw">function</span> <span class="fn">yieldToMain</span>(): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+  <span class="kw">return new</span> <span class="tp">Promise</span>(resolve =&gt; {
+    <span class="cm">// scheduler.yield() é a API moderna (Chrome 129+)</span>
+    <span class="kw">if</span> (<span class="str">'scheduler'</span> <span class="kw">in</span> window &amp;&amp; <span class="str">'yield'</span> <span class="kw">in</span> scheduler) {
+      scheduler.<span class="fn">yield</span>().<span class="fn">then</span>(resolve);
+    } <span class="kw">else</span> {
+      <span class="fn">setTimeout</span>(resolve, <span class="num">0</span>);
+    }
+  });
+}
+
+<span class="cm">// 2. Processar lista grande sem bloquear UI</span>
+<span class="kw">async function</span> <span class="fn">processLargeList</span>(items: <span class="tp">Item</span>[]) {
+  <span class="kw">const</span> CHUNK = <span class="num">100</span>;
+  <span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; items.length; i += CHUNK) {
+    <span class="kw">const</span> chunk = items.<span class="fn">slice</span>(i, i + CHUNK);
+    <span class="fn">processChunk</span>(chunk);
+    <span class="kw">await</span> <span class="fn">yieldToMain</span>(); <span class="cm">// Devolve controle ao browser entre chunks</span>
+  }
+}
+
+<span class="cm">// 3. Web Worker para processamento pesado</span>
+<span class="cm">// worker.ts</span>
+self.<span class="fn">addEventListener</span>(<span class="str">'message'</span>, (e: <span class="tp">MessageEvent</span>&lt;<span class="tp">number</span>[]&gt;) =&gt; {
+  <span class="kw">const</span> sorted = e.data.<span class="fn">sort</span>((a, b) =&gt; a - b); <span class="cm">// Pesado, mas fora da main thread</span>
+  self.<span class="fn">postMessage</span>(sorted);
+});
+
+<span class="cm">// main.ts — UI nunca trava</span>
+<span class="kw">const</span> worker = <span class="kw">new</span> <span class="tp">Worker</span>(<span class="kw">new</span> <span class="tp">URL</span>(<span class="str">'./worker.ts'</span>, <span class="kw">import</span>.meta.url));
+worker.<span class="fn">postMessage</span>(hugeArray);
+worker.<span class="fn">onmessage</span> = (e) =&gt; <span class="fn">setSortedData</span>(e.data);</code></pre>
+
+<h4>CLS (Cumulative Layout Shift) &lt; 0.1</h4>
+<p>Mede <strong>quanto o layout "pula" visualmente</strong> durante o carregamento. Quando você está lendo um texto e de repente um banner empurra tudo pra baixo — isso é layout shift, é o usuário odeia.</p>
+
+<p><strong>O que causa CLS alto:</strong></p>
+<ul>
+<li><strong>Imagens sem dimensões</strong> — &lt;img&gt; sem width/height faz o browser alocar 0px e expandir quando carrega</li>
+<li><strong>Conteúdo dinâmico injetado</strong> — banners, ads, embeds que empurram conteúdo</li>
+<li><strong>FOUT (Flash of Unstyled Text)</strong> — web fonts que trocam o tamanho do texto ao carregar</li>
+<li><strong>Animações que mudam layout</strong> — animar width/height/top/left ao invés de transform/opacity</li>
+</ul>
+
+<p><strong>Como otimizar CLS:</strong></p>
+<pre data-lang="css"><code><span class="cm">/* 1. SEMPRE definir dimensões de imagens */</span>
+<span class="kw">img</span>, <span class="kw">video</span> {
+  <span class="fn">width</span>: <span class="num">100%</span>;
+  <span class="fn">height</span>: <span class="kw">auto</span>;
+  <span class="fn">aspect-ratio</span>: <span class="num">16</span> / <span class="num">9</span>; <span class="cm">/* Reserva espaço antes de carregar */</span>
+}
+
+<span class="cm">/* 2. Font swap sem layout shift */</span>
+<span class="kw">@font-face</span> {
+  <span class="fn">font-family</span>: <span class="str">'Inter'</span>;
+  <span class="fn">src</span>: <span class="fn">url</span>(<span class="str">'/fonts/Inter.woff2'</span>) <span class="fn">format</span>(<span class="str">'woff2'</span>);
+  <span class="fn">font-display</span>: <span class="str">swap</span>; <span class="cm">/* Mostra fallback, troca quando carrega */</span>
+  <span class="cm">/* Usar size-adjust e ascent-override para minimizar reflow */</span>
+  <span class="fn">size-adjust</span>: <span class="num">107%</span>;
+  <span class="fn">ascent-override</span>: <span class="num">90%</span>;
+}
+
+<span class="cm">/* 3. Reservar espaço para conteúdo dinâmico */</span>
+<span class="kw">.ad-slot</span> {
+  <span class="fn">min-height</span>: <span class="num">250px</span>; <span class="cm">/* Reserva espaço do ad antes de carregar */</span>
+  <span class="fn">contain</span>: <span class="str">layout</span>;     <span class="cm">/* Isola layout do resto da página */</span>
+}
+
+<span class="cm">/* 4. Animar APENAS transform e opacity (não causam layout shift) */</span>
+<span class="kw">.animate</span> {
+  <span class="cm">/* BOM — composited, não causa layout/paint */</span>
+  <span class="fn">transform</span>: <span class="fn">translateY</span>(<span class="num">-10px</span>);
+  <span class="fn">opacity</span>: <span class="num">0.8</span>;
+
+  <span class="cm">/* RUIM — causa layout shift */</span>
+  <span class="cm">/* margin-top: -10px; height: 90%; */</span>
+}
+
+<span class="cm">/* 5. content-visibility para conteúdo abaixo do fold */</span>
+<span class="kw">.below-fold-section</span> {
+  <span class="fn">content-visibility</span>: <span class="str">auto</span>;
+  <span class="fn">contain-intrinsic-size</span>: <span class="num">0</span> <span class="num">500px</span>; <span class="cm">/* Estimativa de altura */</span>
+}</code></pre>
+
+<h4>Medindo Web Vitals</h4>
+<p>Ferramentas para medir: <strong>Lighthouse</strong> (lab data, auditoria completa), <strong>PageSpeed Insights</strong> (field data real do CrUX), <strong>Chrome DevTools Performance tab</strong> (trace detalhado), <strong>web-vitals library</strong> (coleta em produção).</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Reportar Web Vitals em produção com a library oficial do Google</span>
+<span class="kw">import</span> { onLCP, onINP, onCLS, <span class="tp">Metric</span> } <span class="kw">from</span> <span class="str">'web-vitals'</span>;
+
+<span class="kw">function</span> <span class="fn">sendToAnalytics</span>(metric: <span class="tp">Metric</span>) {
+  <span class="kw">const</span> body = JSON.<span class="fn">stringify</span>({
+    name: metric.name,        <span class="cm">// 'LCP' | 'INP' | 'CLS'</span>
+    value: metric.value,      <span class="cm">// Valor numerico</span>
+    rating: metric.rating,    <span class="cm">// 'good' | 'needs-improvement' | 'poor'</span>
+    delta: metric.delta,      <span class="cm">// Diferença desde última medição</span>
+    id: metric.id,            <span class="cm">// ID único da medição</span>
+    navigationType: metric.navigationType,
+  });
+
+  <span class="cm">// navigator.sendBeacon não bloqueia — ideal para métricas</span>
+  <span class="kw">if</span> (navigator.sendBeacon) {
+    navigator.<span class="fn">sendBeacon</span>(<span class="str">'/api/web-vitals'</span>, body);
+  } <span class="kw">else</span> {
+    <span class="fn">fetch</span>(<span class="str">'/api/web-vitals'</span>, { body, method: <span class="str">'POST'</span>, keepalive: <span class="kw">true</span> });
+  }
+}
+
+<span class="fn">onLCP</span>(sendToAnalytics);
+<span class="fn">onINP</span>(sendToAnalytics);
+<span class="fn">onCLS</span>(sendToAnalytics);</code></pre>
+
+<!-- ═══ FRONTEND PERFORMANCE ═══ -->
+<h3>Frontend Performance — Técnicas Avançadas</h3>
+
+<h4>Code Splitting com React.lazy + Suspense</h4>
+<p>Cada rota deve ser um chunk separado. O usuário só baixa o JS da página que está acessando, não da app inteira.</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { lazy, <span class="tp">Suspense</span> } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { <span class="tp">Routes</span>, <span class="tp">Route</span> } <span class="kw">from</span> <span class="str">'react-router-dom'</span>;
+
+<span class="cm">// Cada rota e um chunk separado — só carrega quando acessada</span>
+<span class="kw">const</span> Dashboard = <span class="fn">lazy</span>(() =&gt; <span class="kw">import</span>(<span class="str">'./pages/Dashboard'</span>));
+<span class="kw">const</span> Settings = <span class="fn">lazy</span>(() =&gt; <span class="kw">import</span>(<span class="str">'./pages/Settings'</span>));
+<span class="kw">const</span> Analytics = <span class="fn">lazy</span>(() =&gt; <span class="kw">import</span>(<span class="str">'./pages/Analytics'</span>));
+
+<span class="cm">// Vite magic comments para prefetch</span>
+<span class="kw">const</span> HeavyChart = <span class="fn">lazy</span>(() =&gt;
+  <span class="kw">import</span>(<span class="cm">/* webpackChunkName: "chart" */</span> <span class="str">'./components/HeavyChart'</span>)
+);
+
+<span class="kw">function</span> <span class="fn">App</span>() {
+  <span class="kw">return</span> (
+    &lt;<span class="tp">Suspense</span> fallback={&lt;PageSkeleton /&gt;}&gt;
+      &lt;<span class="tp">Routes</span>&gt;
+        &lt;<span class="tp">Route</span> path="/" element={&lt;Dashboard /&gt;} /&gt;
+        &lt;<span class="tp">Route</span> path="/settings" element={&lt;Settings /&gt;} /&gt;
+        &lt;<span class="tp">Route</span> path="/analytics" element={&lt;Analytics /&gt;} /&gt;
+      &lt;/<span class="tp">Routes</span>&gt;
+    &lt;/<span class="tp">Suspense</span>&gt;
+  );
+}</code></pre>
+
+<h4>Tree Shaking — Eliminando Código Morto</h4>
+<p>Tree shaking remove código que não é usado. Só funciona com <strong>ES Modules</strong> (import/export). Bundlers como Vite/Webpack analisam o grafo de imports e eliminam exports não referênciados.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// BOM — Named exports permitem tree shaking</span>
+<span class="kw">import</span> { <span class="fn">debounce</span> } <span class="kw">from</span> <span class="str">'lodash-es'</span>; <span class="cm">// Importa APENAS debounce (~300 bytes)</span>
+
+<span class="cm">// RUIM — Default import puxa tudo</span>
+<span class="kw">import</span> _ <span class="kw">from</span> <span class="str">'lodash'</span>; <span class="cm">// Importa TODA a biblioteca (~70KB)</span>
+_.<span class="fn">debounce</span>(...);
+
+<span class="cm">// RUIM — Barrel exports podem prejudicar tree shaking</span>
+<span class="cm">// útils/index.ts</span>
+<span class="kw">export</span> { <span class="fn">formatDate</span> } <span class="kw">from</span> <span class="str">'./date'</span>;
+<span class="kw">export</span> { <span class="fn">formatMoney</span> } <span class="kw">from</span> <span class="str">'./money'</span>;
+<span class="kw">export</span> { <span class="fn">heavyPdfGenerator</span> } <span class="kw">from</span> <span class="str">'./pdf'</span>; <span class="cm">// Pode ser incluído se barrel não é tree-shakeable</span>
+
+<span class="cm">// BOM — Import direto do módulo</span>
+<span class="kw">import</span> { <span class="fn">formatDate</span> } <span class="kw">from</span> <span class="str">'./útils/date'</span>; <span class="cm">// 100% tree-shakeable</span></code></pre>
+
+<h4>Image Optimization</h4>
+<p>Imagens são responsáveis por ~50% do pesó total de uma página web. Otimizar imagens é o maior ganho de performance com o menor esforco.</p>
+
+<div class="card">
+<div class="card-title">Checklist de Otimização de Imagens</div>
+<ul>
+<li><strong>Formato:</strong> AVIF &gt; WebP &gt; JPEG. AVIF tem 50% menós tamanho que JPEG com mesma qualidade</li>
+<li><strong>srcset + sizes:</strong> Servir imagem do tamanho certo para cada viewport (mobile não precisa de 4K)</li>
+<li><strong>Lazy loading:</strong> <code>&lt;img loading="lazy"&gt;</code> para imagens abaixo do fold. NUNCA para a imagem hero (LCP)</li>
+<li><strong>Placeholder blur:</strong> next/image gera placeholder automático. Com Vite, use bibliotecas como plaiceholder</li>
+<li><strong>CDN:</strong> Cloudflare Images, Cloudinary, imgix — transformam e cacheiam na edge</li>
+<li><strong>width e height:</strong> SEMPRE definir para evitar CLS (layout shift)</li>
+</ul>
+</div>
+
+<h4>Virtual Lists — Listas com 1000+ Items</h4>
+<p>Renderizar 10.000 items no DOM e suicidio de performance. Virtual lists renderizam APENAS os items visíveis no viewport (~20-30), reciclando DOM nodes conforme o scroll.</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { useVirtualizer } <span class="kw">from</span> <span class="str">'@tanstack/react-virtual'</span>;
+<span class="kw">import</span> { useRef } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">interface</span> <span class="tp">VirtualTableProps</span> {
+  rows: <span class="tp">DataRow</span>[];
+}
+
+<span class="kw">function</span> <span class="fn">VirtualTable</span>({ rows }: <span class="tp">VirtualTableProps</span>) {
+  <span class="kw">const</span> parentRef = <span class="fn">useRef</span>&lt;<span class="tp">HTMLDivElement</span>&gt;(<span class="kw">null</span>);
+
+  <span class="kw">const</span> virtualizer = <span class="fn">useVirtualizer</span>({
+    count: rows.length,           <span class="cm">// 50.000 items? Sem problema</span>
+    getScrollElement: () =&gt; parentRef.current,
+    estimateSize: () =&gt; <span class="num">48</span>,       <span class="cm">// Altura estimada de cada row (px)</span>
+    overscan: <span class="num">10</span>,                  <span class="cm">// Renderiza 10 extras acima/abaixo</span>
+  });
+
+  <span class="kw">return</span> (
+    &lt;div ref={parentRef} style={{ height: <span class="str">'600px'</span>, overflow: <span class="str">'auto'</span> }}&gt;
+      &lt;div style={{ height: <span class="str">`${virtualizer.getTotalSize()}px`</span>, position: <span class="str">'relative'</span> }}&gt;
+        {virtualizer.<span class="fn">getVirtualItems</span>().<span class="fn">map</span>(virtualRow =&gt; (
+          &lt;div
+            key={virtualRow.key}
+            style={{
+              position: <span class="str">'absolute'</span>,
+              top: <span class="num">0</span>,
+              transform: <span class="str">`translateY(${virtualRow.start}px)`</span>,
+              height: <span class="str">`${virtualRow.size}px`</span>,
+              width: <span class="str">'100%'</span>,
+            }}
+          &gt;
+            {rows[virtualRow.index].name} — {rows[virtualRow.index].value}
+          &lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+<span class="cm">// 50.000 items — DOM tem ~30 nodes. Scroll a 60fps.</span></code></pre>
+
+<h4>Bundle Analysis e Redução</h4>
+<p>Você não pode otimizar o que não mede. Use <strong>webpack-bundle-analyzer</strong> ou <strong>source-map-explorer</strong> para visualizar o que está dentro do seu bundle.</p>
+
+<pre data-lang="bash"><code><span class="cm"># Vite — instalar e rodar visualizador</span>
+npm install -D rollup-plugin-visualizer
+
+<span class="cm"># package.json script</span>
+<span class="str">"analyze"</span>: <span class="str">"vite build && npx source-map-explorer dist/assets/*.js"</span>
+
+<span class="cm"># Resultado tipico de problemas:</span>
+<span class="cm"># moment.js         — 300KB (trocar por dayjs: 2KB)</span>
+<span class="cm"># lodash             — 70KB  (trocar por lodash-es e import seletivo)</span>
+<span class="cm"># @mui/material      — 200KB (trocar por Radix UI: ~5KB por componente)</span>
+<span class="cm"># chart.js           — 180KB (lazy load com React.lazy)</span></code></pre>
+
+<h4>Service Workers e PWA</h4>
+<p>Service Workers interceptam requests e servem cache — sua app funciona <strong>offline</strong>. PWAs são apps web instaláveis com push notifications.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Registrar Service Worker</span>
+<span class="kw">if</span> (<span class="str">'serviceWorker'</span> <span class="kw">in</span> navigator) {
+  window.<span class="fn">addEventListener</span>(<span class="str">'load'</span>, () =&gt; {
+    navigator.serviceWorker.<span class="fn">register</span>(<span class="str">'/sw.js'</span>)
+      .<span class="fn">then</span>(reg =&gt; console.<span class="fn">log</span>(<span class="str">'SW registered'</span>, reg.scope))
+      .<span class="fn">catch</span>(err =&gt; console.<span class="fn">error</span>(<span class="str">'SW failed'</span>, err));
+  });
+}
+
+<span class="cm">// sw.js — Stale-While-Reválidaté strategy</span>
+self.<span class="fn">addEventListener</span>(<span class="str">'fetch'</span>, (event: <span class="tp">FetchEvent</span>) =&gt; {
+  event.<span class="fn">respondWith</span>(
+    caches.<span class="fn">match</span>(event.request).<span class="fn">then</span>(cached =&gt; {
+      <span class="cm">// Retorna cache IMEDIATAMENTE, reválida em background</span>
+      <span class="kw">const</span> fetchPromise = <span class="fn">fetch</span>(event.request).<span class="fn">then</span>(response =&gt; {
+        <span class="kw">const</span> clone = response.<span class="fn">clone</span>();
+        caches.<span class="fn">open</span>(<span class="str">'v1'</span>).<span class="fn">then</span>(cache =&gt; cache.<span class="fn">put</span>(event.request, clone));
+        <span class="kw">return</span> response;
+      });
+      <span class="kw">return</span> cached || fetchPromise;
+    })
+  );
+});
+
+<span class="cm">// PWA manifest.json (arquivo essencial)</span>
+<span class="cm">// { "name": "MyApp", "start_url": "/", "display": "standalone",</span>
+<span class="cm">//   "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Workbox:</strong> Biblioteca do Google que abstrai estratégias de cache do Service Worker. Em vez de escrever SW manualmente, use <code>workbox-webpack-plugin</code> ou <code>vite-plugin-pwa</code>. Suporta precaching, runtime caching e sync em background automáticamente.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Otimizar um Dashboard React Lento</h3>
+<p><strong>Cenário:</strong> Você herdou um dashboard React que demora 8s para carregar e trava ao interágir. LCP: 6s, INP: 800ms, CLS: 0.35. O bundle tem 2.5MB. Tabelas com 5000 linhas. Charts pesados em todas as rotas.</p>
+
+<div class="diagram">
+<div class="diagram-box red">Profile com DevTools<br><small>Identificar gargalos</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">TanStack Query<br><small>Server state + cache</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Zustand<br><small>Global state mínimo</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Code Split + Lazy<br><small>Chunk por rota</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Virtual List<br><small>Tabelas de 5000 rows</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Lazy Charts<br><small>React.lazy nós gráficos</small></div>
+</div>
+
+<p><strong>Passó a passó da otimização:</strong></p>
+<ol>
+<li><strong>Profile com Chrome DevTools:</strong> Gravar Performance trace. Identificar long tasks (&gt; 50ms) na main thread. Ver quais componentes re-renderizam demais com React DevTools Profiler</li>
+<li><strong>Migrar dados do server para TanStack Query:</strong> Remover dados de API do Redux/Zustand. useQuery com staleTime adequado. Elimina re-fetches desnecessários e adiciona cache inteligente</li>
+<li><strong>Zustand para estado global mínimo:</strong> Apenas sidebar state, theme, user preferences. Usar selectors para evitar re-renders (<code>useStore(s =&gt; s.sidebarOpen)</code>)</li>
+<li><strong>Code splitting por rota:</strong> <code>React.lazy</code> para cada página. Skeleton loading enquanto carrega. Bundle de 2.5MB vira chunks de ~200KB cada</li>
+<li><strong>Virtual list para tabelas grandes:</strong> @tanstack/react-virtual para tabelas com 5000+ rows. DOM renderiza ~30 rows ao invés de 5000</li>
+<li><strong>Lazy load charts:</strong> Charts (recharts, chart.js) pesam ~150-300KB. <code>React.lazy</code> + <code>Suspense</code> carrega apenas quando a tab de analytics esta visível</li>
+</ol>
+
+<p><strong>Resultado esperado:</strong> LCP: 6s &rarr; 1.8s. INP: 800ms &rarr; 120ms. CLS: 0.35 &rarr; 0.02. Bundle: 2.5MB &rarr; 350KB (chunk inicial).</p>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Redux para tudo:</strong> Colocar dados do server (lista de produtos, perfil do usuário) em Redux é o erro #1 de apps React. Você reimplementa caching, inválidation, loading states — tudo que TanStack Query faz melhor em 5 linhas. Redux e para <strong>estado de UI compartilhado</strong>, não para dados do backend.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Imagens sem dimensões (CLS):</strong> Toda <code>&lt;img&gt;</code> sem width/height causa layout shift. O browser aloca 0px de espaço, a imagem carrega, e empurra todo o conteúdo. Sempre defina <code>width</code>, <code>height</code> é use <code>aspect-ratio</code> no CSS como fallback.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Render-blocking CSS/JS:</strong> CSS no &lt;head&gt; bloqueia a primeira pintura. JS síncrono bloqueia o parser HTML. Use <code>async</code>/<code>defer</code> para scripts, inline o CSS crítico e carregue o resto com <code>media="print" onload="this.media='all'"</code>.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Over-memoization:</strong> Colocar <code>useMemo</code> é <code>React.memo</code> em TUDO não melhora performance — pode piorar. Memoizar tem custo (comparação de deps, memória extra). Só memoize quando: o cálculo é caro (&gt; 1ms), o componente re-renderiza frequentemente com props iguais, ou é um Context value (para evitar cascata).</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática de performance:</strong> Meça ANTES de otimizar. Use Chrome DevTools Performance tab para identificar o gargalo REAL. 80% das vezes o problema é um de: (1) bundle grande sem code splitting, (2) imagens não otimizadas, (3) dados do server sem cache. Resolva esses 3 antes de tocar em memoization.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem um e-commerce React onde a lista de produtos vem de uma API e é usada em 4 páginas diferentes. Atualmente está em Redux. Qual seria a abordagem correta de state management?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Migrar de Redux para <strong>TanStack Query</strong>. Criar um hook <code>useProducts(filters)</code> com <code>useQuery({ queryKey: ['products', filters], queryFn: fetchProducts })</code>. O TanStack Query cuida de: caching (não refetch se dados são frescos), deduplication (4 páginas montam ao mesmo tempo = 1 request), inválidation (após mutation, <code>inválidateQueries(['products'])</code>). Redux só deve manter estado de UI global (carrinho, sidebar state).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu site tem LCP de 5.2s. A imagem hero é um PNG de 3MB servido de um servidor em São Paulo. O CSS tem 200KB e está no &lt;head&gt;. Como reduzir o LCP para abaixo de 2.5s?</div>
+<div class="qa-a">
+<p><strong>Solução em 4 passos:</strong> (1) Converter imagem hero para <strong>AVIF/WebP</strong> com srcset — reduz de 3MB para ~200KB. (2) Adicionar <code>&lt;link rel="preload" as="image" href="/hero.avif" fetchpriority="high"&gt;</code> no &lt;head&gt;. (3) Extrair CSS crítico (acima do fold) e inlinar — ~5KB inline. Carregar o resto com <code>media="print" onload="this.media='all'"</code>. (4) Servir via CDN (CloudFront/Cloudflare) para cache na edge. Resultado: imagem ~200KB via CDN + CSS crítico inline + preload = LCP ~1.5s.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Uma tabela do admin mostra 8000 registros. Ao abrir a página, o browser trava por 3s. Ao clicar em "sort", trava por 2s. Como resolver ambos os problemas?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> (1) <strong>Virtualização:</strong> Usar <code>@tanstack/react-virtual</code> para renderizar apenas ~30 rows visíveis ao invés de 8000. Resolve o travamento inicial. (2) <strong>Web Worker para sort:</strong> Mover a lógica de sort para um Web Worker. A main thread recebe o resultado já ordenado sem bloquear UI. Alternativa: usar <code>yieldToMain()</code> para quebrar o sort em chunks de 500 items com pausa entre eles. (3) <strong>Páginação server-side:</strong> Se possível, não trazer 8000 registros para o frontend — usar <code>?page=1&amp;limit=50</code> com sort no backend (ORDER BY + INDEX no PostgreSQL).</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Staté Management & Web Vitals</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="40-ssr-ssg-isr-micro-frontends.html">&#8592; Anterior</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="42-llms-rag-prompt-engineering.html" class="primary">Próximo: LLMs, RAG & Prompt Engineering &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 41: Staté Management & Web Vitals
+// ══════════════════════════════════════════
+const SECTION_NUM = 41;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Você tem dados de produtos que vem de uma API REST e são usados em 3 páginas diferentes. Qual a melhor forma de gerenciar esse estado?",
+    options: [
+      "Redux Toolkit com createSlice e createAsyncThunk",
+      "Context API com um ProductsProvider",
+      "TanStack Query (React Query) com useQuery e queryKey",
+      "Zustand com uma store de produtos"
+    ],
+    correct: 2,
+    explanation: "Dados do servidor devem ser tratados como server state. TanStack Query oferece caching, deduplication, inválidation e refetching automáticos — tudo que você implementaria manualmente (e com bugs) usando Redux ou Zustand para dados de API."
+  },
+  {
+    question: "Qual Core Web Vital mede quanto tempo leva para o maior elemento visível ser renderizado?",
+    options: [
+      "INP (Interáction to Next Paint)",
+      "CLS (Cumulative Layout Shift)",
+      "LCP (Largest Contentful Paint)",
+      "TTFB (Time To First Byte)"
+    ],
+    correct: 2,
+    explanation: "LCP (Largest Contentful Paint) mede o tempo até o maior elemento visível (imagem hero, bloco de texto) ser renderizado. O target e < 2.5 segundos."
+  },
+  {
+    question: "Qual problema a Context API do React tem quando usada para estado de alta frequência (ex: posição do mouse)?",
+    options: [
+      "Context não suporta valores do tipo number",
+      "Context causa re-render em TODOS os consumidores quando o valor muda",
+      "Context não funciona com TypeScript",
+      "Context só funciona com class components"
+    ],
+    correct: 1,
+    explanation: "Quando o valor do Context muda, TODOS os componentes que consomem aquele Context re-renderizam — mesmo os que não usam o dado que mudou. Para estado de alta frequência, use Zustand ou Jotai que usam subscriptions seletivas."
+  },
+  {
+    question: "Qual métrica substituiu o FID (First Input Delay) como Core Web Vital em 2024?",
+    options: [
+      "TBT (Total Blocking Time)",
+      "FCP (First Contentful Paint)",
+      "INP (Interáction to Next Paint)",
+      "TTI (Time to Interáctive)"
+    ],
+    correct: 2,
+    explanation: "INP (Interáction to Next Paint) substituiu FID em marco de 2024. Enquanto FID media apenas a latência da PRIMEIRA interáção, INP mede a latência de TODAS as interáções e reporta o pior percentil p75."
+  },
+  {
+    question: "Você tem uma <img> de 1200x600px sem atributos width/height. Quando a imagem carrega, todo o conteúdo abaixo pula para baixo. Qual Web Vital e afetado?",
+    options: [
+      "LCP — porque a imagem é o maior elemento",
+      "INP — porque o browser precisa processar o layout",
+      "CLS — porque o layout muda de posição inesperadamente",
+      "FCP — porque a imagem atrasa a primeira pintura"
+    ],
+    correct: 2,
+    explanation: "CLS (Cumulative Layout Shift) mede mudanças inesperadas de layout. Imagens sem dimensões causam layout shift porque o browser aloca 0px inicialmente e depois expande quando a imagem carrega, empurrando todo o conteúdo."
+  },
+  {
+    question: "Qual a principal vantagem do Zustand sobre o Redux para gerenciamento de estado global?",
+    options: [
+      "Zustand é mais rápido que Redux em benchmarks",
+      "Zustand tem suporte a time-travel debugging e Redux não",
+      "Zustand tem API mínimalista sem boilerplaté (sem Provider, sem reducers, sem action files)",
+      "Zustand funciona com Server Components e Redux não"
+    ],
+    correct: 2,
+    explanation: "Zustand elimina quase todo o boilerplaté do Redux: não precisa de Provider wrapper, action creators, reducers separados, ou combinação de stores. Um store é uma única função. Isso o torna muito mais produtivo para a maioria dos casos."
+  },
+  {
+    question: "Você importa 'import _ from lodash' e usa apenas _.debounce. O bundle inclui toda a biblioteca (70KB). Qual técnica resolve isso?",
+    options: [
+      "Code splitting com React.lazy",
+      "Tree shaking com named imports de lodash-es",
+      "Memoization com useMemo",
+      "Virtual list com @tanstack/react-virtual"
+    ],
+    correct: 1,
+    explanation: "Tree shaking elimina código não útilizado do bundle. Trocar para 'import { debounce } from lodash-es' (ESM) permite que o bundler inclua apenas a função debounce (~300 bytes) ao invés de toda a biblioteca (70KB)."
+  },
+  {
+    question: "Uma tabela com 10.000 rows trava o browser ao renderizar. Qual a solução mais eficiente?",
+    options: [
+      "Usar React.memo em cada row para evitar re-renders",
+      "Usar useMemo para memoizar o array de dados",
+      "Usar virtualização (@tanstack/react-virtual) para renderizar apenas rows visíveis",
+      "Usar useCallback em todos os event handlers da tabela"
+    ],
+    correct: 2,
+    explanation: "Virtualização renderiza apenas as ~30 rows visíveis no viewport, reciclando DOM nodes conforme o scroll. React.memo e useMemo não resolvem porque o problema e ter 10.000 DOM nodes — mesmo sem re-render, a criação inicial é o memory footprint são o gargalo."
+  },
+  {
+    question: "Qual estratégia de Service Worker retorna cache imediatamente enquanto busca versão atualizada em background?",
+    options: [
+      "Cache First",
+      "Network First",
+      "Stale-While-Reválidate",
+      "Cache Only"
+    ],
+    correct: 2,
+    explanation: "Stale-While-Reválidaté serve o cache imediatamente (resposta instantanea) e simultaneamente faz fetch para atualizar o cache em background. E a melhor estratégia para conteúdo que precisa ser rápido mas eventualmente consistente."
+  },
+  {
+    question: "Em TanStack Query, o que faz a função inválidateQueries após uma mutation?",
+    options: [
+      "Deleta os dados do cache permanentemente",
+      "Marca os dados como stale e dispara refetch automático",
+      "Cancela todas as queries em andamento",
+      "Reseta o estado de loading para true em todos os componentes"
+    ],
+    correct: 1,
+    explanation: "inválidateQueries marca os dados como stale (desatualizados). Se algum componente esta montado e usando aquele queryKey, o TanStack Query automáticamente dispara um refetch para obter dados frescos do server. E o padrão para sincronizar UI após mutations."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Staté Management e Web Vitals.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

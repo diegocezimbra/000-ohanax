@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>65 — Computação Quantica | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="64-blockchain-web3.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>65</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="66-requisitos-nao-funcionais.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:98.5%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 65</span>
+<h2>Computação Quantica</h2>
+<div class="section-line"></div>
+
+<p>Computação quântica não é "computadores mais rápidos" — é um <strong>paradigma fundamentalmente diferente</strong> de processamento de informação. Enquanto computadores clássicos manipulam bits (0 ou 1), computadores quânticos manipulam <strong>qubits</strong> que podem existir em superposicao de estados. Isso não acelera tudo — mas para problemas específicos (fatoração, busca, simulacao molecular), oferece speedups exponenciais ou quadraticos que são <strong>matematicamente impossiveis</strong> com hardware clássico.</p>
+
+<p>Para devs full-stack, o impacto mais imediato e na <strong>criptografia</strong>: algoritmos como RSA e ECC, que protegem toda a internet, seráo quebrados por computadores quânticos suficientemente poderosos. A transição para criptografia pos-quântica já começou — e se você trabalha com segurança, precisa entender o timeline e as implicacoes.</p>
+
+<p>Nesta seção, cobrimos os fundamentos de qubits, gates e circuitos quânticos, os algoritmos mais importantes (Shor, Grover), o impacto na criptografia, ferramentas de desenvolvimento, é o que você precisa saber agora para se preparar.</p>
+
+<!-- ═══ QUBITS & FUNDAMENTOS ═══ -->
+<h3>Qubits e Fundamentos</h3>
+
+<h4>Bits Classicos vs Qubits</h4>
+<p>Um bit clássico esta em exatamente um estado: <strong>0</strong> ou <strong>1</strong>. Todas as operações de computação clássica são manipulacoes deterministicas desses dois estados. Um qubit, por outro lado, existe em uma <strong>superposicao</strong> de |0&rang; e |1&rang; simultaneamente, representada matematicamente como:</p>
+
+<pre data-lang="math"><code>|&psi;&rang; = &alpha;|0&rang; + &beta;|1&rang;
+
+<span class="cm">// Onde &alpha; e &beta; são números complexos (amplitudes)</span>
+<span class="cm">// |&alpha;|&sup2; + |&beta;|&sup2; = 1 (probabilidades devem somar 1)</span>
+<span class="cm">// |&alpha;|&sup2; = probabilidade de medir 0</span>
+<span class="cm">// |&beta;|&sup2; = probabilidade de medir 1</span></code></pre>
+
+<p><strong>Diferenca fundamental:</strong> com N bits clássicos você representa <strong>1 estado</strong> de 2^N possiveis. Com N qubits, você manipula <strong>2^N amplitudes simultaneamente</strong>. 50 qubits = 2^50 = ~10^15 amplitudes. Nenhum computador clássico consegue simular isso eficientemente.</p>
+
+<div class="diagram">
+<div class="diagram-box blue">Bit Classico<br><small>0 OU 1</small><br><small>Deterministico</small></div>
+<div class="diagram-arrow">vs</div>
+<div class="diagram-box purple">Qubit<br><small>&alpha;|0&rang; + &beta;|1&rang;</small><br><small>Superposicao</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">N Qubits<br><small>2^N estados</small><br><small>simultâneos</small></div>
+</div>
+
+<h4>Superposicao</h4>
+<p>Superposicao é a propriedade que permite a um qubit existir em <strong>combinação linear</strong> de |0&rang; e |1&rang; ao mesmo tempo. Não e "ou 0 ou 1 e não sabemos qual" (isso seria probabilidade clássica). E literálmente ambos ao mesmo tempo, com interferência entre os estados.</p>
+<ul>
+<li><strong>Analogia:</strong> Uma moeda girando no ar não é "cara ou coroa que não sabemos" — ela esta genuinamente em ambos os estados até cair (ser medida)</li>
+<li><strong>Utilidade:</strong> Permite explorar múltiplos caminhos de computação em paralelo. Algoritmos quânticos usam interferência para amplificar respostas corretas e cancelar incorretas</li>
+<li><strong>Limitacao:</strong> Ao medir, o qubit colapsa para 0 ou 1. Você só obtém 1 bit de informação por medição</li>
+</ul>
+
+<h4>Entanglement (Emaranhamento Quantico)</h4>
+<p>Quando dois qubits estão emaranhados, o estado de um e <strong>instantaneamente correlacionado</strong> com o estado do outro, independentemente da distancia. Medir um determina imediatamente o resultado do outro.</p>
+<ul>
+<li><strong>Estado Bell:</strong> <code>(|00&rang; + |11&rang;) / &radic;2</code> — se medir o primeiro e obter 0, o segundo será obrigatóriamente 0</li>
+<li><strong>Não e comunicação:</strong> Entanglement não transmite informação mais rápido que a luz (no-commúnication theorem)</li>
+<li><strong>Utilidade:</strong> Base para teleportacao quântica, correcao de erros quânticos, e protocolos como quantum key distribution (QKD)</li>
+<li><strong>Escala:</strong> Emaranhar muitos qubits de forma controlada é um dos maiores desafios de engenharia quântica</li>
+</ul>
+
+<h4>Bloch Sphere</h4>
+<p>A Bloch sphere é a representacao visual de um qubit isolado. O polo norte representa |0&rang;, o polo sul |1&rang;, e qualquer ponto na superficie representa um estado de superposicao válido.</p>
+<ul>
+<li><strong>Eixo Z:</strong> |0&rang; (topo) e |1&rang; (base) — estados computacionais básicos</li>
+<li><strong>Eixo X:</strong> |+&rang; e |-&rang; — superposicoes iguais com fases diferentes</li>
+<li><strong>Eixo Y:</strong> |i&rang; e |-i&rang; — superposicoes com fases complexas</li>
+<li><strong>Operacoes (gates):</strong> São rotacoes na Bloch sphere. Gaté X = rotacao de 180 graus no eixo X (flip)</li>
+</ul>
+
+<pre data-lang="visual"><code><span class="cm">         |0&rang; (polo norte)</span>
+<span class="cm">          |</span>
+<span class="cm">     |+&rang; --+-- |-&rang;    (equador = superposicoes)</span>
+<span class="cm">          |</span>
+<span class="cm">         |1&rang; (polo sul)</span>
+<span class="cm"></span>
+<span class="cm">Qualquer ponto na superficie = estado de qubit válido</span>
+<span class="cm">Operacoes quânticas = rotacoes nesta esfera</span></code></pre>
+
+<h4>Decoerencia e Error Rates</h4>
+<p>Qubits são extremamente frageis. Qualquer interáção com o ambiente (calor, radiacao, vibracoes) causa <strong>decoerencia</strong> — perda gradual da superposicao e do entanglement. E o principal obstaculo para computação quântica prática.</p>
+<ul>
+<li><strong>T1 (relaxamento):</strong> Tempo até o qubit perder energia e decair de |1&rang; para |0&rang;. Tipicamente ~100 microsegundos em hardware superconductor</li>
+<li><strong>T2 (decoerencia):</strong> Tempo até o qubit perder informação de fase. Geralmente T2 &le; 2*T1</li>
+<li><strong>Error rates atuais:</strong> ~0.1-1% por gaté (single-qubit) e ~0.5-5% por gaté (two-qubit). Para comparação, transistores clássicos erram ~1 em 10^15 operações</li>
+<li><strong>Implicacao:</strong> Circuitos quânticos precisam ser <strong>rasos</strong> (poucas gates) para completar antes da decoerencia destruir a informação</li>
+</ul>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Armadilha: "Computador quântico e exponencialmente mais rápido"</strong> — Não e verdade para todos os problemas. Quantum só oferece vantagem para classes específicas de problemas. Para a maioria das tarefas do dia-a-dia (CRUD, web serving, data processing), computadores clássicos são muito mais eficientes e práticos.</div>
+</div>
+
+<!-- ═══ QUANTUM GATES ═══ -->
+<h3>Quantum Gates</h3>
+
+<p>Assim como circuitos clássicos usam portas lógicas (AND, OR, NOT), circuitos quânticos usam <strong>quantum gates</strong> — operações unitarias que transformam estados de qubits. A diferença fundamental: quantum gates são <strong>reversiveis</strong> (toda operação pode ser desfeita), enquanto gates clássicas como AND são irreversiveis (perdem informação).</p>
+
+<h4>Portas de 1 Qubit</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Gate</th><th>Funcao</th><th>Efeito na Bloch Sphere</th><th>Exemplo</th></tr>
+<tr><td><strong>X (NOT)</strong></td><td>Bit flip: |0&rang; &rarr; |1&rang;, |1&rang; &rarr; |0&rang;</td><td>Rotacao de 180&deg; no eixo X</td><td>Equivalente ao NOT clássico</td></tr>
+<tr><td><strong>H (Hadamard)</strong></td><td>Cria superposicao: |0&rang; &rarr; |+&rang;, |1&rang; &rarr; |-&rang;</td><td>Rotacao de 90&deg; entre Z e X</td><td>Gaté mais usada — início de quase todo circuito</td></tr>
+<tr><td><strong>Z (Phase)</strong></td><td>Phase flip: |1&rang; ganha fase -1</td><td>Rotacao de 180&deg; no eixo Z</td><td>Não muda probabilidades, muda fase</td></tr>
+<tr><td><strong>S</strong></td><td>Phase de 90&deg;: |1&rang; ganha fase i</td><td>Rotacao de 90&deg; no eixo Z</td><td>Meia Z gate</td></tr>
+<tr><td><strong>T</strong></td><td>Phase de 45&deg;: |1&rang; ganha fase e^(i&pi;/4)</td><td>Rotacao de 45&deg; no eixo Z</td><td>Essencial para universalidade</td></tr>
+</table>
+</div>
+
+<h4>Portas de 2 Qubits</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Gate</th><th>Funcao</th><th>Importancia</th></tr>
+<tr><td><strong>CNOT</strong> (Controlled-NOT)</td><td>Flip no target qubit se o control qubit for |1&rang;</td><td>Gaté fundamental para criar entanglement. Equivale a XOR controlado</td></tr>
+<tr><td><strong>CZ</strong> (Controlled-Z)</td><td>Aplica Z no target se control for |1&rang;</td><td>Alternativa ao CNOT em certas arquiteturas</td></tr>
+<tr><td><strong>SWAP</strong></td><td>Troca os estados de dois qubits</td><td>Necessario quando a topologia do hardware não conecta os qubits diretamente</td></tr>
+</table>
+</div>
+
+<h4>Circuitos Quanticos</h4>
+<p>Um circuito quântico é uma sequência de gates aplicadas a qubits, lidas da esquerda para a direita. Os fios representam qubits, e as caixas são as gates.</p>
+
+<pre data-lang="circuito"><code><span class="cm">// Circuito para criar estado Bell (entanglement máximo)</span>
+
+q0: ──[<span class="fn">H</span>]──<span class="kw">*</span>──  M
+            <span class="kw">|</span>
+q1: ────────<span class="kw">X</span>──  M
+
+<span class="cm">// Passó 1: H em q0 cria superposicao: (|0&rang; + |1&rang;)/&radic;2</span>
+<span class="cm">// Passó 2: CNOT (q0 controla q1) cria entanglement</span>
+<span class="cm">// Resultado: (|00&rang; + |11&rang;)/&radic;2 (estado Bell &Phi;+)</span>
+<span class="cm">// M = Medicao (colapsa para |00&rang; ou |11&rang; com 50/50)</span></code></pre>
+
+<pre data-lang="circuito"><code><span class="cm">// Circuito de Teletransporte Quantico (3 qubits)</span>
+
+q0: ──[<span class="fn">H</span>]──<span class="kw">*</span>──────────────────────  <span class="cm">(qubit a teleportar)</span>
+            <span class="kw">|</span>
+q1: ────────<span class="kw">X</span>──[<span class="fn">H</span>]──<span class="kw">*</span>──  M ──  <span class="cm">(canal clássico)</span>
+                        <span class="kw">|</span>
+q2: ────────────────────<span class="kw">X</span>──[<span class="fn">Z</span>]──  <span class="cm">(qubit reconstruido)</span>
+
+<span class="cm">// Usa entanglement pre-compartilhado entre q1 e q2</span>
+<span class="cm">// Resultado: estado de q0 e "teleportado" para q2</span></code></pre>
+
+<h4>Medicao e Colapso</h4>
+<p>Medicao é a operação mais contra-intuitiva da computação quântica:</p>
+<ul>
+<li><strong>Antes de medir:</strong> O qubit esta em superposicao &alpha;|0&rang; + &beta;|1&rang; com informação completa</li>
+<li><strong>Ao medir:</strong> O estado colapsa irreversivelmente para |0&rang; (com probabilidade |&alpha;|&sup2;) ou |1&rang; (com probabilidade |&beta;|&sup2;)</li>
+<li><strong>Apos medir:</strong> A superposicao e destruida — você obtém um bit clássico</li>
+<li><strong>Implicacao algoritmica:</strong> Algoritmos quânticos devem ser projetados para que a resposta correta tenha <strong>alta probabilidade</strong> de ser medida (amplificacao de amplitude)</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Universalidade:</strong> O conjunto {H, T, CNOT} e <strong>universal</strong> — qualquer operação quântica pode ser apróximada com precisão arbitraria usando apenas essas 3 gates. E o equivalente quântico de {NAND} na computação clássica.</div>
+</div>
+
+<!-- ═══ ALGORITMOS QUANTICOS ═══ -->
+<h3>Algoritmos Quanticos</h3>
+
+<p>Existem poucos algoritmos quânticos que oferecem vantagem comprovada sobre clássicos, mas os que existem são <strong>transformadores</strong>. Os dois mais importantes: Shor (fatoração — quebra RSA) e Grover (busca — speedup quadratico).</p>
+
+<h4>Shor's Algorithm (Fatoracao de Inteiros)</h4>
+<p><strong>Problema:</strong> Dado N = p * q (produto de dois primos grandes), encontrar p e q. Classicamente, o melhor algoritmo conhecido leva tempo <strong>sub-exponencial</strong>. Shor resolve em tempo <strong>polinomial</strong> — O((log N)^3).</p>
+
+<div class="card blue">
+<div class="card-title">Impacto do Shor's Algorithm</div>
+<ul>
+<li><strong>RSA-2048:</strong> Classicamente inquebravel (~10^30 anos). Com Shor + ~4.000 qubits lógicos: horas</li>
+<li><strong>ECC (Elliptic Curve):</strong> Igualmente vulnerável. ECC-256 equivale a RSA-3072 clássicamente, mas ambos caem com Shor</li>
+<li><strong>O que NAO quebra:</strong> AES (criptografia simétrica) — Shor não ajuda. Grover reduz segurança pela metade (AES-256 &rarr; 128 bits efetivos)</li>
+<li><strong>Requisito:</strong> ~20 milhões de qubits fisicos (com error correction) para quebrar RSA-2048. Hoje temos ~1.000 qubits</li>
+</ul>
+</div>
+
+<pre data-lang="conceito"><code><span class="cm">// Shor's Algorithm - Visao simplificada</span>
+
+<span class="cm">// Input: N (número a fatorar, ex: N = 15)</span>
+<span class="cm">// 1. Escolher 'a' aleatório, coprime com N</span>
+<span class="cm">// 2. QUANTUM: Encontrar o periodo 'r' de f(x) = a^x mod N</span>
+<span class="cm">//    (Usa QFT - Quantum Fourier Transform)</span>
+<span class="cm">//    Classicamente: exponencial. Quanticamente: polinomial</span>
+<span class="cm">// 3. CLASSICO: Usar 'r' para calcular fatores via GCD</span>
+<span class="cm">//    p = gcd(a^(r/2) - 1, N)</span>
+<span class="cm">//    q = gcd(a^(r/2) + 1, N)</span>
+
+<span class="cm">// O "truque" quântico: QFT encontra periodicidade</span>
+<span class="cm">// em superposicao de 2^n estados simultaneamente</span></code></pre>
+
+<h4>Grover's Algorithm (Busca em Dados Não-Estruturados)</h4>
+<p><strong>Problema:</strong> Encontrar item específico em lista não-ordenada de N elementos. Classicamente: O(N). Grover: <strong>O(&radic;N)</strong> — speedup quadratico.</p>
+
+<ul>
+<li><strong>Exemplo prático:</strong> Buscar em 1 trilhao de itens: clássico = 10^12 operações, Grover = 10^6 operações</li>
+<li><strong>Mecanismo:</strong> Amplificacao de amplitude — iterátivamente aumenta a probabilidade do item correto ser medido</li>
+<li><strong>Limitacao:</strong> Speedup "apenas" quadratico (não exponencial como Shor). Para muitas aplicações, não justifica o custo do hardware quântico</li>
+<li><strong>Impacto em crypto:</strong> AES-128 efetivamente reduzido para 64 bits (inseguro). AES-256 reduzido para 128 bits (ainda seguro)</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box blue">Busca Classica<br><small>O(N)</small><br><small>1 trilhao ops</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Grover<br><small>O(&radic;N)</small><br><small>1 milhão ops</small></div>
+<div class="diagram-arrow">=</div>
+<div class="diagram-box purple">Speedup<br><small>Quadratico</small><br><small>1.000.000x</small></div>
+</div>
+
+<h4>VQE (Variational Quantum Eigensolver)</h4>
+<p><strong>Problema:</strong> Encontrar o estado fundamental (energia mínima) de uma molecula. Essencial para descoberta de novos farmacos, materiais e catalisadores.</p>
+<ul>
+<li><strong>Abordagem hibrida:</strong> Parte quântica prepara estados; parte clássica otimiza parametros (loop variacional)</li>
+<li><strong>Vantagem:</strong> Funciona com circuitos rasos — viavel em hardware NISQ atual</li>
+<li><strong>Aplicacoes:</strong> Simulacao de moleculas (cafeina tem ~10^48 estados — impossível clássicamente), design de baterias, fertilizantes</li>
+<li><strong>Estado atual:</strong> Demonstrado para moleculas simples (H2, LiH). Moleculas complexas ainda exigem mais qubits</li>
+</ul>
+
+<h4>QAOA (Quantum Appróximaté Optimization Algorithm)</h4>
+<p><strong>Problema:</strong> Problemas de otimização combinatoria (Max-Cut, Vehicle Routing, Portfolio Optimization) que são NP-hard clássicamente.</p>
+<ul>
+<li><strong>Abordagem:</strong> Hibrida como VQE — circuito quântico parametrizado + otimizador clássico</li>
+<li><strong>Promessa:</strong> Encontrar soluções "boas o suficiente" mais rápido que heuristicas clássicas para problemas grandes</li>
+<li><strong>Aplicacoes reais:</strong> Otimização de rotas (logistica), alocação de portfolio (financas), scheduling (manufatura)</li>
+<li><strong>Debaté aberto:</strong> Ainda não ha prova conclusiva de vantagem quântica sobre heuristicas clássicas para QAOA</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<tr><th>Algoritmo</th><th>Problema</th><th>Speedup</th><th>Impacto Pratico</th></tr>
+<tr><td><strong>Shor</strong></td><td>Fatoracao de inteiros</td><td>Exponencial</td><td>Quebra RSA/ECC — ameaça existêncial para criptografia assimétrica</td></tr>
+<tr><td><strong>Grover</strong></td><td>Busca não-estruturada</td><td>Quadratico (&radic;N)</td><td>Reduz segurança de crypto simétrica pela metade</td></tr>
+<tr><td><strong>VQE</strong></td><td>Simulacao molecular</td><td>Exponencial (para quimica)</td><td>Descoberta de farmacos e materiais</td></tr>
+<tr><td><strong>QAOA</strong></td><td>Otimização combinatoria</td><td>Potencial (não provado)</td><td>Logistica, financas, scheduling</td></tr>
+<tr><td><strong>QML</strong></td><td>Machine Learning</td><td>Quadratico a exponencial</td><td>Kernels quânticos, amostragem — area muito ativa de pesquisa</td></tr>
+</table>
+</div>
+
+<!-- ═══ IMPACTO NA CRIPTOGRAFIA ═══ -->
+<h3>Impacto na Criptografia</h3>
+
+<p>Este é o tópico mais relevante para devs hoje. A ameaça quântica a criptografia não é hipotetica — é uma <strong>certeza matematica</strong>. A única incerteza e <strong>quando</strong> teremos hardware suficiente. E a preparacao precisa começar <strong>agora</strong>.</p>
+
+<h4>O que esta Vulneravel</h4>
+
+<div class="card orange">
+<div class="card-title">Algoritmos Ameacados pelo Shor's Algorithm</div>
+<ul>
+<li><strong>RSA (todas as variantes):</strong> RSA-2048, RSA-4096 — base de TLS/HTTPS, assinaturas digitais, certificados</li>
+<li><strong>ECC (Elliptic Curve Cryptography):</strong> ECDSA, ECDH — usado em Bitcoin, TLS 1.3, SSH, Signal Protocol</li>
+<li><strong>Diffie-Hellman:</strong> Key exchange clássico — base de VPNs, TLS handshake</li>
+<li><strong>DSA:</strong> Digital signatures — usado em SSH keys, code signing</li>
+</ul>
+<p style="margin-top:12px;margin-bottom:0"><strong>Resumo:</strong> Toda criptografia assimétrica baseada em fatoração de inteiros ou logaritmo discreto será quebrada.</p>
+</div>
+
+<h4>O que Permanece Seguro</h4>
+<ul>
+<li><strong>AES-256:</strong> Grover reduz para 128 bits efetivos — ainda seguro. AES-128 cai para 64 bits — inseguro</li>
+<li><strong>SHA-256, SHA-3:</strong> Grover reduz resistencia a pre-image pela metade — ainda aceitável para hashes longos</li>
+<li><strong>Regra geral:</strong> Dobre o tamanho das chaves simétricas para manter segurança pos-quântica</li>
+</ul>
+
+<h4>Harvest Now, Decrypt Later (HNDL)</h4>
+<p>Este é o risco <strong>mais urgente é mais subestimado</strong>:</p>
+<ul>
+<li><strong>Ataque:</strong> Adversarios interceptam e armazenam dados criptografados HOJE, com a intencao de descriptografa-los quando computadores quânticos estiverem disponíveis</li>
+<li><strong>Implicacao:</strong> Dados sensiveis com válidade longa (segredos de estado, propriedade intelectual, dados medicos) já estão em risco</li>
+<li><strong>Quem faz isso:</strong> Agencias de inteligência nacionais. Estimativas indicam que NSA, China e outros já coletam tráfego criptografado em massa</li>
+<li><strong>Conclusao:</strong> A transição para post-quantum crypto não pode esperar até computadores quânticos existirem — precisa começar agora</li>
+</ul>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Ameaca real:</strong> Se seus dados TLS interceptados hoje precisam permanecer confidenciais por 10+ anos, e os adversarios incluem nation-states, você já esta vulnerável ao HNDL. A migração para post-quantum TLS deveria ser prioridade.</div>
+</div>
+
+<h4>Transicao Post-Quantum (NIST PQC Standards)</h4>
+<p>O NIST (National Institute of Standards and Technology) conduziu um processo de 8 anós (2016-2024) para selecionar algoritmos resistentes a computadores quânticos:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Algoritmo</th><th>Tipo</th><th>Base Matematica</th><th>Substitui</th></tr>
+<tr><td><strong>ML-KEM (CRYSTALS-Kyber)</strong></td><td>Key Encapsulation (KEM)</td><td>Module Lattice (MLWE)</td><td>ECDH, RSA key exchange</td></tr>
+<tr><td><strong>ML-DSA (CRYSTALS-Dilithium)</strong></td><td>Assinatura Digital</td><td>Module Lattice (MLWE/MSIS)</td><td>ECDSA, RSA signatures</td></tr>
+<tr><td><strong>SLH-DSA (SPHINCS+)</strong></td><td>Assinatura Digital</td><td>Hash-based</td><td>Backup caso lattice-based sejam quebrados</td></tr>
+<tr><td><strong>FN-DSA (FALCON)</strong></td><td>Assinatura Digital</td><td>NTRU Lattice</td><td>Assinaturas compactas</td></tr>
+</table>
+</div>
+
+<ul>
+<li><strong>CRYSTALS-Kyber (ML-KEM):</strong> Padrão primário para key exchange. Chaves maiores que ECDH (~1.5 KB vs ~32 bytes) mas performance comparavel</li>
+<li><strong>CRYSTALS-Dilithium (ML-DSA):</strong> Padrão primário para assinaturas. Assinaturas maiores (~2.4 KB vs ~64 bytes ECDSA)</li>
+<li><strong>Abordagem hibrida recomendada:</strong> Usar clássico + post-quantum simultaneamente durante a transição. Se um falhar, o outro protege</li>
+</ul>
+
+<h4>Timeline: Quando a Ameaca se Torna Real</h4>
+
+<div class="card purple">
+<div class="card-title">Timeline Estimado</div>
+<ul>
+<li><strong>2024-2026:</strong> NIST finaliza padrões. Bibliotecas e frameworks começam a integrar. Chrome/Firefox testam post-quantum TLS (já iniciado)</li>
+<li><strong>2027-2030:</strong> Adocao corporativa de PQC. Grandes cloud providers oferecem PQC nativo. Governós exigem para dados classificados</li>
+<li><strong>2030-2035:</strong> Computadores quânticos com ~1.000 qubits lógicos (error-corrected). Possivelmente capazes de quebrar chaves menores</li>
+<li><strong>2035-2040+:</strong> Computadores quânticos com ~4.000+ qubits lógicos. RSA-2048 potencialmente quebravel. Deadline para migração completa</li>
+</ul>
+<p style="margin-top:12px;margin-bottom:0"><strong>Mosaic's Law:</strong> Estimativas de timeline são notoriamente imprecisas. Errar por excessó de cautela é muito melhor que ser pego desprevenido.</p>
+</div>
+
+<!-- ═══ FRAMEWORKS & FERRAMENTAS ═══ -->
+<h3>Frameworks e Ferramentas</h3>
+
+<p>Mesmo sem hardware quântico fisico, você pode <strong>aprender, experimentar e desenvolver</strong> algoritmos quânticos usando simuladores. Os principais frameworks:</p>
+
+<h4>Qiskit (IBM)</h4>
+<p>O framework mais popular e completo. Open-source, Python, acesso a hardware real da IBM via cloud.</p>
+
+<pre data-lang="python"><code><span class="cm"># Instalacao</span>
+<span class="cm"># pip install qiskit qiskit-aer qiskit-ibm-runtime</span>
+
+<span class="kw">from</span> qiskit <span class="kw">import</span> QuantumCircuit
+<span class="kw">from</span> qiskit_aer <span class="kw">import</span> AerSimulator
+<span class="kw">from</span> qiskit.visualization <span class="kw">import</span> plot_histogram
+
+<span class="cm"># Criar circuito com 2 qubits e 2 bits clássicos</span>
+qc = QuantumCircuit(<span class="num">2</span>, <span class="num">2</span>)
+
+<span class="cm"># Aplicar Hadamard no qubit 0 (cria superposicao)</span>
+qc.<span class="fn">h</span>(<span class="num">0</span>)
+
+<span class="cm"># Aplicar CNOT: qubit 0 controla qubit 1 (cria entanglement)</span>
+qc.<span class="fn">cx</span>(<span class="num">0</span>, <span class="num">1</span>)
+
+<span class="cm"># Medir ambos os qubits</span>
+qc.<span class="fn">measure</span>([<span class="num">0</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">1</span>])
+
+<span class="cm"># Simular o circuito</span>
+simulator = AerSimulator()
+result = simulator.<span class="fn">run</span>(qc, shots=<span class="num">1024</span>).<span class="fn">result</span>()
+counts = result.<span class="fn">get_counts</span>()
+
+<span class="fn">print</span>(counts)
+<span class="cm"># Output: {'00': ~512, '11': ~512}</span>
+<span class="cm"># Nunca '01' ou '10' — prova de entanglement!</span></code></pre>
+
+<pre data-lang="python"><code><span class="cm"># Exemplo: Algoritmo de Grover para busca (2 qubits, item = |11&rang;)</span>
+
+<span class="kw">from</span> qiskit <span class="kw">import</span> QuantumCircuit
+<span class="kw">from</span> qiskit_aer <span class="kw">import</span> AerSimulator
+
+qc = QuantumCircuit(<span class="num">2</span>, <span class="num">2</span>)
+
+<span class="cm"># 1. Superposicao uniforme</span>
+qc.<span class="fn">h</span>([<span class="num">0</span>, <span class="num">1</span>])
+
+<span class="cm"># 2. Oracle: marca o estado |11&rang; (flip de fase)</span>
+qc.<span class="fn">cz</span>(<span class="num">0</span>, <span class="num">1</span>)  <span class="cm"># CZ aplica fase -1 quando ambos são |1&rang;</span>
+
+<span class="cm"># 3. Diffuser (amplificacao de amplitude)</span>
+qc.<span class="fn">h</span>([<span class="num">0</span>, <span class="num">1</span>])
+qc.<span class="fn">z</span>([<span class="num">0</span>, <span class="num">1</span>])
+qc.<span class="fn">cz</span>(<span class="num">0</span>, <span class="num">1</span>)
+qc.<span class="fn">h</span>([<span class="num">0</span>, <span class="num">1</span>])
+
+<span class="cm"># 4. Medir</span>
+qc.<span class="fn">measure</span>([<span class="num">0</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">1</span>])
+
+result = AerSimulator().<span class="fn">run</span>(qc, shots=<span class="num">1024</span>).<span class="fn">result</span>()
+<span class="fn">print</span>(result.<span class="fn">get_counts</span>())
+<span class="cm"># Output: {'11': ~1024} — encontrou o item com ~100% de probabilidade!</span></code></pre>
+
+<h4>Cirq (Google)</h4>
+<p>Framework do Google, focado em hardware NISQ e circuitos parametrizados. Usado internamente para os experimentos de quantum supremacy.</p>
+
+<pre data-lang="python"><code><span class="cm"># pip install cirq</span>
+
+<span class="kw">import</span> cirq
+
+<span class="cm"># Criar qubits</span>
+q0, q1 = cirq.<span class="fn">LineQubit</span>.<span class="fn">range</span>(<span class="num">2</span>)
+
+<span class="cm"># Criar circuito Bell State</span>
+circuit = cirq.Circuit([
+    cirq.<span class="fn">H</span>(q0),          <span class="cm"># Hadamard em q0</span>
+    cirq.<span class="fn">CNOT</span>(q0, q1),   <span class="cm"># CNOT: q0 controla q1</span>
+    cirq.<span class="fn">measure</span>(q0, q1, key=<span class="str">'result'</span>)
+])
+
+<span class="cm"># Simular</span>
+simulator = cirq.Simulator()
+result = simulator.<span class="fn">run</span>(circuit, repetitions=<span class="num">1000</span>)
+<span class="fn">print</span>(result.<span class="fn">histogram</span>(key=<span class="str">'result'</span>))
+<span class="cm"># Counter({0: ~500, 3: ~500})</span>
+<span class="cm"># 0 = 00, 3 = 11 em binário — entanglement confirmado</span></code></pre>
+
+<h4>Q# (Microsoft)</h4>
+<p>Linguagem de programacao dedicada a computação quântica, integrada com .NET e Azure Quantum.</p>
+
+<pre data-lang="qsharp"><code><span class="cm">// Q# - Bell State</span>
+<span class="kw">operation</span> <span class="fn">BellState</span>() : (<span class="tp">Result</span>, <span class="tp">Result</span>) {
+    <span class="kw">use</span> (q0, q1) = (<span class="fn">Qubit</span>(), <span class="fn">Qubit</span>());
+
+    <span class="fn">H</span>(q0);           <span class="cm">// Hadamard</span>
+    <span class="fn">CNOT</span>(q0, q1);    <span class="cm">// Entanglement</span>
+
+    <span class="kw">let</span> r0 = <span class="fn">M</span>(q0);  <span class="cm">// Medir q0</span>
+    <span class="kw">let</span> r1 = <span class="fn">M</span>(q1);  <span class="cm">// Medir q1</span>
+
+    <span class="fn">ResetAll</span>([q0, q1]);
+    <span class="kw">return</span> (r0, r1); <span class="cm">// Sempre (Zero, Zero) ou (One, One)</span>
+}</code></pre>
+
+<h4>AWS Braket</h4>
+<p>Serviço gerenciado da AWS para computação quântica. Acessó a hardware de múltiplos fornecedores (IonQ, Rigetti, OQC) via uma única API.</p>
+
+<pre data-lang="python"><code><span class="cm"># pip install amazon-braket-sdk</span>
+
+<span class="kw">from</span> braket.circuits <span class="kw">import</span> Circuit
+<span class="kw">from</span> braket.devices <span class="kw">import</span> LocalSimulator
+
+<span class="cm"># Circuito Bell State</span>
+circuit = Circuit().<span class="fn">h</span>(<span class="num">0</span>).<span class="fn">cnot</span>(<span class="num">0</span>, <span class="num">1</span>)
+
+<span class="cm"># Simular localmente</span>
+device = LocalSimulator()
+result = device.<span class="fn">run</span>(circuit, shots=<span class="num">1000</span>).<span class="fn">result</span>()
+<span class="fn">print</span>(result.<span class="fn">measurement_counts</span>)
+<span class="cm"># {'00': ~500, '11': ~500}</span>
+
+<span class="cm"># Para rodar em hardware real:</span>
+<span class="cm"># from braket.aws import AwsDevice</span>
+<span class="cm"># device = AwsDevice("arn:aws:braket:us-east-1::device/qpu/ionq/Aria-1")</span></code></pre>
+
+<div class="table-wrap">
+<table>
+<tr><th>Framework</th><th>Empresa</th><th>Linguagem</th><th>Hardware Real</th><th>Melhor Para</th></tr>
+<tr><td><strong>Qiskit</strong></td><td>IBM</td><td>Python</td><td>IBM Quantum (gratuito)</td><td>Aprendizado, pesquisa, maior comunidade</td></tr>
+<tr><td><strong>Cirq</strong></td><td>Google</td><td>Python</td><td>Via Google Cloud</td><td>Circuitos NISQ, VQE/QAOA</td></tr>
+<tr><td><strong>Q#</strong></td><td>Microsoft</td><td>Q# / Python</td><td>Azure Quantum</td><td>Integracao .NET, resource estimation</td></tr>
+<tr><td><strong>AWS Braket</strong></td><td>Amazon</td><td>Python</td><td>IonQ, Rigetti, OQC</td><td>Multi-provider, integração AWS</td></tr>
+<tr><td><strong>PennyLane</strong></td><td>Xanadu</td><td>Python</td><td>Multiplos backends</td><td>Quantum ML, diferenciacao automática</td></tr>
+</table>
+</div>
+
+<!-- ═══ ESTADO ATUAL & FUTURO ═══ -->
+<h3>Estado Atual e Futuro</h3>
+
+<h4>Era NISQ (Noisy Intermediate-Scale Quantum)</h4>
+<p>Estamos na era NISQ — computadores quânticos com <strong>dezenas a milhares de qubits</strong> mas com <strong>altas taxas de erro</strong> é sem correcao de erros completa. Isso limita severamente o que podemos fazer:</p>
+<ul>
+<li><strong>"Noisy":</strong> Error rates de 0.1-5% por gate. Circuitos com mais de ~100-300 gates produzem lixo</li>
+<li><strong>"Intermediate-Scale":</strong> 50-1.000+ qubits fisicos. Insuficiente para Shor (precisa de milhões) mas suficiente para experimentos</li>
+<li><strong>Algoritmos viaveis:</strong> VQE, QAOA, sampling problems — circuitos rasos e híbridos (quântico + clássico)</li>
+<li><strong>Não viaveis ainda:</strong> Shor completo, error correction de larga escala, algoritmos com circuitos profundos</li>
+</ul>
+
+<h4>Quantum Advantage vs Quantum Supremacy</h4>
+<ul>
+<li><strong>Quantum Supremacy (Google, 2019):</strong> Computador quântico realizou tarefa específica mais rápido que qualquer supercomputador clássico. Porem, a tarefa (random circuit sampling) não tem útilidade prática</li>
+<li><strong>Quantum Advantage:</strong> Computador quântico resolve problema <strong>útil</strong> mais rápido que clássico. Ainda não alcançado de forma incontestável para problemas comerciais</li>
+<li><strong>Debaté ativo:</strong> Cada claim de supremacy e contestado com algoritmos clássicos melhorados. A barra continua subindo</li>
+</ul>
+
+<h4>Aplicacoes Práticas Hoje</h4>
+
+<div class="card">
+<div class="card-title">O que já funciona (ou quase)</div>
+<ul>
+<li><strong>Otimização:</strong> Empresas como JP Morgan, Goldman Sachs usam QAOA para otimização de portfolio (prova de conceito)</li>
+<li><strong>Simulacao molecular:</strong> Farmaceuticas (Roche, Merck) usam VQE para simular interáções moleculares simples</li>
+<li><strong>Machine Learning quântico:</strong> Kernels quânticos para classificação de dados em espaços de alta dimensão</li>
+<li><strong>Criptografia:</strong> QKD (Quantum Key Distribution) já é comercializado (ID Quantique, Toshiba) para links ponto-a-ponto seguros</li>
+<li><strong>Random number generation:</strong> QRNGs (Quantum Random Number Generators) usados em loterias e criptografia</li>
+</ul>
+</div>
+
+<h4>Roadmap: Fault-Tolerant Quantum Computing</h4>
+
+<div class="diagram">
+<div class="diagram-box orange">NISQ Era<br><small>2020-2028</small><br><small>50-5.000 qubits</small><br><small>Noisy, sem EC</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Early FTQC<br><small>2028-2033</small><br><small>~100 qubits lógicos</small><br><small>EC parcial</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">FTQC<br><small>2033-2040+</small><br><small>1.000+ qubits lógicos</small><br><small>EC completo</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Larga Escala<br><small>2040+</small><br><small>Milhoes de lógicos</small><br><small>Shor completo</small></div>
+</div>
+
+<ul>
+<li><strong>Qubit fisico vs lógico:</strong> 1 qubit lógico (error-corrected) requer ~1.000-10.000 qubits fisicos com EC codes atuais</li>
+<li><strong>Marco crítico:</strong> Quando tivermos ~4.000 qubits lógicos, RSA-2048 estará em risco real</li>
+<li><strong>Desafios de engenharia:</strong> Refrigeracao (15 millikelvin), controle de sinais, interconexão de qubits, fabricacao em escala</li>
+</ul>
+
+<h4>O que Devs Precisam Saber Agora</h4>
+
+<div class="card blue">
+<div class="card-title">Acoes práticas para devs em 2025-2026</div>
+<ol>
+<li><strong>Criptografia:</strong> Entenda quais algoritmos você usa (RSA, ECC) e planeje migração para post-quantum. Use bibliotecas que suportam híbrido (liboqs, OpenSSL 3.x)</li>
+<li><strong>Inventory:</strong> Faca um inventario de todos os pontos onde criptografia assimétrica é usada nós seus sistemas</li>
+<li><strong>Agilidade criptografica:</strong> Projete sistemas com abstrações que permitam trocar algoritmos sem reescrever código (crypto agility)</li>
+<li><strong>Experimentacao:</strong> Instale Qiskit, rode exemplos básicos. Entenda intuitivamente superposicao e entanglement</li>
+<li><strong>NAO faca:</strong> Não reescreva seus sistemas para quantum. Não entre em panico. A transição será gradual</li>
+</ol>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Preparando Infraestrutura Criptografica para a Era Pos-Quantica</h3>
+
+<p><strong>Cenário:</strong> Você é o arquiteto de segurança de um banco digital que processa 5 milhões de transações/dia. O CISO pede um plano de migração para criptografia pos-quântica. Como você aborda?</p>
+
+<div class="diagram">
+<div class="diagram-box red">1. Inventario<br><small>Mapear toda crypto</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">2. Priorizacao<br><small>Classificar por risco</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">3. Agilidade<br><small>Abstracoes crypto</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">4. Migracao<br><small>Hibrido primeiro</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">5. Validação<br><small>Testes e audit</small></div>
+</div>
+
+<p><strong>Fase 1 — Inventario Criptográfico (2-4 semanas):</strong></p>
+<ul>
+<li>Mapear todos os usos de criptografia: TLS (versões, cipher suites), certificados X.509, JWT tokens, key exchange, assinaturas digitais, encryption at rest</li>
+<li>Identificar dependências: OpenSSL version, bibliotecas crypto, HSMs, KMS (AWS/Azure/GCP)</li>
+<li>Catalogar dados com requisito de confidencialidade de longo prazo (HNDL risk)</li>
+</ul>
+
+<p><strong>Fase 2 — Priorizacao por Risco:</strong></p>
+<ul>
+<li><strong>Alto risco (migrar primeiro):</strong> Dados com válidade > 10 anós (historico financeiro, dados pessoais/LGPD), canais vulneraveis a HNDL (TLS externo)</li>
+<li><strong>Medio risco:</strong> Assinaturas digitais de contratos, certificados de longa duracao</li>
+<li><strong>Baixo risco:</strong> Dados transientes (sessões, OTP), criptografia simétrica (já resistente com AES-256)</li>
+</ul>
+
+<p><strong>Fase 3 — Crypto Agility Architecture:</strong></p>
+
+<pre data-lang="typescript"><code><span class="cm">// Abstracoes para trocar algoritmos sem mudar código de negócio</span>
+
+<span class="kw">interface</span> <span class="tp">ICryptoProvider</span> {
+  <span class="fn">encrypt</span>(data: <span class="tp">Buffer</span>, key: <span class="tp">CryptoKey</span>): <span class="tp">Promise</span>&lt;<span class="tp">EncryptedPayload</span>&gt;;
+  <span class="fn">decrypt</span>(payload: <span class="tp">EncryptedPayload</span>, key: <span class="tp">CryptoKey</span>): <span class="tp">Promise</span>&lt;<span class="tp">Buffer</span>&gt;;
+  <span class="fn">sign</span>(data: <span class="tp">Buffer</span>, key: <span class="tp">PrivateKey</span>): <span class="tp">Promise</span>&lt;<span class="tp">Signature</span>&gt;;
+  <span class="fn">verify</span>(data: <span class="tp">Buffer</span>, sig: <span class="tp">Signature</span>, key: <span class="tp">PublicKey</span>): <span class="tp">Promise</span>&lt;<span class="tp">boolean</span>&gt;;
+  <span class="fn">keyExchange</span>(local: <span class="tp">KeyPair</span>, remote: <span class="tp">PublicKey</span>): <span class="tp">Promise</span>&lt;<span class="tp">SharedSecret</span>&gt;;
+}
+
+<span class="cm">// Implementacoes intercambiáveis</span>
+<span class="kw">class</span> <span class="tp">ClassicCryptoProvider</span> <span class="kw">implements</span> <span class="tp">ICryptoProvider</span> {
+  <span class="cm">// RSA + ECDSA + ECDH (atual)</span>
+}
+
+<span class="kw">class</span> <span class="tp">HybridCryptoProvider</span> <span class="kw">implements</span> <span class="tp">ICryptoProvider</span> {
+  <span class="cm">// Classico + PQC em paralelo (transição)</span>
+  <span class="cm">// encrypt = AES(ECDH_shared || Kyber_shared)</span>
+  <span class="cm">// sign = ECDSA_sig + Dilithium_sig</span>
+}
+
+<span class="kw">class</span> <span class="tp">PostQuantumCryptoProvider</span> <span class="kw">implements</span> <span class="tp">ICryptoProvider</span> {
+  <span class="cm">// Kyber + Dilithium puro (futuro)</span>
+}
+
+<span class="cm">// Configuração por feature flag — sem deploy para trocar</span>
+<span class="kw">const</span> provider = CryptoProviderFactory.<span class="fn">create</span>(
+  config.<span class="fn">get</span>(<span class="str">'CRYPTO_PROVIDER'</span>) <span class="cm">// 'classic' | 'hybrid' | 'post-quantum'</span>
+);</code></pre>
+
+<p><strong>Fase 4 — Migracao Hibrida (Gradual):</strong></p>
+<ul>
+<li>TLS 1.3 com cipher suites hibridas: X25519Kyber768 (já suportado no Chrome e Cloudflare)</li>
+<li>Certificados X.509 com assinaturas duais (ECDSA + Dilithium)</li>
+<li>Re-encriptar dados at rest com chaves hibridas para dados de longo prazo</li>
+<li>Atualizar HSMs para suportar PQC (verificar roadmap do fabricante)</li>
+</ul>
+
+<p><strong>Fase 5 — Validação Continua:</strong></p>
+<ul>
+<li>Testes de performance: PQC tem chaves e assinaturas maiores — impacto no throughput TLS</li>
+<li>Auditoria por terceiros especializados em criptografia pos-quântica</li>
+<li>Monitoramento de avancos em quantum computing para ajustar timeline</li>
+</ul>
+
+<!-- ═══ ARMADILHAS COMUNS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>"Computadores quânticos vao resolver todos os problemas NP":</strong> Falso. Não ha evidencia de que computação quântica resolva problemas NP-completos em tempo polinomial. BQP (classe de problemas quânticos) não contém NP-completo (até onde sabemos). Quantum oferece speedup para problemas <strong>específicos</strong>, não para tudo.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>"AES vai ser quebrado por computadores quânticos":</strong> Falso. Grover reduz a segurança de AES-256 para 128 bits efetivos — que ainda é considerado seguro. AES-128 ficaria com 64 bits (inseguro). Solução: usar AES-256. Criptografia simétrica sobrevive a era quântica.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>"Post-quantum crypto e experimental demais para usar":</strong> CRYSTALS-Kyber (ML-KEM) já esta padronizado pelo NIST (FIPS 203), implementado no Chrome, Firefox, Cloudflare, e bibliotecas como liboqs. A abordagem hibrida (clássico + PQC) elimina risco: se o PQC tiver falhas, o clássico ainda protege.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>"Não precisó me preocupar com quantum até 2040":</strong> Errado por causa do HNDL (Harvest Now, Decrypt Later). Dados interceptados hoje seráo descriptografados no futuro. Se seus dados precisam de confidencialidade por mais de 10 anos, a migração deveria começar agora.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática para devs:</strong> (1) Não entre em panico — a transição será gradual. (2) Entenda quais algoritmos você usa hoje. (3) Projete com crypto agility (abstrações). (4) Ative PQC híbrido onde disponível (TLS, cloud KMS). (5) Acompanhe os padrões NIST e os roadmaps dos cloud providers.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Sua empresa usa RSA-2048 para assinar JWTs, ECDH para key exchange TLS, e AES-256 para encryption at rest. Classifique cada um por urgencia de migração pos-quântica e justifique.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong></p>
+<ul>
+<li><strong>ECDH (TLS key exchange) — ALTA urgencia:</strong> Vulneravel a HNDL. Adversarios podem gravar tráfego TLS hoje é quebrar o key exchange no futuro para obter as session keys. Migracao: ativar hybrid key exchange (X25519Kyber768) no TLS 1.3 — já suportado em browsers e CDNs modernos.</li>
+<li><strong>RSA-2048 (JWT signing) — MEDIA urgencia:</strong> JWTs tipicamente tem válidade curta (horas a dias). Um atacante que obtém a chave privada no futuro poderia forjar tokens, mas se as chaves forem rotacionadas regularmente e os tokens expirarem rápido, o impacto e limitado. Migracao: trocar para Dilithium quando bibliotecas JWT suportarem.</li>
+<li><strong>AES-256 (encryption at rest) — BAIXA urgencia:</strong> Criptografia simétrica. Grover reduz para 128 bits efetivos, que ainda é seguro. Nenhuma acao necessária — AES-256 já é quantum-safe.</li>
+</ul>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Explique por que o Grover's Algorithm oferece speedup quadratico (e não exponencial como Shor) e qual o impacto prático dessa diferença.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Grover busca em N itens em O(&radic;N) — speedup quadratico. Shor fatora em tempo polinomial vs sub-exponencial clássico — speedup exponencial. A diferença prática e enorme: speedup quadratico significa que para manter o mesmo nível de segurança contra Grover, você só precisa <strong>dobrar o tamanho da chave</strong> (AES-128 &rarr; AES-256). Ja contra Shor, nenhum tamanho de chave RSA/ECC é suficiente — o problema precisa mudar completamente (de fatoração para lattice-based). E por isso que criptografia simétrica sobrevive a era quântica mas criptografia assimétrica não.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Instale Qiskit e crie um circuito que demonstra o efeito de decoerencia: aplique H em um qubit, espere (simule ruido), e compare os resultados com e sem ruido.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong></p>
+<pre data-lang="python"><code><span class="kw">from</span> qiskit <span class="kw">import</span> QuantumCircuit
+<span class="kw">from</span> qiskit_aer <span class="kw">import</span> AerSimulator
+<span class="kw">from</span> qiskit_aer.noise <span class="kw">import</span> NoiseModel, depolarizing_error
+
+<span class="cm"># Circuito simples: H + Medicao</span>
+qc = QuantumCircuit(<span class="num">1</span>, <span class="num">1</span>)
+qc.<span class="fn">h</span>(<span class="num">0</span>)
+qc.<span class="fn">measure</span>(<span class="num">0</span>, <span class="num">0</span>)
+
+<span class="cm"># Sem ruido: resultado ideal (~50/50)</span>
+ideal = AerSimulator()
+r1 = ideal.<span class="fn">run</span>(qc, shots=<span class="num">10000</span>).<span class="fn">result</span>().<span class="fn">get_counts</span>()
+<span class="fn">print</span>(<span class="str">"Sem ruido:"</span>, r1)  <span class="cm"># {'0': ~5000, '1': ~5000}</span>
+
+<span class="cm"># Com ruido: simula decoerencia</span>
+noise = NoiseModel()
+error = depolarizing_error(<span class="num">0.3</span>, <span class="num">1</span>)  <span class="cm"># 30% erro</span>
+noise.<span class="fn">add_all_qubit_quantum_error</span>(error, [<span class="str">'h'</span>])
+
+noisy = AerSimulator(noise_model=noise)
+r2 = noisy.<span class="fn">run</span>(qc, shots=<span class="num">10000</span>).<span class="fn">result</span>().<span class="fn">get_counts</span>()
+<span class="fn">print</span>(<span class="str">"Com ruido:"</span>, r2)  <span class="cm"># Distribuicao enviesada</span>
+
+<span class="cm"># O ruido faz a distribuição desviar do ideal 50/50</span>
+<span class="cm"># Em hardware real, com muitas gates, o resultado</span>
+<span class="cm"># se apróxima de aleatório puro (informação perdida)</span></code></pre>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Computação Quantica</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="64-blockchain-web3.html">&#8592; Anterior: Blockchain &amp; Web3</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="66-requisitos-nao-funcionais.html" class="primary">Próximo: Requisitos Não Funcionais &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 65: Computação Quantica
+// ══════════════════════════════════════════
+const SECTION_NUM = 65;
+const STORAGE_KEY = 'fsm_quiz_65';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual a diferença fundamental entre um bit clássico é um qubit?",
+    options: [
+      "O qubit é mais rápido que o bit",
+      "O qubit pode estar em superposicao de |0> e |1> simultaneamente, enquanto o bit é exatamente 0 ou 1",
+      "O qubit armazena mais dados que o bit porque usa 3 estados",
+      "Não ha diferença — qubit e apenas um bit em hardware diferente"
+    ],
+    correct: 1,
+    explanation: "Um qubit existe em superposicao alpha|0> + beta|1>, manipulando amplitudes complexas simultaneamente. Um bit clássico e deterministicamente 0 ou 1. Com N qubits, você manipula 2^N amplitudes ao mesmo tempo."
+  },
+  {
+    question: "O que acontece quando você mede um qubit em superposicao?",
+    options: [
+      "Você obtém o valor exato da superposicao",
+      "O qubit se divide em dois bits",
+      "O estado colapsa irreversivelmente para |0> ou |1> com probabilidades definidas pelas amplitudes",
+      "A superposicao e mantida e você pode medir novamente para obter mais informação"
+    ],
+    correct: 2,
+    explanation: "Ao medir, o qubit colapsa para |0> (prob |alpha|^2) ou |1> (prob |beta|^2). A superposicao e destruida irreversivelmente. Por isso algoritmos quânticos devem amplificar a probabilidade da resposta correta antes de medir."
+  },
+  {
+    question: "Qual algoritmo quântico ameaça diretamente a criptografia RSA e ECC?",
+    options: [
+      "Grover's Algorithm",
+      "QAOA (Quantum Appróximaté Optimization)",
+      "Shor's Algorithm",
+      "VQE (Variational Quantum Eigensolver)"
+    ],
+    correct: 2,
+    explanation: "Shor's Algorithm fatora inteiros em tempo polinomial, quebrando RSA (baseado em fatoração) e ECC (baseado em logaritmo discreto). Grover apenas reduz segurança pela metade (speedup quadratico), insuficiente para quebrar RSA."
+  },
+  {
+    question: "Qual o speedup oferecido pelo Grover's Algorithm para busca em dados não-estruturados?",
+    options: [
+      "Exponencial: de O(N) para O(log N)",
+      "Cubico: de O(N) para O(N^(1/3))",
+      "Quadratico: de O(N) para O(raiz de N)",
+      "Linear: não ha speedup significativo"
+    ],
+    correct: 2,
+    explanation: "Grover oferece speedup quadratico: O(N) clássico para O(raiz de N) quântico. Para buscar em 1 trilhao de itens: clássico = 10^12 operações, Grover = 10^6. Implicacao para crypto: AES-256 reduzido para 128 bits efetivos (ainda seguro)."
+  },
+  {
+    question: "O que é o ataque 'Harvest Now, Decrypt Later' (HNDL)?",
+    options: [
+      "Um ataque que explora vulnerabilidades em implementações de AES",
+      "Interceptar dados criptografados hoje é armazena-los para descriptografar quando computadores quânticos estiverem disponíveis",
+      "Um método de quebrar hashes usando rainbow tables quânticas",
+      "Um ataque de negacao de serviço contra computadores quânticos"
+    ],
+    correct: 1,
+    explanation: "HNDL é o risco mais urgente: adversarios (especialmente nation-states) interceptam e armazenam tráfego criptografado hoje para quebra-lo no futuro com computadores quânticos. Dados com confidencialidade de longo prazo já estão em risco."
+  },
+  {
+    question: "Qual algoritmo pos-quântico foi padronizado pelo NIST para substituir ECDH em key exchange?",
+    options: [
+      "SPHINCS+",
+      "NTRU",
+      "ML-KEM (CRYSTALS-Kyber)",
+      "SHA-3"
+    ],
+    correct: 2,
+    explanation: "ML-KEM (CRYSTALS-Kyber), padronizado como FIPS 203, é o padrão primário para key encapsulation, substituindo ECDH. Baseado em Module Lattice (MLWE). Ja integrado em Chrome, Firefox e Cloudflare para TLS híbrido."
+  },
+  {
+    question: "Qual é o estado atual da era quântica (2025-2026)?",
+    options: [
+      "Ja temos computadores quânticos capazes de quebrar RSA-2048",
+      "Estamos na era NISQ: 50-1000+ qubits fisicos com altas taxas de erro, sem error correction completo",
+      "Quantum computing foi provado impossível na prática",
+      "Ja alcançamos fault-tolerant quantum computing com milhões de qubits lógicos"
+    ],
+    correct: 1,
+    explanation: "Estamos na era NISQ (Noisy Intermediate-Scale Quantum): hardware com dezenas a milhares de qubits fisicos mas com error rates de 0.1-5% por gate. Insuficiente para Shor (precisa de milhões de qubits fisicos) mas viavel para VQE, QAOA e experimentos."
+  },
+  {
+    question: "Por que o conjunto {H, T, CNOT} é considerado 'universal' em computação quântica?",
+    options: [
+      "São as únicas gates que existem",
+      "Qualquer operação quântica pode ser apróximada com precisão arbitraria usando apenas essas 3 gates",
+      "São as gates mais rápidas de executar em hardware",
+      "São as únicas gates reversiveis"
+    ],
+    correct: 1,
+    explanation: "O conjunto {H, T, CNOT} e universal: qualquer operação unitaria em qualquer número de qubits pode ser decomposta em sequências dessas 3 gates com precisão arbitraria. E o equivalente quântico de {NAND} na computação clássica."
+  },
+  {
+    question: "Qual afirmacao sobre AES-256 na era pos-quântica esta correta?",
+    options: [
+      "AES-256 será completamente quebrado por Shor's Algorithm",
+      "AES-256 precisara ser substituido por algoritmos lattice-based",
+      "AES-256 terá segurança efetiva de 128 bits (Grover), que ainda é considerado seguro",
+      "AES-256 não é afetado de nenhuma forma por computadores quânticos"
+    ],
+    correct: 2,
+    explanation: "Grover reduz a segurança efetiva de criptografia simétrica pela metade: AES-256 fica com 128 bits efetivos. 128 bits ainda é considerado seguro (2^128 operações quânticas = inviavel). Shor não se aplica a crypto simétrica. Conclusao: AES-256 já é quantum-safe."
+  },
+  {
+    question: "Qual a abordagem recomendada para migrar sistemas existentes para criptografia pos-quântica?",
+    options: [
+      "Substituir imediatamente toda criptografia por algoritmos pos-quânticos puros",
+      "Esperar até 2040 quando computadores quânticos forem uma ameaça real",
+      "Usar abordagem hibrida (clássico + PQC simultaneamente) com crypto agility — se um falhar, o outro protege",
+      "Apenas aumentar o tamanho das chaves RSA para 8192 bits"
+    ],
+    correct: 2,
+    explanation: "A abordagem hibrida é recomendada: usar clássico + post-quantum em paralelo (ex: X25519Kyber768 para TLS). Se o PQC tiver vulnerabilidades desconhecidas, o clássico protege. Se quantum computing avançar mais rápido, o PQC protege. Crypto agility (abstrações) permite trocar algoritmos sem reescrever código."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Computação Quantica.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

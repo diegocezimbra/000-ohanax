@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12 — Bancos SQL & Relacional | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="11-eda-event-driven.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>12</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="13-nosql-documento-kv-colunar.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:18.2%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 12</span>
+<h2>Bancos SQL & Relacional</h2>
+<div class="section-line"></div>
+
+<p>Bancos de dados relacionais são a espinha dorsal de 90% das aplicações em produção. Desde 1970, quando Edgar Codd publicou o paper "A Relational Model of Data for Large Shared Data Banks", o modelo relacional provou ser <strong>a abstração mais duradoura e confiável</strong> para armazenamento de dados estruturados. Entender SQL profundamente não é opcional para um full-stack — e <strong>obrigatório</strong>.</p>
+
+<p>Nesta seção vamos mergulhar fundo: desde os fundamentos do modelo relacional e ACID, passando por normalização, índices, window functions, CTEs recursivas, particionamento, até chegar em NewSQL. Tudo com exemplos práticos em PostgreSQL e TypeORM.</p>
+
+<!-- ═══ MODELO RELACIONAL ═══ -->
+<h3>Modelo Relacional — Fundamentos</h3>
+
+<p>O modelo relacional organiza dados em <strong>relações</strong> (tabelas), onde cada relação é composta por <strong>tuplas</strong> (linhas) e <strong>atributos</strong> (colunas). A beleza desse modelo e sua base matemática: álgebra relacional e cálculo relacional.</p>
+
+<h4>Componentes Fundamentais</h4>
+<ul>
+<li><strong>Tabela (Relação)</strong> — Estrutura que armazena dados de uma entidade. Cada tabela tem um nome único no schema</li>
+<li><strong>Linha (Tupla)</strong> — Um registro individual. Cada linha e única (garantido pela chave primária)</li>
+<li><strong>Coluna (Atributo)</strong> — Define o tipo de dado armazenado (VARCHAR, INTEGER, TIMESTAMP, etc.)</li>
+<li><strong>Chave Primária (PK)</strong> — Identificador único de cada linha. Pode ser natural (CPF) ou surrogaté (UUID, SERIAL). Recomendação moderna: use <code>UUID</code> ou <code>BIGSERIAL</code></li>
+<li><strong>Chave Estrangeira (FK)</strong> — Referência para chave primária de outra tabela. Garante <strong>integridade referêncial</strong> — não é possível inserir um <code>order.user_id</code> que não existe na tabela <code>users</code></li>
+<li><strong>Constraints</strong> — Regras no nível do banco: <code>NOT NULL</code>, <code>UNIQUE</code>, <code>CHECK</code>, <code>DEFAULT</code>, <code>EXCLUDE</code></li>
+</ul>
+
+<h4>Tipos de Relacionamento</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Tipo</th><th>Descrição</th><th>Exemplo</th><th>Implementação</th></tr>
+<tr><td><strong>1:1</strong></td><td>Uma linha em A corresponde a exatamente uma em B</td><td>User &#8596; UserProfile</td><td>FK com UNIQUE constraint na tabela filha</td></tr>
+<tr><td><strong>1:N</strong></td><td>Uma linha em A corresponde a muitas em B</td><td>User &#8594; Orders</td><td>FK na tabela "muitos" (orders.user_id)</td></tr>
+<tr><td><strong>N:M</strong></td><td>Muitas linhas em A correspondem a muitas em B</td><td>Students &#8596; Courses</td><td>Tabela intermediária (student_courses) com duas FKs</td></tr>
+</table>
+</div>
+
+<pre data-lang="sql"><code><span class="cm">-- Exemplo completo: Tabelas com todos os tipos de relacionamento</span>
+
+<span class="cm">-- 1:1 — User tem exatamente um Profile</span>
+<span class="kw">CREATE TABLE</span> users (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    email       <span class="tp">VARCHAR</span>(<span class="num">255</span>) <span class="kw">NOT NULL UNIQUE</span>,
+    password    <span class="tp">VARCHAR</span>(<span class="num">255</span>) <span class="kw">NOT NULL</span>,
+    created_at  <span class="tp">TIMESTAMPTZ</span> <span class="kw">NOT NULL DEFAULT</span> <span class="fn">NOW</span>(),
+    updated_at  <span class="tp">TIMESTAMPTZ</span> <span class="kw">NOT NULL DEFAULT</span> <span class="fn">NOW</span>()
+);
+
+<span class="kw">CREATE TABLE</span> user_profiles (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    user_id     <span class="tp">UUID</span> <span class="kw">NOT NULL UNIQUE REFERENCES</span> users(id) <span class="kw">ON DELETE CASCADE</span>,
+    full_name   <span class="tp">VARCHAR</span>(<span class="num">200</span>) <span class="kw">NOT NULL</span>,
+    avatar_url  <span class="tp">TEXT</span>,
+    bio         <span class="tp">TEXT</span>
+);
+
+<span class="cm">-- 1:N — User tem muitos Orders</span>
+<span class="kw">CREATE TABLE</span> orders (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    user_id     <span class="tp">UUID</span> <span class="kw">NOT NULL REFERENCES</span> users(id) <span class="kw">ON DELETE RESTRICT</span>,
+    status      <span class="tp">VARCHAR</span>(<span class="num">20</span>) <span class="kw">NOT NULL DEFAULT</span> <span class="str">'pending'</span>,
+    total       <span class="tp">NUMERIC</span>(<span class="num">12</span>,<span class="num">2</span>) <span class="kw">NOT NULL CHECK</span> (total &gt;= <span class="num">0</span>),
+    created_at  <span class="tp">TIMESTAMPTZ</span> <span class="kw">NOT NULL DEFAULT</span> <span class="fn">NOW</span>()
+);
+
+<span class="cm">-- N:M — Products e Categories (via tabela intermediaria)</span>
+<span class="kw">CREATE TABLE</span> products (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    name        <span class="tp">VARCHAR</span>(<span class="num">200</span>) <span class="kw">NOT NULL</span>,
+    price       <span class="tp">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>) <span class="kw">NOT NULL CHECK</span> (price &gt; <span class="num">0</span>),
+    stock       <span class="tp">INTEGER</span> <span class="kw">NOT NULL DEFAULT</span> <span class="num">0</span> <span class="kw">CHECK</span> (stock &gt;= <span class="num">0</span>)
+);
+
+<span class="kw">CREATE TABLE</span> categories (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    name        <span class="tp">VARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL UNIQUE</span>,
+    parent_id   <span class="tp">UUID</span> <span class="kw">REFERENCES</span> categories(id)  <span class="cm">-- Self-referencing para hierarquia</span>
+);
+
+<span class="kw">CREATE TABLE</span> product_categories (
+    product_id  <span class="tp">UUID</span> <span class="kw">NOT NULL REFERENCES</span> products(id) <span class="kw">ON DELETE CASCADE</span>,
+    category_id <span class="tp">UUID</span> <span class="kw">NOT NULL REFERENCES</span> categories(id) <span class="kw">ON DELETE CASCADE</span>,
+    <span class="kw">PRIMARY KEY</span> (product_id, category_id)  <span class="cm">-- Chave composta</span>
+);
+
+<span class="cm">-- Índices nas foreign keys (SEMPRE faca isso!)</span>
+<span class="kw">CREATE INDEX</span> idx_orders_user_id <span class="kw">ON</span> orders(user_id);
+<span class="kw">CREATE INDEX</span> idx_product_categories_category <span class="kw">ON</span> product_categories(category_id);</code></pre>
+
+<!-- ═══ ACID ═══ -->
+<h3>ACID — As 4 Garantias de Transações</h3>
+
+<p>ACID é o contrato que todo banco relacional oferece. Sem essas garantias, dados corrompidos são questão de tempo. Vamos entender cada letra em profundidade.</p>
+
+<div class="card">
+<div class="card-title">ACID em Detalhe</div>
+<ul>
+<li><strong>Atomicity (Atomicidade)</strong> — Tudo ou nada. Uma transação com 5 operações ou executa TODAS ou não executa NENHUMA. Se a 4a falhar, as 3 anteriores são revertidas (rollback). Implementado via <strong>undo log</strong></li>
+<li><strong>Consistency (Consistência)</strong> — O banco vai de um estado válido para outro estado válido. Constraints, triggers e regras são verificados. Se uma constraint e violada, a transação inteira e rejeitada</li>
+<li><strong>Isolation (Isolamento)</strong> — Transações concorrentes não interferem entre si. O nível de isolamento define quanto uma transação "enxerga" das outras. Quanto maior o isolamento, menor a concorrência (tradeoff)</li>
+<li><strong>Durability (Durabilidade)</strong> — Uma vez commitada, a transação sobrevive a crashes, quedas de energia, etc. Implementado via <strong>WAL (Write-Ahead Log)</strong> — os dados são escritos no log ANTES de ir para o disco</li>
+</ul>
+</div>
+
+<h4>Níveis de Isolamento (do menor para o maior)</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Nível</th><th>Dirty Read</th><th>Non-Repeatable Read</th><th>Phantom Read</th><th>Performance</th></tr>
+<tr><td><strong>Read Uncommitted</strong></td><td>Sim</td><td>Sim</td><td>Sim</td><td>Mais rápido</td></tr>
+<tr><td><strong>Read Committed</strong> (padrão PG)</td><td>Não</td><td>Sim</td><td>Sim</td><td>Rápido</td></tr>
+<tr><td><strong>Repeatable Read</strong></td><td>Não</td><td>Não</td><td>Sim*</td><td>Medio</td></tr>
+<tr><td><strong>Serializable</strong></td><td>Não</td><td>Não</td><td>Não</td><td>Mais lento</td></tr>
+</table>
+</div>
+
+<p>* No PostgreSQL, Repeatable Read já previne phantom reads (implementação via MVCC com snapshots). Isso é específico do Postgres — MySQL InnoDB se comporta diferente.</p>
+
+<ul>
+<li><strong>Dirty Read</strong> — Ler dados de uma transação que ainda não foi commitada (pode fazer rollback)</li>
+<li><strong>Non-Repeatable Read</strong> — Ler a mesma linha duas vezes na mesma transação é obter valores diferentes (outra transação commitou um UPDATE entre as leituras)</li>
+<li><strong>Phantom Read</strong> — Executar a mesma query duas vezes é obter linhas diferentes (outra transação commitou um INSERT/DELETE)</li>
+</ul>
+
+<pre data-lang="sql"><code><span class="cm">-- Exemplo: Transacao com isolamento Serializable</span>
+<span class="kw">BEGIN TRANSACTION ISOLATION LEVEL</span> SERIALIZABLE;
+
+<span class="kw">SELECT</span> stock <span class="kw">FROM</span> products <span class="kw">WHERE</span> id = <span class="str">'abc-123'</span>;
+<span class="cm">-- Retorna: stock = 5</span>
+
+<span class="cm">-- Outra transação tenta diminuir o stock ao mesmo tempo</span>
+<span class="cm">-- Com SERIALIZABLE, uma delas vai receber erro de serialização</span>
+
+<span class="kw">UPDATE</span> products <span class="kw">SET</span> stock = stock - <span class="num">1</span> <span class="kw">WHERE</span> id = <span class="str">'abc-123'</span> <span class="kw">AND</span> stock &gt; <span class="num">0</span>;
+
+<span class="kw">COMMIT</span>;
+
+<span class="cm">-- WAL (Write-Ahead Log) — como funciona:</span>
+<span class="cm">-- 1. Transacao escreve mudanças no WAL (disco sequêncial, rápido)</span>
+<span class="cm">-- 2. Responde COMMIT ao cliente</span>
+<span class="cm">-- 3. Eventualmente, faz flush do WAL para os arquivos de dados</span>
+<span class="cm">-- Se o servidor crashar entre 2 e 3, o WAL reconstroi os dados no restart</span></code></pre>
+
+<!-- ═══ NORMALIZACAO ═══ -->
+<h3>Normalização — 1NF até BCNF</h3>
+
+<p>Normalização é o processo de organizar tabelas para <strong>eliminar redundância</strong> é <strong>evitar anomalias</strong> de inserção, atualização e deleção. Cada "forma normal" resolve um tipo específico de problema.</p>
+
+<h4>1NF — Primeira Forma Normal</h4>
+<p><strong>Regra:</strong> Cada célula deve conter um valor atômico (indivisível). Sem listas, arrays ou valores compostos em uma coluna.</p>
+
+<pre data-lang="sql"><code><span class="cm">-- &#10060; VIOLA 1NF — coluna "phones" tem múltiplos valores</span>
+<span class="cm">-- | name    | phones                        |</span>
+<span class="cm">-- | Joao    | 11999887766, 11988776655       |</span>
+
+<span class="cm">-- &#9989; 1NF — cada telefone em sua propria linha</span>
+<span class="kw">CREATE TABLE</span> user_phones (
+    id       <span class="tp">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
+    user_id  <span class="tp">UUID</span> <span class="kw">NOT NULL REFERENCES</span> users(id),
+    phone    <span class="tp">VARCHAR</span>(<span class="num">20</span>) <span class="kw">NOT NULL</span>,
+    type     <span class="tp">VARCHAR</span>(<span class="num">10</span>) <span class="kw">NOT NULL CHECK</span> (type <span class="kw">IN</span> (<span class="str">'mobile'</span>, <span class="str">'home'</span>, <span class="str">'work'</span>))
+);</code></pre>
+
+<h4>2NF — Segunda Forma Normal</h4>
+<p><strong>Regra:</strong> Estar em 1NF + todos os atributos não-chave devem depender da chave primária <strong>inteira</strong> (não de parte dela). Relevante quando a PK é composta.</p>
+
+<pre data-lang="sql"><code><span class="cm">-- &#10060; VIOLA 2NF — product_name depende apenas de product_id, não da PK inteira</span>
+<span class="cm">-- PK composta: (order_id, product_id)</span>
+<span class="cm">-- | order_id | product_id | product_name | quantity | price |</span>
+<span class="cm">-- product_name depende só de product_id (dependência parcial)</span>
+
+<span class="cm">-- &#9989; 2NF — separar em tabelas</span>
+<span class="kw">CREATE TABLE</span> order_items (
+    order_id    <span class="tp">UUID</span> <span class="kw">REFERENCES</span> orders(id),
+    product_id  <span class="tp">UUID</span> <span class="kw">REFERENCES</span> products(id),
+    quantity    <span class="tp">INTEGER</span> <span class="kw">NOT NULL CHECK</span> (quantity &gt; <span class="num">0</span>),
+    unit_price  <span class="tp">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>,  <span class="cm">-- Preco no momento da compra (snapshot)</span>
+    <span class="kw">PRIMARY KEY</span> (order_id, product_id)
+);
+<span class="cm">-- product_name fica na tabela products (onde pertence)</span></code></pre>
+
+<h4>3NF — Terceira Forma Normal</h4>
+<p><strong>Regra:</strong> Estar em 2NF + nenhum atributo não-chave depende de outro atributo não-chave (sem <strong>dependências transitivas</strong>).</p>
+
+<pre data-lang="sql"><code><span class="cm">-- &#10060; VIOLA 3NF — city e state dependem de zip_code, não da PK</span>
+<span class="cm">-- | user_id | zip_code | city       | state |</span>
+<span class="cm">-- city e state são determinados por zip_code (transitivo)</span>
+
+<span class="cm">-- &#9989; 3NF — extrair para tabela separada</span>
+<span class="kw">CREATE TABLE</span> zip_codes (
+    zip_code  <span class="tp">VARCHAR</span>(<span class="num">9</span>) <span class="kw">PRIMARY KEY</span>,
+    city      <span class="tp">VARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
+    state     <span class="tp">VARCHAR</span>(<span class="num">2</span>) <span class="kw">NOT NULL</span>
+);
+
+<span class="kw">CREATE TABLE</span> addresses (
+    id        <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    user_id   <span class="tp">UUID</span> <span class="kw">NOT NULL REFERENCES</span> users(id),
+    street    <span class="tp">VARCHAR</span>(<span class="num">300</span>) <span class="kw">NOT NULL</span>,
+    number    <span class="tp">VARCHAR</span>(<span class="num">20</span>),
+    zip_code  <span class="tp">VARCHAR</span>(<span class="num">9</span>) <span class="kw">NOT NULL REFERENCES</span> zip_codes(zip_code)
+);</code></pre>
+
+<h4>BCNF — Boyce-Codd Normal Form</h4>
+<p><strong>Regra:</strong> Estar em 3NF + para toda dependência funcional X &#8594; Y, X deve ser uma superchave. Resolve casos raros onde 3NF não é suficiente (quando um atributo não-chave determina parte da chave).</p>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Quando denormalizar?</strong> Em sistemas <strong>read-heavy</strong> (dashboards, relatórios, listagens), JOINs excessivos degradam performance. Nesses casos, denormalize intencionalmente: duplique campos calculados, use Materialized Views, ou crie tabelas de leitura otimizadas. A regra: <strong>normalize para escrita, denormalize para leitura</strong>.</div>
+</div>
+
+<!-- ═══ INDICES ═══ -->
+<h3>Índices — O Segredo da Performance</h3>
+
+<p>Sem índices, toda query faz <strong>Sequential Scan</strong> (percorre todas as linhas). Com índices, o banco pula direto para os dados relevantes. Um índice é uma estrutura de dados separada que aponta para as linhas da tabela, como o índice de um livro.</p>
+
+<h4>Tipos de Índices no PostgreSQL</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Tipo</th><th>Estrutura</th><th>Melhor Para</th><th>Exemplo de Uso</th></tr>
+<tr><td><strong>B-Tree</strong></td><td>Árvore balanceada</td><td>Igualdade, range, ORDER BY, BETWEEN</td><td><code>WHERE price &gt; 100</code>, <code>ORDER BY name</code></td></tr>
+<tr><td><strong>Hash</strong></td><td>Hash table</td><td>Igualdade exata (=)</td><td><code>WHERE email = 'x@y.com'</code></td></tr>
+<tr><td><strong>GIN</strong></td><td>Generalized Inverted</td><td>Full-text search, JSONB, arrays</td><td><code>WHERE tags @&gt; '{"sql"}'</code></td></tr>
+<tr><td><strong>GiST</strong></td><td>Generalized Search Tree</td><td>Geospatial, range types, proximity</td><td><code>WHERE location &lt;-&gt; point</code></td></tr>
+<tr><td><strong>BRIN</strong></td><td>Block Range INdex</td><td>Tabelas grandes ordenadas (time-series)</td><td><code>WHERE created_at &gt; '2025-01-01'</code></td></tr>
+</table>
+</div>
+
+<h4>Índices Avancados</h4>
+
+<pre data-lang="sql"><code><span class="cm">-- Índice simples (B-Tree padrão)</span>
+<span class="kw">CREATE INDEX</span> idx_products_name <span class="kw">ON</span> products(name);
+
+<span class="cm">-- Índice composto — ordem importa! (leftmost prefix rule)</span>
+<span class="cm">-- Este índice serve para: (status), (status, created_at), (status, created_at, user_id)</span>
+<span class="cm">-- MAS NAO serve para: (created_at) sozinho ou (user_id) sozinho</span>
+<span class="kw">CREATE INDEX</span> idx_orders_status_daté <span class="kw">ON</span> orders(status, created_at <span class="kw">DESC</span>);
+
+<span class="cm">-- Índice parcial — indexa apenas um subconjunto (menor, mais rápido)</span>
+<span class="kw">CREATE INDEX</span> idx_orders_pending <span class="kw">ON</span> orders(created_at)
+    <span class="kw">WHERE</span> status = <span class="str">'pending'</span>;
+<span class="cm">-- So indexa pedidos pendentes. Se 95% dos pedidos são completed,</span>
+<span class="cm">-- esse índice e 20x menor que um índice full</span>
+
+<span class="cm">-- Covering index (INCLUDE) — evita ir na tabela (Index-Only Scan)</span>
+<span class="kw">CREATE INDEX</span> idx_products_name_cover <span class="kw">ON</span> products(name)
+    <span class="kw">INCLUDE</span> (price, stock);
+<span class="cm">-- Query "SELECT name, price, stock WHERE name = 'X'" usa APENAS o índice</span>
+
+<span class="cm">-- GIN para full-text search</span>
+<span class="kw">ALTER TABLE</span> products <span class="kw">ADD COLUMN</span> search_vector <span class="tp">TSVECTOR</span>;
+<span class="kw">CREATE INDEX</span> idx_products_fts <span class="kw">ON</span> products <span class="kw">USING</span> GIN(search_vector);
+
+<span class="cm">-- GIN para JSONB</span>
+<span class="kw">CREATE INDEX</span> idx_products_metadata <span class="kw">ON</span> products <span class="kw">USING</span> GIN(metadata <span class="fn">jsonb_path_ops</span>);
+
+<span class="cm">-- BRIN para tabelas de time-series (muito compacto)</span>
+<span class="kw">CREATE INDEX</span> idx_events_created <span class="kw">ON</span> events <span class="kw">USING</span> BRIN(created_at);
+<span class="cm">-- Tabela com 100M de linhas: B-Tree = ~2GB, BRIN = ~50KB</span></code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Custo de índices em escrita:</strong> Cada índice adiciona overhead em INSERT, UPDATE e DELETE, porque o banco precisa atualizar tanto a tabela quanto todos os índices. Uma tabela com 10 índices pode ter writes 5-10x mais lentos. <strong>Crie índices apenas para queries que realmente existem</strong>, não preventivamente.</div>
+</div>
+
+<!-- ═══ EXPLAIN ANALYZE ═══ -->
+<h3>EXPLAIN ANALYZE — Lendo Planós de Execução</h3>
+
+<p><code>EXPLAIN ANALYZE</code> é a ferramenta mais importante para performance SQL. Ele mostra <strong>exatamente</strong> como o banco executa sua query: quais índices usa, quantas linhas percorre, quanto tempo cada operação leva.</p>
+
+<h4>Tipos de Scan</h4>
+<ul>
+<li><strong>Seq Scan</strong> — Percorre TODAS as linhas da tabela. Aceitável em tabelas pequenas (&lt;10K linhas) ou quando você precisa de &gt;10% dos dados</li>
+<li><strong>Index Scan</strong> — Usa o índice para localizar linhas, depois vai na tabela buscar as colunas. Bom para queries seletivas</li>
+<li><strong>Index Only Scan</strong> — Usa APENAS o índice, sem acessar a tabela. O mais rápido. Exige covering index</li>
+<li><strong>Bitmap Index Scan</strong> — Combina múltiplos índices. Primeiro cria um "bitmap" das páginas relevantes, depois faz scan sequêncial dessas páginas. Bom quando a seletividade e media</li>
+</ul>
+
+<pre data-lang="sql"><code><span class="cm">-- Antes: query lenta sem índice</span>
+<span class="kw">EXPLAIN ANALYZE</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders <span class="kw">WHERE</span> user_id = <span class="str">'abc-123'</span> <span class="kw">AND</span> status = <span class="str">'pending'</span>;
+
+<span class="cm">-- Resultado (ruim):</span>
+<span class="cm">-- Seq Scan on orders  (cost=0.00..25000.00 rows=50 width=200)</span>
+<span class="cm">--   Filter: (user_id = 'abc-123' AND status = 'pending')</span>
+<span class="cm">--   Rows Removed by Filter: 999950</span>
+<span class="cm">--   Planning Time: 0.1 ms</span>
+<span class="cm">--   Execution Time: 450.3 ms  &lt;-- LENTO! Leu 1M de linhas para achar 50</span>
+
+<span class="cm">-- Criando índice composto</span>
+<span class="kw">CREATE INDEX</span> idx_orders_user_status <span class="kw">ON</span> orders(user_id, status);
+
+<span class="cm">-- Depois: mesma query, agora com índice</span>
+<span class="kw">EXPLAIN ANALYZE</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders <span class="kw">WHERE</span> user_id = <span class="str">'abc-123'</span> <span class="kw">AND</span> status = <span class="str">'pending'</span>;
+
+<span class="cm">-- Resultado (bom):</span>
+<span class="cm">-- Index Scan using idx_orders_user_status on orders  (cost=0.42..8.50 rows=50 width=200)</span>
+<span class="cm">--   Index Cond: (user_id = 'abc-123' AND status = 'pending')</span>
+<span class="cm">--   Planning Time: 0.2 ms</span>
+<span class="cm">--   Execution Time: 0.8 ms  &lt;-- 560x mais rápido!</span>
+
+<span class="cm">-- Dicas para ler o EXPLAIN:</span>
+<span class="cm">-- cost=STARTUP..TOTAL  — custo estimado (unidades internas, não ms)</span>
+<span class="cm">-- rows=N  — linhas estimadas pelo planner</span>
+<span class="cm">-- actual time=X..Y  — tempo real (com ANALYZE)</span>
+<span class="cm">-- loops=N  — quantas vezes esse no executou</span>
+<span class="cm">-- Rows Removed by Filter  — linhas lidas mas descartadas (quanto menor, melhor)</span></code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Se <code>Rows Removed by Filter</code> é muito maior que <code>rows</code>, você está lendo dados desnecessários. Um índice provavelmente resolve. Se a estimativa de <code>rows</code> é muito diferente do real, execute <code>ANALYZE tablename</code> para atualizar as estatisticas do planner.</div>
+</div>
+
+<!-- ═══ WINDOW FUNCTIONS ═══ -->
+<h3>Window Functions — Consultas Analíticas</h3>
+
+<p>Window functions executam cálculos sobre um "janela" de linhas relacionadas a linha atual, <strong>sem colapsar o resultado</strong> (diferente de GROUP BY). São essenciais para rankings, running totals, comparações com linhas anteriores/posteriores, é muito mais.</p>
+
+<h4>Funções Principais</h4>
+<ul>
+<li><strong>ROW_NUMBER()</strong> — Número sequêncial único (1, 2, 3...) mesmo com empates</li>
+<li><strong>RANK()</strong> — Ranking com gaps em empates (1, 2, 2, 4)</li>
+<li><strong>DENSE_RANK()</strong> — Ranking sem gaps em empates (1, 2, 2, 3)</li>
+<li><strong>LEAD(col, N)</strong> — Valor da coluna N linhas a frente</li>
+<li><strong>LAG(col, N)</strong> — Valor da coluna N linhas atrás</li>
+<li><strong>SUM/AVG/COUNT() OVER()</strong> — Agregações sem colapsar linhas</li>
+<li><strong>FIRST_VALUE() / LAST_VALUE()</strong> — Primeiro/último valor da janela</li>
+<li><strong>NTILE(N)</strong> — Divide em N grupos iguais (quartis, percentis)</li>
+</ul>
+
+<pre data-lang="sql"><code><span class="cm">-- Ranking de produtos por vendas dentro de cada categoria</span>
+<span class="kw">SELECT</span>
+    p.name,
+    c.name <span class="kw">AS</span> category,
+    p.total_sales,
+    <span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (
+        <span class="kw">PARTITION BY</span> c.id
+        <span class="kw">ORDER BY</span> p.total_sales <span class="kw">DESC</span>
+    ) <span class="kw">AS</span> rank_in_category,
+    <span class="fn">RANK</span>() <span class="kw">OVER</span> (
+        <span class="kw">ORDER BY</span> p.total_sales <span class="kw">DESC</span>
+    ) <span class="kw">AS</span> global_rank
+<span class="kw">FROM</span> products p
+<span class="kw">JOIN</span> categories c <span class="kw">ON</span> p.category_id = c.id;
+
+<span class="cm">-- Running total de vendas por mes (acumulado)</span>
+<span class="kw">SELECT</span>
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, created_at) <span class="kw">AS</span> month,
+    <span class="fn">SUM</span>(total) <span class="kw">AS</span> monthly_revenue,
+    <span class="fn">SUM</span>(<span class="fn">SUM</span>(total)) <span class="kw">OVER</span> (
+        <span class="kw">ORDER BY</span> <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, created_at)
+        <span class="kw">ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW</span>
+    ) <span class="kw">AS</span> cumulative_revenue
+<span class="kw">FROM</span> orders
+<span class="kw">WHERE</span> status = <span class="str">'completed'</span>
+<span class="kw">GROUP BY</span> <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, created_at)
+<span class="kw">ORDER BY</span> month;
+
+<span class="cm">-- Comparar vendas com o mes anterior (LEAD/LAG)</span>
+<span class="kw">SELECT</span>
+    month,
+    revenue,
+    <span class="fn">LAG</span>(revenue, <span class="num">1</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month) <span class="kw">AS</span> prev_month_revenue,
+    <span class="fn">ROUND</span>(
+        (revenue - <span class="fn">LAG</span>(revenue, <span class="num">1</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month))
+        / <span class="fn">LAG</span>(revenue, <span class="num">1</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> month) * <span class="num">100</span>, <span class="num">1</span>
+    ) <span class="kw">AS</span> growth_pct
+<span class="kw">FROM</span> monthly_revenue;
+
+<span class="cm">-- Top 3 produtos por categoria (usando window function como filtro)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> (
+    <span class="kw">SELECT</span>
+        p.*,
+        <span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (
+            <span class="kw">PARTITION BY</span> p.category_id
+            <span class="kw">ORDER BY</span> p.total_sales <span class="kw">DESC</span>
+        ) <span class="kw">AS</span> rn
+    <span class="kw">FROM</span> products p
+) ranked
+<span class="kw">WHERE</span> rn &lt;= <span class="num">3</span>;</code></pre>
+
+<!-- ═══ CTEs ═══ -->
+<h3>CTEs — Common Table Expressions</h3>
+
+<p>CTEs (<code>WITH</code> clauses) permitem criar "tabelas temporárias" dentro de uma query. Melhoram a legibilidade e permitem <strong>queries recursivas</strong> para dados hierárquicos.</p>
+
+<h4>CTE Simples</h4>
+<pre data-lang="sql"><code><span class="cm">-- CTE para queries complexas mais legíveis</span>
+<span class="kw">WITH</span> monthly_metrics <span class="kw">AS</span> (
+    <span class="kw">SELECT</span>
+        <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, o.created_at) <span class="kw">AS</span> month,
+        <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_orders,
+        <span class="fn">SUM</span>(o.total) <span class="kw">AS</span> revenue,
+        <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> o.user_id) <span class="kw">AS</span> unique_customers
+    <span class="kw">FROM</span> orders o
+    <span class="kw">WHERE</span> o.status = <span class="str">'completed'</span>
+    <span class="kw">GROUP BY</span> <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, o.created_at)
+),
+avg_order_value <span class="kw">AS</span> (
+    <span class="kw">SELECT</span>
+        month,
+        revenue / <span class="fn">NULLIF</span>(total_orders, <span class="num">0</span>) <span class="kw">AS</span> aov
+    <span class="kw">FROM</span> monthly_metrics
+)
+<span class="kw">SELECT</span>
+    m.month,
+    m.total_orders,
+    m.revenue,
+    m.unique_customers,
+    a.aov,
+    m.revenue / <span class="fn">NULLIF</span>(m.unique_customers, <span class="num">0</span>) <span class="kw">AS</span> revenue_per_customer
+<span class="kw">FROM</span> monthly_metrics m
+<span class="kw">JOIN</span> avg_order_value a <span class="kw">ON</span> m.month = a.month
+<span class="kw">ORDER BY</span> m.month <span class="kw">DESC</span>;</code></pre>
+
+<h4>CTE Recursiva — Hierarquia Organizacional</h4>
+<pre data-lang="sql"><code><span class="cm">-- Tabela de funcionarios com hierarquia (manager_id aponta para o chefe)</span>
+<span class="kw">CREATE TABLE</span> employees (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    name        <span class="tp">VARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
+    title       <span class="tp">VARCHAR</span>(<span class="num">100</span>),
+    manager_id  <span class="tp">UUID</span> <span class="kw">REFERENCES</span> employees(id),
+    salary      <span class="tp">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>)
+);
+
+<span class="cm">-- CTE Recursiva: listar toda a hierarquia abaixo de um gerente</span>
+<span class="kw">WITH RECURSIVE</span> org_tree <span class="kw">AS</span> (
+    <span class="cm">-- Casó base: o gerente raiz</span>
+    <span class="kw">SELECT</span>
+        id, name, title, manager_id,
+        <span class="num">0</span> <span class="kw">AS</span> depth,
+        name::text <span class="kw">AS</span> path
+    <span class="kw">FROM</span> employees
+    <span class="kw">WHERE</span> id = <span class="str">'ceo-uuid-here'</span>
+
+    <span class="kw">UNION ALL</span>
+
+    <span class="cm">-- Casó recursivo: subordinados</span>
+    <span class="kw">SELECT</span>
+        e.id, e.name, e.title, e.manager_id,
+        t.depth + <span class="num">1</span>,
+        t.path || <span class="str">' > '</span> || e.name
+    <span class="kw">FROM</span> employees e
+    <span class="kw">JOIN</span> org_tree t <span class="kw">ON</span> e.manager_id = t.id
+)
+<span class="kw">SELECT</span>
+    <span class="fn">REPEAT</span>(<span class="str">'  '</span>, depth) || name <span class="kw">AS</span> hierarchy,
+    title,
+    depth,
+    path
+<span class="kw">FROM</span> org_tree
+<span class="kw">ORDER BY</span> path;
+
+<span class="cm">-- Resultado:</span>
+<span class="cm">-- | hierarchy          | title     | depth | path                        |</span>
+<span class="cm">-- | Ana (CEO)          | CEO       | 0     | Ana                         |</span>
+<span class="cm">-- |   Bruno (CTO)      | CTO       | 1     | Ana > Bruno                 |</span>
+<span class="cm">-- |     Carlos (Lead)  | Tech Lead | 2     | Ana > Bruno > Carlos        |</span>
+<span class="cm">-- |       Daniel (Dev) | Developer | 3     | Ana > Bruno > Carlos > Dan  |</span>
+
+<span class="cm">-- CTE Recursiva: árvore de categorias (breadcrumb)</span>
+<span class="kw">WITH RECURSIVE</span> category_tree <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> id, name, parent_id, name::text <span class="kw">AS</span> breadcrumb
+    <span class="kw">FROM</span> categories
+    <span class="kw">WHERE</span> parent_id <span class="kw">IS NULL</span>
+
+    <span class="kw">UNION ALL</span>
+
+    <span class="kw">SELECT</span> c.id, c.name, c.parent_id,
+           ct.breadcrumb || <span class="str">' / '</span> || c.name
+    <span class="kw">FROM</span> categories c
+    <span class="kw">JOIN</span> category_tree ct <span class="kw">ON</span> c.parent_id = ct.id
+)
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> category_tree;
+<span class="cm">-- Eletronicos / Computadores / Notebooks / Gaming</span></code></pre>
+
+<!-- ═══ PARTITIONING ═══ -->
+<h3>Particionamento de Tabelas</h3>
+
+<p>Quando uma tabela cresce para dezenas ou centenas de milhões de linhas, mesmo com índices as queries podem ficar lentas. <strong>Particionamento</strong> divide a tabela em pedaços menores (partições) que o banco pode tratar independentemente.</p>
+
+<h4>Tipos de Particionamento</h4>
+<ul>
+<li><strong>Range</strong> — Divide por intervalos (datas, números). O mais comum para time-series</li>
+<li><strong>List</strong> — Divide por valores discretos (status, região, pais)</li>
+<li><strong>Hash</strong> — Distribui uniformemente baseado em hash de uma coluna. Bom para distribuição equilibrada</li>
+</ul>
+
+<pre data-lang="sql"><code><span class="cm">-- Particionamento por Range (data) — Tabela de eventos</span>
+<span class="kw">CREATE TABLE</span> events (
+    id          <span class="tp">UUID</span> <span class="kw">NOT NULL DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    event_type  <span class="tp">VARCHAR</span>(<span class="num">50</span>) <span class="kw">NOT NULL</span>,
+    payload     <span class="tp">JSONB</span>,
+    created_at  <span class="tp">TIMESTAMPTZ</span> <span class="kw">NOT NULL DEFAULT</span> <span class="fn">NOW</span>()
+) <span class="kw">PARTITION BY RANGE</span> (created_at);
+
+<span class="cm">-- Criar particoes para cada mes</span>
+<span class="kw">CREATE TABLE</span> events_2025_01 <span class="kw">PARTITION OF</span> events
+    <span class="kw">FOR VALUES FROM</span> (<span class="str">'2025-01-01'</span>) <span class="kw">TO</span> (<span class="str">'2025-02-01'</span>);
+
+<span class="kw">CREATE TABLE</span> events_2025_02 <span class="kw">PARTITION OF</span> events
+    <span class="kw">FOR VALUES FROM</span> (<span class="str">'2025-02-01'</span>) <span class="kw">TO</span> (<span class="str">'2025-03-01'</span>);
+
+<span class="kw">CREATE TABLE</span> events_2025_03 <span class="kw">PARTITION OF</span> events
+    <span class="kw">FOR VALUES FROM</span> (<span class="str">'2025-03-01'</span>) <span class="kw">TO</span> (<span class="str">'2025-04-01'</span>);
+
+<span class="cm">-- Partition pruning: essa query só acessa events_2025_01</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> events
+<span class="kw">WHERE</span> created_at <span class="kw">BETWEEN</span> <span class="str">'2025-01-15'</span> <span class="kw">AND</span> <span class="str">'2025-01-20'</span>;
+
+<span class="cm">-- Remover dados antigos: instantaneo (vs DELETE que trava a tabela)</span>
+<span class="kw">DROP TABLE</span> events_2025_01;
+
+<span class="cm">-- Particionamento por List (status)</span>
+<span class="kw">CREATE TABLE</span> orders_partitioned (
+    id      <span class="tp">UUID</span> <span class="kw">NOT NULL</span>,
+    status  <span class="tp">VARCHAR</span>(<span class="num">20</span>) <span class="kw">NOT NULL</span>,
+    total   <span class="tp">NUMERIC</span>(<span class="num">12</span>,<span class="num">2</span>)
+) <span class="kw">PARTITION BY LIST</span> (status);
+
+<span class="kw">CREATE TABLE</span> orders_active <span class="kw">PARTITION OF</span> orders_partitioned
+    <span class="kw">FOR VALUES IN</span> (<span class="str">'pending'</span>, <span class="str">'processing'</span>, <span class="str">'shipped'</span>);
+
+<span class="kw">CREATE TABLE</span> orders_closed <span class="kw">PARTITION OF</span> orders_partitioned
+    <span class="kw">FOR VALUES IN</span> (<span class="str">'completed'</span>, <span class="str">'cancelled'</span>, <span class="str">'refunded'</span>);</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando particionar?</strong> Quando a tabela tem mais de ~50M de linhas, ou quando queries sempre filtram por uma coluna específica (data, status, região). Particionar uma tabela de 100K linhas não traz benefício — adiciona complexidade sem ganho.</div>
+</div>
+
+<!-- ═══ VIEWS & MATERIALIZED VIEWS ═══ -->
+<h3>Views e Materialized Views</h3>
+
+<p><strong>View</strong> é uma query salva que se comporta como tabela virtual. Não armazena dados — executa a query toda vez. <strong>Materialized View</strong> armazena o resultado em disco e precisa ser atualizada (refresh) manualmente ou por schedule.</p>
+
+<pre data-lang="sql"><code><span class="cm">-- View simples — sempre executa a query</span>
+<span class="kw">CREATE VIEW</span> v_order_summary <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+    u.id <span class="kw">AS</span> user_id,
+    u.email,
+    <span class="fn">COUNT</span>(o.id) <span class="kw">AS</span> total_orders,
+    <span class="fn">COALESCE</span>(<span class="fn">SUM</span>(o.total), <span class="num">0</span>) <span class="kw">AS</span> total_spent,
+    <span class="fn">MAX</span>(o.created_at) <span class="kw">AS</span> last_order_date
+<span class="kw">FROM</span> users u
+<span class="kw">LEFT JOIN</span> orders o <span class="kw">ON</span> o.user_id = u.id
+<span class="kw">GROUP BY</span> u.id, u.email;
+
+<span class="cm">-- Usar como tabela</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> v_order_summary <span class="kw">WHERE</span> total_spent &gt; <span class="num">1000</span>;
+
+<span class="cm">-- Materialized View — armazena resultado para dashboards pesados</span>
+<span class="kw">CREATE MATERIALIZED VIEW</span> mv_dashboard_metrics <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'day'</span>, o.created_at) <span class="kw">AS</span> day,
+    <span class="fn">COUNT</span>(*) <span class="kw">AS</span> orders_count,
+    <span class="fn">SUM</span>(o.total) <span class="kw">AS</span> revenue,
+    <span class="fn">AVG</span>(o.total) <span class="kw">AS</span> avg_order_value,
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> o.user_id) <span class="kw">AS</span> unique_buyers
+<span class="kw">FROM</span> orders o
+<span class="kw">WHERE</span> o.status = <span class="str">'completed'</span>
+<span class="kw">GROUP BY</span> <span class="fn">DATE_TRUNC</span>(<span class="str">'day'</span>, o.created_at)
+<span class="kw">WITH DATA</span>;
+
+<span class="cm">-- Índice na Materialized View (sim, e possível!)</span>
+<span class="kw">CREATE UNIQUE INDEX</span> idx_mv_dashboard_day <span class="kw">ON</span> mv_dashboard_metrics(day);
+
+<span class="cm">-- Refresh — CONCURRENTLY não bloqueia leituras (requer UNIQUE index)</span>
+<span class="kw">REFRESH MATERIALIZED VIEW CONCURRENTLY</span> mv_dashboard_metrics;
+
+<span class="cm">-- Automatizar refresh com pg_cron (extensão):</span>
+<span class="cm">-- SELECT cron.schedule('refresh_dashboard', '*/5 * * * *',</span>
+<span class="cm">--   'REFRESH MATERIALIZED VIEW CONCURRENTLY mv_dashboard_metrics');</span></code></pre>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>View</th><th>Materialized View</th></tr>
+<tr><td><strong>Armazena dados</strong></td><td>Não (virtual)</td><td>Sim (em disco)</td></tr>
+<tr><td><strong>Performance</strong></td><td>Executa query cada vez</td><td>Leitura instantânea (pre-calculada)</td></tr>
+<tr><td><strong>Dados frescos</strong></td><td>Sempre atualizados</td><td>Stale até próximo REFRESH</td></tr>
+<tr><td><strong>Índices</strong></td><td>Não suporta</td><td>Suporta (crie!)</td></tr>
+<tr><td><strong>Usó ideal</strong></td><td>Simplificar queries, segurança (expor subconjunto)</td><td>Dashboards, relatórios, dados pesados</td></tr>
+</table>
+</div>
+
+<!-- ═══ TRANSACTIONS AVANCADAS ═══ -->
+<h3>Transações Avancadas</h3>
+
+<p>Além do básico <code>BEGIN/COMMIT/ROLLBACK</code>, o PostgreSQL oferece <strong>savepoints</strong> para rollback parcial, e <strong>advisory locks</strong> para coordenação entre processos.</p>
+
+<pre data-lang="sql"><code><span class="cm">-- Savepoints — rollback parcial dentro de uma transação</span>
+<span class="kw">BEGIN</span>;
+
+<span class="kw">INSERT INTO</span> orders (user_id, total) <span class="kw">VALUES</span> (<span class="str">'user-1'</span>, <span class="num">100.00</span>);
+<span class="kw">SAVEPOINT</span> after_order;
+
+<span class="kw">INSERT INTO</span> order_items (order_id, product_id, quantity, unit_price)
+    <span class="kw">VALUES</span> (<span class="str">'order-1'</span>, <span class="str">'product-x'</span>, <span class="num">1</span>, <span class="num">100.00</span>);
+
+<span class="cm">-- Se o item falhar, volta ao savepoint (order continua)</span>
+<span class="kw">ROLLBACK TO SAVEPOINT</span> after_order;
+
+<span class="cm">-- Pode continuar com outra operação</span>
+<span class="kw">UPDATE</span> orders <span class="kw">SET</span> status = <span class="str">'partial'</span> <span class="kw">WHERE</span> id = <span class="str">'order-1'</span>;
+
+<span class="kw">COMMIT</span>;
+
+<span class="cm">-- Advisory Locks — locks customizados para coordenacao</span>
+<span class="cm">-- Util para: processos batch, jobs que não devem rodar em paralelo</span>
+
+<span class="cm">-- Tenta adquirir lock (não-bloqueante, retorna true/false)</span>
+<span class="kw">SELECT</span> <span class="fn">pg_try_advisory_lock</span>(<span class="num">12345</span>);  <span class="cm">-- 12345 é o "lock id"</span>
+
+<span class="cm">-- Faz o processamento...</span>
+
+<span class="cm">-- Libera o lock</span>
+<span class="kw">SELECT</span> <span class="fn">pg_advisory_unlock</span>(<span class="num">12345</span>);
+
+<span class="cm">-- Lock no nível de transação (auto-libera no COMMIT/ROLLBACK)</span>
+<span class="kw">SELECT</span> <span class="fn">pg_advisory_xact_lock</span>(<span class="num">12345</span>);</code></pre>
+
+<!-- ═══ NEWSQL ═══ -->
+<h3>NewSQL — SQL Distribuído</h3>
+
+<p>Bancos relacionais tradicionais (PostgreSQL, MySQL) escalam <strong>verticalmente</strong> (máquina maior). NewSQL combina o melhor dos dois mundos: <strong>garantias ACID + escalabilidade horizontal</strong> (mais máquinas). São a resposta para "precisó de SQL mas com escala de NoSQL".</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Banco</th><th>Criador</th><th>Destaque</th><th>Compatibilidade</th></tr>
+<tr><td><strong>CockroachDB</strong></td><td>Cockroach Labs</td><td>Sobrevive a falhas de datacenter. Inspirado no Spanner</td><td>PostgreSQL wire protocol</td></tr>
+<tr><td><strong>Google Spanner</strong></td><td>Google</td><td>Relogios atômicos (TrueTime). Escala global</td><td>SQL próprio + driver JDBC</td></tr>
+<tr><td><strong>TiDB</strong></td><td>PingCAP</td><td>HTAP (analytics + transacional). Open source</td><td>MySQL wire protocol</td></tr>
+<tr><td><strong>YugabyteDB</strong></td><td>Yugabyte</td><td>Inspirado no Spanner. Multi-cloud</td><td>PostgreSQL wire protocol</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando usar NewSQL?</strong> Quando você precisa de SQL + ACID mas um único servidor PostgreSQL não da conta (centenas de milhares de writes/segundo, multi-região com latência baixa, ou dados acima de 10TB). Para 99% dos projetos, PostgreSQL com read réplicas é suficiente.</div>
+</div>
+
+<!-- ═══ EXEMPLOS TYPEORM ═══ -->
+<h3>Exemplos TypeORM — Integração com TypeScript</h3>
+
+<p>Na prática de um full-stack, você raramente escreve SQL puro. Usa um ORM. TypeORM é o mais popular no ecossistema NestJS. Vejá como os conceitos SQL se traduzem.</p>
+
+<h4>Entity com Relations, Índices e Constraints</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> {
+  Entity, PrimaryGeneratedColumn, Column, ManyToOne,
+  OneToMany, Index, CreateDateColumn, UpdateDateColumn, Check
+} <span class="kw">from</span> <span class="str">'typeorm'</span>;
+
+<span class="ann">@Entity</span>(<span class="str">'products'</span>)
+<span class="ann">@Index</span>([<span class="str">'name'</span>, <span class="str">'categoryId'</span>])  <span class="cm">// Índice composto</span>
+<span class="ann">@Check</span>(<span class="str">`"price" > 0`</span>)
+<span class="ann">@Check</span>(<span class="str">`"stock" >= 0`</span>)
+<span class="kw">export class</span> <span class="tp">Product</span> {
+  <span class="ann">@PrimaryGeneratedColumn</span>(<span class="str">'uuid'</span>)
+  id: <span class="tp">string</span>;
+
+  <span class="ann">@Column</span>({ type: <span class="str">'varchar'</span>, length: <span class="num">200</span> })
+  <span class="ann">@Index</span>()  <span class="cm">// Índice simples para busca por nome</span>
+  name: <span class="tp">string</span>;
+
+  <span class="ann">@Column</span>({ type: <span class="str">'numeric'</span>, precision: <span class="num">10</span>, scale: <span class="num">2</span> })
+  price: <span class="tp">number</span>;
+
+  <span class="ann">@Column</span>({ type: <span class="str">'int'</span>, default: <span class="num">0</span> })
+  stock: <span class="tp">number</span>;
+
+  <span class="ann">@Column</span>({ type: <span class="str">'jsonb'</span>, nullable: <span class="kw">true</span> })
+  metadata: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">any</span>&gt;;
+
+  <span class="cm">// Relacionamento N:1 — Produto pertence a uma Categoria</span>
+  <span class="ann">@ManyToOne</span>(() => <span class="tp">Category</span>, cat => cat.products, { onDelete: <span class="str">'SET NULL'</span> })
+  category: <span class="tp">Category</span>;
+
+  <span class="ann">@Column</span>({ name: <span class="str">'category_id'</span>, nullable: <span class="kw">true</span> })
+  <span class="ann">@Index</span>()  <span class="cm">// SEMPRE indexe foreign keys!</span>
+  categoryId: <span class="tp">string</span>;
+
+  <span class="cm">// Relacionamento 1:N — Produto tem muitos OrderItems</span>
+  <span class="ann">@OneToMany</span>(() => <span class="tp">OrderItem</span>, item => item.product)
+  orderItems: <span class="tp">OrderItem</span>[];
+
+  <span class="ann">@CreateDateColumn</span>({ name: <span class="str">'created_at'</span> })
+  createdAt: <span class="tp">Date</span>;
+
+  <span class="ann">@UpdateDateColumn</span>({ name: <span class="str">'updated_at'</span> })
+  updatedAt: <span class="tp">Date</span>;
+}</code></pre>
+
+<h4>QueryBuilder com Complex JOINs</h4>
+<pre data-lang="typescript"><code><span class="cm">// Busca complexa com filtros, páginação e ordenacao</span>
+<span class="kw">async</span> <span class="fn">findProductsWithStats</span>(filters: <span class="tp">ProductFilters</span>): <span class="tp">Promise</span>&lt;<span class="tp">PaginatedResult</span>&lt;<span class="tp">ProductWithStats</span>&gt;&gt; {
+  <span class="kw">const</span> qb = <span class="kw">this</span>.productRepo
+    .<span class="fn">createQueryBuilder</span>(<span class="str">'p'</span>)
+    .<span class="fn">leftJoinAndSelect</span>(<span class="str">'p.category'</span>, <span class="str">'c'</span>)
+    .<span class="fn">leftJoin</span>(<span class="str">'p.orderItems'</span>, <span class="str">'oi'</span>)
+    .<span class="fn">addSelect</span>(<span class="str">'COUNT(oi.id)'</span>, <span class="str">'totalSales'</span>)
+    .<span class="fn">addSelect</span>(<span class="str">'COALESCE(SUM(oi.quantity * oi.unit_price), 0)'</span>, <span class="str">'totalRevenue'</span>)
+    .<span class="fn">groupBy</span>(<span class="str">'p.id'</span>)
+    .<span class="fn">addGroupBy</span>(<span class="str">'c.id'</span>);
+
+  <span class="cm">// Filtros dinâmicos</span>
+  <span class="kw">if</span> (filters.categoryId) {
+    qb.<span class="fn">andWhere</span>(<span class="str">'p.categoryId = :catId'</span>, { catId: filters.categoryId });
+  }
+  <span class="kw">if</span> (filters.minPrice) {
+    qb.<span class="fn">andWhere</span>(<span class="str">'p.price >= :minPrice'</span>, { minPrice: filters.minPrice });
+  }
+  <span class="kw">if</span> (filters.search) {
+    qb.<span class="fn">andWhere</span>(<span class="str">'p.name ILIKE :search'</span>, { search: <span class="str">`%${filters.search}%`</span> });
+  }
+
+  <span class="cm">// Paginacao</span>
+  <span class="kw">const</span> total = <span class="kw">await</span> qb.<span class="fn">getCount</span>();
+  <span class="kw">const</span> items = <span class="kw">await</span> qb
+    .<span class="fn">orderBy</span>(<span class="str">'p.createdAt'</span>, <span class="str">'DESC'</span>)
+    .<span class="fn">skip</span>((filters.page - <span class="num">1</span>) * filters.limit)
+    .<span class="fn">take</span>(filters.limit)
+    .<span class="fn">getRawAndEntities</span>();
+
+  <span class="kw">return</span> { items: items.entities, total, page: filters.page };
+}</code></pre>
+
+<h4>Transação com Savepoint</h4>
+<pre data-lang="typescript"><code><span class="cm">// Transacao com savepoint — rollback parcial</span>
+<span class="kw">async</span> <span class="fn">createOrderWithItems</span>(dto: <span class="tp">CreateOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>&gt; {
+  <span class="kw">return</span> <span class="kw">this</span>.dataSource.<span class="fn">transaction</span>(<span class="kw">async</span> (manager) => {
+    <span class="cm">// 1. Cria o pedido</span>
+    <span class="kw">const</span> order = manager.<span class="fn">create</span>(<span class="tp">Order</span>, {
+      userId: dto.userId,
+      status: <span class="str">'pending'</span>,
+      total: <span class="num">0</span>,
+    });
+    <span class="kw">await</span> manager.<span class="fn">save</span>(order);
+
+    <span class="kw">let</span> total = <span class="num">0</span>;
+    <span class="kw">const</span> savedItems: <span class="tp">OrderItem</span>[] = [];
+
+    <span class="cm">// 2. Processa cada item (com savepoint implicito)</span>
+    <span class="kw">for</span> (<span class="kw">const</span> itemDto <span class="kw">of</span> dto.items) {
+      <span class="kw">try</span> {
+        <span class="cm">// Verifica stock com FOR UPDATE (lock pessimista)</span>
+        <span class="kw">const</span> product = <span class="kw">await</span> manager
+          .<span class="fn">createQueryBuilder</span>(<span class="tp">Product</span>, <span class="str">'p'</span>)
+          .<span class="fn">setLock</span>(<span class="str">'pessimistic_write'</span>)
+          .<span class="fn">where</span>(<span class="str">'p.id = :id'</span>, { id: itemDto.productId })
+          .<span class="fn">getOneOrFail</span>();
+
+        <span class="kw">if</span> (product.stock &lt; itemDto.quantity) {
+          <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">`Estoque insuficiente: ${product.name}`</span>);
+        }
+
+        <span class="cm">// Decrementa stock</span>
+        product.stock -= itemDto.quantity;
+        <span class="kw">await</span> manager.<span class="fn">save</span>(product);
+
+        <span class="cm">// Cria o item</span>
+        <span class="kw">const</span> item = manager.<span class="fn">create</span>(<span class="tp">OrderItem</span>, {
+          orderId: order.id,
+          productId: product.id,
+          quantity: itemDto.quantity,
+          unitPrice: product.price,
+        });
+        <span class="kw">await</span> manager.<span class="fn">save</span>(item);
+
+        total += product.price * itemDto.quantity;
+        savedItems.<span class="fn">push</span>(item);
+      } <span class="kw">catch</span> (err) {
+        <span class="cm">// Se um item falha, toda transação faz rollback (ACID)</span>
+        <span class="kw">throw</span> err;
+      }
+    }
+
+    <span class="cm">// 3. Atualiza total do pedido</span>
+    order.total = total;
+    order.status = <span class="str">'confirmed'</span>;
+    <span class="kw">await</span> manager.<span class="fn">save</span>(order);
+
+    <span class="kw">return</span> order;
+  });
+}</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Schema de E-Commerce</h3>
+<p><strong>Cenário:</strong> Projete o schema de banco de dados para uma plataforma de e-commerce completa. Considere: usuários, produtos, categorias, pedidos, pagamentos e endereços.</p>
+
+<div class="diagram">
+<div class="diagram-box green">users<br><small>PK: id</small></div>
+<div class="diagram-arrow">1:N</div>
+<div class="diagram-box blue">orders<br><small>FK: user_id</small></div>
+<div class="diagram-arrow">1:N</div>
+<div class="diagram-box purple">order_items<br><small>FK: order_id, product_id</small></div>
+<div class="diagram-arrow">N:1</div>
+<div class="diagram-box orange">products<br><small>FK: category_id</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box green">users<br><small>PK: id</small></div>
+<div class="diagram-arrow">1:N</div>
+<div class="diagram-box cyan">addresses<br><small>FK: user_id</small></div>
+<div class="diagram-arrow">&nbsp;</div>
+<div class="diagram-box blue">orders<br><small>FK: address_id</small></div>
+<div class="diagram-arrow">1:1</div>
+<div class="diagram-box red">payments<br><small>FK: order_id</small></div>
+</div>
+
+<pre data-lang="sql"><code><span class="cm">-- Schema completo de E-Commerce</span>
+
+<span class="kw">CREATE TABLE</span> users (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    email       <span class="tp">VARCHAR</span>(<span class="num">255</span>) <span class="kw">NOT NULL UNIQUE</span>,
+    password    <span class="tp">VARCHAR</span>(<span class="num">255</span>) <span class="kw">NOT NULL</span>,
+    full_name   <span class="tp">VARCHAR</span>(<span class="num">200</span>) <span class="kw">NOT NULL</span>,
+    role        <span class="tp">VARCHAR</span>(<span class="num">20</span>) <span class="kw">NOT NULL DEFAULT</span> <span class="str">'customer'</span>,
+    created_at  <span class="tp">TIMESTAMPTZ</span> <span class="kw">NOT NULL DEFAULT</span> <span class="fn">NOW</span>()
+);
+
+<span class="kw">CREATE TABLE</span> categories (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    name        <span class="tp">VARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
+    slug        <span class="tp">VARCHAR</span>(<span class="num">120</span>) <span class="kw">NOT NULL UNIQUE</span>,
+    parent_id   <span class="tp">UUID</span> <span class="kw">REFERENCES</span> categories(id) <span class="kw">ON DELETE SET NULL</span>
+);
+
+<span class="kw">CREATE TABLE</span> products (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    name        <span class="tp">VARCHAR</span>(<span class="num">200</span>) <span class="kw">NOT NULL</span>,
+    slug        <span class="tp">VARCHAR</span>(<span class="num">220</span>) <span class="kw">NOT NULL UNIQUE</span>,
+    description <span class="tp">TEXT</span>,
+    price       <span class="tp">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>) <span class="kw">NOT NULL CHECK</span> (price &gt; <span class="num">0</span>),
+    stock       <span class="tp">INTEGER</span> <span class="kw">NOT NULL DEFAULT</span> <span class="num">0</span> <span class="kw">CHECK</span> (stock &gt;= <span class="num">0</span>),
+    category_id <span class="tp">UUID</span> <span class="kw">REFERENCES</span> categories(id),
+    is_active   <span class="tp">BOOLEAN</span> <span class="kw">NOT NULL DEFAULT</span> <span class="kw">true</span>,
+    created_at  <span class="tp">TIMESTAMPTZ</span> <span class="kw">NOT NULL DEFAULT</span> <span class="fn">NOW</span>()
+);
+
+<span class="kw">CREATE TABLE</span> addresses (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    user_id     <span class="tp">UUID</span> <span class="kw">NOT NULL REFERENCES</span> users(id) <span class="kw">ON DELETE CASCADE</span>,
+    label       <span class="tp">VARCHAR</span>(<span class="num">50</span>) <span class="kw">NOT NULL DEFAULT</span> <span class="str">'home'</span>,
+    street      <span class="tp">VARCHAR</span>(<span class="num">300</span>) <span class="kw">NOT NULL</span>,
+    number      <span class="tp">VARCHAR</span>(<span class="num">20</span>),
+    complement  <span class="tp">VARCHAR</span>(<span class="num">100</span>),
+    city        <span class="tp">VARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
+    state       <span class="tp">VARCHAR</span>(<span class="num">2</span>) <span class="kw">NOT NULL</span>,
+    zip_code    <span class="tp">VARCHAR</span>(<span class="num">9</span>) <span class="kw">NOT NULL</span>
+);
+
+<span class="kw">CREATE TABLE</span> orders (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    user_id     <span class="tp">UUID</span> <span class="kw">NOT NULL REFERENCES</span> users(id),
+    address_id  <span class="tp">UUID</span> <span class="kw">NOT NULL REFERENCES</span> addresses(id),
+    status      <span class="tp">VARCHAR</span>(<span class="num">20</span>) <span class="kw">NOT NULL DEFAULT</span> <span class="str">'pending'</span>,
+    subtotal    <span class="tp">NUMERIC</span>(<span class="num">12</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>,
+    shipping    <span class="tp">NUMERIC</span>(<span class="num">8</span>,<span class="num">2</span>) <span class="kw">NOT NULL DEFAULT</span> <span class="num">0</span>,
+    total       <span class="tp">NUMERIC</span>(<span class="num">12</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>,
+    created_at  <span class="tp">TIMESTAMPTZ</span> <span class="kw">NOT NULL DEFAULT</span> <span class="fn">NOW</span>()
+);
+
+<span class="kw">CREATE TABLE</span> order_items (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    order_id    <span class="tp">UUID</span> <span class="kw">NOT NULL REFERENCES</span> orders(id) <span class="kw">ON DELETE CASCADE</span>,
+    product_id  <span class="tp">UUID</span> <span class="kw">NOT NULL REFERENCES</span> products(id),
+    quantity    <span class="tp">INTEGER</span> <span class="kw">NOT NULL CHECK</span> (quantity &gt; <span class="num">0</span>),
+    unit_price  <span class="tp">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>,  <span class="cm">-- Snapshot do preço na hora da compra</span>
+    <span class="kw">UNIQUE</span>(order_id, product_id)
+);
+
+<span class="kw">CREATE TABLE</span> payments (
+    id          <span class="tp">UUID</span> <span class="kw">PRIMARY KEY DEFAULT</span> <span class="fn">gen_random_uuid</span>(),
+    order_id    <span class="tp">UUID</span> <span class="kw">NOT NULL UNIQUE REFERENCES</span> orders(id),
+    method      <span class="tp">VARCHAR</span>(<span class="num">20</span>) <span class="kw">NOT NULL</span>,  <span class="cm">-- 'pix', 'credit_card', 'boleto'</span>
+    status      <span class="tp">VARCHAR</span>(<span class="num">20</span>) <span class="kw">NOT NULL DEFAULT</span> <span class="str">'pending'</span>,
+    amount      <span class="tp">NUMERIC</span>(<span class="num">12</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>,
+    external_id <span class="tp">VARCHAR</span>(<span class="num">255</span>),  <span class="cm">-- ID do gateway (Stripe, PagSeguro)</span>
+    paid_at     <span class="tp">TIMESTAMPTZ</span>,
+    created_at  <span class="tp">TIMESTAMPTZ</span> <span class="kw">NOT NULL DEFAULT</span> <span class="fn">NOW</span>()
+);
+
+<span class="cm">-- INDICES para queries comuns</span>
+<span class="kw">CREATE INDEX</span> idx_products_category <span class="kw">ON</span> products(category_id);
+<span class="kw">CREATE INDEX</span> idx_products_active_price <span class="kw">ON</span> products(price) <span class="kw">WHERE</span> is_active = <span class="kw">true</span>;
+<span class="kw">CREATE INDEX</span> idx_products_slug <span class="kw">ON</span> products(slug);  <span class="cm">-- URL lookup</span>
+<span class="kw">CREATE INDEX</span> idx_orders_user <span class="kw">ON</span> orders(user_id, created_at <span class="kw">DESC</span>);
+<span class="kw">CREATE INDEX</span> idx_orders_status <span class="kw">ON</span> orders(status) <span class="kw">WHERE</span> status <span class="kw">IN</span> (<span class="str">'pending'</span>, <span class="str">'processing'</span>);
+<span class="kw">CREATE INDEX</span> idx_order_items_product <span class="kw">ON</span> order_items(product_id);
+<span class="kw">CREATE INDEX</span> idx_addresses_user <span class="kw">ON</span> addresses(user_id);
+<span class="kw">CREATE INDEX</span> idx_payments_status <span class="kw">ON</span> payments(status) <span class="kw">WHERE</span> status = <span class="str">'pending'</span>;</code></pre>
+
+<div class="card blue">
+<div class="card-title">Estratégia de Índices para Queries Comuns</div>
+<ul>
+<li><strong>"Listar produtos por categoria"</strong> &#8594; <code>idx_products_category</code> (B-Tree na FK)</li>
+<li><strong>"Buscar produto por slug (URL)"</strong> &#8594; <code>idx_products_slug</code> (exact match)</li>
+<li><strong>"Meus pedidos recentes"</strong> &#8594; <code>idx_orders_user</code> composto (user_id + created_at DESC)</li>
+<li><strong>"Pedidos pendentes para processar"</strong> &#8594; <code>idx_orders_status</code> parcial (só status ativos)</li>
+<li><strong>"Produtos ativos até R$100"</strong> &#8594; <code>idx_products_active_price</code> parcial + range scan</li>
+<li><strong>"Pagamentos pendentes"</strong> &#8594; <code>idx_payments_status</code> parcial (só pending)</li>
+</ul>
+</div>
+
+<!-- ═══ ARMADILHAS COMUNS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Problema N+1:</strong> Carregar uma lista de pedidos e depois, para CADA pedido, fazer uma query separada para buscar o usuário. Com 100 pedidos = 101 queries. Solução: use <code>JOIN</code> ou eager loading (<code>relations: ['user']</code> no TypeORM, <code>include</code> no Prisma).</div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; N+1 — 1 query para orders + N queries para users</span>
+<span class="kw">const</span> orders = <span class="kw">await</span> orderRepo.<span class="fn">find</span>();  <span class="cm">// SELECT * FROM orders</span>
+<span class="kw">for</span> (<span class="kw">const</span> order <span class="kw">of</span> orders) {
+  order.user = <span class="kw">await</span> userRepo.<span class="fn">findOne</span>(order.userId);  <span class="cm">// N queries extras!</span>
+}
+
+<span class="cm">// &#9989; 1 query com JOIN</span>
+<span class="kw">const</span> orders = <span class="kw">await</span> orderRepo.<span class="fn">find</span>({ relations: [<span class="str">'user'</span>] });
+<span class="cm">// SELECT * FROM orders LEFT JOIN users ON users.id = orders.user_id</span></code></pre>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Foreign keys sem índice:</strong> Toda coluna que é FK deveria ter um índice. Sem ele, JOINs e ON DELETE CASCADE fazem full table scan. O PostgreSQL Não cria índice automático em FKs (diferente da PK que tem índice automático).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Over-normalization em workloads read-heavy:</strong> Se seu dashboard precisa de 7 JOINs para montar uma tela, considere desnormalizar. Use Materialized Views ou colunas calculadas. O usuário não se importa com normal forms — ele quer a página rápida.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>SELECT * em produção:</strong> Trafega dados desnecessários pela rede, impede Index Only Scans, e quebra se colunas forem adicionadas. <strong>Sempre liste as colunas que precisa</strong>: <code>SELECT id, name, price FROM products</code>.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>SQL Injection — Queries não parametrizadas:</strong> NUNCA concatene input do usuário em queries SQL. Use parâmetros preparados (<code>$1</code>, <code>?</code>) ou o ORM que já faz isso automáticamente. Um <code>'; DROP TABLE users; --</code> pode destruir seu banco inteiro.</div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; SQL INJECTION — NUNCA faca isso</span>
+<span class="kw">const</span> result = <span class="kw">await</span> db.<span class="fn">query</span>(
+  <span class="str">`SELECT * FROM users WHERE email = '${userInput}'`</span>  <span class="cm">// PERIGO!</span>
+);
+
+<span class="cm">// &#9989; Query parametrizada — segura</span>
+<span class="kw">const</span> result = <span class="kw">await</span> db.<span class="fn">query</span>(
+  <span class="str">'SELECT * FROM users WHERE email = $1'</span>,
+  [userInput]  <span class="cm">// Parametro tratado automáticamente</span>
+);</code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Não rodar ANALYZE após carga massiva:</strong> O query planner do PostgreSQL depende de estatisticas para escolher o melhor plano. Após um bulk INSERT grande, rode <code>ANALYZE tablename</code> para atualizar as estatisticas. Sem isso, o planner pode escolher Seq Scan ao inves de Index Scan.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem uma tabela "orders" com 10 milhões de linhas. A query "SELECT * FROM orders WHERE user_id = ? AND status = 'pending' ORDER BY created_at DESC LIMIT 20" está levando 3 segundos. Como otimizar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Crie um índice composto: <code>CREATE INDEX idx_orders_user_status_daté ON orders(user_id, status, created_at DESC)</code>. A ordem das colunas segue a query: user_id (igualdade), status (igualdade), created_at (ordenação). Além disso, se a maioria dos pedidos não é "pending", considere um índice parcial: <code>WHERE status = 'pending'</code>, que será muito menor. Por fim, evite <code>SELECT *</code> — liste apenas as colunas que precisa para possibilitar Index Only Scan.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Explique por que Materialized View é melhor que View simples para um dashboard que mostra métricas agregadas (total de vendas por dia, ticket medio, etc.) acessado por 50 usuários simultâneos.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Uma View simples executa a query de agregação TODA VEZ que alguém acessa. Com 50 usuários simultâneos, são 50 queries pesadas (SUM, COUNT, AVG com JOIN) rodando ao mesmo tempo, sobrecarregando o banco. Uma Materialized View pre-calcula o resultado e armazena em disco — cada acesso é uma leitura simples (como consultar uma tabela pequena). O tradeoff é que os dados ficam "stale" até o próximo REFRESH, mas para dashboards um delay de 5 minutos é aceitável. Use <code>REFRESH MATERIALIZED VIEW CONCURRENTLY</code> para não bloquear leituras durante o refresh.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Sua tabela de "events" cresce 5 milhões de linhas por mês. Queries filtram quase sempre por data. Como escalar sem degradar performance?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Use <strong>particionamento por Range</strong> na coluna <code>created_at</code>. Crie uma partição por mês (<code>PARTITION BY RANGE (created_at)</code>). Benefícios: (1) <strong>Partition pruning</strong> — queries com filtro de data acessam apenas a partição relevante, ignorando milhões de linhas; (2) <strong>DROP TABLE</strong> instantâneo para dados antigos (vs DELETE que trava); (3) <strong>VACUUM</strong> é manutenção em partições menores. Combine com índice BRIN na coluna de data dentro de cada partição para máximo desempenho. Automatize a criação de partições futuras com <code>pg_partman</code> ou um cron job.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Bancos SQL & Relacional</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="11-eda-event-driven.html">&#8592; EDA & Event-Driven</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="13-nosql-documento-kv-colunar.html" class="primary">Próximo: NoSQL &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 12: Bancos SQL & Relacional
+// ══════════════════════════════════════════
+const SECTION_NUM = 12;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "O que significa a propriedade 'Atomicity' no ACID?",
+    options: [
+      "Os dados são armazenados na menor unidade possível",
+      "Uma transação executa completamente ou não executa nada",
+      "Apenas uma transação pode acessar o banco por vez",
+      "Os dados são escritos no disco imediatamente"
+    ],
+    correct: 1,
+    explanation: "Atomicidade garante que uma transação é 'tudo ou nada'. Se qualquer operação dentro da transação falhar, todas as operações anteriores são revertidas (rollback), como se nada tivesse acontecido."
+  },
+  {
+    question: "Qual nível de isolamento é o padrão no PostgreSQL e previne Dirty Reads mas permite Non-Repeatable Reads?",
+    options: [
+      "Read Uncommitted",
+      "Read Committed",
+      "Repeatable Read",
+      "Serializable"
+    ],
+    correct: 1,
+    explanation: "Read Committed é o nível de isolamento padrão no PostgreSQL. Ele garante que você só le dados de transações que já foram commitadas (sem Dirty Reads), mas permite que uma segunda leitura da mesma linha retorne valores diferentes se outra transação commitou entre as leituras."
+  },
+  {
+    question: "Uma tabela tem a coluna 'phones' que armazena '11999887766, 11988776655' como string. Qual forma normal está sendo violada?",
+    options: [
+      "Segunda Forma Normal (2NF)",
+      "Terceira Forma Normal (3NF)",
+      "Primeira Forma Normal (1NF)",
+      "Boyce-Codd Normal Form (BCNF)"
+    ],
+    correct: 2,
+    explanation: "A 1NF exige que cada célula contenha um valor atômico (indivisível). Armazenar múltiplos telefones em uma única coluna como string viola essa regra. A solução é criar uma tabela separada user_phones."
+  },
+  {
+    question: "Qual tipo de índice no PostgreSQL é melhor para queries de full-text search e operações em JSONB?",
+    options: [
+      "B-Tree",
+      "Hash",
+      "GIN (Generalized Inverted Index)",
+      "BRIN (Block Range Index)"
+    ],
+    correct: 2,
+    explanation: "GIN (Generalized Inverted Index) e otimizado para valores compostos como arrays, JSONB e tsvector (full-text search). Ele cria um índice invertido onde cada chave aponta para todas as linhas que a contém."
+  },
+  {
+    question: "Você roda EXPLAIN ANALYZE e ve 'Seq Scan on orders (rows=1000000)' com 'Rows Removed by Filter: 999950'. O que isso indica?",
+    options: [
+      "A query está otimizada — o banco está filtrando corretamente",
+      "O banco está lendo a tabela inteira para encontrar 50 linhas — precisa de um índice",
+      "A tabela precisa ser particionada imediatamente",
+      "O PostgreSQL está usando um algoritmo de cache eficiente"
+    ],
+    correct: 1,
+    explanation: "Seq Scan com 'Rows Removed by Filter' muito alto significa que o banco está lendo quase 1 milhão de linhas para encontrar apenas 50 relevantes. Isso é extremamente ineficiente. A solução é criar um índice na(s) coluna(s) usadas no WHERE."
+  },
+  {
+    question: "Qual window function você usaria para comparar a receita de cada mês com a do mês anterior?",
+    options: [
+      "ROW_NUMBER() OVER (ORDER BY month)",
+      "RANK() OVER (PARTITION BY month ORDER BY revenue)",
+      "LAG(revenue, 1) OVER (ORDER BY month)",
+      "SUM(revenue) OVER (ORDER BY month ROWS UNBOUNDED PRECEDING)"
+    ],
+    correct: 2,
+    explanation: "LAG(coluna, N) retorna o valor da coluna N linhas Atrás na janela ordenada. LAG(revenue, 1) OVER (ORDER BY month) retorna a receita do mês anterior, permitindo calcular a variação percentual entre meses."
+  },
+  {
+    question: "Sobre CTEs Recursivas, qual é a estrutura correta?",
+    options: [
+      "Apenas o caso recursivo, sem caso base",
+      "Casó base UNION ALL caso recursivo (que referência a própria CTE)",
+      "Múltiplos casos base sem UNION",
+      "Subquery com self-join sem WITH RECURSIVE"
+    ],
+    correct: 1,
+    explanation: "Uma CTE Recursiva tem duas partes: (1) caso base — a query inicial que não referência a CTE, e (2) caso recursivo — uma query que faz JOIN com a própria CTE, conectadas por UNION ALL. O banco executa iterátivamente até o caso recursivo não retornar mais linhas."
+  },
+  {
+    question: "Qual a principal vantagem de um índice parcial (ex: CREATE INDEX ... WHERE status = 'pending')?",
+    options: [
+      "Permite buscas mais rápidas em todas as linhas da tabela",
+      "O índice é menor é mais rápido porque indexa apenas um subconjunto das linhas",
+      "Elimina a necessidade de VACUUM na tabela",
+      "Permite queries sem WHERE clause serem mais rápidas"
+    ],
+    correct: 1,
+    explanation: "Um índice parcial indexa apenas as linhas que satisfazem a condição WHERE. Se apenas 5% dos pedidos são 'pending', o índice será ~20x menor que um índice full, consumindo menós espaço e sendo mais rápido para manter em writes."
+  },
+  {
+    question: "O que é o problema N+1 em bancos de dados?",
+    options: [
+      "Ter N+1 tabelas em um schema relacional",
+      "Fazer 1 query para listar N registros, e depois N queries extras para buscar dados relacionados de cada um",
+      "Ter mais de N+1 índices em uma tabela",
+      "Usar normalização acima da 3NF"
+    ],
+    correct: 1,
+    explanation: "O problema N+1 acontece quando você faz 1 query para buscar uma lista (ex: 100 pedidos) e depois faz 100 queries extras para buscar dados relacionados de cada um (ex: usuário de cada pedido). Total: 101 queries. A solução é usar JOIN ou eager loading para buscar tudo em 1-2 queries."
+  },
+  {
+    question: "Quando você escolheria um banco NewSQL (como CockroachDB) ao inves de PostgreSQL tradicional?",
+    options: [
+      "Para qualquer aplicação que use SQL",
+      "Quando precisa de SQL com ACID + escalabilidade horizontal (multi-região, centenas de milhares de writes/s)",
+      "Quando a tabela tem mais de 1000 linhas",
+      "NewSQL é sempre melhor que PostgreSQL — deveria ser o padrão"
+    ],
+    correct: 1,
+    explanation: "NewSQL combina garantias ACID com escalabilidade horizontal (distribuído em múltiplos nós/regiões). Use quando um único servidor PostgreSQL não da conta: multi-região com latência baixa, volume extremo de writes, ou dados acima de 10TB. Para 99% dos projetos, PostgreSQL com réplicas é suficiente."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina bancos SQL e modelo relacional.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>04 — Design Patterns Estruturais | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="03-design-patterns-criacionais.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>04</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="05-design-patterns-comportamentais.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:6.1%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 04</span>
+<h2>Design Patterns Estruturais</h2>
+<div class="section-line"></div>
+
+<p>Os 7 padrões estruturais do GoF (Gang of Four) tratam de como <strong>compor objetos e classes em estruturas maiores</strong>, mantendo flexibilidade e eficiência. Enquanto os padrões criacionais lidam com a instanciacao, os estruturais lidam com a <strong>montagem</strong> — como as pecas se encaixam.</p>
+
+<p>Uma analogia: se os padrões criacionais são a fabrica que produz os tijolos, os padrões estruturais são a <strong>planta arquitetonica</strong> que define como os tijolos se conectam para formar paredes, andares e edifícios inteiros. A escolha errada de estrutura é como construir um predio sem vigas — parece funcionar até que o pesó aumenta.</p>
+
+<div class="card">
+<div class="card-title">Os 7 Padroes Estruturais do GoF</div>
+<ul>
+<li><strong>Adapter</strong> — Converte a interface de uma classe em outra que o cliente espera</li>
+<li><strong>Bridge</strong> — Separa abstração da implementação para que ambas evoluam independentemente</li>
+<li><strong>Composite</strong> — Compoe objetos em estruturas de árvore para tratar individuais é compostos uniformemente</li>
+<li><strong>Decorator</strong> — Adiciona responsabilidades a objetos dinâmicamente, sem alterár a classe original</li>
+<li><strong>Facade</strong> — Fornece interface simplificada para um subsistema complexo</li>
+<li><strong>Flyweight</strong> — Compartilha objetos para suportar grandes quantidades de forma eficiente</li>
+<li><strong>Proxy</strong> — Controla o acesso a um objeto atraves de um substituto</li>
+</ul>
+</div>
+
+<!-- ═══ ADAPTER ═══ -->
+<h3>Adapter — Compatibilidade entre Interfaces</h3>
+<p><strong>"Converte a interface de uma classe em outra interface que o cliente espera."</strong> O Adapter permite que classes com interfaces incompativeis trabalhem juntas. Pense nele como um adaptador de tomada — você tem um plug americano é uma tomada brasileira, o adapter faz a traducao.</p>
+
+<p><strong>Quando usar:</strong></p>
+<ul>
+<li>Integrar com APIs legadas que tem assinatura diferente da sua</li>
+<li>Envolver bibliotecas de terceiros para isolamento</li>
+<li>Migrar gradualmente de uma implementação para outra</li>
+</ul>
+
+<h4>Exemplo Real: Adaptando API de Pagamento Legada</h4>
+<pre data-lang="typescript"><code><span class="cm">// Interface moderna que nossó sistema espera</span>
+<span class="kw">interface</span> <span class="tp">PaymentGateway</span> {
+  <span class="fn">charge</span>(amount: <span class="tp">number</span>, currency: <span class="tp">string</span>, token: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">PaymentResult</span>&gt;;
+  <span class="fn">refund</span>(transactionId: <span class="tp">string</span>, amount: <span class="tp">number</span>): <span class="tp">Promise</span>&lt;<span class="tp">RefundResult</span>&gt;;
+}
+
+<span class="cm">// API legada com interface completamente diferente</span>
+<span class="kw">class</span> <span class="tp">LegacyPaymentAPI</span> {
+  <span class="fn">makePayment</span>(params: {
+    value: <span class="tp">number</span>;
+    curr: <span class="tp">string</span>;
+    cardToken: <span class="tp">string</span>;
+    merchantId: <span class="tp">string</span>;
+  }): <span class="tp">Promise</span>&lt;{ ok: <span class="tp">boolean</span>; txn_id: <span class="tp">string</span>; error_msg?: <span class="tp">string</span> }&gt; {
+    <span class="cm">// Implementação legada...</span>
+    <span class="kw">return</span> <span class="cm">/* ... */</span>;
+  }
+
+  <span class="fn">reversePayment</span>(txnId: <span class="tp">string</span>, refundValue: <span class="tp">number</span>): <span class="tp">Promise</span>&lt;{ reversed: <span class="tp">boolean</span> }&gt; {
+    <span class="kw">return</span> <span class="cm">/* ... */</span>;
+  }
+}
+
+<span class="cm">// Adapter — traduz a interface legada para a moderna</span>
+<span class="kw">class</span> <span class="tp">LegacyPaymentAdapter</span> <span class="kw">implements</span> <span class="tp">PaymentGateway</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> legacy: <span class="tp">LegacyPaymentAPI</span>,
+    <span class="kw">private</span> merchantId: <span class="tp">string</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">charge</span>(amount: <span class="tp">number</span>, currency: <span class="tp">string</span>, token: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">PaymentResult</span>&gt; {
+    <span class="kw">const</span> result = <span class="kw">await</span> <span class="kw">this</span>.legacy.<span class="fn">makePayment</span>({
+      value: amount,
+      curr: currency,
+      cardToken: token,
+      merchantId: <span class="kw">this</span>.merchantId,
+    });
+
+    <span class="kw">return</span> {
+      success: result.ok,
+      transactionId: result.txn_id,
+      error: result.error_msg ?? <span class="kw">null</span>,
+    };
+  }
+
+  <span class="kw">async</span> <span class="fn">refund</span>(transactionId: <span class="tp">string</span>, amount: <span class="tp">number</span>): <span class="tp">Promise</span>&lt;<span class="tp">RefundResult</span>&gt; {
+    <span class="kw">const</span> result = <span class="kw">await</span> <span class="kw">this</span>.legacy.<span class="fn">reversePayment</span>(transactionId, amount);
+    <span class="kw">return</span> { success: result.reversed };
+  }
+}
+
+<span class="cm">// Usó — o serviço não sabe que esta falando com a API legada</span>
+<span class="kw">class</span> <span class="tp">CheckoutService</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> gateway: <span class="tp">PaymentGateway</span>) {}
+
+  <span class="kw">async</span> <span class="fn">processOrder</span>(order: <span class="tp">Order</span>, token: <span class="tp">string</span>) {
+    <span class="kw">const</span> payment = <span class="kw">await</span> <span class="kw">this</span>.gateway.<span class="fn">charge</span>(order.total, <span class="str">'BRL'</span>, token);
+    <span class="kw">if</span> (!payment.success) <span class="kw">throw new</span> <span class="tp">Error</span>(payment.error);
+    <span class="kw">return</span> payment;
+  }
+}</code></pre>
+
+<!-- ═══ BRIDGE ═══ -->
+<h3>Bridge — Separando Abstracao de Implementação</h3>
+<p><strong>"Separa a abstração da implementação para que ambas possam variar independentemente."</strong> O Bridge resolve o problema de explosao de subclasses. Em vez de criar uma classe para cada combinação (ex: <code>WindowsButton</code>, <code>LinuxButton</code>, <code>WindowsCheckbox</code>, <code>LinuxCheckbox</code>...), você separa a "forma" (abstração) da "plataforma" (implementação).</p>
+
+<p><strong>Quando usar:</strong></p>
+<ul>
+<li>Quando você tem duas dimensões de variacao (ex: forma + plataforma, tipo + renderizador)</li>
+<li>Para evitar explosao combinatoria de subclasses</li>
+<li>Quando abstrações e implementações devem ser extensiveis independentemente</li>
+</ul>
+
+<h4>Exemplo Real: Renderizacao Cross-Platform</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; SEM Bridge — explosao de classes (N formas x M plataformas)</span>
+<span class="cm">// WindowsButton, LinuxButton, MacButton,</span>
+<span class="cm">// WindowsCheckbox, LinuxCheckbox, MacCheckbox,</span>
+<span class="cm">// WindowsSlider, LinuxSlider, MacSlider... 3x3 = 9 classes!</span>
+
+<span class="cm">// &#9989; COM Bridge — Implementação (Renderer) separada da Abstracao (UIElement)</span>
+
+<span class="cm">// Implementação — como renderizar em cada plataforma</span>
+<span class="kw">interface</span> <span class="tp">Renderer</span> {
+  <span class="fn">renderButton</span>(label: <span class="tp">string</span>, x: <span class="tp">number</span>, y: <span class="tp">number</span>): <span class="tp">void</span>;
+  <span class="fn">renderCheckbox</span>(checked: <span class="tp">boolean</span>, x: <span class="tp">number</span>, y: <span class="tp">number</span>): <span class="tp">void</span>;
+  <span class="fn">renderText</span>(text: <span class="tp">string</span>, x: <span class="tp">number</span>, y: <span class="tp">number</span>): <span class="tp">void</span>;
+}
+
+<span class="kw">class</span> <span class="tp">WebRenderer</span> <span class="kw">implements</span> <span class="tp">Renderer</span> {
+  <span class="fn">renderButton</span>(label: <span class="tp">string</span>, x: <span class="tp">number</span>, y: <span class="tp">number</span>) {
+    <span class="cm">// Cria &lt;button&gt; no DOM com CSS</span>
+  }
+  <span class="fn">renderCheckbox</span>(checked: <span class="tp">boolean</span>, x: <span class="tp">number</span>, y: <span class="tp">number</span>) {
+    <span class="cm">// Cria &lt;input type="checkbox"&gt; no DOM</span>
+  }
+  <span class="fn">renderText</span>(text: <span class="tp">string</span>, x: <span class="tp">number</span>, y: <span class="tp">number</span>) {
+    <span class="cm">// Cria &lt;span&gt; no DOM</span>
+  }
+}
+
+<span class="kw">class</span> <span class="tp">CanvasRenderer</span> <span class="kw">implements</span> <span class="tp">Renderer</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> ctx: <span class="tp">CanvasRenderingContext2D</span>) {}
+  <span class="fn">renderButton</span>(label: <span class="tp">string</span>, x: <span class="tp">number</span>, y: <span class="tp">number</span>) {
+    <span class="cm">// Desenha retangulo + texto no canvas</span>
+  }
+  <span class="fn">renderCheckbox</span>(checked: <span class="tp">boolean</span>, x: <span class="tp">number</span>, y: <span class="tp">number</span>) {
+    <span class="cm">// Desenha quadrado + check mark no canvas</span>
+  }
+  <span class="fn">renderText</span>(text: <span class="tp">string</span>, x: <span class="tp">number</span>, y: <span class="tp">number</span>) {
+    <span class="cm">// ctx.fillText() no canvas</span>
+  }
+}
+
+<span class="cm">// Abstracao — o que renderizar (independente da plataforma)</span>
+<span class="kw">abstract class</span> <span class="tp">UIElement</span> {
+  <span class="kw">constructor</span>(<span class="kw">protected</span> renderer: <span class="tp">Renderer</span>) {}
+  <span class="kw">abstract</span> <span class="fn">draw</span>(x: <span class="tp">number</span>, y: <span class="tp">number</span>): <span class="tp">void</span>;
+}
+
+<span class="kw">class</span> <span class="tp">Button</span> <span class="kw">extends</span> <span class="tp">UIElement</span> {
+  <span class="kw">constructor</span>(renderer: <span class="tp">Renderer</span>, <span class="kw">private</span> label: <span class="tp">string</span>) {
+    <span class="kw">super</span>(renderer);
+  }
+  <span class="fn">draw</span>(x: <span class="tp">number</span>, y: <span class="tp">number</span>) {
+    <span class="kw">this</span>.renderer.<span class="fn">renderButton</span>(<span class="kw">this</span>.label, x, y);
+  }
+}
+
+<span class="cm">// Agora: 3 elementos + 2 renderers = 5 classes (não 6)</span>
+<span class="cm">// Com 10 elementos + 5 renderers = 15 classes (não 50!)</span>
+<span class="kw">const</span> webBtn = <span class="kw">new</span> <span class="tp">Button</span>(<span class="kw">new</span> <span class="tp">WebRenderer</span>(), <span class="str">'Salvar'</span>);
+<span class="kw">const</span> canvasBtn = <span class="kw">new</span> <span class="tp">Button</span>(<span class="kw">new</span> <span class="tp">CanvasRenderer</span>(ctx), <span class="str">'Salvar'</span>);</code></pre>
+
+<!-- ═══ COMPOSITE ═══ -->
+<h3>Composite — Estruturas em Arvore</h3>
+<p><strong>"Compoe objetos em estruturas de árvore para representar hierarquias parte-todo."</strong> O Composite permite que clientes tratem objetos individuais (folhas) e composicoes (ramos) de maneira uniforme. E o padrão natural para qualquer estrutura hierárquica.</p>
+
+<p><strong>Exemplos no mundo real:</strong></p>
+<ul>
+<li><strong>Sistema de arquivos</strong> — Arquivo (folha) e Pasta (composicao que contém Arquivos e outras Pastas)</li>
+<li><strong>Menu de navegação</strong> — Item de menu (folha) e Submenu (composicao)</li>
+<li><strong>Organograma</strong> — Funcionario e Departamento (que contém funcionarios e sub-departamentos)</li>
+<li><strong>React Components</strong> — componentes filhos dentro de componentes pais, árvore de elementos</li>
+</ul>
+
+<h4>Exemplo Real: Sistema de Arquivos</h4>
+<pre data-lang="typescript"><code><span class="cm">// Interface comum para folhas e composicoes</span>
+<span class="kw">interface</span> <span class="tp">FileSystemNode</span> {
+  <span class="kw">readonly</span> name: <span class="tp">string</span>;
+  <span class="fn">getSize</span>(): <span class="tp">number</span>;
+  <span class="fn">print</span>(indent?: <span class="tp">string</span>): <span class="tp">void</span>;
+}
+
+<span class="cm">// Folha — Arquivo (não tem filhos)</span>
+<span class="kw">class</span> <span class="tp">File</span> <span class="kw">implements</span> <span class="tp">FileSystemNode</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">public readonly</span> name: <span class="tp">string</span>,
+    <span class="kw">private</span> size: <span class="tp">number</span>,
+  ) {}
+
+  <span class="fn">getSize</span>(): <span class="tp">number</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.size;
+  }
+
+  <span class="fn">print</span>(indent = <span class="str">''</span>): <span class="tp">void</span> {
+    console.<span class="fn">log</span>(<span class="str">`${indent}&#128196; ${<span class="kw">this</span>.name} (${<span class="kw">this</span>.size}KB)`</span>);
+  }
+}
+
+<span class="cm">// Composicao — Diretorio (contém filhos, que podem ser File ou Directory)</span>
+<span class="kw">class</span> <span class="tp">Directory</span> <span class="kw">implements</span> <span class="tp">FileSystemNode</span> {
+  <span class="kw">private</span> children: <span class="tp">FileSystemNode</span>[] = [];
+
+  <span class="kw">constructor</span>(<span class="kw">public readonly</span> name: <span class="tp">string</span>) {}
+
+  <span class="fn">add</span>(node: <span class="tp">FileSystemNode</span>): <span class="tp">void</span> {
+    <span class="kw">this</span>.children.<span class="fn">push</span>(node);
+  }
+
+  <span class="fn">getSize</span>(): <span class="tp">number</span> {
+    <span class="cm">// Recursivamente soma o tamanho de todos os filhos</span>
+    <span class="kw">return</span> <span class="kw">this</span>.children.<span class="fn">reduce</span>((sum, child) => sum + child.<span class="fn">getSize</span>(), <span class="num">0</span>);
+  }
+
+  <span class="fn">print</span>(indent = <span class="str">''</span>): <span class="tp">void</span> {
+    console.<span class="fn">log</span>(<span class="str">`${indent}&#128193; ${<span class="kw">this</span>.name}/ (${<span class="kw">this</span>.<span class="fn">getSize</span>()}KB)`</span>);
+    <span class="kw">this</span>.children.<span class="fn">forEach</span>(child => child.<span class="fn">print</span>(indent + <span class="str">'  '</span>));
+  }
+}
+
+<span class="cm">// Usó — cliente trata File e Directory uniformemente</span>
+<span class="kw">const</span> root = <span class="kw">new</span> <span class="tp">Directory</span>(<span class="str">'src'</span>);
+<span class="kw">const</span> components = <span class="kw">new</span> <span class="tp">Directory</span>(<span class="str">'components'</span>);
+components.<span class="fn">add</span>(<span class="kw">new</span> <span class="tp">File</span>(<span class="str">'Button.tsx'</span>, <span class="num">12</span>));
+components.<span class="fn">add</span>(<span class="kw">new</span> <span class="tp">File</span>(<span class="str">'Modal.tsx'</span>, <span class="num">24</span>));
+root.<span class="fn">add</span>(components);
+root.<span class="fn">add</span>(<span class="kw">new</span> <span class="tp">File</span>(<span class="str">'App.tsx'</span>, <span class="num">8</span>));
+root.<span class="fn">add</span>(<span class="kw">new</span> <span class="tp">File</span>(<span class="str">'index.ts'</span>, <span class="num">2</span>));
+
+root.<span class="fn">print</span>();
+<span class="cm">// &#128193; src/ (46KB)</span>
+<span class="cm">//   &#128193; components/ (36KB)</span>
+<span class="cm">//     &#128196; Button.tsx (12KB)</span>
+<span class="cm">//     &#128196; Modal.tsx (24KB)</span>
+<span class="cm">//   &#128196; App.tsx (8KB)</span>
+<span class="cm">//   &#128196; index.ts (2KB)</span>
+
+console.<span class="fn">log</span>(root.<span class="fn">getSize</span>()); <span class="cm">// 46 — soma recursiva automática</span></code></pre>
+
+<!-- ═══ DECORATOR ═══ -->
+<h3>Decorator — Adicionando Comportamento Dinamicamente</h3>
+<p><strong>"Adiciona responsabilidades a um objeto dinâmicamente, sem alterár sua classe."</strong> O Decorator envolve (wraps) o objeto original, delegando chamadas e adicionando comportamento antes ou depois. E a alternativa flexível a heranca — você pode compor comportamentos em runtime.</p>
+
+<p><strong>Exemplos ubiquos:</strong></p>
+<ul>
+<li><strong>Middleware</strong> em Express/NestJS — cada middleware "decora" o request handler</li>
+<li><strong>Interceptors</strong> em Angular/NestJS — decoram chamadas HTTP</li>
+<li><strong>Higher-Order Components (HOC)</strong> em React — <code>withAuth()</code>, <code>withTheme()</code></li>
+<li><strong>Decorators nativos</strong> em Python (<code>@decorator</code>) e TypeScript/ES (<code>@Injectable()</code>)</li>
+</ul>
+
+<h4>Exemplo: Logger e Cache Decorators</h4>
+<pre data-lang="typescript"><code><span class="cm">// Interface base</span>
+<span class="kw">interface</span> <span class="tp">HttpClient</span> {
+  <span class="fn">get</span>&lt;<span class="tp">T</span>&gt;(url: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt;;
+}
+
+<span class="cm">// Implementação concreta</span>
+<span class="kw">class</span> <span class="tp">FetchHttpClient</span> <span class="kw">implements</span> <span class="tp">HttpClient</span> {
+  <span class="kw">async</span> <span class="fn">get</span>&lt;<span class="tp">T</span>&gt;(url: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt; {
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(url);
+    <span class="kw">return</span> res.<span class="fn">json</span>();
+  }
+}
+
+<span class="cm">// Decorator 1 — Logging (adiciona logs antes e depois)</span>
+<span class="kw">class</span> <span class="tp">LoggingHttpClient</span> <span class="kw">implements</span> <span class="tp">HttpClient</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> wrapped: <span class="tp">HttpClient</span>) {}
+
+  <span class="kw">async</span> <span class="fn">get</span>&lt;<span class="tp">T</span>&gt;(url: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt; {
+    console.<span class="fn">log</span>(<span class="str">`[HTTP] GET ${url}`</span>);
+    <span class="kw">const</span> start = Date.<span class="fn">now</span>();
+    <span class="kw">const</span> result = <span class="kw">await</span> <span class="kw">this</span>.wrapped.<span class="fn">get</span>&lt;<span class="tp">T</span>&gt;(url);
+    console.<span class="fn">log</span>(<span class="str">`[HTTP] GET ${url} — ${Date.<span class="fn">now</span>() - start}ms`</span>);
+    <span class="kw">return</span> result;
+  }
+}
+
+<span class="cm">// Decorator 2 — Cache (retorna cache se disponível)</span>
+<span class="kw">class</span> <span class="tp">CachingHttpClient</span> <span class="kw">implements</span> <span class="tp">HttpClient</span> {
+  <span class="kw">private</span> cache = <span class="kw">new</span> <span class="tp">Map</span>&lt;<span class="tp">string</span>, { data: <span class="tp">any</span>; expiresAt: <span class="tp">number</span> }&gt;();
+
+  <span class="kw">constructor</span>(<span class="kw">private</span> wrapped: <span class="tp">HttpClient</span>, <span class="kw">private</span> ttlMs = <span class="num">60000</span>) {}
+
+  <span class="kw">async</span> <span class="fn">get</span>&lt;<span class="tp">T</span>&gt;(url: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">T</span>&gt; {
+    <span class="kw">const</span> cached = <span class="kw">this</span>.cache.<span class="fn">get</span>(url);
+    <span class="kw">if</span> (cached &amp;&amp; cached.expiresAt > Date.<span class="fn">now</span>()) {
+      <span class="kw">return</span> cached.data <span class="kw">as</span> <span class="tp">T</span>;
+    }
+    <span class="kw">const</span> result = <span class="kw">await</span> <span class="kw">this</span>.wrapped.<span class="fn">get</span>&lt;<span class="tp">T</span>&gt;(url);
+    <span class="kw">this</span>.cache.<span class="fn">set</span>(url, { data: result, expiresAt: Date.<span class="fn">now</span>() + <span class="kw">this</span>.ttlMs });
+    <span class="kw">return</span> result;
+  }
+}
+
+<span class="cm">// Composicao — empilha decorators como camadas</span>
+<span class="kw">const</span> client: <span class="tp">HttpClient</span> =
+  <span class="kw">new</span> <span class="tp">LoggingHttpClient</span>(         <span class="cm">// Camada 3: logging</span>
+    <span class="kw">new</span> <span class="tp">CachingHttpClient</span>(       <span class="cm">// Camada 2: cache</span>
+      <span class="kw">new</span> <span class="tp">FetchHttpClient</span>()      <span class="cm">// Camada 1: fetch real</span>
+    )
+  );
+
+<span class="cm">// Fluxo: Log → verifica Cache → (se miss) Fetch → armazena Cache → Log</span></code></pre>
+
+<h4>Exemplo em Python — Decorator com Sintaxe @</h4>
+<pre data-lang="python"><code><span class="kw">import</span> time
+<span class="kw">import</span> functools
+<span class="kw">from</span> typing <span class="kw">import</span> Callable, Any
+
+<span class="cm"># Decorator de logging — registra entrada, saida e tempo de execução</span>
+<span class="kw">def</span> <span class="fn">log_execution</span>(func: <span class="tp">Callable</span>) -> <span class="tp">Callable</span>:
+    <span class="ann">@functools.wraps</span>(func)
+    <span class="kw">def</span> <span class="fn">wrapper</span>(*args: <span class="tp">Any</span>, **kwargs: <span class="tp">Any</span>) -> <span class="tp">Any</span>:
+        start = time.time()
+        print(<span class="str">f"[LOG] Chamando {func.__name__}..."</span>)
+        result = func(*args, **kwargs)
+        elapsed = (time.time() - start) * <span class="num">1000</span>
+        print(<span class="str">f"[LOG] {func.__name__} finalizado em {elapsed:.1f}ms"</span>)
+        <span class="kw">return</span> result
+    <span class="kw">return</span> wrapper
+
+<span class="cm"># Decorator de retry — tenta novamente em caso de falha</span>
+<span class="kw">def</span> <span class="fn">retry</span>(max_attempts: <span class="tp">int</span> = <span class="num">3</span>, delay: <span class="tp">float</span> = <span class="num">1.0</span>):
+    <span class="kw">def</span> <span class="fn">decorator</span>(func: <span class="tp">Callable</span>) -> <span class="tp">Callable</span>:
+        <span class="ann">@functools.wraps</span>(func)
+        <span class="kw">def</span> <span class="fn">wrapper</span>(*args, **kwargs):
+            <span class="kw">for</span> attempt <span class="kw">in</span> range(<span class="num">1</span>, max_attempts + <span class="num">1</span>):
+                <span class="kw">try</span>:
+                    <span class="kw">return</span> func(*args, **kwargs)
+                <span class="kw">except</span> <span class="tp">Exception</span> <span class="kw">as</span> e:
+                    <span class="kw">if</span> attempt == max_attempts:
+                        <span class="kw">raise</span>
+                    print(<span class="str">f"[RETRY] Tentativa {attempt} falhou: {e}. Tentando novamente..."</span>)
+                    time.sleep(delay)
+        <span class="kw">return</span> wrapper
+    <span class="kw">return</span> decorator
+
+<span class="cm"># Composicao de decorators — leia de baixo para cima</span>
+<span class="ann">@log_execution</span>      <span class="cm"># 2. Depois loga o tempo total</span>
+<span class="ann">@retry</span>(max_attempts=<span class="num">3</span>)  <span class="cm"># 1. Primeiro tenta com retry</span>
+<span class="kw">def</span> <span class="fn">fetch_user_data</span>(user_id: <span class="tp">str</span>) -> <span class="tp">dict</span>:
+    <span class="cm"># Chamada real a API externa</span>
+    response = requests.get(<span class="str">f"https://api.example.com/users/{user_id}"</span>)
+    response.raise_for_status()
+    <span class="kw">return</span> response.json()</code></pre>
+
+<!-- ═══ FACADE ═══ -->
+<h3>Facade — Interface Simplificada</h3>
+<p><strong>"Fornece uma interface unificada e simplificada para um conjunto de interfaces de um subsistema."</strong> O Facade não esconde o subsistema — apenas fornece um atalho conveniente. Os clientes ainda podem acessar os serviços internós diretamente se precisarem. Pense nele como a <strong>recepcao de um hotel</strong>: você não precisa falar com cada departamento individualmente.</p>
+
+<p><strong>Quando usar:</strong></p>
+<ul>
+<li>Quando um subsistema tem muitas classes que precisam ser orquestradas em sequência</li>
+<li>Para desacoplar clientes da complexidade interna</li>
+<li>Para fornecer pontos de entrada claros para operações comuns</li>
+</ul>
+
+<h4>Exemplo Real: OrderFacade Orquestrando Subsistemas</h4>
+<pre data-lang="typescript"><code><span class="cm">// Subsistemas especializados — cada um faz UMA coisa</span>
+<span class="kw">class</span> <span class="tp">InventoryService</span> {
+  <span class="kw">async</span> <span class="fn">reserve</span>(items: <span class="tp">OrderItem</span>[]): <span class="tp">Promise</span>&lt;<span class="tp">ReservationId</span>&gt; { <span class="cm">/* ... */</span> }
+  <span class="kw">async</span> <span class="fn">release</span>(reservationId: <span class="tp">ReservationId</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; { <span class="cm">/* ... */</span> }
+}
+
+<span class="kw">class</span> <span class="tp">PaymentService</span> {
+  <span class="kw">async</span> <span class="fn">charge</span>(userId: <span class="tp">string</span>, amount: <span class="tp">number</span>): <span class="tp">Promise</span>&lt;<span class="tp">ChargeResult</span>&gt; { <span class="cm">/* ... */</span> }
+  <span class="kw">async</span> <span class="fn">refund</span>(chargeId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; { <span class="cm">/* ... */</span> }
+}
+
+<span class="kw">class</span> <span class="tp">ShippingService</span> {
+  <span class="kw">async</span> <span class="fn">calculateCost</span>(items: <span class="tp">OrderItem</span>[], address: <span class="tp">Address</span>): <span class="tp">Promise</span>&lt;<span class="tp">number</span>&gt; { <span class="cm">/* ... */</span> }
+  <span class="kw">async</span> <span class="fn">createShipment</span>(orderId: <span class="tp">string</span>, address: <span class="tp">Address</span>): <span class="tp">Promise</span>&lt;<span class="tp">TrackingCode</span>&gt; { <span class="cm">/* ... */</span> }
+}
+
+<span class="kw">class</span> <span class="tp">NotificationService</span> {
+  <span class="kw">async</span> <span class="fn">sendOrderConfirmation</span>(userId: <span class="tp">string</span>, orderId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; { <span class="cm">/* ... */</span> }
+}
+
+<span class="cm">// Facade — orquestra todos os subsistemas em uma operação simples</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">OrderFacade</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> inventory: <span class="tp">InventoryService</span>,
+    <span class="kw">private</span> payment: <span class="tp">PaymentService</span>,
+    <span class="kw">private</span> shipping: <span class="tp">ShippingService</span>,
+    <span class="kw">private</span> notification: <span class="tp">NotificationService</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">placeOrder</span>(dto: <span class="tp">PlaceOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">OrderResult</span>&gt; {
+    <span class="cm">// 1. Reserva estoque</span>
+    <span class="kw">const</span> reservationId = <span class="kw">await</span> <span class="kw">this</span>.inventory.<span class="fn">reserve</span>(dto.items);
+
+    <span class="kw">try</span> {
+      <span class="cm">// 2. Calcula frete</span>
+      <span class="kw">const</span> shippingCost = <span class="kw">await</span> <span class="kw">this</span>.shipping.<span class="fn">calculateCost</span>(dto.items, dto.address);
+      <span class="kw">const</span> total = dto.subtotal + shippingCost;
+
+      <span class="cm">// 3. Cobra pagamento</span>
+      <span class="kw">const</span> charge = <span class="kw">await</span> <span class="kw">this</span>.payment.<span class="fn">charge</span>(dto.userId, total);
+
+      <span class="cm">// 4. Cria envio</span>
+      <span class="kw">const</span> tracking = <span class="kw">await</span> <span class="kw">this</span>.shipping.<span class="fn">createShipment</span>(charge.orderId, dto.address);
+
+      <span class="cm">// 5. Notifica usuário</span>
+      <span class="kw">await</span> <span class="kw">this</span>.notification.<span class="fn">sendOrderConfirmation</span>(dto.userId, charge.orderId);
+
+      <span class="kw">return</span> { orderId: charge.orderId, tracking, total };
+    } <span class="kw">catch</span> (error) {
+      <span class="cm">// Rollback: libera estoque se algo falhou</span>
+      <span class="kw">await</span> <span class="kw">this</span>.inventory.<span class="fn">release</span>(reservationId);
+      <span class="kw">throw</span> error;
+    }
+  }
+}
+
+<span class="cm">// Controller — interface limpa, toda complexidade escondida</span>
+<span class="ann">@Controller</span>(<span class="str">'orders'</span>)
+<span class="kw">class</span> <span class="tp">OrderController</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> orderFacade: <span class="tp">OrderFacade</span>) {}
+
+  <span class="ann">@Post</span>()
+  <span class="kw">async</span> <span class="fn">create</span>(<span class="ann">@Body</span>() dto: <span class="tp">PlaceOrderDto</span>) {
+    <span class="kw">return</span> <span class="kw">this</span>.orderFacade.<span class="fn">placeOrder</span>(dto); <span class="cm">// Uma linha!</span>
+  }
+}</code></pre>
+
+<!-- ═══ FLYWEIGHT ═══ -->
+<h3>Flyweight — Compartilhamento de Objetos</h3>
+<p><strong>"Usa compartilhamento para suportar grandes quantidades de objetos de forma eficiente."</strong> O Flyweight separa o estado <strong>intrinseco</strong> (compartilhavel, imutável) do estado <strong>extrinseco</strong> (único por instancia, fornecido pelo contexto). E menós comum em aplicações web, mas essencial em cenários de alta performance.</p>
+
+<p><strong>Estado intrinseco vs extrinseco:</strong></p>
+<ul>
+<li><strong>Intrinseco:</strong> Dados que não mudam entre instancias (ex: a forma da letra "A" em Arial 12pt)</li>
+<li><strong>Extrinseco:</strong> Dados que variam por contexto (ex: a posicao X,Y onde essa letra "A" aparece)</li>
+</ul>
+
+<p><strong>Exemplo clássico:</strong> Um editor de texto com 100.000 caracteres. Sem Flyweight, cada caractere seria um objeto com fonte, tamanho, cor, posicao — milhões de bytes. Com Flyweight, você compartilha os glifos (apenas ~100 objetos para ASCII) e armazena apenas a posicao de cada uso.</p>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Na prática moderna:</strong> O Flyweight e implementado automáticamente por muitos frameworks. O virtual DOM do React, string interning do JavaScript, connection pools de banco de dados, e caches de objetos imutaveis todos aplicam o conceito de Flyweight internamente. Você raramente precisara implementar um Flyweight manualmente, mas entender o conceito ajuda a <strong>reconhecer otimizações</strong> nós frameworks que você usa.</div>
+</div>
+
+<!-- ═══ PROXY ═══ -->
+<h3>Proxy — Controle de Acessó ao Objeto</h3>
+<p><strong>"Fornece um substituto ou placeholder para outro objeto, controlando o acesso a ele."</strong> O Proxy tem a mesma interface do objeto real, mas adiciona uma camada de controle. Existem vários tipos:</p>
+
+<ul>
+<li><strong>Virtual Proxy</strong> — adia a criação de objetos pesados (lazy loading)</li>
+<li><strong>Protection Proxy</strong> — controla acesso baseado em permissões</li>
+<li><strong>Caching Proxy</strong> — armazena resultados para evitar re-execução</li>
+<li><strong>Logging Proxy</strong> — registra chamadas ao objeto real</li>
+</ul>
+
+<h4>Exemplo: Lazy Loading + Access Control Proxy</h4>
+<pre data-lang="typescript"><code><span class="cm">// Interface compartilhada</span>
+<span class="kw">interface</span> <span class="tp">DatabaseConnection</span> {
+  <span class="fn">query</span>&lt;<span class="tp">T</span>&gt;(sql: <span class="tp">string</span>, params?: <span class="tp">any</span>[]): <span class="tp">Promise</span>&lt;<span class="tp">T</span>[]&gt;;
+  <span class="fn">close</span>(): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+}
+
+<span class="cm">// Objeto real — conexão pesada com o banco</span>
+<span class="kw">class</span> <span class="tp">PostgresConnection</span> <span class="kw">implements</span> <span class="tp">DatabaseConnection</span> {
+  <span class="kw">private</span> pool: <span class="tp">Pool</span>;
+
+  <span class="kw">constructor</span>(connectionString: <span class="tp">string</span>) {
+    <span class="cm">// Operacao custosa — cria pool de conexões</span>
+    <span class="kw">this</span>.pool = <span class="kw">new</span> <span class="tp">Pool</span>({ connectionString, max: <span class="num">20</span> });
+    console.<span class="fn">log</span>(<span class="str">'Pool de conexões criado (custoso!)'</span>);
+  }
+
+  <span class="kw">async</span> <span class="fn">query</span>&lt;<span class="tp">T</span>&gt;(sql: <span class="tp">string</span>, params?: <span class="tp">any</span>[]): <span class="tp">Promise</span>&lt;<span class="tp">T</span>[]&gt; {
+    <span class="kw">const</span> result = <span class="kw">await</span> <span class="kw">this</span>.pool.<span class="fn">query</span>(sql, params);
+    <span class="kw">return</span> result.rows;
+  }
+
+  <span class="kw">async</span> <span class="fn">close</span>() { <span class="kw">await</span> <span class="kw">this</span>.pool.<span class="fn">end</span>(); }
+}
+
+<span class="cm">// Proxy — lazy loading + controle de acesso + logging</span>
+<span class="kw">class</span> <span class="tp">DatabaseProxy</span> <span class="kw">implements</span> <span class="tp">DatabaseConnection</span> {
+  <span class="kw">private</span> realConnection: <span class="tp">PostgresConnection</span> | <span class="kw">null</span> = <span class="kw">null</span>;
+  <span class="kw">private</span> queryCount = <span class="num">0</span>;
+
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> connectionString: <span class="tp">string</span>,
+    <span class="kw">private</span> allowedQueries: <span class="tp">RegExp</span>[], <span class="cm">// Protection: queries permitidas</span>
+  ) {}
+
+  <span class="kw">private</span> <span class="fn">getConnection</span>(): <span class="tp">PostgresConnection</span> {
+    <span class="cm">// Lazy loading — só cria quando realmente precisa</span>
+    <span class="kw">if</span> (!<span class="kw">this</span>.realConnection) {
+      <span class="kw">this</span>.realConnection = <span class="kw">new</span> <span class="tp">PostgresConnection</span>(<span class="kw">this</span>.connectionString);
+    }
+    <span class="kw">return</span> <span class="kw">this</span>.realConnection;
+  }
+
+  <span class="kw">async</span> <span class="fn">query</span>&lt;<span class="tp">T</span>&gt;(sql: <span class="tp">string</span>, params?: <span class="tp">any</span>[]): <span class="tp">Promise</span>&lt;<span class="tp">T</span>[]&gt; {
+    <span class="cm">// Protection — bloqueia queries não autorizadas</span>
+    <span class="kw">const</span> isAllowed = <span class="kw">this</span>.allowedQueries.<span class="fn">some</span>(pattern => pattern.<span class="fn">test</span>(sql));
+    <span class="kw">if</span> (!isAllowed) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">`Query não autorizada: ${sql.substring(<span class="num">0</span>, <span class="num">50</span>)}...`</span>);
+    }
+
+    <span class="cm">// Logging</span>
+    <span class="kw">this</span>.queryCount++;
+    console.<span class="fn">log</span>(<span class="str">`[DB] Query #${<span class="kw">this</span>.queryCount}: ${sql.substring(<span class="num">0</span>, <span class="num">80</span>)}`</span>);
+
+    <span class="cm">// Delega ao objeto real (criado sob demanda)</span>
+    <span class="kw">return</span> <span class="kw">this</span>.<span class="fn">getConnection</span>().<span class="fn">query</span>&lt;<span class="tp">T</span>&gt;(sql, params);
+  }
+
+  <span class="kw">async</span> <span class="fn">close</span>() {
+    <span class="kw">if</span> (<span class="kw">this</span>.realConnection) {
+      <span class="kw">await</span> <span class="kw">this</span>.realConnection.<span class="fn">close</span>();
+    }
+  }
+}
+
+<span class="cm">// Usó — cliente não sabe que esta usando um proxy</span>
+<span class="kw">const</span> db: <span class="tp">DatabaseConnection</span> = <span class="kw">new</span> <span class="tp">DatabaseProxy</span>(
+  process.env.DATABASE_URL,
+  [/^SELECT/i, /^INSERT/i], <span class="cm">// So permite SELECT e INSERT</span>
+);
+
+<span class="cm">// Conexao real só e criada aqui, na primeira query:</span>
+<span class="kw">const</span> users = <span class="kw">await</span> db.<span class="fn">query</span>(<span class="str">'SELECT * FROM users WHERE active = $1'</span>, [<span class="kw">true</span>]);
+
+<span class="cm">// Isso lanca erro — DELETE não é permitido pelo proxy:</span>
+<span class="cm">// await db.query('DELETE FROM users WHERE id = $1', ['123']);</span></code></pre>
+
+<!-- ═══ COMPARISON TABLE ═══ -->
+<h3>Quando Usar Qual Pattern?</h3>
+
+<div class="table-wrap">
+<table>
+<tr><th>Pattern</th><th>Problema que Resolve</th><th>Exemplo Real</th><th>Frequencia</th></tr>
+<tr><td><strong>Adapter</strong></td><td>Interfaces incompativeis entre classes existentes</td><td>Wrapper para API legada, ORM adaptando para DAO</td><td>Muito alta</td></tr>
+<tr><td><strong>Bridge</strong></td><td>Explosao de subclasses por duas dimensões de variacao</td><td>UI cross-platform, drivers de banco de dados</td><td>Media</td></tr>
+<tr><td><strong>Composite</strong></td><td>Hierarquias parte-todo que precisam ser tratadas uniformemente</td><td>File system, menus, árvore DOM, org charts</td><td>Alta</td></tr>
+<tr><td><strong>Decorator</strong></td><td>Adicionar comportamento sem heranca, composicao em runtime</td><td>Middleware, interceptors, HOCs, logging/cache</td><td>Muito alta</td></tr>
+<tr><td><strong>Facade</strong></td><td>Subsistema complexo que precisa de interface simplificada</td><td>OrderFacade orquestrando pagamento+estoque+frete</td><td>Muito alta</td></tr>
+<tr><td><strong>Flyweight</strong></td><td>Muitos objetos similares consumindo muita memória</td><td>Editor de texto, tile maps, particle systems</td><td>Baixa</td></tr>
+<tr><td><strong>Proxy</strong></td><td>Controle de acesso, lazy loading, cache transparente</td><td>Lazy ORM, API gateway, raté limiter</td><td>Alta</td></tr>
+</table>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Refatorando um OrderService Monolitico</h3>
+<p><strong>Cenário:</strong> Você herdou um <code>OrderService</code> monolitico com 800 linhas que faz tudo: válida estoque, calcula frete, processa pagamento, envia notificações, gera invoice, e integra com sistema legado de ERP. Qualquer mudança em uma dessas areas arrisca quebrar as outras.</p>
+
+<h4>ANTES — Monolito (1 classe gigante)</h4>
+<div class="diagram">
+<div class="diagram-box red">OrderService<br><small>800 linhas</small><br><small>Estoque + Pagamento + Frete<br>+ Notificacao + Invoice + ERP</small></div>
+</div>
+
+<h4>DEPOIS — Facade + Adapter + Serviços Especializados</h4>
+<div class="diagram">
+<div class="diagram-box orange">Controller</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">OrderFacade<br><small>(~80 linhas)</small><br><small>Orquestrador</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">InventoryService<br>PaymentService<br>ShippingService<br>NotificationService<br>InvoiceService</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">ERPAdapter<br><small>(Adapter para</small><br><small>sistema legado)</small></div>
+</div>
+
+<p><strong>Padroes aplicados:</strong></p>
+<ul>
+<li><strong>Facade</strong> — <code>OrderFacade</code> orquestra os 5 serviços especializados, expondo métodos simples como <code>placeOrder()</code>, <code>cancelOrder()</code></li>
+<li><strong>Adapter</strong> — <code>ERPAdapter</code> traduz a interface moderna para a API SOAP legada do ERP, isolando a complexidade de integração</li>
+<li><strong>SRP (SOLID)</strong> — Cada serviço tem uma única responsabilidade, ~100-150 linhas cada</li>
+<li><strong>DIP (SOLID)</strong> — Facade depende de interfaces, não de implementações concretas</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// O ERP legado tem interface SOAP completamente diferente</span>
+<span class="kw">class</span> <span class="tp">LegacyERPClient</span> {
+  <span class="fn">syncOrder</span>(xmlPayload: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; { <span class="cm">/* SOAP call */</span> }
+}
+
+<span class="cm">// Adapter isola a complexidade do ERP</span>
+<span class="kw">class</span> <span class="tp">ERPAdapter</span> <span class="kw">implements</span> <span class="tp">IERPIntegration</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> legacyClient: <span class="tp">LegacyERPClient</span>) {}
+
+  <span class="kw">async</span> <span class="fn">syncOrder</span>(order: <span class="tp">Order</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">const</span> xml = <span class="kw">this</span>.<span class="fn">toSOAPXml</span>(order); <span class="cm">// Converte para XML SOAP</span>
+    <span class="kw">await</span> <span class="kw">this</span>.legacyClient.<span class="fn">syncOrder</span>(xml);
+  }
+
+  <span class="kw">private</span> <span class="fn">toSOAPXml</span>(order: <span class="tp">Order</span>): <span class="tp">string</span> {
+    <span class="cm">// Mapeamento complexo do modelo moderno para XML legado</span>
+    <span class="kw">return</span> <span class="str">`&lt;soap:Envelope&gt;...&lt;/soap:Envelope&gt;`</span>;
+  }
+}
+
+<span class="cm">// Facade final — limpo, orquestrador puro</span>
+<span class="kw">class</span> <span class="tp">OrderFacade</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> inventory: <span class="tp">IInventoryService</span>,
+    <span class="kw">private</span> payment: <span class="tp">IPaymentService</span>,
+    <span class="kw">private</span> shipping: <span class="tp">IShippingService</span>,
+    <span class="kw">private</span> notification: <span class="tp">INotificationService</span>,
+    <span class="kw">private</span> erp: <span class="tp">IERPIntegration</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">placeOrder</span>(dto: <span class="tp">PlaceOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">OrderResult</span>&gt; {
+    <span class="kw">const</span> reservation = <span class="kw">await</span> <span class="kw">this</span>.inventory.<span class="fn">reserve</span>(dto.items);
+    <span class="kw">const</span> charge = <span class="kw">await</span> <span class="kw">this</span>.payment.<span class="fn">charge</span>(dto.userId, dto.total);
+    <span class="kw">const</span> tracking = <span class="kw">await</span> <span class="kw">this</span>.shipping.<span class="fn">ship</span>(charge.orderId, dto.address);
+    <span class="kw">await</span> <span class="kw">this</span>.notification.<span class="fn">sendConfirmation</span>(dto.userId, charge.orderId);
+    <span class="kw">await</span> <span class="kw">this</span>.erp.<span class="fn">syncOrder</span>(charge.order); <span class="cm">// ERP legado via Adapter</span>
+    <span class="kw">return</span> { orderId: charge.orderId, tracking };
+  }
+}</code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Decorator Hell — Excessó de camadas:</strong> Empilhar 5+ decorators cria uma "cebola" impossível de debugar. O stack trace fica incompreensivel. <strong>Regra prática:</strong> se você tem mais de 3 níveis de wrapping, considere consolidar em um único decorator ou usar uma abordagem diferente (como middleware pipeline com array).</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Facade virando God Object:</strong> A Facade deve orquestrar, não conter lógica. Se sua Facade tem 500+ linhas, ela provavelmente esta fazendo trabalho que deveria estar nós serviços especializados. Facade saudavel: 50-100 linhas de <strong>orquestração pura</strong> (chamadas sequênciais, tratamento de erro, rollback).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Confusao Adapter vs Facade:</strong> O <strong>Adapter</strong> converte uma interface em outra (1:1 — mesmo nível de complexidade, formato diferente). A <strong>Facade</strong> simplifica um subsistema complexo (N:1 — reduce complexidade). Se você esta mapeando campos de uma API para outra, e Adapter. Se você esta orquestrando 5 serviços em uma chamada, e Facade.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Proxy invisível demais:</strong> O Proxy deve ser transparente para o cliente, mas <strong>não para o desenvolvedor</strong>. Documente claramente que um Proxy existe é o que ele faz (cache? raté limit? lazy loading?). Proxies invisveis que mudam comportamento silenciosamente são uma fonte de bugs dificeis de rastrear.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática — Comece Simples:</strong> Não aplique patterns estruturais preventivamente. Comece com a implementação direta. Quando a dor aparecer (acoplamento, complexidade, interface incompatível), <strong>ai</strong> aplique o pattern. Um Adapter desnecessário e apenas uma camada de indirection inútil. Um Decorator sem motivo e complexidade gratuita.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você precisa integrar com 3 provedores de email (SES, SendGrid, Mailgun) que tem APIs completamente diferentes. Seu sistema espera uma interface unificada. Qual pattern usar é como estruturar?</div>
+<div class="qa-a">
+<p><strong>Solução: Adapter Pattern.</strong> Crie uma interface <code>IEmailProvider</code> com métodos <code>send(to, subject, body)</code> é <code>sendBulk(recipients, template)</code>. Implemente <code>SESAdapter</code>, <code>SendGridAdapter</code> é <code>MailgunAdapter</code>, cada um traduzindo a interface unificada para a API específica do provedor. O serviço de notificação depende apenas de <code>IEmailProvider</code> é não sabe qual provedor esta por tras. Combinado com Strategy Pattern (do OCP), você pode trocar provedores sem mudar nada no serviço.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu sistema de e-commerce tem um fluxo de checkout que envolve: validar carrinho, reservar estoque, calcular impostos, processar pagamento, gerar nota fiscal, e enviar confirmacao. O código esta todo em um método de 300 linhas. Qual pattern aplicar?</div>
+<div class="qa-a">
+<p><strong>Solução: Facade Pattern.</strong> Crie um <code>CheckoutFacade</code> que orquestra os 6 serviços especializados: <code>CartValidator</code>, <code>InventoryService</code>, <code>TaxCalculator</code>, <code>PaymentService</code>, <code>InvoiceService</code>, <code>NotificationService</code>. O Facade contém apenas a lógica de orquestração (sequência de chamadas + rollback em caso de erro). Cada serviço tem no máximo 150 linhas e pode ser testado isoladamente. O método <code>checkout()</code> do Facade fica com ~40-60 linhas de orquestração limpa.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você tem uma classe HttpClient que faz chamadas a API. Precisa adicionar: (1) logging de todas as requests, (2) cache de GET requests, (3) retry automático em falhas, (4) raté limiting. Sem modificar a classe original. Qual pattern é como compor?</div>
+<div class="qa-a">
+<p><strong>Solução: Decorator Pattern.</strong> Crie 4 decorators que implementam a mesma interface <code>IHttpClient</code>: <code>LoggingDecorator</code>, <code>CachingDecorator</code>, <code>RetryDecorator</code>, <code>RateLimitDecorator</code>. Componha-os em camadas: <code>new LoggingDecorator(new RateLimitDecorator(new RetryDecorator(new CachingDecorator(new HttpClient()))))</code>. A ordem importa — logging na camada mais externa captura tudo, cache antes de retry evita re-execução desnecessária. Cada decorator tem uma única responsabilidade e pode ser adicionado ou removido independentemente.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Design Patterns Estruturais</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="03-design-patterns-criacionais.html">&#8592; Anterior</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="05-design-patterns-comportamentais.html" class="primary">Próximo: Design Patterns Comportamentais &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 04: Design Patterns Estruturais
+// ══════════════════════════════════════════
+const SECTION_NUM = 4;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual pattern estrutural converte a interface de uma classe em outra interface que o cliente espera?",
+    options: [
+      "Facade",
+      "Adapter",
+      "Proxy",
+      "Bridge"
+    ],
+    correct: 1,
+    explanation: "O Adapter converte a interface de uma classe em outra que o cliente espera. Pense como um adaptador de tomada — traduz entre dois formatos incompativeis sem alterár nenhum dos dois."
+  },
+  {
+    question: "Você tem um subsistema complexo com 5 serviços (estoque, pagamento, frete, notificação, invoice) que precisam ser orquestrados em sequência para processar um pedido. Qual pattern usar?",
+    options: [
+      "Adapter — para adaptar cada serviço",
+      "Decorator — para adicionar comportamento a cada serviço",
+      "Facade — para fornecer interface simplificada ao subsistema",
+      "Composite — para compor os serviços em árvore"
+    ],
+    correct: 2,
+    explanation: "O Facade fornece uma interface simplificada para um subsistema complexo. OrderFacade orquestra os 5 serviços, expondo métodos simples como placeOrder() que escondem a complexidade."
+  },
+  {
+    question: "Qual a principal diferença entre Adapter e Facade?",
+    options: [
+      "Adapter e para classes, Facade e para funções",
+      "Adapter converte interface 1:1, Facade simplifica N serviços em 1 interface",
+      "Facade e para backend, Adapter e para frontend",
+      "Não ha diferença — são o mesmo pattern com nomes diferentes"
+    ],
+    correct: 1,
+    explanation: "Adapter converte uma interface em outra (1:1, mesmo nível de complexidade). Facade simplifica um subsistema complexo (N:1, reduz complexidade). Adapter traduz formato, Facade orquestra serviços."
+  },
+  {
+    question: "Você precisa adicionar logging, cache e retry a um HttpClient sem modificar a classe original. Qual pattern usar?",
+    options: [
+      "Proxy",
+      "Adapter",
+      "Composite",
+      "Decorator"
+    ],
+    correct: 3,
+    explanation: "O Decorator adiciona responsabilidades a objetos dinâmicamente. Você cria LoggingDecorator, CachingDecorator e RetryDecorator, empilhando-os como camadas. Cada um implementa a mesma interface e delega ao wrapped."
+  },
+  {
+    question: "Qual pattern é mais adequado para representar um sistema de arquivos onde pastas contém arquivos e outras pastas?",
+    options: [
+      "Bridge",
+      "Composite",
+      "Flyweight",
+      "Decorator"
+    ],
+    correct: 1,
+    explanation: "O Composite permite compor objetos em estruturas de árvore para tratar individuais (File) e composicoes (Directory) uniformemente atraves da mesma interface (FileSystemNode)."
+  },
+  {
+    question: "O Bridge Pattern resolve principalmente qual problema?",
+    options: [
+      "Interfaces incompativeis entre classes",
+      "Explosao combinatoria de subclasses por duas dimensões de variacao",
+      "Objetos pesados que precisam de lazy loading",
+      "Subsistemas complexos que precisam de simplificacao"
+    ],
+    correct: 1,
+    explanation: "O Bridge separa abstração de implementação para que ambas variem independentemente. Sem ele, N abstrações x M implementações = N*M classes. Com Bridge, N + M classes bastam."
+  },
+  {
+    question: "Qual tipo de Proxy adia a criação de objetos pesados até que sejam realmente necessários?",
+    options: [
+      "Protection Proxy",
+      "Caching Proxy",
+      "Logging Proxy",
+      "Virtual Proxy"
+    ],
+    correct: 3,
+    explanation: "O Virtual Proxy (também chamado Lazy Proxy) adia a criação do objeto real até o primeiro uso. E ideal para conexões de banco de dados, carregamento de imagens, e objetos com inicialização custosa."
+  },
+  {
+    question: "Qual é o principal risco de usar Decorator em excessó (Decorator Hell)?",
+    options: [
+      "Performance degradada por muitos objetos",
+      "Stack trace incompreensivel e dificuldade de debug",
+      "Usó excessivo de memória",
+      "Incompatibilidade com TypeScript"
+    ],
+    correct: 1,
+    explanation: "Empilhar muitos decorators cria uma 'cebola' de wrappers que torna o debug extremamente difícil — o stack trace mostra camada após camada. Regra prática: máximo 3 níveis de wrapping."
+  },
+  {
+    question: "Em Python, o que a sintaxe @decorator faz com a função decorada?",
+    options: [
+      "Deleta a função original e cria uma nova",
+      "Passa a função como argumento ao decorator e substitui pelo retorno",
+      "Adiciona a função a uma lista global de funções decoradas",
+      "Cria uma subclasse da função original"
+    ],
+    correct: 1,
+    explanation: "@decorator e acucar sintatico para func = decorator(func). O decorator recebe a função original como argumento, tipicamente cria um wrapper que adiciona comportamento antes/depois, e retorna o wrapper."
+  },
+  {
+    question: "Quando uma Facade se torna um problema (anti-pattern)?",
+    options: [
+      "Quando ela tem mais de 3 dependências injetadas",
+      "Quando ela expoe métodos publicos para o controller",
+      "Quando ela contém lógica de negócio ao inves de apenas orquestrar",
+      "Quando ela é usada em conjunto com Adapter"
+    ],
+    correct: 2,
+    explanation: "Uma Facade saudavel contém apenas orquestração (sequência de chamadas + tratamento de erro). Quando ela começa a conter lógica de negócio (válidacoes, cálculos, transformacoes), vira um God Object. A lógica deve ficar nós serviços especializados."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina os Design Patterns Estruturais.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

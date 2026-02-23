@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>27 — Serverless & Edge Computing | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="26-iac-terraform-pulumi-cdk.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>27</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="28-owasp-top-10.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:40.9%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 27</span>
+<h2>Serverless & Edge Computing</h2>
+<div class="section-line"></div>
+
+<p>Serverless não significa "sem servidor" — significa que <strong>você não gerência o servidor</strong>. O provedor cuida de provisionamento, scaling, patching e disponibilidade. Você escreve funções, faz deploy, e paga apenas pelo que executa. Edge Computing vai além: leva o processamento para o ponto mais próximo do usuário, reduzindo latência para milissegundos. Juntos, esses paradigmas estão redefinindo como arquitetamos aplicações modernas.</p>
+
+<p>Nesta seção, vamos mergulhar fundo no modelo de execução serverless, entender cold starts, explorar padrões arquiteturais, comparar frameworks, e dominar Edge Functions — tudo com exemplos práticos em TypeScript.</p>
+
+<!-- ═══ SERVERLESS / FaaS DEEP ═══ -->
+<h3>Serverless / FaaS — Modelo de Execução</h3>
+
+<p><strong>Function as a Service (FaaS)</strong> é o coração do serverless. O modelo de execução segue um ciclo claro:</p>
+
+<div class="diagram">
+<div class="diagram-box green">Evento<br><small>(HTTP, SQS, S3...)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Container Init<br><small>(Cold Start)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Handler Executa<br><small>(Sua lógica)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Response<br><small>(Retorna resultado)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Idle / Terminate<br><small>(Reusa ou destroi)</small></div>
+</div>
+
+<h4>Caracteristicas Fundamentais</h4>
+<ul>
+<li><strong>Stateless by design</strong> — cada invocação é independente. Não ha garantia de que a mesma instância processara a próxima request. Estado deve ser externalizado (DynamoDB, Redis, S3)</li>
+<li><strong>Efêmero</strong> — funções tem timeout máximo (AWS Lambda: 15 min, Cloud Functions: 9 min, Azure Functions: 10 min). Se exceder, a execução e interrompida</li>
+<li><strong>Escala automática</strong> — de 0 a milhares de instâncias simultaneas, sem configuração. Escala horizontalmente por padrão</li>
+<li><strong>Memória = CPU</strong> — você configura memória (128MB a 10GB no Lambda) é a CPU escala proporcionalmente. Mais memória = mais CPU = execução mais rápida (nem sempre linear)</li>
+<li><strong>Pricing granular</strong> — cobra por invocação ($0.20/milhão) + duração ($/GB-segundo). Zero requests = zero custo</li>
+</ul>
+
+<h4>Cold Start — Causas e Soluções</h4>
+<p>O <strong>cold start</strong> acontece quando não ha instância quente disponível. O provedor precisa: alocar container, baixar código, inicializar runtime, executar init do handler. Pode adicionar de 100ms a 10+ segundos dependendo da linguagem e tamanho do deploy.</p>
+
+<div class="card">
+<div class="card-title">Fatores que Afetam Cold Start</div>
+<ul>
+<li><strong>Linguagem</strong> — Java/C# = cold start alto (JVM/CLR startup). Node.js/Python = baixo. Rust/Go = mínimo</li>
+<li><strong>Tamanho do pacote</strong> — mais dependências = mais tempo para descompactar e carregar</li>
+<li><strong>VPC</strong> — Lambda em VPC precisa criar ENI (Elastic Network Interface), adicionando 1-10s no passado (hoje melhorou com Hyperplane)</li>
+<li><strong>Provisioned Concurrency</strong> — pré-aquece N instâncias, eliminando cold start. Custo fixo por instância mantida quente</li>
+<li><strong>SnapStart (Java)</strong> — AWS tira snapshot da JVM após init e restaura em milissegundos. Reduz cold start de Java de ~5s para ~200ms</li>
+</ul>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Estratégias anti-cold-start:</strong> (1) Provisioned Concurrency para rotas críticas (checkout, auth). (2) Keep-alive com CloudWatch Events agendados (ping a cada 5 min). (3) Pacotes menores — tree-shake, exclua devDependencies. (4) Lazy initialization — carregue SDKs pesados apenas quando necessário.</div>
+</div>
+
+<h4>Modelo de Pricing</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Componente</th><th>AWS Lambda</th><th>Cloud Functions</th><th>Azure Functions</th></tr>
+<tr><td><strong>Free tier</strong></td><td>1M requests + 400k GB-s/mes</td><td>2M requests + 400k GB-s/mes</td><td>1M requests + 400k GB-s/mes</td></tr>
+<tr><td><strong>Por request</strong></td><td>$0.20 / milhão</td><td>$0.40 / milhão</td><td>$0.20 / milhão</td></tr>
+<tr><td><strong>Por duração</strong></td><td>$0.0000166667 / GB-s</td><td>$0.0000025 / GHz-s</td><td>$0.000016 / GB-s</td></tr>
+<tr><td><strong>Timeout máximo</strong></td><td>15 minutos</td><td>9 minutos (gen2)</td><td>10 minutos (Consumption)</td></tr>
+</table>
+</div>
+
+<!-- ═══ AWS LAMBDA DEEP ═══ -->
+<h3>AWS Lambda — Deep Dive</h3>
+
+<p>Lambda é o serviço FaaS mais usado do mercado. Entender sua anatomia é essencial para qualquer arquiteto full-stack.</p>
+
+<h4>Estrutura do Handler (TypeScript)</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { <span class="tp">APIGatewayProxyEvent</span>, <span class="tp">APIGatewayProxyResult</span>, <span class="tp">Context</span> } <span class="kw">from</span> <span class="str">'aws-lambda'</span>;
+<span class="kw">import</span> { <span class="tp">DynamoDBClient</span> } <span class="kw">from</span> <span class="str">'@aws-sdk/client-dynamodb'</span>;
+
+<span class="cm">// Inicialização FORA do handler — reútilizada entre invocações (warm start)</span>
+<span class="kw">const</span> dynamodb = <span class="kw">new</span> <span class="tp">DynamoDBClient</span>({ region: <span class="str">'us-east-1'</span> });
+
+<span class="kw">export const</span> <span class="fn">handler</span> = <span class="kw">async</span> (
+  event: <span class="tp">APIGatewayProxyEvent</span>,
+  context: <span class="tp">Context</span>
+): <span class="tp">Promise</span>&lt;<span class="tp">APIGatewayProxyResult</span>&gt; => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> body = <span class="tp">JSON</span>.<span class="fn">parse</span>(event.body || <span class="str">'{}'</span>);
+    <span class="kw">const</span> userId = event.pathParameters?.id;
+
+    <span class="cm">// context.getRemainingTimeInMillis() — tempo restante até timeout</span>
+    console.<span class="fn">log</span>(<span class="str">'Request ID:'</span>, context.awsRequestId);
+    console.<span class="fn">log</span>(<span class="str">'Time left:'</span>, context.<span class="fn">getRemainingTimeInMillis</span>(), <span class="str">'ms'</span>);
+
+    <span class="cm">// ... sua lógica aqui ...</span>
+
+    <span class="kw">return</span> {
+      statusCode: <span class="num">200</span>,
+      headers: {
+        <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>,
+        <span class="str">'Access-Control-Allow-Origin'</span>: <span class="str">'*'</span>,
+      },
+      body: <span class="tp">JSON</span>.<span class="fn">stringify</span>({ success: <span class="kw">true</span>, data: { userId } }),
+    };
+  } <span class="kw">catch</span> (error) {
+    console.<span class="fn">error</span>(<span class="str">'Lambda error:'</span>, error);
+    <span class="kw">return</span> {
+      statusCode: <span class="num">500</span>,
+      body: <span class="tp">JSON</span>.<span class="fn">stringify</span>({ error: <span class="str">'Internal server error'</span> }),
+    };
+  }
+};</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Init vs Handler:</strong> Tudo fora da função handler (imports, instânciação de clients) executa no <strong>init phase</strong> — uma única vez por cold start. O handler executa a cada invocação. Sempre inicialize clients SDK, conexões de banco e configurações fora do handler para reútilizar em warm starts.</div>
+</div>
+
+<h4>Layers, Environment Variables e VPC</h4>
+<ul>
+<li><strong>Layers</strong> — pacotes compartilhados entre funções (SDKs, bibliotecas, binários). Máximo 5 layers por função, 250MB total descompactado. Montadas em <code>/opt</code></li>
+<li><strong>Environment Variables</strong> — configuração injetada em runtime. Encriptadas com KMS. Use para API keys, feature flags, nomes de tabelas DynamoDB</li>
+<li><strong>VPC Integration</strong> — necessário para acessar RDS, ElastiCache, recursos em subnet privada. Desde 2019 (Hyperplane), cold start VPC caiu de 10s para ~1s. Ainda precisa de NAT Gateway para acessar internet</li>
+<li><strong>Destinations</strong> — roteamento automático de resultados (sucesso/falha) para SQS, SNS, Lambda ou EventBridge. Alternativa a try/catch para processamento assíncrono</li>
+</ul>
+
+<h4>Event Sources (Fontes de Eventos)</h4>
+<div class="card blue">
+<div class="card-title">Principais Triggers do Lambda</div>
+<ul>
+<li><strong>API Gateway</strong> — REST/HTTP APIs. Lambda como backend de cada rota. Mais comum para APIs serverless</li>
+<li><strong>SQS</strong> — filas de mensagens. Lambda poll automático com batch processing. Ideal para trabalhos assíncronos</li>
+<li><strong>S3</strong> — eventos de upload/delete de objetos. Trigger para processamento de imagens, ETL, backups</li>
+<li><strong>DynamoDB Streams</strong> — CDC (Change Data Capture). Processa insercoes/atualizações/delecoes em tempo real</li>
+<li><strong>EventBridge</strong> — event bus central. Rules roteiam eventos para Lambdas. Desacoplamento máximo</li>
+<li><strong>Schedule (EventBridge)</strong> — cron jobs serverless. <code>rate(5 minutes)</code> ou <code>cron(0 12 * * ? *)</code></li>
+<li><strong>Cognito</strong> — triggers de pre/pos autenticação, migração de usuários</li>
+<li><strong>CloudFront (Lambda@Edge)</strong> — processamento na edge. Manipulação de request/response</li>
+</ul>
+</div>
+
+<h4>SAM Templaté (Serverless Application Model)</h4>
+<pre data-lang="yaml"><code><span class="cm"># template.yaml — AWS SAM</span>
+<span class="tp">AWSTemplateFormatVersion</span>: <span class="str">'2010-09-09'</span>
+<span class="tp">Transform</span>: <span class="str">AWS::Serverless-2016-10-31</span>
+<span class="tp">Description</span>: <span class="str">API de Produtos Serverless</span>
+
+<span class="tp">Globals</span>:
+  <span class="tp">Function</span>:
+    <span class="tp">Runtime</span>: nodejs20.x
+    <span class="tp">Timeout</span>: <span class="num">30</span>
+    <span class="tp">MemorySize</span>: <span class="num">256</span>
+    <span class="tp">Environment</span>:
+      <span class="tp">Variables</span>:
+        <span class="tp">TABLE_NAME</span>: !Ref ProductsTable
+        <span class="tp">NODE_ENV</span>: production
+
+<span class="tp">Resources</span>:
+  <span class="tp">GetProductFunction</span>:
+    <span class="tp">Type</span>: <span class="str">AWS::Serverless::Function</span>
+    <span class="tp">Properties</span>:
+      <span class="tp">Handler</span>: dist/handlers/getProduct.handler
+      <span class="tp">CodeUri</span>: .
+      <span class="tp">Events</span>:
+        <span class="tp">GetProduct</span>:
+          <span class="tp">Type</span>: Api
+          <span class="tp">Properties</span>:
+            <span class="tp">Path</span>: /products/{id}
+            <span class="tp">Method</span>: GET
+      <span class="tp">Policies</span>:
+        - <span class="tp">DynamoDBReadPolicy</span>:
+            <span class="tp">TableName</span>: !Ref ProductsTable
+
+  <span class="tp">CreateProductFunction</span>:
+    <span class="tp">Type</span>: <span class="str">AWS::Serverless::Function</span>
+    <span class="tp">Properties</span>:
+      <span class="tp">Handler</span>: dist/handlers/createProduct.handler
+      <span class="tp">CodeUri</span>: .
+      <span class="tp">Events</span>:
+        <span class="tp">CreateProduct</span>:
+          <span class="tp">Type</span>: Api
+          <span class="tp">Properties</span>:
+            <span class="tp">Path</span>: /products
+            <span class="tp">Method</span>: POST
+      <span class="tp">Policies</span>:
+        - <span class="tp">DynamoDBCrudPolicy</span>:
+            <span class="tp">TableName</span>: !Ref ProductsTable
+
+  <span class="tp">ProductsTable</span>:
+    <span class="tp">Type</span>: <span class="str">AWS::DynamoDB::Table</span>
+    <span class="tp">Properties</span>:
+      <span class="tp">TableName</span>: products
+      <span class="tp">BillingMode</span>: PAY_PER_REQUEST
+      <span class="tp">AttributeDefinitions</span>:
+        - <span class="tp">AttributeName</span>: id
+          <span class="tp">AttributeType</span>: S
+      <span class="tp">KeySchema</span>:
+        - <span class="tp">AttributeName</span>: id
+          <span class="tp">KeyType</span>: HASH</code></pre>
+
+<!-- ═══ SERVERLESS PATTERNS ═══ -->
+<h3>Serverless Patterns</h3>
+
+<h4>Pattern 1: API Gateway + Lambda + DynamoDB (3-Tier Serverless)</h4>
+<p>O padrão mais básico é mais comum. Substitui o trio clássico Load Balancer + EC2 + RDS por serviços totalmente gerenciados.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Cliente<br><small>(Browser/App)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">API Gateway<br><small>(REST/HTTP)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Lambda<br><small>(Business Logic)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">DynamoDB<br><small>(NoSQL Database)</small></div>
+</div>
+
+<h4>Pattern 2: Fan-Out com SNS + Lambda</h4>
+<p>Um evento dispara múltiplas funções em paralelo. Ideal para notificações multi-canal, processamento distribuído.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Evento<br><small>(Novo pedido)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">SNS Topic<br><small>(Fan-Out)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Lambda Email<br>Lambda SMS<br>Lambda Analytics<br><small>(Paralelo)</small></div>
+</div>
+
+<h4>Pattern 3: Step Functions para Orquestração</h4>
+<p>Quando você precisa coordenar múltiplas Lambdas em sequência, com retries, branches e error handling, use <strong>Step Functions</strong>. E uma máquina de estados serverless.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Start</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Validar Pedido<br><small>(Lambda)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Processar Pagamento<br><small>(Lambda)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Enviar Email<br><small>(Lambda)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Atualizar Estoque<br><small>(Lambda)</small></div>
+</div>
+
+<pre data-lang="json"><code><span class="cm">// Step Functions — Amazon States Language (simplificado)</span>
+{
+  <span class="str">"StartAt"</span>: <span class="str">"ValidateOrder"</span>,
+  <span class="str">"States"</span>: {
+    <span class="str">"ValidateOrder"</span>: {
+      <span class="str">"Type"</span>: <span class="str">"Task"</span>,
+      <span class="str">"Resource"</span>: <span class="str">"arn:aws:lambda:us-east-1:123:function:válidate"</span>,
+      <span class="str">"Next"</span>: <span class="str">"ProcessPayment"</span>,
+      <span class="str">"Catch"</span>: [{
+        <span class="str">"ErrorEquals"</span>: [<span class="str">"ValidationError"</span>],
+        <span class="str">"Next"</span>: <span class="str">"NotifyFailure"</span>
+      }]
+    },
+    <span class="str">"ProcessPayment"</span>: {
+      <span class="str">"Type"</span>: <span class="str">"Task"</span>,
+      <span class="str">"Resource"</span>: <span class="str">"arn:aws:lambda:us-east-1:123:function:payment"</span>,
+      <span class="str">"Retry"</span>: [{
+        <span class="str">"ErrorEquals"</span>: [<span class="str">"PaymentGatewayTimeout"</span>],
+        <span class="str">"IntervalSeconds"</span>: <span class="num">3</span>,
+        <span class="str">"MaxAttempts"</span>: <span class="num">3</span>,
+        <span class="str">"BackoffRate"</span>: <span class="num">2.0</span>
+      }],
+      <span class="str">"Next"</span>: <span class="str">"SendConfirmation"</span>
+    },
+    <span class="str">"SendConfirmation"</span>: {
+      <span class="str">"Type"</span>: <span class="str">"Task"</span>,
+      <span class="str">"Resource"</span>: <span class="str">"arn:aws:lambda:us-east-1:123:function:email"</span>,
+      <span class="str">"End"</span>: <span class="kw">true</span>
+    },
+    <span class="str">"NotifyFailure"</span>: {
+      <span class="str">"Type"</span>: <span class="str">"Task"</span>,
+      <span class="str">"Resource"</span>: <span class="str">"arn:aws:lambda:us-east-1:123:function:notify-fail"</span>,
+      <span class="str">"End"</span>: <span class="kw">true</span>
+    }
+  }
+}</code></pre>
+
+<h4>Pattern 4: Event-Driven com EventBridge</h4>
+<p><strong>EventBridge</strong> é o barramento de eventos central da AWS. Producers publicam eventos, Rules roteiam para consumers. Desacoplamento máximo entre serviços.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Producer A<br><small>(Pedido criado)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">EventBridge<br><small>(Event Bus)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Rule: order.created</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Lambda Target A<br>Lambda Target B<br>SQS Queue C</div>
+</div>
+
+<!-- ═══ FRAMEWORK COMPARISON ═══ -->
+<h3>Serverless Framework vs SAM vs SST</h3>
+
+<div class="table-wrap">
+<table>
+<tr><th>Caracteristica</th><th>Serverless Framework</th><th>AWS SAM</th><th>SST (v3)</th></tr>
+<tr><td><strong>Provedor</strong></td><td>Multi-cloud (AWS, GCP, Azure)</td><td>Apenas AWS</td><td>Apenas AWS</td></tr>
+<tr><td><strong>Linguagem config</strong></td><td>serverless.yml (YAML)</td><td>template.yaml (YAML/CloudFormation)</td><td>sst.config.ts (TypeScript)</td></tr>
+<tr><td><strong>Deploy</strong></td><td>CloudFormation por baixo</td><td>CloudFormation nativo</td><td>CDK + Ion (Terraform)</td></tr>
+<tr><td><strong>Dev local</strong></td><td>serverless-offline plugin</td><td>sam local invoke/start-api</td><td>Live Lambda Dev (hot reload)</td></tr>
+<tr><td><strong>Ecossistema</strong></td><td>Plugins extensivos, comunidade enorme</td><td>AWS oficial, integrado ao IDE</td><td>Constructs TypeScript, DX moderno</td></tr>
+<tr><td><strong>Learning curve</strong></td><td>Medio</td><td>Medio (precisa saber CF)</td><td>Baixo (tudo TypeScript)</td></tr>
+<tr><td><strong>Ideal para</strong></td><td>Multi-cloud, projetos existentes</td><td>AWS puro, equipes que usam CF</td><td>Startups, DX-first, full-stack TS</td></tr>
+</table>
+</div>
+
+<h4>Exemplo: serverless.yml (Serverless Framework)</h4>
+<pre data-lang="yaml"><code><span class="cm"># serverless.yml</span>
+<span class="tp">service</span>: products-api
+<span class="tp">frameworkVersion</span>: <span class="str">'3'</span>
+
+<span class="tp">provider</span>:
+  <span class="tp">name</span>: aws
+  <span class="tp">runtime</span>: nodejs20.x
+  <span class="tp">region</span>: us-east-1
+  <span class="tp">memorySize</span>: <span class="num">256</span>
+  <span class="tp">timeout</span>: <span class="num">30</span>
+  <span class="tp">environment</span>:
+    <span class="tp">TABLE_NAME</span>: <span class="str">${self:service}-${sls:stage}</span>
+  <span class="tp">iam</span>:
+    <span class="tp">role</span>:
+      <span class="tp">statements</span>:
+        - <span class="tp">Effect</span>: Allow
+          <span class="tp">Action</span>:
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:Query
+          <span class="tp">Resource</span>: !GetAtt ProductsTable.Arn
+
+<span class="tp">functions</span>:
+  <span class="tp">getProduct</span>:
+    <span class="tp">handler</span>: dist/handlers/getProduct.handler
+    <span class="tp">events</span>:
+      - httpApi:
+          <span class="tp">path</span>: /products/{id}
+          <span class="tp">method</span>: GET
+
+  <span class="tp">createProduct</span>:
+    <span class="tp">handler</span>: dist/handlers/createProduct.handler
+    <span class="tp">events</span>:
+      - httpApi:
+          <span class="tp">path</span>: /products
+          <span class="tp">method</span>: POST
+
+  <span class="tp">processImage</span>:
+    <span class="tp">handler</span>: dist/handlers/processImage.handler
+    <span class="tp">timeout</span>: <span class="num">120</span>
+    <span class="tp">memorySize</span>: <span class="num">1024</span>
+    <span class="tp">events</span>:
+      - s3:
+          <span class="tp">bucket</span>: uploads
+          <span class="tp">event</span>: s3:ObjectCreated:*
+          <span class="tp">rules</span>:
+            - <span class="tp">prefix</span>: images/
+
+<span class="tp">resources</span>:
+  <span class="tp">Resources</span>:
+    <span class="tp">ProductsTable</span>:
+      <span class="tp">Type</span>: AWS::DynamoDB::Table
+      <span class="tp">Properties</span>:
+        <span class="tp">TableName</span>: <span class="str">${self:service}-${sls:stage}</span>
+        <span class="tp">BillingMode</span>: PAY_PER_REQUEST
+        <span class="tp">AttributeDefinitions</span>:
+          - <span class="tp">AttributeName</span>: id
+            <span class="tp">AttributeType</span>: S
+        <span class="tp">KeySchema</span>:
+          - <span class="tp">AttributeName</span>: id
+            <span class="tp">KeyType</span>: HASH</code></pre>
+
+<!-- ═══ EDGE COMPUTING ═══ -->
+<h3>Edge Computing — Processamento Próximo ao Usuário</h3>
+
+<p><strong>Edge Computing</strong> move o processamento para o ponto mais próximo do usuário — datacenters distribuídos globalmente (PoPs — Points of Presence). Enquanto serverless tradicional roda em uma região (ex: us-east-1), edge functions rodam em 200+ locais simultaneamente.</p>
+
+<h4>Edge Functions — Provedores</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Plataforma</th><th>Runtime</th><th>Cold Start</th><th>Limite Execução</th><th>Limite Tamanho</th></tr>
+<tr><td><strong>Cloudflare Workers</strong></td><td>V8 Isolates</td><td>~0ms (sem cold start)</td><td>10ms (free) / 30s (paid)</td><td>1MB (free) / 10MB (paid)</td></tr>
+<tr><td><strong>Vercel Edge Functions</strong></td><td>V8 (Edge Runtime)</td><td>~0ms</td><td>25s (Hobby) / 300s (Enterprise)</td><td>4MB</td></tr>
+<tr><td><strong>Lambda@Edge</strong></td><td>Node.js / Python</td><td>~100-500ms</td><td>5s (viewer) / 30s (origin)</td><td>1MB (viewer) / 50MB (origin)</td></tr>
+<tr><td><strong>CloudFront Functions</strong></td><td>JavaScript (limitado)</td><td>~0ms</td><td>1ms (máximo!)</td><td>10KB</td></tr>
+</table>
+</div>
+
+<h4>Casos de Usó para Edge Functions</h4>
+<ul>
+<li><strong>A/B Testing</strong> — redirecionar usuários para variantes diferentes baseado em cookie, sem round-trip ao servidor de origem</li>
+<li><strong>Geolocation Routing</strong> — servir conteúdo diferente por pais/cidade (preços, idioma, compliance GDPR/LGPD)</li>
+<li><strong>Auth Token Validation</strong> — validar JWT na edge antes de chegar ao backend. Rejeitar requests inválidas instantaneamente</li>
+<li><strong>Personalização</strong> — injetar conteúdo personalizado no HTML antes de enviar ao usuário (nome, preferências)</li>
+<li><strong>Image Optimization</strong> — redimensionar/converter imagens on-the-fly baseado no dispositivo (WebP para Chrome, AVIF para Safari)</li>
+<li><strong>Bot Protection</strong> — detectar e bloquear bots/crawlers na edge, protegendo o backend</li>
+<li><strong>Header Manipulation</strong> — adicionar security headers (CSP, HSTS), CORS, cache control</li>
+</ul>
+
+<h4>Exemplo: Cloudflare Worker (TypeScript)</h4>
+<pre data-lang="typescript"><code><span class="cm">// src/index.ts — Cloudflare Worker com geolocation e A/B test</span>
+<span class="kw">export default</span> {
+  <span class="kw">async</span> <span class="fn">fetch</span>(request: <span class="tp">Request</span>, env: <span class="tp">Env</span>): <span class="tp">Promise</span>&lt;<span class="tp">Response</span>&gt; {
+    <span class="kw">const</span> url = <span class="kw">new</span> <span class="tp">URL</span>(request.url);
+    <span class="kw">const</span> country = request.cf?.country || <span class="str">'US'</span>;
+
+    <span class="cm">// Geolocation routing — redirecionar por pais</span>
+    <span class="kw">if</span> (url.pathname === <span class="str">'/'</span> && country === <span class="str">'BR'</span>) {
+      <span class="kw">return</span> <span class="tp">Response</span>.<span class="fn">redirect</span>(<span class="str">'https://example.com/pt-br'</span>, <span class="num">302</span>);
+    }
+
+    <span class="cm">// A/B Testing — cookie-based</span>
+    <span class="kw">const</span> cookie = request.headers.<span class="fn">get</span>(<span class="str">'cookie'</span>) || <span class="str">''</span>;
+    <span class="kw">let</span> variant = cookie.<span class="fn">match</span>(<span class="str">/ab-variant=(A|B)/</span>)?.[<span class="num">1</span>];
+
+    <span class="kw">if</span> (!variant) {
+      variant = Math.<span class="fn">random</span>() < <span class="num">0.5</span> ? <span class="str">'A'</span> : <span class="str">'B'</span>;
+    }
+
+    <span class="cm">// Fetch da origem com header indicando variante</span>
+    <span class="kw">const</span> modifiedRequest = <span class="kw">new</span> <span class="tp">Request</span>(request.url, {
+      ...request,
+      headers: <span class="kw">new</span> <span class="tp">Headers</span>({
+        ...Object.<span class="fn">fromEntries</span>(request.headers),
+        <span class="str">'X-AB-Variant'</span>: variant,
+        <span class="str">'X-Country'</span>: country,
+      }),
+    });
+
+    <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(modifiedRequest);
+    <span class="kw">const</span> newResponse = <span class="kw">new</span> <span class="tp">Response</span>(response.body, response);
+
+    <span class="cm">// Setar cookie para manter variante consistente</span>
+    newResponse.headers.<span class="fn">set</span>(
+      <span class="str">'Set-Cookie'</span>,
+      <span class="str">`ab-variant=${variant}; Path=/; Max-Age=86400; SameSite=Lax`</span>
+    );
+
+    <span class="cm">// Security headers na edge</span>
+    newResponse.headers.<span class="fn">set</span>(<span class="str">'X-Content-Type-Options'</span>, <span class="str">'nosniff'</span>);
+    newResponse.headers.<span class="fn">set</span>(<span class="str">'X-Frame-Options'</span>, <span class="str">'DENY'</span>);
+    newResponse.headers.<span class="fn">set</span>(
+      <span class="str">'Strict-Transport-Security'</span>,
+      <span class="str">'max-age=31536000; includeSubDomains'</span>
+    );
+
+    <span class="kw">return</span> newResponse;
+  },
+} <span class="kw">satisfies</span> <span class="tp">ExportedHandler</span>&lt;<span class="tp">Env</span>&gt;;</code></pre>
+
+<!-- ═══ EDGE VS SERVERLESS VS TRADITIONAL ═══ -->
+<h3>Edge vs Serverless vs Tradicional</h3>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Tradicional (EC2/VPS)</th><th>Serverless (Lambda)</th><th>Edge (Workers/Edge Fn)</th></tr>
+<tr><td><strong>Latência</strong></td><td>Depende da região (50-300ms)</td><td>Região única (20-100ms + cold)</td><td>Global, próximo ao user (1-20ms)</td></tr>
+<tr><td><strong>Cold Start</strong></td><td>Nenhum (always on)</td><td>100ms-10s (depende runtime)</td><td>~0ms (V8 Isolates)</td></tr>
+<tr><td><strong>Scaling</strong></td><td>Manual ou Auto Scaling (minutos)</td><td>Automático (segundos)</td><td>Instantaneo (por PoP)</td></tr>
+<tr><td><strong>Custo idle</strong></td><td>Alto (paga 24/7)</td><td>Zero (pay per use)</td><td>Zero ou mínimo</td></tr>
+<tr><td><strong>Runtime</strong></td><td>Qualquer linguagem/framework</td><td>Runtimes suportados (Node, Python, etc)</td><td>JS/TS/WASM (limitado)</td></tr>
+<tr><td><strong>Limites</strong></td><td>Hardware disponível</td><td>Timeout 15min, 10GB RAM</td><td>CPU time 10ms-30s, 128MB RAM</td></tr>
+<tr><td><strong>Estado</strong></td><td>Disco, memória, sessão</td><td>Stateless (externalizar)</td><td>Stateless (KV/Durable Objects)</td></tr>
+<tr><td><strong>DB Access</strong></td><td>Conexão direta (pool)</td><td>Conexão por invocação (cuidado)</td><td>HTTP-based DBs (Turso, PlanetScale)</td></tr>
+<tr><td><strong>Melhor para</strong></td><td>Workloads longas, stateful, GPU</td><td>APIs, jobs, event processing</td><td>Auth, routing, personalização, cache</td></tr>
+</table>
+</div>
+
+<!-- ═══ DURABLE OBJECTS / STATE AT EDGE ═══ -->
+<h3>Durable Objects & Estado na Edge</h3>
+
+<p>Edge functions são stateless por natureza, mas as vezes você precisa de estado: contadores, raté limiters, sessões, WebSockets. E aí entram os <strong>Durable Objects</strong> (Cloudflare) e <strong>edge-compatible storage</strong>.</p>
+
+<h4>Cloudflare Durable Objects</h4>
+<p>Cada Durable Object é uma instância única com <strong>estado persistente e serializado</strong>. Vive na edge, migra automáticamente para o PoP mais próximo dos usuários que o acessam. Garantia de <strong>single-threaded execution</strong> — sem race conditions.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Durable Object — Raté Limiter na Edge</span>
+<span class="kw">export class</span> <span class="tp">RateLimiter</span> {
+  <span class="kw">private</span> state: <span class="tp">DurableObjectState</span>;
+  <span class="kw">private</span> requests: <span class="tp">Map</span>&lt;<span class="tp">string</span>, <span class="tp">number</span>[]&gt; = <span class="kw">new</span> <span class="tp">Map</span>();
+
+  <span class="kw">constructor</span>(state: <span class="tp">DurableObjectState</span>) {
+    <span class="kw">this</span>.state = state;
+  }
+
+  <span class="kw">async</span> <span class="fn">fetch</span>(request: <span class="tp">Request</span>): <span class="tp">Promise</span>&lt;<span class="tp">Response</span>&gt; {
+    <span class="kw">const</span> ip = request.headers.<span class="fn">get</span>(<span class="str">'CF-Connecting-IP'</span>) || <span class="str">'unknown'</span>;
+    <span class="kw">const</span> now = Date.<span class="fn">now</span>();
+    <span class="kw">const</span> windowMs = <span class="num">60000</span>; <span class="cm">// 1 minuto</span>
+    <span class="kw">const</span> maxRequests = <span class="num">100</span>;
+
+    <span class="cm">// Limpar requests antigas</span>
+    <span class="kw">const</span> timestamps = (<span class="kw">this</span>.requests.<span class="fn">get</span>(ip) || [])
+      .<span class="fn">filter</span>(t => now - t < windowMs);
+
+    <span class="kw">if</span> (timestamps.length >= maxRequests) {
+      <span class="kw">return new</span> <span class="tp">Response</span>(<span class="str">'Too Many Requests'</span>, {
+        status: <span class="num">429</span>,
+        headers: { <span class="str">'Retry-After'</span>: <span class="str">'60'</span> },
+      });
+    }
+
+    timestamps.<span class="fn">push</span>(now);
+    <span class="kw">this</span>.requests.<span class="fn">set</span>(ip, timestamps);
+
+    <span class="kw">return new</span> <span class="tp">Response</span>(<span class="str">'OK'</span>, { status: <span class="num">200</span> });
+  }
+}</code></pre>
+
+<h4>Opções de Estado na Edge</h4>
+<div class="card">
+<div class="card-title">Storage na Edge</div>
+<ul>
+<li><strong>Cloudflare KV</strong> — Key-Value store global, eventually consistent. Leitura rápida, escrita com propagação (~60s). Ideal para configs, feature flags, cache</li>
+<li><strong>Cloudflare Durable Objects</strong> — estado persistente, strongly consistent, single-threaded. Ideal para raté limiting, contadores, WebSocket rooms, collaborative editing</li>
+<li><strong>Cloudflare R2</strong> — object storage compatível com S3 API, sem egress fees. Acessível da edge</li>
+<li><strong>Vercel KV</strong> — Redis-compatible, acessível de Edge Functions. Raté limiters, sessões, cache</li>
+<li><strong>Vercel Postgres</strong> — pool de conexões otimizado para serverless/edge via HTTP</li>
+<li><strong>Tursó (libSQL)</strong> — SQLite distribuído na edge. Replicas em cada região, ~1ms reads locais</li>
+</ul>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando usar estado na edge:</strong> Use KV/cache para dados que mudam raramente (configs, translations). Use Durable Objects para dados que precisam de consistência forte em tempo real (contadores, raté limits, WebSocket state). Para dados transacionais complexos, mantenha no backend (RDS/DynamoDB) — a edge não substitui um banco relacional.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Pipeline de Processamento de Imagens Serverless</h3>
+
+<p><strong>Cenário:</strong> Projetar um pipeline que recebe uploads de imagens, gera múltiplas resoluções (thumbnail, medium, full), converte formatos (WebP, AVIF) e distribui via CDN. Deve processar milhares de imagens/dia sem gerenciar servidores.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Upload via<br>pré-Signed URL<br><small>(Client &rarr; S3)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">S3 Event<br><small>(ObjectCreated)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Lambda: Resize<br><small>(Sharp/libvips)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">S3 Output<br><small>(Processadas)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">CloudFront CDN<br><small>(Distribuição global)</small></div>
+</div>
+
+<h4>Arquitetura Detalhada</h4>
+<pre data-lang="typescript"><code><span class="cm">// 1. Lambda: Gerar pré-Signed URL para upload direto ao S3</span>
+<span class="kw">export const</span> <span class="fn">getUploadUrl</span> = <span class="kw">async</span> (event: <span class="tp">APIGatewayProxyEvent</span>) => {
+  <span class="kw">const</span> { fileName, contentType } = <span class="tp">JSON</span>.<span class="fn">parse</span>(event.body!);
+  <span class="kw">const</span> key = <span class="str">`uploads/${</span><span class="fn">randomUUID</span>()<span class="str">}/${fileName}`</span>;
+
+  <span class="kw">const</span> command = <span class="kw">new</span> <span class="tp">PutObjectCommand</span>({
+    Bucket: process.env.UPLOAD_BUCKET,
+    Key: key,
+    ContentType: contentType,
+  });
+
+  <span class="kw">const</span> url = <span class="kw">await</span> <span class="fn">getSignedUrl</span>(s3Client, command, { expiresIn: <span class="num">300</span> });
+  <span class="kw">return</span> { statusCode: <span class="num">200</span>, body: <span class="tp">JSON</span>.<span class="fn">stringify</span>({ url, key }) };
+};
+
+<span class="cm">// 2. Lambda: Processar imagem (triggered by S3 event)</span>
+<span class="kw">import</span> sharp <span class="kw">from</span> <span class="str">'sharp'</span>;
+
+<span class="kw">const</span> SIZES = [
+  { name: <span class="str">'thumb'</span>, width: <span class="num">150</span>, height: <span class="num">150</span> },
+  { name: <span class="str">'medium'</span>, width: <span class="num">600</span>, height: <span class="num">600</span> },
+  { name: <span class="str">'full'</span>, width: <span class="num">1920</span>, height: <span class="num">1080</span> },
+];
+
+<span class="kw">export const</span> <span class="fn">processImage</span> = <span class="kw">async</span> (event: <span class="tp">S3Event</span>) => {
+  <span class="kw">for</span> (<span class="kw">const</span> record <span class="kw">of</span> event.Records) {
+    <span class="kw">const</span> srcKey = record.s3.object.key;
+    <span class="kw">const</span> srcBucket = record.s3.bucket.name;
+
+    <span class="cm">// Baixar original do S3</span>
+    <span class="kw">const</span> original = <span class="kw">await</span> s3Client.<span class="fn">send</span>(
+      <span class="kw">new</span> <span class="tp">GetObjectCommand</span>({ Bucket: srcBucket, Key: srcKey })
+    );
+    <span class="kw">const</span> buffer = Buffer.<span class="fn">from</span>(
+      <span class="kw">await</span> original.Body!.<span class="fn">transformToByteArray</span>()
+    );
+
+    <span class="cm">// Gerar todas as variantes em paralelo</span>
+    <span class="kw">const</span> tasks = SIZES.<span class="fn">flatMap</span>(size => [
+      <span class="cm">// WebP</span>
+      <span class="fn">sharp</span>(buffer)
+        .<span class="fn">resize</span>(size.width, size.height, { fit: <span class="str">'inside'</span> })
+        .<span class="fn">webp</span>({ quality: <span class="num">80</span> })
+        .<span class="fn">toBuffer</span>()
+        .<span class="fn">then</span>(buf => <span class="fn">uploadToS3</span>(buf, <span class="str">`${size.name}.webp`</span>, srcKey)),
+      <span class="cm">// AVIF</span>
+      <span class="fn">sharp</span>(buffer)
+        .<span class="fn">resize</span>(size.width, size.height, { fit: <span class="str">'inside'</span> })
+        .<span class="fn">avif</span>({ quality: <span class="num">65</span> })
+        .<span class="fn">toBuffer</span>()
+        .<span class="fn">then</span>(buf => <span class="fn">uploadToS3</span>(buf, <span class="str">`${size.name}.avif`</span>, srcKey)),
+    ]);
+
+    <span class="kw">await</span> Promise.<span class="fn">all</span>(tasks);
+  }
+};</code></pre>
+
+<h4>Versão com Step Functions (Workflows Complexos)</h4>
+<p>Para pipelines mais complexos (detecção de conteúdo NSFW, tagging com AI, geração de metadados), use Step Functions para orquestrar múltiplas Lambdas com retry, error handling e branches condicionais.</p>
+
+<div class="diagram">
+<div class="diagram-box green">S3 Upload</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Validaté Format<br><small>(Lambda)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">NSFW Check<br><small>(Rekognition)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Resize + Convert<br><small>(Lambda)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Updaté DB<br><small>(DynamoDB)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Inválidaté CDN<br><small>(CloudFront)</small></div>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Lambda em VPC sem necessidade:</strong> Colocar Lambda em VPC "por segurança" quando não precisa acessar recursos privados (RDS, ElastiCache). Cold start ampliado, necessidade de NAT Gateway ($45/mes/AZ) para acessar internet. Só coloque Lambda em VPC se realmente precisa de acesso a recursos na VPC.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Function sprawl (centenas de Lambdas):</strong> Cada endpoint como uma Lambda separada parece organizado, mas cria um pesadelo operacional: centenas de funções para monitorar, deploy individual, impossível debugar. Alternativa: agrupar por domínio (1 Lambda por microserviço) com roteamento interno, ou usar frameworks como SST/Serverless que agrupam automáticamente.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Vendor lock-in:</strong> Usar serviços específicos da AWS (Step Functions, DynamoDB Streams, EventBridge) sem camada de abstração. Quando precisar migrar para GCP ou Azure, reescreve tudo. Solução: isole integração com cloud em adapters (Ports & Adapters). A lógica de negócio não deve importar <code>aws-sdk</code> diretamente.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Sem concurrency limits:</strong> Lambda escala automáticamente até 1000 execuções simultaneas (default). Se uma função bugada entra em loop, ela pode consumir toda a cota da sua conta AWS, derrubando TODAS as Lambdas. Sempre configure <code>ReservedConcurrentExecutions</code> por função crítica.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Timeout em chamadas síncronas:</strong> API Gateway tem timeout de 29 segundos. Se sua Lambda demora mais, o cliente recebe 504 Gateway Timeout mesmo que a Lambda continue executando. Para operações longas, use pattern assíncrono: aceitar request, retornar 202 Accepted com ID, processar em background, cliente poll pelo resultado.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Conexões de banco sem pooling:</strong> Cada invocação Lambda pode abrir uma nova conexão ao banco. Com 1000 Lambdas simultaneas = 1000 conexões (e PostgreSQL morre com ~200). Solução: use RDS Proxy (pool gerenciado), ou use DynamoDB/databases HTTP-based (PlanetScale, Turso) que não tem connection limits tradicionais.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Serverless brilha em workloads <strong>event-driven, spiky, e stateless</strong>. Se sua aplicação tem tráfego constante 24/7, conexões persistentes (WebSockets), ou precisa de GPU/estado em memória — considere containers (ECS/Fargate) ou VMs. Serverless não é a solução universal.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem uma API com 50 endpoints. Cada endpoint é uma Lambda separada. O time reclama que deploy demora 30 minutos e é impossível monitorar. Como resolver?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Agrupar Lambdas por domínio/bounded context. Em vez de 50 Lambdas individuais, crie 5-8 Lambdas por domínio (ex: users-api, orders-api, products-api). Cada Lambda usa um router interno (como <code>@vendia/serverless-express</code> ou handler com switch no path). Menós funções = deploy mais rápido, monitoramento centralizado por domínio, e CloudWatch Logs agrupados lógicamente. Alternativa: considere migrar para ECS/Fargaté se o tráfego e constante.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu Lambda conecta a um PostgreSQL (RDS). Em picos de tráfego, o banco cai com "too many connections". O que fazer?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> (1) <strong>RDS Proxy</strong> — serviço gerenciado que faz pooling de conexões entre Lambda e RDS. Lambdas conectam ao proxy, que reútiliza conexões. (2) Configurar <code>ReservedConcurrentExecutions</code> na Lambda para limitar invocações simultaneas ao número de conexões que o banco suporta. (3) Considerar migrar para <strong>DynamoDB</strong> (sem connection limits) ou <strong>Aurora Serverless v2</strong> (auto-scaling de conexões). (4) Para edge, usar databases HTTP-based como PlanetScale ou Tursó que usam HTTP por request em vez de conexões TCP persistentes.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você precisa implementar raté limiting global para sua API. Opções: Lambda + DynamoDB vs Cloudflare Worker + Durable Object. Compare.</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> <strong>Lambda + DynamoDB:</strong> Funciona, mas cada request precisa de round-trip ao DynamoDB (~5-20ms). Em cold start, a latência aumenta significativamente. Counters atomicos via <code>UpdateItem</code> com <code>ADD</code>. Custo de DynamoDB por read/write. <strong>Cloudflare Worker + Durable Object:</strong> Processamento na edge (~0ms cold start). Durable Object garante single-threaded execution (sem race conditions). Estado em memória com persistência automática. Latência ~1ms. <strong>Vencedor:</strong> Durable Objects para raté limiting — menor latência, consistência forte, e zero cold start. Use Lambda + DynamoDB quando já está no ecossistema AWS e a latência adicional é aceitável.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Serverless & Edge Computing</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="26-iac-terraform-pulumi-cdk.html">&#8592; Anterior</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="28-owasp-top-10.html" class="primary">Próximo: OWASP Top 10 &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 27: Serverless & Edge Computing
+// ══════════════════════════════════════════
+const SECTION_NUM = 27;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "O que é 'cold start' em serverless e qual a principal causa?",
+    options: [
+      "E quando a função retorna erro 500. Causa: código bugado",
+      "E o tempo para alocar container, carregar runtime e inicializar o handler quando não ha instância quente disponível",
+      "E o tempo que o API Gateway leva para rotear a request",
+      "E a latência de rede entre o cliente é a região AWS"
+    ],
+    correct: 1,
+    explanation: "Cold start ocorre quando não existe instância quente reútilizável. O provedor precisa alocar container, baixar o pacote, inicializar o runtime (JVM, V8, etc) e executar o código de inicialização. Pode variar de 100ms (Node.js) a 10+ segundos (Java sem SnapStart)."
+  },
+  {
+    question: "Qual estratégia ELIMINA cold starts para funções Lambda críticas?",
+    options: [
+      "Aumentar o timeout da função para 15 minutos",
+      "Provisioned Concurrency — pré-aquece N instâncias que ficam sempre prontas",
+      "Colocar a Lambda em VPC para ter melhor performance",
+      "Usar Python ao invés de Node.js"
+    ],
+    correct: 1,
+    explanation: "Provisioned Concurrency mantém N instâncias de Lambda sempre quentes e prontas para executar. Elimina cold start completamente, mas tem custo fixo por instância mantida. Ideal para rotas críticas como checkout e autenticação."
+  },
+  {
+    question: "Por que inicializar clients SDK (DynamoDB, S3) FORA do handler da Lambda?",
+    options: [
+      "Porque não é possível usar imports dentro de funções em TypeScript",
+      "Porque o código fora do handler é executado no init phase e reútilizado entre invocações (warm starts)",
+      "Porque o handler não tem acesso a variável de ambiente AWS_REGION",
+      "Por motivos de segurança — o handler e público é o escopo externo e privado"
+    ],
+    correct: 1,
+    explanation: "O código fora do handler executa uma única vez no cold start (init phase). Em invocações subsequentes (warm starts), a instância e reútilizada com o client já inicializado, economizando tempo de conexão e instânciação."
+  },
+  {
+    question: "Qual o timeout máximo do API Gateway para requests síncronas ao Lambda?",
+    options: [
+      "15 minutos (mesmo timeout do Lambda)",
+      "60 segundos",
+      "29 segundos",
+      "5 minutos"
+    ],
+    correct: 2,
+    explanation: "O API Gateway tem um hard limit de 29 segundos para requests síncronas. Se a Lambda demora mais, o cliente recebe 504 Gateway Timeout mesmo que a Lambda continue executando em background. Para operações longas, use pattern assíncrono (aceitar com 202, processar em background)."
+  },
+  {
+    question: "Qual a principal vantagem de Cloudflare Workers sobre AWS Lambda em termos de cold start?",
+    options: [
+      "Workers usam containers Docker que são mais rápidos",
+      "Workers usam V8 Isolates que inicializam em microsegundos, eliminando cold start",
+      "Workers tem acesso direto ao hardware do servidor",
+      "Workers são sempre executados na região mais próxima do developer"
+    ],
+    correct: 1,
+    explanation: "Cloudflare Workers usam V8 Isolates em vez de containers. Isolates compartilham o mesmo processo V8, inicializando em microsegundos (vs millisegundos/segundos de containers). Isso efetivamente elimina o conceito de cold start."
+  },
+  {
+    question: "Qual é o principal risco de não configurar ReservedConcurrentExecutions em Lambdas?",
+    options: [
+      "A Lambda não consegue escalar além de 10 invocações",
+      "Uma função bugada pode consumir toda a cota de concorrência da conta, derrubando TODAS as Lambdas",
+      "O custo de cada invocação dobra automáticamente",
+      "O CloudWatch para de coletar logs da função"
+    ],
+    correct: 1,
+    explanation: "AWS Lambda tem uma cota de concorrência por conta (default: 1000). Sem ReservedConcurrentExecutions, uma função com bug (loop infinito, recursao) pode consumir toda a cota, impedindo que qualquer outra Lambda da conta execute. Configurar limites por função isola o blast radius."
+  },
+  {
+    question: "Quando usar Step Functions ao invés de invocar Lambdas diretamente em cascata?",
+    options: [
+      "Quando o workflow tem apenas 2 steps simples e sem necessidade de retry",
+      "Quando você precisa de orquestração com retries, error handling, branches condicionais e visibilidade do estado do workflow",
+      "Step Functions são sempre melhores — devem substituir todas as invocações Lambda",
+      "Apenas quando o workflow precisa durar mais de 24 horas"
+    ],
+    correct: 1,
+    explanation: "Step Functions brilham em workflows complexos que precisam de retries com backoff, tratamento de erros por tipo, branches condicionais (Choice state), execuções paralelas (Parallel state) e visibilidade do fluxo. Para 2 Lambdas simples em sequência, invocar diretamente é mais simples é barato."
+  },
+  {
+    question: "Qual problema ocorre quando Lambda acessa PostgreSQL (RDS) diretamente em alta concorrência?",
+    options: [
+      "O PostgreSQL não aceita conexões de Lambda por questoes de segurança",
+      "Cada invocação Lambda pode abrir uma nova conexão, e centenas de conexões simultaneas esgotam o pool do banco",
+      "Lambda não suporta o protocolo TCP necessário para PostgreSQL",
+      "O cold start da Lambda impede que a conexão sejá estabelecida a tempo"
+    ],
+    correct: 1,
+    explanation: "Cada instância Lambda pode abrir uma conexão ao banco. Com 500 invocações simultaneas = 500 conexões, e PostgreSQL tipicamente suporta ~200. Solução: RDS Proxy para pool gerenciado, ou databases HTTP-based (PlanetScale, Turso) que não tem esse problema."
+  },
+  {
+    question: "Qual a diferença fundamental entre Cloudflare KV e Durable Objects?",
+    options: [
+      "KV é gratuito, Durable Objects são pagos",
+      "KV e eventually consistent com leitura rápida; Durable Objects são strongly consistent com execução single-threaded",
+      "KV armazena apenas strings, Durable Objects armazenam qualquer tipo de dado",
+      "Não ha diferença — são dois nomes para o mesmo serviço"
+    ],
+    correct: 1,
+    explanation: "KV é um key-value store global, eventually consistent (~60s para propagação de escritas), otimizado para leituras frequentes. Durable Objects são instâncias com estado strongly consistent, execução single-threaded (sem race conditions), ideais para raté limiting, contadores e coordenação em tempo real."
+  },
+  {
+    question: "Qual seria a melhor abordagem para processar uploads de imagens (resize + format conversion) em uma arquitetura serverless?",
+    options: [
+      "EC2 com cron job que verifica novos uploads a cada 5 minutos",
+      "Lambda triggered por S3 event (ObjectCreated) que processa a imagem e salva variantes em outro bucket",
+      "Cloudflare Worker que processa a imagem na edge em tempo real",
+      "API Gateway que recebe a imagem e envia para o frontend fazer o resize"
+    ],
+    correct: 1,
+    explanation: "S3 event trigger + Lambda é o padrão ideal: upload direto ao S3 (pré-signed URL), S3 dispara evento, Lambda processa (resize, convert WebP/AVIF) e salva no bucket de output. E event-driven, escala automáticamente, e paga apenas pelo processamento. Workers não são ideais para processamento pesado de imagens (limites de CPU e memória)."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Serverless e Edge Computing.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

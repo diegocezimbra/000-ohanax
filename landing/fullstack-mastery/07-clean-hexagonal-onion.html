@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>07 — Clean Architecture / Hexagonal / Onion | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="06-ddd-domain-driven-design.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>07</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="08-mvc-mvp-mvvm-mvi.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:10.6%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 07</span>
+<h2>Clean Architecture / Hexagonal / Onion</h2>
+<div class="section-line"></div>
+
+<p>Tres arquiteturas que compartilham um objetivo comum: <strong>isolar o domínio (regras de negócio) de detalhes técnicos</strong> (frameworks, bancos de dados, APIs externas). Apesar de nomes diferentes e autores diferentes, todas convergem no mesmo princípio fundamental — a <strong>Regra da Dependencia</strong>: dependências sempre apontam para dentro, em direcao ao nucleo de negócio.</p>
+
+<p>Entender essas três abordagens não é sobre escolher "a melhor". E sobre entender o <strong>princípio subjacente</strong> que todas compartilham: o domínio é o centro do universo, e tudo mais e detalhe de implementação substituivel.</p>
+
+<!-- ═══ CLEAN ARCHITECTURE ═══ -->
+<h3>Clean Architecture (Robert C. Martin, 2012)</h3>
+
+<p>Proposta por Uncle Bob, a Clean Architecture organiza o software em <strong>circulos concentricos</strong>. A regra de ouro: <strong>dependências só apontam para dentro</strong>. Camadas externas podem conhecer camadas internas, mas NUNCA o contrário. A camada de Entities não sabe que existe um banco de dados, um framework web, ou uma API REST.</p>
+
+<h4>As 4 Camadas Concentricas</h4>
+
+<div class="diagram">
+<div class="diagram-box green">Entities<br><small>(Regras de negócio empresariais)</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box blue">Use Cases<br><small>(Regras de negócio da aplicação)</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box purple">Interface Adapters<br><small>(Controllers, Gateways, Presenters)</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box orange">Frameworks &amp; Drivers<br><small>(Web, DB, External APIs, UI)</small></div>
+</div>
+
+<ul>
+<li><strong>Entities (centro)</strong> — Objetos de negócio puros. Não dependem de NADA externo. Contem regras que existiriam mesmo sem software (ex: "um pedido precisa ter pelo menós 1 item"). São as mesmas entidades que existiriam em qualquer aplicação da empresa.</li>
+<li><strong>Use Cases</strong> — Logica específica da aplicação. Orquestram o fluxo entre entidades. "Quando o usuário faz um pedido, valide o estoque, calcule o total e envie confirmacao." Cada Use Case representa uma acao que o sistema permite.</li>
+<li><strong>Interface Adapters</strong> — Convertem dados entre o formato dos Use Cases é o formato externo. Controllers transformam requests HTTP em DTOs para os Use Cases. Presenters transformam a resposta do Use Case em JSON/HTML. Repositories transformam entidades em queries SQL.</li>
+<li><strong>Frameworks &amp; Drivers</strong> — A camada mais externa. Frameworks web (Express, NestJS), ORMs (TypeORM), bibliotecas de email, etc. São <strong>detalhes</strong> — substituiveis sem afetar regras de negócio.</li>
+</ul>
+
+<div class="card">
+<div class="card-title">A Dependency Rule (Regra da Dependencia)</div>
+<p>As dependências do código-fonte só podem apontar <strong>para dentro</strong>. Nada em um circulo interno pode saber absolutamente nada sobre algo em um circulo externo. Isso inclui funções, classes, variáveis, ou qualquer entidade de software. Os dados que cruzam as fronteiras são estruturas simples (DTOs), não entidades com comportamento. Se o Use Case precisa chamar o banco, ele define uma <strong>interface (port)</strong> que a camada externa implementa.</p>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Inversão de controle na prática:</strong> O Use Case <code>CreateOrder</code> precisa salvar no banco. Ele define a interface <code>OrderRepository</code>. A camada de infraestrutura cria <code>TypeOrmOrderRepository</code> que implementa essa interface. O framework de DI conecta os dois. O Use Case nunca importa TypeORM.</div>
+</div>
+
+<!-- ═══ HEXAGONAL ARCHITECTURE ═══ -->
+<h3>Hexagonal Architecture — Ports &amp; Adapters (Alistair Cockburn, 2005)</h3>
+
+<p>Também chamada de <strong>Ports &amp; Adapters</strong>, foi proposta por Alistair Cockburn antes da Clean Architecture. A ideia é que a aplicação fica no centro (hexagono) e interáge com o mundo externo atraves de <strong>Ports</strong> (interfaces que a aplicação expoe ou consome) e <strong>Adapters</strong> (implementações concretas que conectam os ports ao mundo real).</p>
+
+<h4>Ports vs Adapters</h4>
+
+<div class="diagram">
+<div class="diagram-box orange">Driving Adapters<br><small>(HTTP, CLI, gRPC, Testes)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Driving Ports<br><small>(Interfaces de entrada)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Application Core<br><small>(Dominio + Logica)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Driven Ports<br><small>(Interfaces de saida)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Driven Adapters<br><small>(DB, Email, S3, APIs)</small></div>
+</div>
+
+<ul>
+<li><strong>Driving Adapters (lado esquerdo)</strong> — Quem <strong>dirige</strong> a aplicação. São os pontos de entrada: controllers HTTP, comandos CLI, consumidores de filas, testes automatizados. Eles chamam os Driving Ports.</li>
+<li><strong>Driving Ports (Primary Ports)</strong> — Interfaces que a aplicação <strong>expoe</strong>. São os Use Cases — o que a aplicação permite que sejá feito. Ex: <code>CreateOrderPort</code>, <code>CancelOrderPort</code>.</li>
+<li><strong>Driven Ports (Secondary Ports)</strong> — Interfaces que a aplicação <strong>consome</strong>. São as dependências externas que a aplicação precisa. Ex: <code>OrderRepositoryPort</code>, <code>EmailSenderPort</code>, <code>PaymentGatewayPort</code>.</li>
+<li><strong>Driven Adapters (lado direito)</strong> — Implementacoes concretas dos Driven Ports. Ex: <code>PostgresOrderRepository</code>, <code>SesEmailSender</code>, <code>StripePaymentGateway</code>.</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Por que "hexagonal"?</strong> O hexagono e apenas uma metafora visual — não ha significado no número de lados. A ideia é que a aplicação pode ter <strong>multiplas portas</strong> em qualquer direcao (diferente do diagrama em camadas que sugere "cima e baixo"). Você pode ter 2 portas de entrada (HTTP + CLI) e 5 portas de saida (DB, cache, email, fila, storage).</div>
+</div>
+
+<!-- ═══ ONION ARCHITECTURE ═══ -->
+<h3>Onion Architecture (Jeffrey Palermo, 2008)</h3>
+
+<p>Proposta por Jeffrey Palermo, a Onion Architecture e visualmente muito similar a Clean Architecture — também usa circulos concentricos. A diferença principal esta na <strong>nomenclatura das camadas</strong> é na enfase explicita na separacao entre Domain Model e Domain Services.</p>
+
+<h4>As Camadas da Cebola</h4>
+
+<div class="diagram">
+<div class="diagram-box green">Domain Model<br><small>(Entidades, Value Objects)</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box blue">Domain Services<br><small>(Interfaces de repositório, regras)</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box purple">Application Services<br><small>(Use Cases, orquestração)</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box orange">Infrastructure<br><small>(DB, UI, APIs, Frameworks)</small></div>
+</div>
+
+<ul>
+<li><strong>Domain Model (centro)</strong> — Entidades e Value Objects puros. Sem dependências externas. Contem regras de negócio intrinsecas ao domínio.</li>
+<li><strong>Domain Services</strong> — Interfaces de repositórios e serviços de domínio. Logica que envolve multiplas entidades mas que ainda é regra de negócio (ex: <code>PricingService</code> que calcula desconto baseado em regras complexas).</li>
+<li><strong>Application Services</strong> — Equivalente aos Use Cases da Clean Architecture. Orquestram o fluxo chamando Domain Services e entidades. Não contém regras de negócio — apenas coordenacao.</li>
+<li><strong>Infrastructure</strong> — Tudo que é externo: banco de dados, framework web, bibliotecas, serviços de email, filas. Implementa as interfaces definidas nas camadas internas.</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Palermo enfatiza:</strong> "A diferença fundamental é que nenhuma camada depende de nenhuma camada abaixo dela no sentido tradicional. Todas as camadas dependem de camadas mais internas." Ou seja, a infra depende de Application Services, que depende de Domain Services, que depende de Domain Model. Nunca o contrário.</div>
+</div>
+
+<!-- ═══ COMPARISON TABLE ═══ -->
+<h3>Comparacao entre as 3 Arquiteturas</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Clean Architecture</th>
+<th>Hexagonal</th>
+<th>Onion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Autor</strong></td>
+<td>Robert C. Martin (2012)</td>
+<td>Alistair Cockburn (2005)</td>
+<td>Jeffrey Palermo (2008)</td>
+</tr>
+<tr>
+<td><strong>Metafora visual</strong></td>
+<td>Circulos concentricos</td>
+<td>Hexagono com portas</td>
+<td>Camadas de cebola</td>
+</tr>
+<tr>
+<td><strong>Centro</strong></td>
+<td>Entities</td>
+<td>Application Core (Dominio)</td>
+<td>Domain Model</td>
+</tr>
+<tr>
+<td><strong>Camada de lógica</strong></td>
+<td>Use Cases</td>
+<td>Driving Ports (interfaces de entrada)</td>
+<td>Application Services</td>
+</tr>
+<tr>
+<td><strong>Camada de adaptacao</strong></td>
+<td>Interface Adapters</td>
+<td>Adapters (Driving + Driven)</td>
+<td>Infrastructure</td>
+</tr>
+<tr>
+<td><strong>Regra principal</strong></td>
+<td>Dependency Rule (para dentro)</td>
+<td>Ports &amp; Adapters</td>
+<td>Dependencias apontam para o centro</td>
+</tr>
+<tr>
+<td><strong>Diferencial</strong></td>
+<td>4 camadas explicitas, foco em boundaries</td>
+<td>Simetria entrada/saida, multiplas portas</td>
+<td>Separacao Domain Model vs Domain Services</td>
+</tr>
+<tr>
+<td><strong>Semelhancas</strong></td>
+<td colspan="3" style="text-align:center">Todas isolam o domínio, dependências apontam para dentro, infraestrutura e detalhe substituivel</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="card blue">
+<div class="card-title">Resumo das semelhancas</div>
+<ul>
+<li><strong>Dominio no centro</strong> — As três colocam as regras de negócio no nucleo, protegidas de detalhes externos</li>
+<li><strong>Dependency Rule</strong> — Dependencias sempre apontam para dentro (para o domínio)</li>
+<li><strong>Inversão de dependência</strong> — Camadas internas definem interfaces; camadas externas as implementam</li>
+<li><strong>Testabilidade</strong> — O domínio pode ser testado sem banco, sem HTTP, sem framework</li>
+<li><strong>Substituibilidade</strong> — Trocar PostgreSQL por MongoDB, Express por Fastify, SES por SendGrid — sem tocar no domínio</li>
+</ul>
+</div>
+
+<!-- ═══ EXEMPLOS DE CODIGO ═══ -->
+<h3>Exemplos de Código — Clean Architecture em NestJS</h3>
+
+<h4>Estrutura de Pastas</h4>
+<pre data-lang="text"><code>src/
+  domain/                    <span class="cm"># Camada mais interna — zero dependências externas</span>
+    entities/
+      order.entity.ts        <span class="cm"># Entidade pura (sem decorators TypeORM)</span>
+      order-item.vo.ts       <span class="cm"># Value Object</span>
+    repositories/
+      order.repository.ts    <span class="cm"># Interface (contrato) — NAO implementação</span>
+    services/
+      pricing.service.ts     <span class="cm"># Domain Service — regras entre entidades</span>
+
+  application/               <span class="cm"># Use Cases — orquestração</span>
+    use-cases/
+      create-order.use-case.ts
+      cancel-order.use-case.ts
+      get-order.use-case.ts
+    dtos/
+      create-order.dto.ts
+      order-response.dto.ts
+
+  infrastructure/            <span class="cm"># Implementacoes concretas</span>
+    persistence/
+      typeorm/
+        order.orm-entity.ts  <span class="cm"># Entidade TypeORM (com decorators)</span>
+        order.typeorm-repo.ts<span class="cm"># Implementação da interface de domínio</span>
+        order.mapper.ts      <span class="cm"># Converte ORM Entity &lt;-&gt; Domain Entity</span>
+    external/
+      stripe.payment.ts     <span class="cm"># Adapter para Stripe</span>
+      ses.email.ts           <span class="cm"># Adapter para AWS SES</span>
+
+  presentation/              <span class="cm"># Controllers, Guards, Pipes</span>
+    controllers/
+      order.controller.ts
+    guards/
+      auth.guard.ts
+
+  config/                    <span class="cm"># Modulos NestJS, configuração de DI</span>
+    order.module.ts          <span class="cm"># Wiring — conecta interfaces a implementações</span></code></pre>
+
+<h4>Domain Layer — Entidade Pura</h4>
+<pre data-lang="typescript"><code><span class="cm">// domain/entities/order.entity.ts</span>
+<span class="cm">// Sem decorators, sem imports de frameworks, sem TypeORM</span>
+
+<span class="kw">export class</span> <span class="tp">Order</span> {
+  <span class="kw">private</span> _items: <span class="tp">OrderItem</span>[] = [];
+  <span class="kw">private</span> _status: <span class="tp">OrderStatus</span> = <span class="str">'pending'</span>;
+
+  <span class="kw">constructor</span>(
+    <span class="kw">public readonly</span> id: <span class="tp">string</span>,
+    <span class="kw">public readonly</span> customerId: <span class="tp">string</span>,
+    <span class="kw">public readonly</span> createdAt: <span class="tp">Date</span>,
+  ) {}
+
+  <span class="fn">addItem</span>(item: <span class="tp">OrderItem</span>): <span class="tp">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>._status !== <span class="str">'pending'</span>) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Não pode adicionar itens a pedido já confirmado'</span>);
+    }
+    <span class="kw">if</span> (item.quantity &lt;= <span class="num">0</span>) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Quantidade deve ser positiva'</span>);
+    }
+    <span class="kw">this</span>._items.<span class="fn">push</span>(item);
+  }
+
+  <span class="fn">confirm</span>(): <span class="tp">void</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>._items.length === <span class="num">0</span>) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Pedido precisa ter pelo menós 1 item'</span>);
+    }
+    <span class="kw">this</span>._status = <span class="str">'confirmed'</span>;
+  }
+
+  <span class="kw">get</span> <span class="fn">total</span>(): <span class="tp">number</span> {
+    <span class="kw">return</span> <span class="kw">this</span>._items.<span class="fn">reduce</span>((sum, item) => sum + item.subtotal, <span class="num">0</span>);
+  }
+
+  <span class="kw">get</span> <span class="fn">status</span>(): <span class="tp">OrderStatus</span> { <span class="kw">return</span> <span class="kw">this</span>._status; }
+  <span class="kw">get</span> <span class="fn">items</span>(): <span class="kw">readonly</span> <span class="tp">OrderItem</span>[] { <span class="kw">return</span> [...<span class="kw">this</span>._items]; }
+}</code></pre>
+
+<h4>Domain Layer — Interface de Repositorio</h4>
+<pre data-lang="typescript"><code><span class="cm">// domain/repositories/order.repository.ts</span>
+<span class="cm">// Apenas a INTERFACE — define o contrato</span>
+<span class="cm">// A implementação concreta vive em infrastructure/</span>
+
+<span class="kw">export interface</span> <span class="tp">IOrderRepository</span> {
+  <span class="fn">findById</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span> | <span class="kw">null</span>&gt;;
+  <span class="fn">findByCustomer</span>(customerId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>[]&gt;;
+  <span class="fn">save</span>(order: <span class="tp">Order</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+  <span class="fn">delete</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+}</code></pre>
+
+<h4>Application Layer — Use Case</h4>
+<pre data-lang="typescript"><code><span class="cm">// application/use-cases/create-order.use-case.ts</span>
+<span class="cm">// Depende APENAS de interfaces do domínio, nunca de infraestrutura</span>
+
+<span class="kw">import</span> { <span class="tp">IOrderRepository</span> } <span class="kw">from</span> <span class="str">'../../domain/repositories/order.repository'</span>;
+<span class="kw">import</span> { <span class="tp">Order</span> } <span class="kw">from</span> <span class="str">'../../domain/entities/order.entity'</span>;
+<span class="kw">import</span> { <span class="tp">OrderItem</span> } <span class="kw">from</span> <span class="str">'../../domain/entities/order-item.vo'</span>;
+
+<span class="kw">export interface</span> <span class="tp">INotificationService</span> {
+  <span class="fn">sendOrderConfirmation</span>(order: <span class="tp">Order</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt;;
+}
+
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">CreateOrderUseCase</span> {
+  <span class="kw">constructor</span>(
+    <span class="ann">@Inject</span>(<span class="str">'ORDER_REPOSITORY'</span>)
+    <span class="kw">private</span> orderRepo: <span class="tp">IOrderRepository</span>,
+
+    <span class="ann">@Inject</span>(<span class="str">'NOTIFICATION_SERVICE'</span>)
+    <span class="kw">private</span> notifier: <span class="tp">INotificationService</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">execute</span>(dto: <span class="tp">CreateOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">OrderResponseDto</span>&gt; {
+    <span class="cm">// 1. Criar entidade de domínio</span>
+    <span class="kw">const</span> order = <span class="kw">new</span> <span class="tp">Order</span>(
+      <span class="fn">generateId</span>(),
+      dto.customerId,
+      <span class="kw">new</span> <span class="tp">Date</span>(),
+    );
+
+    <span class="cm">// 2. Adicionar itens (regra de negócio na entidade)</span>
+    <span class="kw">for</span> (<span class="kw">const</span> item <span class="kw">of</span> dto.items) {
+      order.<span class="fn">addItem</span>(<span class="kw">new</span> <span class="tp">OrderItem</span>(item.productId, item.quantity, item.price));
+    }
+
+    <span class="cm">// 3. Confirmar pedido (regra de negócio na entidade)</span>
+    order.<span class="fn">confirm</span>();
+
+    <span class="cm">// 4. Persistir (atraves da interface, não do TypeORM direto)</span>
+    <span class="kw">await</span> <span class="kw">this</span>.orderRepo.<span class="fn">save</span>(order);
+
+    <span class="cm">// 5. Notificar (atraves da interface, não do SES direto)</span>
+    <span class="kw">await</span> <span class="kw">this</span>.notifier.<span class="fn">sendOrderConfirmation</span>(order);
+
+    <span class="cm">// 6. Retornar DTO (não a entidade de domínio)</span>
+    <span class="kw">return</span> <span class="tp">OrderResponseDto</span>.<span class="fn">fromEntity</span>(order);
+  }
+}</code></pre>
+
+<h4>Infrastructure Layer — Implementação TypeORM</h4>
+<pre data-lang="typescript"><code><span class="cm">// infrastructure/persistence/typeorm/order.typeorm-repo.ts</span>
+<span class="cm">// Implementa a interface do domínio com TypeORM</span>
+
+<span class="kw">import</span> { <span class="tp">InjectRepository</span> } <span class="kw">from</span> <span class="str">'@nestjs/typeorm'</span>;
+<span class="kw">import</span> { <span class="tp">Repository</span> } <span class="kw">from</span> <span class="str">'typeorm'</span>;
+<span class="kw">import</span> { <span class="tp">IOrderRepository</span> } <span class="kw">from</span> <span class="str">'../../../domain/repositories/order.repository'</span>;
+<span class="kw">import</span> { <span class="tp">Order</span> } <span class="kw">from</span> <span class="str">'../../../domain/entities/order.entity'</span>;
+<span class="kw">import</span> { <span class="tp">OrderOrmEntity</span> } <span class="kw">from</span> <span class="str">'./order.orm-entity'</span>;
+<span class="kw">import</span> { <span class="tp">OrderMapper</span> } <span class="kw">from</span> <span class="str">'./order.mapper'</span>;
+
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">TypeOrmOrderRepository</span> <span class="kw">implements</span> <span class="tp">IOrderRepository</span> {
+  <span class="kw">constructor</span>(
+    <span class="ann">@InjectRepository</span>(<span class="tp">OrderOrmEntity</span>)
+    <span class="kw">private</span> repo: <span class="tp">Repository</span>&lt;<span class="tp">OrderOrmEntity</span>&gt;,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">findById</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span> | <span class="kw">null</span>&gt; {
+    <span class="kw">const</span> orm = <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">findOne</span>({ where: { id } });
+    <span class="kw">return</span> orm ? <span class="tp">OrderMapper</span>.<span class="fn">toDomain</span>(orm) : <span class="kw">null</span>;
+  }
+
+  <span class="kw">async</span> <span class="fn">findByCustomer</span>(customerId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>[]&gt; {
+    <span class="kw">const</span> orms = <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">find</span>({ where: { customerId } });
+    <span class="kw">return</span> orms.<span class="fn">map</span>(<span class="tp">OrderMapper</span>.toDomain);
+  }
+
+  <span class="kw">async</span> <span class="fn">save</span>(order: <span class="tp">Order</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">const</span> orm = <span class="tp">OrderMapper</span>.<span class="fn">toOrm</span>(order);
+    <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">save</span>(orm);
+  }
+
+  <span class="kw">async</span> <span class="fn">delete</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">await</span> <span class="kw">this</span>.repo.<span class="fn">delete</span>(id);
+  }
+}</code></pre>
+
+<h4>Presentation Layer — Controller</h4>
+<pre data-lang="typescript"><code><span class="cm">// presentation/controllers/order.controller.ts</span>
+<span class="cm">// Camada mais externa — conhece NestJS, mas delega tudo ao Use Case</span>
+
+<span class="ann">@Controller</span>(<span class="str">'orders'</span>)
+<span class="kw">export class</span> <span class="tp">OrderController</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> createOrder: <span class="tp">CreateOrderUseCase</span>,
+  ) {}
+
+  <span class="ann">@Post</span>()
+  <span class="ann">@UseGuards</span>(<span class="tp">AuthGuard</span>)
+  <span class="kw">async</span> <span class="fn">create</span>(<span class="ann">@Body</span>() dto: <span class="tp">CreateOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">OrderResponseDto</span>&gt; {
+    <span class="kw">return</span> <span class="kw">this</span>.createOrder.<span class="fn">execute</span>(dto);
+  }
+}</code></pre>
+
+<h4>Wiring — Modulo NestJS (Conectando Interfaces a Implementacoes)</h4>
+<pre data-lang="typescript"><code><span class="cm">// config/order.module.ts</span>
+<span class="cm">// Aqui acontece a Dependency Injection — onde interfaces encontram implementações</span>
+
+<span class="ann">@Module</span>({
+  imports: [<span class="tp">TypeOrmModule</span>.<span class="fn">forFeature</span>([<span class="tp">OrderOrmEntity</span>])],
+  controllers: [<span class="tp">OrderController</span>],
+  providers: [
+    <span class="tp">CreateOrderUseCase</span>,
+
+    <span class="cm">// Interface de domínio -&gt; Implementação de infraestrutura</span>
+    {
+      provide: <span class="str">'ORDER_REPOSITORY'</span>,
+      useClass: <span class="tp">TypeOrmOrderRepository</span>,
+    },
+    {
+      provide: <span class="str">'NOTIFICATION_SERVICE'</span>,
+      useClass: <span class="tp">SesNotificationService</span>,
+    },
+  ],
+})
+<span class="kw">export class</span> <span class="tp">OrderModule</span> {}</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Estruturando NestJS com Clean Architecture</h3>
+
+<p><strong>Cenário:</strong> Você esta iniciando um projeto NestJS de medio porte (e-commerce) e precisa decidir a estrutura. O time tem 4 desenvolvedores é o projeto vai crescer ao longo de 2 anos.</p>
+
+<div class="diagram">
+<div class="diagram-box orange">Controller<br><small>(Presentation)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Use Case<br><small>(Application)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Entity + Interface<br><small>(Domain)</small></div>
+<div class="diagram-arrow" style="transform:rotate(180deg)">&rarr;</div>
+<div class="diagram-box blue">TypeORM Repo<br><small>(Infrastructure)</small></div>
+</div>
+
+<p><strong>Fluxo de uma request:</strong></p>
+<ol>
+<li><strong>Controller</strong> recebe a request HTTP, válida o body com class-válidator, chama o Use Case</li>
+<li><strong>Use Case</strong> orquestra a lógica: cria/carrega entidades de domínio, executa regras, chama interfaces de repositório</li>
+<li><strong>Entidade de Dominio</strong> contém regras de negócio (válidacoes, cálculos, mudanças de estado)</li>
+<li><strong>TypeORM Repository</strong> (infraestrutura) implementa a interface de domínio e faz a persistência real</li>
+<li><strong>Mapper</strong> converte entre ORM Entity (com decorators TypeORM) e Domain Entity (pura)</li>
+</ol>
+
+<div class="card orange">
+<div class="card-title">Quando usar Clean Architecture completa?</div>
+<ul>
+<li><strong>SIM</strong> — Projetos de medio/grande porte com domínio complexo, múltiplos desenvolvedores, previsao de longa vida útil</li>
+<li><strong>SIM</strong> — Quando você precisa trocar infraestrutura (migrar de PostgreSQL para DynamoDB, por exemplo)</li>
+<li><strong>NAO</strong> — CRUDs simples, MVPs, prototipos, scripts. Nestes casos, NestJS padrão com services + repositories é suficiente</li>
+<li><strong>NAO</strong> — Quando você é o único dev é o projeto tem 3 meses de vida. O overhead não se paga</li>
+</ul>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Over-layering para CRUDs simples:</strong> Se sua aplicação é um CRUD que salva e lista dados, criar 4 camadas com mappers, DTOs, interfaces e implementações separadas e <strong>overengineering</strong>. Clean Architecture brilha quando o domínio e complexo. Para CRUD, use NestJS padrão: Controller &rarr; Service &rarr; Repository. Adicione camadas conforme a complexidade cresce.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>DTO Hell (mapeamento excessivo):</strong> Ter <code>CreateOrderRequestDto</code>, <code>CreateOrderUseCaseDto</code>, <code>OrderEntity</code>, <code>OrderOrmEntity</code>, <code>OrderResponseUseCaseDto</code>, <code>OrderResponseControllerDto</code> — são 6 representacoes do mesmo dado. Cada mudança exige alterár 6 arquivos + 5 mappers. Na prática, 2-3 representacoes (Request DTO, Domain Entity, ORM Entity) são suficientes para a maioria dos projetos.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Confundir qual camada owns o que:</strong> Erro comum — colocar regras de negócio no Controller ou no Repository. O Controller deve apenas receber a request e delegar. O Repository deve apenas persistir. Regras de negócio ficam na <strong>Entity</strong> (regras intrinsecas) ou no <strong>Use Case</strong> (orquestração). Se seu Controller tem <code>if (order.total > 1000) applyDiscount()</code>, essa lógica esta no lugar errado.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Clean Architecture != estrutura de pastas:</strong> Criar pastas <code>domain/</code>, <code>application/</code>, <code>infrastructure/</code> não significa que você tem Clean Architecture. Se o Use Case importa <code>TypeOrmRepository</code> diretamente ao inves da interface, você tem a <strong>estrutura</strong> mas não a <strong>regra</strong>. A essencia é a Dependency Rule — dependências apontam para dentro. Sem isso, e apenas organização de pastas.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Abordagem pragmatica:</strong> Comece simples (Controller &rarr; Service &rarr; Repository). Quando o domínio ficar complexo, extraia entidades puras e use cases. Quando precisar trocar infraestrutura, adicione interfaces. Evolua a arquitetura com a complexidade do projeto — não antes.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem um OrderService no NestJS que importa diretamente TypeORM Repository e AWS SES SDK. Como refatorar para Clean Architecture?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> (1) Crie a entidade <code>Order</code> pura em <code>domain/entities/</code> sem decorators TypeORM. (2) Defina a interface <code>IOrderRepository</code> em <code>domain/repositories/</code>. (3) Defina a interface <code>IEmailService</code> em <code>domain/services/</code>. (4) Crie <code>CreateOrderUseCase</code> em <code>application/use-cases/</code> que depende das interfaces. (5) Implemente <code>TypeOrmOrderRepository</code> é <code>SesEmailService</code> em <code>infrastructure/</code>. (6) No módulo NestJS, use <code>provide/useClass</code> para conectar interfaces a implementações. O Use Case nunca importa TypeORM ou AWS SDK diretamente.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Qual a diferença entre um Driving Adapter é um Driven Adapter na Hexagonal Architecture? De 2 exemplos de cada.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>Driving Adapters</strong> são quem INICIA a interáção com a aplicação — eles "dirigem" a aplicação. Exemplos: (1) Controller HTTP que recebe requests REST, (2) Consumer de fila SQS que processa mensagens. <strong>Driven Adapters</strong> são quem a aplicação UTILIZA para executar acoes externas — a aplicação "dirige" eles. Exemplos: (1) Repository PostgreSQL que persiste dados, (2) Client HTTP que chama API de pagamento. A diferença fundamental: Driving = quem chama a aplicação. Driven = quem a aplicação chama.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Quando NAO faz sentido usar Clean Architecture / Hexagonal? Justifique com 3 cenários concretos.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> (1) <strong>CRUD simples / MVP</strong> — Se a aplicação apenas salva e lista dados sem regras de negócio complexas, as camadas extras adicionam custo sem benefício. Use Service + Repository padrão. (2) <strong>Scripts e ferramentas internas</strong> — Um script que roda uma vez por dia para gerar relatório não precisa de 4 camadas. O tempo gasto com abstrações não se paga. (3) <strong>Prototipo com prazo curto</strong> — Se você precisa validar uma ideia em 2 semanas é o código pode ser descartado, a velocidade de desenvolvimento é mais importante que a arquitetura perfeita. Comece simples, refatore depois se o prototipo virar produto.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Clean / Hexagonal / Onion Architecture</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="06-ddd-domain-driven-design.html">&#8592; DDD: Domain-Driven Design</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="08-mvc-mvp-mvvm-mvi.html" class="primary">Próximo: MVC / MVP / MVVM / MVI &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 07: Clean / Hexagonal / Onion
+// ══════════════════════════════════════════
+const SECTION_NUM = 7;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a regra fundamental da Clean Architecture (Dependency Rule)?",
+    options: [
+      "Camadas internas podem importar camadas externas livremente",
+      "Dependencias de código-fonte só podem apontar para dentro (em direcao ao domínio)",
+      "Cada camada deve ter exatamente um arquivo",
+      "A camada de infraestrutura define as interfaces que o domínio implementa"
+    ],
+    correct: 1,
+    explanation: "A Dependency Rule diz que dependências de código-fonte só podem apontar para dentro. Camadas internas (domínio) nunca importam camadas externas (infraestrutura). A inversão de dependência garante isso: o domínio define interfaces, a infra implementa."
+  },
+  {
+    question: "Na Clean Architecture de Uncle Bob, qual camada contém os Use Cases?",
+    options: [
+      "Entities (camada mais interna)",
+      "Application (segunda camada, entre Entities e Interface Adapters)",
+      "Interface Adapters (terceira camada)",
+      "Frameworks & Drivers (camada mais externa)"
+    ],
+    correct: 1,
+    explanation: "Os Use Cases ficam na segunda camada (Application), entre Entities e Interface Adapters. Eles contém a lógica específica da aplicação e orquestram as entidades de domínio."
+  },
+  {
+    question: "Na Hexagonal Architecture, o que é um Driving Adapter?",
+    options: [
+      "Implementação de banco de dados (PostgreSQL, MongoDB)",
+      "Um ponto de ENTRADA que inicia interáção com a aplicação (HTTP Controller, CLI, Testes)",
+      "Uma interface que a aplicação expoe para o mundo externo",
+      "Um serviço de email ou fila que a aplicação chama"
+    ],
+    correct: 1,
+    explanation: "Driving Adapters são quem 'dirige' (inicia) a interáção com a aplicação. Exemplos: HTTP Controllers, CLI commands, consumidores de fila, testes automatizados. Eles chamam os Driving Ports (Use Cases)."
+  },
+  {
+    question: "Qual a diferença entre um Driven Port é um Driven Adapter na Hexagonal Architecture?",
+    options: [
+      "São a mesma coisa — nomes diferentes para o mesmo conceito",
+      "Port é a interface (contrato); Adapter é a implementação concreta",
+      "Port é a implementação; Adapter é a interface",
+      "Port e para entrada; Adapter e para saida"
+    ],
+    correct: 1,
+    explanation: "O Port é a interface/contrato que a aplicação define (ex: IOrderRepository). O Adapter é a implementação concreta (ex: PostgresOrderRepository). A aplicação depende do Port; o Adapter e injetado em runtime."
+  },
+  {
+    question: "Na Onion Architecture, qual é a diferença entre Domain Services e Application Services?",
+    options: [
+      "Não ha diferença — são nomes alternativos para a mesma camada",
+      "Domain Services contém regras de negócio entre entidades; Application Services orquestram fluxos (Use Cases)",
+      "Application Services ficam mais próximos do centro; Domain Services ficam na borda",
+      "Domain Services se conectam ao banco; Application Services se conectam a API"
+    ],
+    correct: 1,
+    explanation: "Domain Services contém lógica de negócio que envolve multiplas entidades (ex: PricingService). Application Services (Use Cases) orquestram o fluxo chamando Domain Services e entidades, sem conter regras de negócio proprias."
+  },
+  {
+    question: "Você tem uma entidade Order com decorators @Entity() e @Column() do TypeORM na pasta domain/. Isso viola Clean Architecture?",
+    options: [
+      "Não, decorators são apenas metadados e não criam dependência",
+      "Sim, a camada de domínio depende do TypeORM (framework externo) — viola a Dependency Rule",
+      "Depende se o TypeORM é usado como ORM ou como query builder",
+      "Não, porque o NestJS resolve automáticamente a dependência"
+    ],
+    correct: 1,
+    explanation: "Sim, viola. A entidade de domínio puro não deve ter nenhuma dependência de framework. Os decorators @Entity/@Column criam dependência direta do TypeORM. A solução e ter uma entidade pura no domínio é uma ORM Entity separada na infraestrutura, com um Mapper entre elas."
+  },
+  {
+    question: "Qual dessas é uma armadilha comum ao adotar Clean Architecture?",
+    options: [
+      "Separar regras de negócio em entidades de domínio",
+      "Criar interfaces para dependências externas",
+      "Over-layering em CRUDs simples — criando 4+ camadas onde não ha complexidade de domínio",
+      "Usar Dependency Injection para conectar interfaces a implementações"
+    ],
+    correct: 2,
+    explanation: "Over-layering é a armadilha mais comum. Para CRUDs simples sem regras de negócio complexas, 4 camadas com mappers e DTOs em cada fronteira adicionam custo sem benefício. A arquitetura deve ser proporcional a complexidade do domínio."
+  },
+  {
+    question: "Na comparação entre Clean, Hexagonal e Onion — qual afirmacao esta CORRETA?",
+    options: [
+      "São arquiteturas completamente diferentes com princípios incompativeis",
+      "Hexagonal é a única que usa o conceito de Ports & Adapters",
+      "Todas compartilham o princípio: domínio no centro, dependências apontam para dentro, infraestrutura e detalhe substituivel",
+      "Onion Architecture não usa inversão de dependência"
+    ],
+    correct: 2,
+    explanation: "As três arquiteturas compartilham os mesmos princípios fundamentais: domínio no centro, Dependency Rule (dependências apontam para dentro), inversão de dependência (domínio define interfaces, infra implementa), e infraestrutura como detalhe substituivel."
+  },
+  {
+    question: "Onde devem ficar as regras de negócio como 'um pedido precisa ter pelo menós 1 item' na Clean Architecture?",
+    options: [
+      "No Controller (validação de entrada)",
+      "Na entidade de domínio (camada Entities)",
+      "No Repository (validação antes de salvar)",
+      "No DTO (decorators de validação)"
+    ],
+    correct: 1,
+    explanation: "Regras de negócio intrinsecas ao domínio ficam na entidade de domínio (camada Entities — o centro). O Controller válida formato de dados (ex: campo obrigatório), mas regras como 'pedido precisa ter itens' são do domínio. DTOs válidam shape, não regras de negócio."
+  },
+  {
+    question: "Qual afirmacao sobre Clean Architecture e estrutura de pastas esta CORRETA?",
+    options: [
+      "Ter pastas domain/, application/, infrastructure/ significa que você tem Clean Architecture",
+      "Clean Architecture e sobre a Dependency Rule, não sobre estrutura de pastas — ter as pastas sem respeitar a regra de dependência não é Clean Architecture",
+      "A estrutura de pastas é o aspecto mais importante da Clean Architecture",
+      "Clean Architecture exige que cada camada tenha exatamente uma pasta"
+    ],
+    correct: 1,
+    explanation: "Clean Architecture e sobre a Dependency Rule — dependências apontam para dentro. Ter pastas organizadas mas com Use Cases importando TypeORM diretamente não é Clean Architecture. A essencia é a regra, não a organização visual."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Clean, Hexagonal e Onion Architecture.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

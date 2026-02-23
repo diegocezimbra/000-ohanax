@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>55 — Engenharia de Dados | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="54-testes-avancados.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>55</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="56-documentacao-adrs.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:83.3%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 55</span>
+<h2>Engenharia de Dados</h2>
+<div class="section-line"></div>
+
+<p>Engenharia de Dados é a disciplina que projeta, constroi e opera os <strong>pipelines que movem, transformam e disponibilizam dados</strong> para análise, machine learning e tomada de decisão. Enquanto o backend transacional foca em OLTP (escrita/leitura rápida de registros individuais), a engenharia de dados foca em OLAP (processamento analitico de grandes volumes).</p>
+
+<p>Como full-stack engineer, você não precisa ser um data engineer especialista. Mas precisa entender os conceitos porque: (1) você vai <strong>produzir dados</strong> que alimentam pipelines, (2) vai <strong>consumir dados processados</strong> para dashboards e features, e (3) em startups, frequentemente será você quem monta o primeiro pipeline de dados.</p>
+
+<p>Nesta seção cobrimos: pipelines ETL/ELT, a arquitetura Lakehouse, dbt para transformacoes SQL, data quality, streaming e observabilidade de dados.</p>
+
+<!-- ═══ ETL vs ELT ═══ -->
+<h3>ETL vs ELT — Pipelines de Dados</h3>
+
+<p>O primeiro conceito fundamental é como os dados fluem da <strong>origem</strong> (bancos transacionais, APIs, logs) até o <strong>destino</strong> (data warehouse, data lake) onde seráo analisados.</p>
+
+<h4>ETL (Extract-Transform-Load)</h4>
+<p>O padrão clássico: você <strong>extrai</strong> os dados das fontes, <strong>transforma</strong> em um servidor intermediário (limpeza, agregação, enriquecimento) e só então <strong>carrega</strong> no destino final.</p>
+<ul>
+<li><strong>Quando usar:</strong> Quando o destino tem capacidade limitada de processamento, ou quando dados sensiveis precisam ser mascarados antes de carregar</li>
+<li><strong>Vantagem:</strong> Dados já chegam limpos e prontos para uso. Menor custo de storage no destino</li>
+<li><strong>Desvantagem:</strong> Transformacao e bottleneck — se a lógica muda, precisa reprocessar tudo. Pipeline frágil</li>
+<li><strong>Ferramentas clássicas:</strong> Informatica, Talend, SSIS (SQL Server Integration Services)</li>
+</ul>
+
+<h4>ELT (Extract-Load-Transform)</h4>
+<p>O padrão moderno: você <strong>extrai</strong> é <strong>carrega</strong> os dados brutos diretamente no destino (que tem poder de processamento massivo), e então <strong>transforma</strong> usando SQL dentro do proprio warehouse.</p>
+<ul>
+<li><strong>Quando usar:</strong> Quando o destino é um data warehouse moderno (BigQuery, Snowflake, Redshift) com compute elastico</li>
+<li><strong>Vantagem:</strong> Dados brutos preservados — você pode re-transformar sem re-extrair. Mais flexível e resiliente</li>
+<li><strong>Desvantagem:</strong> Custo de storage maior. Dados brutos no warehouse precisam de governanca</li>
+<li><strong>Ferramentas modernas:</strong> Fivetran, Airbyte, Stitch (para E+L), dbt (para T)</li>
+</ul>
+
+<h4>Batch vs Streaming</h4>
+<ul>
+<li><strong>Batch:</strong> Processamento em intervalos (a cada hora, diario). Mais simples, mais barato. Ex: relatório diario de vendas</li>
+<li><strong>Streaming:</strong> Processamento em tempo real (latência de segundos). Mais complexo, mais caro. Ex: detecção de fraude em tempo real</li>
+<li><strong>Micro-batch:</strong> Meio termo — processa a cada poucos minutos (Spark Structured Streaming). Latencia de minutos, complexidade moderada</li>
+</ul>
+
+<h4>Orchestration</h4>
+<p>Pipelines de dados precisam de <strong>orquestração</strong> — controlar a ordem de execução, dependências, retries, alertas e monitoramento.</p>
+<ul>
+<li><strong>Apache Airflow:</strong> O padrão da industria. DAGs (Directed Acyclic Graphs) em Python. Muito poderoso, mas complexo de operar</li>
+<li><strong>Dagster:</strong> Alternativa moderna. Foco em software-defined assets. Type-safe, melhor DX (Developer Experience)</li>
+<li><strong>Prefect:</strong> Mais simples que Airflow. Bom para pipelines menores. Cloud-native</li>
+<li><strong>Mage:</strong> Interface visual + código. Bom para equipes mistas (analistas + engenheiros)</li>
+</ul>
+
+<pre data-lang="python"><code><span class="cm"># Exemplo: DAG do Apache Airflow para pipeline ELT diario</span>
+<span class="kw">from</span> airflow <span class="kw">import</span> DAG
+<span class="kw">from</span> airflow.operators.python <span class="kw">import</span> PythonOperator
+<span class="kw">from</span> airflow.providers.postgres.operators.postgres <span class="kw">import</span> PostgresOperator
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, timedelta
+
+default_args = {
+    <span class="str">'owner'</span>: <span class="str">'data-team'</span>,
+    <span class="str">'retries'</span>: <span class="num">3</span>,
+    <span class="str">'retry_delay'</span>: timedelta(minutes=<span class="num">5</span>),
+    <span class="str">'email_on_failure'</span>: <span class="num">True</span>,
+}
+
+<span class="kw">with</span> DAG(
+    dag_id=<span class="str">'elt_daily_sales'</span>,
+    default_args=default_args,
+    schedule_interval=<span class="str">'0 6 * * *'</span>,  <span class="cm"># Diariamente as 6h</span>
+    start_date=datetime(<span class="num">2025</span>, <span class="num">1</span>, <span class="num">1</span>),
+    catchup=<span class="num">False</span>,
+    tags=[<span class="str">'elt'</span>, <span class="str">'sales'</span>],
+) <span class="kw">as</span> dag:
+
+    <span class="cm"># 1. Extract + Load: Fivetran sync (dados brutos → warehouse)</span>
+    extract_load = PythonOperator(
+        task_id=<span class="str">'extract_load_raw_data'</span>,
+        python_callable=trigger_fivetran_sync,
+        op_kwargs={<span class="str">'connector_id'</span>: <span class="str">'sales_postgres'</span>},
+    )
+
+    <span class="cm"># 2. Transform: dbt run (modelos SQL no warehouse)</span>
+    transform = PythonOperator(
+        task_id=<span class="str">'run_dbt_models'</span>,
+        python_callable=run_dbt_command,
+        op_kwargs={<span class="str">'command'</span>: <span class="str">'dbt run --select tag:sales'</span>},
+    )
+
+    <span class="cm"># 3. Test: dbt test (validação de qualidade)</span>
+    test_quality = PythonOperator(
+        task_id=<span class="str">'run_dbt_tests'</span>,
+        python_callable=run_dbt_command,
+        op_kwargs={<span class="str">'command'</span>: <span class="str">'dbt test --select tag:sales'</span>},
+    )
+
+    <span class="cm"># 4. Notify: Alerta no Slack com métricas</span>
+    notify = PythonOperator(
+        task_id=<span class="str">'notify_slack'</span>,
+        python_callable=send_slack_notification,
+        op_kwargs={<span class="str">'channel'</span>: <span class="str">'#data-pipeline'</span>},
+    )
+
+    <span class="cm"># Dependencias: E → T → Test → Notify</span>
+    extract_load >> transform >> test_quality >> notify</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Regra prática para escolher batch vs streaming:</strong> Se o caso de usó tolera latência de <strong>horas</strong>, use batch (muito mais simples e barato). Se precisa de latência de <strong>segundos</strong>, use streaming. Não use streaming "porque e moderno" — a complexidade operacional e 5-10x maior.</div>
+</div>
+
+<!-- ═══ DATA LAKEHOUSE ═══ -->
+<h3>Data Lakehouse</h3>
+
+<p>Historicamente existiam dois destinós para dados analiticos: <strong>Data Lakes</strong> (barato, flexível, sem estrutura) e <strong>Data Warehouses</strong> (caro, performatico, estruturado). O <strong>Lakehouse</strong> combina o melhor dos dois.</p>
+
+<h4>Data Lake vs Data Warehouse vs Lakehouse</h4>
+<ul>
+<li><strong>Data Lake:</strong> Storage barato (S3, GCS) com dados brutos em qualquer formato (JSON, CSV, Parquet). Problema: sem schema enforcement, sem transações ACID, vira "data swamp" rapidamente</li>
+<li><strong>Data Warehouse:</strong> Banco otimizado para queries analiticas (BigQuery, Snowflake, Redshift). Schema-on-write, ACID, performatico. Problema: caro, vendor lock-in, duplicação de dados</li>
+<li><strong>Lakehouse:</strong> Data Lake + camada de metadata que adiciona ACID, schema enforcement, time travel e performance. Dados ficam em storage barato (S3) mas com qualidade de warehouse</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Data Lake</th><th>Data Warehouse</th><th>Lakehouse</th></tr>
+<tr><td><strong>Storage</strong></td><td>Object storage (S3) — barato</td><td>Proprietario — caro</td><td>Object storage (S3) — barato</td></tr>
+<tr><td><strong>Formato</strong></td><td>Qualquer (JSON, CSV, etc.)</td><td>Proprietario/columnar</td><td>Open formats (Parquet, ORC)</td></tr>
+<tr><td><strong>Schema</strong></td><td>Schema-on-read</td><td>Schema-on-write</td><td>Schema evolution + enforcement</td></tr>
+<tr><td><strong>ACID</strong></td><td>Não</td><td>Sim</td><td>Sim (via table format)</td></tr>
+<tr><td><strong>Time Travel</strong></td><td>Não</td><td>Limitado</td><td>Sim (query estado passado)</td></tr>
+<tr><td><strong>Performance</strong></td><td>Lento para queries</td><td>Muito rápido</td><td>Rapido (data skipping, Z-ordering)</td></tr>
+<tr><td><strong>Custo</strong></td><td>Baixo</td><td>Alto</td><td>Medio-baixo</td></tr>
+<tr><td><strong>Lock-in</strong></td><td>Baixo</td><td>Alto</td><td>Baixo (open formats)</td></tr>
+</table>
+</div>
+
+<h4>Table Formats: A Camada que Habilita o Lakehouse</h4>
+<ul>
+<li><strong>Delta Lake:</strong> Criado pela Databricks. O mais adotado. Transaction log em JSON. Otimização automática (OPTIMIZE, Z-ORDER). Integracao nativa com Spark</li>
+<li><strong>Apache Iceberg:</strong> Criado pela Netflix. Snapshot isolation. Melhor suporte a schema evolution. Vendor-neutral — funciona com Spark, Trino, Flink, Dremio</li>
+<li><strong>Apache Hudi:</strong> Criado pela Uber. Foco em upserts incrementais (bom para CDC — Change Data Capture). Record-level updates eficientes</li>
+</ul>
+
+<h4>Funcionalidades Chave do Lakehouse</h4>
+<ul>
+<li><strong>ACID Transactions:</strong> Escrita atomica — se uma escrita falha no meio, não corrompe a tabela. Essencial para pipelines confiaveis</li>
+<li><strong>Schema Evolution:</strong> Adicionar/renomear colunas sem reescrever toda a tabela. <code>ALTER TABLE ADD COLUMN</code> funciona</li>
+<li><strong>Time Travel:</strong> Consultar dados como eram no passado. <code>SELECT * FROM sales VERSION AS OF 42</code>. Essencial para auditoria e debugging</li>
+<li><strong>Data Skipping:</strong> Metadata sobre min/max de cada arquivo permite pular arquivos irrelevantes. Queries 10-100x mais rápidas</li>
+</ul>
+
+<!-- Diagrama: Arquitetura Lakehouse -->
+<div class="diagram">
+<div class="diagram-box blue">Sources<br><small>Postgres, APIs, Logs</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Ingestion<br><small>Fivetran, Airbyte</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box green">Storage (S3)<br><small>Parquet + Delta/Iceberg</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Compute<br><small>Spark, Trino, dbt</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box cyan">Serving<br><small>BI, ML, APIs</small></div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Para startups:</strong> Não comece com Lakehouse. Comece com um data warehouse gerenciado (BigQuery ou Snowflake) + dbt. Quando o volume de dados ultrapassar 10TB ou o custo do warehouse ficar proibitivo, avalie migração para Lakehouse.</div>
+</div>
+
+<!-- ═══ dbt ═══ -->
+<h3>dbt (Data Build Tool)</h3>
+
+<p>dbt revolucionou a engenharia de dados ao trazer práticas de <strong>engenharia de software</strong> para transformacoes SQL: versionamento (git), testes automatizados, documentação, CI/CD e code review. Em vez de escrever stored procedures ou scripts ETL obscuros, você escreve <strong>modelos SQL</strong> que são versionados, testados e documentados.</p>
+
+<h4>Conceitos Fundamentais</h4>
+<ul>
+<li><strong>Models:</strong> Arquivos SQL que definem transformacoes. Cada model gera uma tabela ou view no warehouse. Referencia outros models com <code>{{ ref('model_name') }}</code></li>
+<li><strong>Tests:</strong> Validacoes automáticas — <code>not_null</code>, <code>unique</code>, <code>accepted_values</code>, <code>relationships</code>. Também suporta testes customizados em SQL</li>
+<li><strong>Documentation:</strong> Descricao de models e colunas no YAML. Gera site de documentação automáticamente (<code>dbt docs generate</code>)</li>
+<li><strong>Seeds:</strong> Arquivos CSV versionados no repositório. Bom para lookup tables pequenas (estados, categorias, moedas)</li>
+<li><strong>Sources:</strong> Declaracao das tabelas raw (fontes externas). Permite testar freshness — "esses dados foram atualizados nas últimas 24h?"</li>
+</ul>
+
+<h4>Incremental Models</h4>
+<p>Em vez de reprocessar toda a tabela a cada execução, modelos incrementais processam apenas os <strong>dados novos</strong>. Essencial para tabelas com bilhoes de linhas.</p>
+
+<h4>Snapshots</h4>
+<p>Capturam o estado de tabelas mutaveis ao longo do tempo (SCD — Slowly Changing Dimensions). Permitem responder "qual era o preço deste produto em janeiro?".</p>
+
+<h4>Data Lineage</h4>
+<p>dbt gera automáticamente um <strong>grafo de dependências</strong> mostrando como cada model depende de outros. Essencial para impact analysis — "se eu mudar a tabela X, quais dashboards são afetados?".</p>
+
+<pre data-lang="sql"><code><span class="cm">-- models/marts/sales/fct_daily_revenue.sql</span>
+<span class="cm">-- Modelo dbt: receita diaria por produto (incremental)</span>
+
+{{ config(
+    materialized=<span class="str">'incremental'</span>,
+    unique_key=<span class="str">'revenue_daté || product_id'</span>,
+    partition_by={<span class="str">'field'</span>: <span class="str">'revenue_date'</span>, <span class="str">'data_type'</span>: <span class="str">'date'</span>}
+) }}
+
+<span class="kw">WITH</span> orders <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> *
+    <span class="kw">FROM</span> {{ ref(<span class="str">'stg_orders'</span>) }}
+    <span class="kw">WHERE</span> status = <span class="str">'completed'</span>
+    {% <span class="kw">if</span> is_incremental() %}
+        <span class="cm">-- Apenas registros novos desde a última execução</span>
+        <span class="kw">AND</span> completed_at > (<span class="kw">SELECT</span> <span class="fn">MAX</span>(revenue_date) <span class="kw">FROM</span> {{ this }})
+    {% endif %}
+),
+
+line_items <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> *
+    <span class="kw">FROM</span> {{ ref(<span class="str">'stg_order_items'</span>) }}
+),
+
+<span class="kw">final</span> <span class="kw">AS</span> (
+    <span class="kw">SELECT</span>
+        <span class="fn">DATE</span>(o.completed_at) <span class="kw">AS</span> revenue_date,
+        li.product_id,
+        <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> o.order_id) <span class="kw">AS</span> total_orders,
+        <span class="fn">SUM</span>(li.quantity) <span class="kw">AS</span> total_units,
+        <span class="fn">SUM</span>(li.quantity * li.unit_price) <span class="kw">AS</span> gross_revenue,
+        <span class="fn">SUM</span>(li.discount_amount) <span class="kw">AS</span> total_discounts,
+        <span class="fn">SUM</span>(li.quantity * li.unit_price - li.discount_amount) <span class="kw">AS</span> net_revenue
+    <span class="kw">FROM</span> orders o
+    <span class="kw">JOIN</span> line_items li <span class="kw">ON</span> o.order_id = li.order_id
+    <span class="kw">GROUP BY</span> <span class="num">1</span>, <span class="num">2</span>
+)
+
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="kw">final</span></code></pre>
+
+<pre data-lang="yaml"><code><span class="cm"># models/marts/sales/schema.yml</span>
+<span class="cm"># Testes e documentação do modelo dbt</span>
+
+<span class="tp">version</span>: <span class="num">2</span>
+
+<span class="tp">models</span>:
+  - <span class="tp">name</span>: fct_daily_revenue
+    <span class="tp">description</span>: <span class="str">"Receita diaria agregada por produto. Atualizado incrementalmente."</span>
+    <span class="tp">columns</span>:
+      - <span class="tp">name</span>: revenue_date
+        <span class="tp">description</span>: <span class="str">"Data da receita (UTC)"</span>
+        <span class="tp">tests</span>:
+          - <span class="fn">not_null</span>
+      - <span class="tp">name</span>: product_id
+        <span class="tp">description</span>: <span class="str">"FK para dim_products"</span>
+        <span class="tp">tests</span>:
+          - <span class="fn">not_null</span>
+          - <span class="fn">relationships</span>:
+              <span class="tp">to</span>: ref(<span class="str">'dim_products'</span>)
+              <span class="tp">field</span>: product_id
+      - <span class="tp">name</span>: net_revenue
+        <span class="tp">description</span>: <span class="str">"Receita liquida (gross - descontos)"</span>
+        <span class="tp">tests</span>:
+          - <span class="fn">not_null</span>
+          - <span class="tp">dbt_útils.expression_is_true</span>:
+              <span class="tp">expression</span>: <span class="str">">= 0"</span></code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Erro comum com dbt incremental:</strong> Se a lógica do modelo muda, os dados historicos não são retroativamente corrígidos. Quando alterár a lógica de um modelo incremental, execute <code>dbt run --full-refresh -s model_name</code> para reconstruir a tabela inteira.</div>
+</div>
+
+<!-- ═══ DATA QUALITY ═══ -->
+<h3>Data Quality</h3>
+
+<p>Dados incorretos, incompletos ou desatualizados destroem a confiança do time de negócio. "Data quality" não é uma feature — é um <strong>requisito fundamental</strong> de qualquer pipeline de dados. A regra é simples: <strong>se o time de negócio não confia nós dados, eles voltam para planilhas</strong>.</p>
+
+<h4>Great Expectations</h4>
+<p>Framework Python open-source para definir, testar e documentar expectativas sobre dados.</p>
+<ul>
+<li><strong>Expectations:</strong> Regras declarativas sobre os dados. Ex: "esta coluna nunca tem NULL", "valores estão entre 0 e 1000", "a tabela tem entre 10K e 1M linhas"</li>
+<li><strong>Suites:</strong> Conjunto de expectations agrupadas por tabela ou domínio</li>
+<li><strong>Data Docs:</strong> Documentação HTML gerada automáticamente com resultados de validação</li>
+<li><strong>Checkpoints:</strong> Pontos no pipeline onde validação é executada. Se falhar, pipeline para</li>
+</ul>
+
+<h4>Data Contracts</h4>
+<p>Acordos formais entre <strong>produtores</strong> (quem gera os dados) e <strong>consumidores</strong> (quem usa os dados). Define schema, SLAs de freshness, regras de qualidade e processo de mudança.</p>
+<ul>
+<li><strong>Schema:</strong> Quais colunas, tipos, constraints. Mudancas exigem avisó previo</li>
+<li><strong>SLAs:</strong> "Dados atualizados até 8h UTC diariamente". "Latencia máxima de 5min para streaming"</li>
+<li><strong>Qualidade:</strong> "Menós de 1% de NULLs na coluna email". "Zero duplicatas no campo order_id"</li>
+<li><strong>Processó de mudança:</strong> Breaking changes exigem PR review + migration plan + 30 dias de aviso</li>
+</ul>
+
+<h4>SLAs de Data Freshness e Completeness</h4>
+<ul>
+<li><strong>Freshness:</strong> Quao recente são os dados? "Tabela de vendas atualizada até 6h UTC". Use dbt source freshness ou Custom checks</li>
+<li><strong>Completeness:</strong> Quao completos são os dados? "99.5% das linhas tem email preenchido". Métricas de cobertura por coluna</li>
+<li><strong>Accuracy:</strong> Os dados estão corretos? Reconciliacao com fonte original. Ex: soma de vendas no warehouse == soma no sistema transacional</li>
+</ul>
+
+<pre data-lang="python"><code><span class="cm"># Data quality checks com Great Expectations</span>
+<span class="kw">import</span> great_expectations <span class="kw">as</span> gx
+
+<span class="cm"># Inicializar contexto</span>
+context = gx.get_context()
+
+<span class="cm"># Conectar ao data source (BigQuery, Postgres, Parquet, etc.)</span>
+datasource = context.sources.add_or_update_pandas(name=<span class="str">"sales_data"</span>)
+data_asset = datasource.add_csv_asset(
+    name=<span class="str">"daily_revenue"</span>,
+    filepath_or_buffer=<span class="str">"data/fct_daily_revenue.csv"</span>
+)
+
+<span class="cm"># Criar suite de expectations</span>
+suite = context.add_or_update_expectation_suite(<span class="str">"revenue_quality_suite"</span>)
+batch_request = data_asset.build_batch_request()
+
+<span class="cm"># Definir expectations</span>
+válidator = context.get_válidator(
+    batch_request=batch_request,
+    expectation_suite_name=<span class="str">"revenue_quality_suite"</span>
+)
+
+<span class="cm"># 1. Coluna revenue_daté nunca nula</span>
+válidator.expect_column_values_to_not_be_null(<span class="str">"revenue_date"</span>)
+
+<span class="cm"># 2. net_revenue sempre >= 0</span>
+válidator.expect_column_values_to_be_between(
+    <span class="str">"net_revenue"</span>, min_value=<span class="num">0</span>, max_value=<span class="num">1_000_000</span>
+)
+
+<span class="cm"># 3. Tabela tem pelo menós 1000 linhas (não esta vazia)</span>
+válidator.expect_table_row_count_to_be_between(
+    min_value=<span class="num">1000</span>, max_value=<span class="num">10_000_000</span>
+)
+
+<span class="cm"># 4. product_id nunca duplica por dia</span>
+válidator.expect_compound_columns_to_be_unique(
+    [<span class="str">"revenue_date"</span>, <span class="str">"product_id"</span>]
+)
+
+<span class="cm"># 5. Coluna total_orders e inteiro positivo</span>
+válidator.expect_column_values_to_be_of_type(<span class="str">"total_orders"</span>, <span class="str">"int64"</span>)
+válidator.expect_column_values_to_be_between(
+    <span class="str">"total_orders"</span>, min_value=<span class="num">1</span>
+)
+
+<span class="cm"># Salvar suite e executar validação</span>
+válidator.save_expectation_suite(discard_failed_expectations=<span class="num">False</span>)
+results = válidator.válidate()
+
+<span class="kw">print</span>(f<span class="str">"Success: {results.success}"</span>)
+<span class="kw">print</span>(f<span class="str">"Results: {results.statistics}"</span>)</code></pre>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Anti-pattern: "Confia nós dados do pipeline".</strong> Se você não tem validação automática, você não sabe se os dados estão corretos. Dados silenciosamente incorretos são PIORES que dados visívelmente ausentes — decisões erradas baseadas em dados errados causam dano real ao negócio.</div>
+</div>
+
+<!-- ═══ STREAMING ═══ -->
+<h3>Streaming Pipelines</h3>
+
+<p>Processamento de dados em <strong>tempo real</strong> — eventos são processados conforme chegam, com latência de milissegundos a segundos. Essencial para: detecção de fraude, dashboards em tempo real, recomendações instantaneas, alertas operacionais.</p>
+
+<h4>Tecnologias de Streaming</h4>
+<ul>
+<li><strong>Kafka Streams:</strong> Biblioteca Java/Scala para processamento de streams sobre Kafka. Leve — roda como parte da aplicação, sem cluster separado. Bom para transformacoes simples</li>
+<li><strong>Apache Flink:</strong> Framework distribuido para stream processing com estado (stateful). Suporta event time, watermarks, exactly-once. O mais poderosó para casos complexos</li>
+<li><strong>Apache Beam:</strong> Modelo de programacao unificado que roda sobre Flink, Spark ou Google Dataflow. "Write once, run anywhere" para pipelines de dados</li>
+<li><strong>Spark Structured Streaming:</strong> Micro-batch streaming sobre Spark. Latencia de segundos a minutos. Bom se você já usa Spark para batch</li>
+</ul>
+
+<h4>Exactly-Once Processing Semantics</h4>
+<p>O maior desafio de streaming: garantir que cada evento é processado <strong>exatamente uma vez</strong>, mesmo em caso de falhas.</p>
+<ul>
+<li><strong>At-most-once:</strong> Pode perder eventos. Não reenvia após falha. Aceitavel para métricas não criticas</li>
+<li><strong>At-least-once:</strong> Não perde eventos, mas pode processar duplicatas. Consumidor precisa ser idempotente</li>
+<li><strong>Exactly-once:</strong> Cada evento processado exatamente uma vez. Requer transações entre source → processor → sink. Kafka + Flink suportam nativamente</li>
+</ul>
+
+<h4>Windowing</h4>
+<p>Streaming e infinito — você precisa de <strong>janelas</strong> para agregar dados em periodos finitos.</p>
+<ul>
+<li><strong>Tumbling Window:</strong> Janelas fixas sem sobreposicao. Ex: "vendas a cada 5 minutos" (00:00-00:05, 00:05-00:10)</li>
+<li><strong>Hopping Window:</strong> Janelas fixas COM sobreposicao. Ex: "media movel de 10min recalculada a cada 1min"</li>
+<li><strong>Session Window:</strong> Janelas definidas por inatividade. Ex: "sessão do usuário termina após 30min sem acao"</li>
+<li><strong>Global Window:</strong> Uma única janela para todos os dados. Util com triggers customizados</li>
+</ul>
+
+<h4>Stream-Table Duality</h4>
+<p>Conceito fundamental do Kafka: <strong>um stream é um changelog de uma tabela, e uma tabela é um snapshot de um stream</strong>.</p>
+<ul>
+<li><strong>Stream → Table:</strong> Aplique todas as mudanças do stream sequêncialmente e você obtém o estado atual (a tabela)</li>
+<li><strong>Table → Stream:</strong> Capture todas as mudanças na tabela (CDC) e você obtém o stream de eventos</li>
+<li>Isso permite unificar batch e streaming: mesma lógica, mesma semântica, execução diferente</li>
+</ul>
+
+<!-- Diagrama: Streaming Pipeline -->
+<div class="diagram">
+<div class="diagram-box orange">Producers<br><small>Apps, IoT, Logs</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box red">Kafka Topics<br><small>Event Bus</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Flink / Beam<br><small>Stateful Processing</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box green">Sinks<br><small>DB, S3, Alerts</small></div>
+</div>
+
+<pre data-lang="java"><code><span class="cm">// Kafka Streams: Contagem de eventos por tipo em janela tumbling de 5 min</span>
+<span class="kw">import</span> org.apache.kafka.streams.*;
+<span class="kw">import</span> org.apache.kafka.streams.kstream.*;
+<span class="kw">import</span> java.time.Duration;
+
+<span class="kw">public class</span> <span class="tp">EventCounterApp</span> {
+    <span class="kw">public static void</span> <span class="fn">main</span>(String[] args) {
+        Properties props = <span class="kw">new</span> Properties();
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, <span class="str">"event-counter"</span>);
+        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, <span class="str">"kafka:9092"</span>);
+
+        StreamsBuilder builder = <span class="kw">new</span> StreamsBuilder();
+
+        <span class="cm">// 1. Ler eventos do tópico "user-events"</span>
+        KStream&lt;String, String&gt; events = builder
+            .stream(<span class="str">"user-events"</span>);
+
+        <span class="cm">// 2. Agrupar por tipo de evento</span>
+        KGroupedStream&lt;String, String&gt; grouped = events
+            .groupBy((key, value) -> extractEventType(value));
+
+        <span class="cm">// 3. Tumbling window de 5 minutos</span>
+        TimeWindowedKStream&lt;String, String&gt; windowed = grouped
+            .windowedBy(TimeWindows.ofSizeWithNoGrace(
+                Duration.ofMinutes(<span class="num">5</span>)
+            ));
+
+        <span class="cm">// 4. Contar eventos por janela</span>
+        KTable&lt;Windowed&lt;String&gt;, Long&gt; counts = windowed.count();
+
+        <span class="cm">// 5. Enviar resultado para tópico de saida</span>
+        counts.toStream()
+            .map((windowedKey, count) -> KeyValue.pair(
+                windowedKey.key(),
+                windowedKey.key() + <span class="str">": "</span> + count + <span class="str">" events"</span>
+            ))
+            .to(<span class="str">"event-counts"</span>);
+
+        <span class="cm">// 6. Iniciar a aplicação</span>
+        KafkaStreams streams = <span class="kw">new</span> KafkaStreams(
+            builder.build(), props
+        );
+        streams.start();
+    }
+}</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Stream-table duality na prática:</strong> Debezium captura mudanças do PostgreSQL (CDC) e publica como eventos no Kafka. Consumidores materializam esses eventos em views no data warehouse. A tabela transacional é a tabela analitica ficam automáticamente sincronizadas.</div>
+</div>
+
+<div class="card orange">
+<div class="card-title">Choosing the Right Streaming Tool</div>
+<ul>
+<li><strong>Kafka Streams:</strong> Use quando já tem Kafka e precisa de transformacoes simples (filtro, agregação, join). Roda embarcado na aplicação — sem cluster separado</li>
+<li><strong>Apache Flink:</strong> Use para processamento stateful complexo com garantia exactly-once. Event time processing com watermarks. Melhor para pipelines críticos (fraude, billing)</li>
+<li><strong>Apache Beam:</strong> Use quando quer portabilidade — mesmo código roda em Flink, Spark ou Google Dataflow. Bom para equipes multi-cloud</li>
+<li><strong>Spark Structured Streaming:</strong> Use quando já usa Spark para batch e aceita latência de segundos-minutos (micro-batch). Unifica batch + streaming</li>
+</ul>
+</div>
+
+<!-- Diagrama: Windowing Types -->
+<h4>Visualizacao dos Tipos de Window</h4>
+<div class="diagram">
+<div class="diagram-box green">Tumbling<br><small>[0-5] [5-10] [10-15]<br>Sem overlap</small></div>
+<div class="diagram-box blue">Hopping<br><small>[0-10] [5-15] [10-20]<br>Com overlap</small></div>
+<div class="diagram-box purple">Session<br><small>[0-3] ... [8-14] ...<br>Gap-based</small></div>
+</div>
+
+<!-- ═══ DATA OBSERVABILITY ═══ -->
+<h3>Data Observability</h3>
+
+<p>Assim como aplicações precisam de observabilidade (logs, métricas, traces), <strong>pipelines de dados precisam de observabilidade de dados</strong> — a capacidade de entender a saude, qualidade e linhagem dos dados sem precisar abrir cada tabela manualmente.</p>
+
+<h4>Data Downtime</h4>
+<p>Periodos em que os dados estão incompletos, incorretos, desatualizados ou indisponíveis. Equivalente ao "downtime" de aplicações. Ferramentas de data observability detectam anomalias automáticamente.</p>
+<ul>
+<li><strong>Freshness:</strong> A tabela deveria ter sido atualizada as 6h, mas a última atualização foi ontem. Alerta!</li>
+<li><strong>Volume:</strong> A tabela normalmente recebe 50K linhas/dia, mas hoje recebeu 500. Anomalia!</li>
+<li><strong>Schema:</strong> Uma coluna foi removida ou o tipo mudou sem aviso. Breaking change!</li>
+<li><strong>Distribution:</strong> A coluna "preço" normalmente fica entre R$10-R$1000, mas hoje tem valores de R$0.01. Bug no source!</li>
+</ul>
+
+<h4>Ferramentas de Data Observability</h4>
+<ul>
+<li><strong>Monte Carlo:</strong> Lider de mercado. Deteccao automática de anomalias via ML. Integracao com dbt, Airflow, Snowflake. Caro — para enterprise</li>
+<li><strong>Datafold:</strong> Foco em diff de dados — compara tabelas antes e após mudanças. Otimo para validar PRs que alterám models dbt</li>
+<li><strong>Elementary:</strong> Open-source, nativo para dbt. Dashboards de qualidade, alertas, lineage. Melhor opcao para quem já usa dbt</li>
+<li><strong>Soda:</strong> Open-source. Checks declarativos em YAML. Integracao com Airflow, dbt, Spark</li>
+</ul>
+
+<h4>Lineage Tracking e Impact Analysis</h4>
+<p>Rastrear a <strong>origem</strong> de cada dado é o <strong>impacto</strong> de cada mudança no pipeline inteiro.</p>
+<ul>
+<li><strong>Table-level lineage:</strong> "A tabela fct_revenue depende de stg_orders e stg_products". Qual é o grafo de dependências?</li>
+<li><strong>Column-level lineage:</strong> "A coluna net_revenue vem de quantity * unit_price - discount_amount". Se discount_amount mudar, o que é afetado?</li>
+<li><strong>Impact analysis:</strong> Antes de alterár uma tabela, saber quais dashboards, models e reports seráo impactados. Evita quebrar coisas silenciosamente</li>
+<li><strong>Root cause analysis:</strong> Quando um dashboard mostra dados errados, trace back até a fonte para encontrar onde o dado foi corrompido</li>
+</ul>
+
+<div class="card blue">
+<div class="card-title">Os 5 Pilares da Data Observability</div>
+<ul>
+<li><strong>Freshness:</strong> Os dados estão atualizados? Quando foi a última atualização?</li>
+<li><strong>Volume:</strong> A quantidade de dados esta dentro do esperado?</li>
+<li><strong>Schema:</strong> A estrutura dos dados mudou? Colunas adicionadas/removidas?</li>
+<li><strong>Distribution:</strong> Os valores estão dentro dos ranges esperados? Anomalias estatisticas?</li>
+<li><strong>Lineage:</strong> De onde vem cada dado? O que é impactado se mudar?</li>
+</ul>
+</div>
+
+<!-- ═══ Q&A ═══ -->
+<h3>Perguntas & Respostas</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Qual a diferença prática entre ETL e ELT? Quando usar cada um?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>ETL</strong> transforma os dados ANTES de carregar no destino. Use quando o destino tem capacidade limitada (banco relacional antigo) ou quando dados precisam ser mascarados antes de sair do ambiente seguro. <strong>ELT</strong> carrega dados brutos e transforma dentro do destino. Use com warehouses modernós (BigQuery, Snowflake) que tem compute elastico — é mais flexível porque dados brutos ficam preservados para re-transformacao. Hoje, 90% dos novos projetos usam ELT porque warehouses cloud são baratos e poderosos.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">O que é "data swamp" é como evitar?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Data swamp é quando um data lake vira uma "lagoa suja" — cheio de dados sem documentação, sem schema, sem qualidade, impossível de navegar. Evite com: (1) <strong>Data contracts</strong> entre produtores e consumidores, (2) <strong>Schema enforcement</strong> com table formats (Delta Lake, Iceberg), (3) <strong>Catalogacao</strong> com ferramentas como DataHub ou Atlan, (4) <strong>Testes de qualidade</strong> automatizados em cada pipeline, (5) <strong>Governanca</strong> — ownership claro para cada tabela.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Precisó de streaming para meu projeto?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Provavelmente não. A maioria dos casos de usó funciona bem com batch (processamento a cada hora ou diario). Você <strong>precisa</strong> de streaming se: (1) Deteccao de fraude/anomalias em tempo real, (2) Dashboards que precisam de latência sub-minuto, (3) Sistemas de recomendação que reagem a acoes do usuário instantaneamente, (4) IoT com processamento de sensores. Se você pode esperar 15 minutos pelo dado, use micro-batch (Spark Structured Streaming). Se pode esperar 1 hora, use batch puro (Airflow + dbt). Comece sempre com batch e migre para streaming apenas quando batch não atender o SLA.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Como funciona o column-level lineage e por que é importante?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Column-level lineage rastreia a origem de cada <strong>coluna</strong> específica, não apenas a tabela. Exemplo: a coluna <code>net_revenue</code> em <code>fct_daily_revenue</code> vem de <code>quantity * unit_price - discount_amount</code> da tabela <code>stg_order_items</code>. Se alguem alterár o cálculo de <code>discount_amount</code> no sistema transacional, column-level lineage mostra exatamente quais dashboards e modelos são afetados. Sem isso, você precisaria examinar manualmente cada query que usa aquela tabela. Ferramentas como Datafold, dbt Cloud e Elementary suportam column-level lineage.</p>
+</div>
+</div>
+
+<!-- ═══ TIPS FINAIS ═══ -->
+<h3>Boas Práticas</h3>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Stack recomendada para startups:</strong> Airbyte (ingestion open-source) + BigQuery ou Snowflake (warehouse) + dbt (transformacoes) + Elementary (observability). Essa stack cobre 90% dos casos com custo operacional baixo e é o padrão do "Modern Data Stack".</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Naming convention para dbt models:</strong> Use prefixos consistentes — <code>stg_</code> (staging: 1:1 com source), <code>int_</code> (intermediate: transformacoes parciais), <code>fct_</code> (fact: métricas/eventos), <code>dim_</code> (dimension: entidades). Isso torna o projeto navegavel para qualquer pessoa.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Não construa pipelines sem testes:</strong> Em engenharia de dados, um bug silenciosó pode corromper meses de historico antes de ser detectado. Cada model dbt precisa de pelo menos: <code>not_null</code> em PKs, <code>unique</code> em campos únicos, <code>relationships</code> para FKs. Adicione <code>source freshness</code> checks para detectar delays.</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Engenharia de Dados</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="54-testes-avancados.html">&#8592; Anterior: Testes Avancados</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="56-documentacao-adrs.html" class="primary">Próximo: Documentação & ADRs &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 55: Engenharia de Dados
+// ══════════════════════════════════════════
+const SECTION_NUM = 55;
+const STORAGE_KEY = 'fsm_quiz_55';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual a principal diferença entre ETL e ELT?",
+    options: [
+      "ETL usa Python e ELT usa SQL",
+      "ETL transforma antes de carregar no destino; ELT carrega dados brutos e transforma no destino",
+      "ETL e para batch e ELT e para streaming",
+      "ETL é mais moderno que ELT"
+    ],
+    correct: 1,
+    explanation: "ETL (Extract-Transform-Load) transforma os dados em um servidor intermediário antes de carregar. ELT (Extract-Load-Transform) carrega dados brutos no warehouse e transforma la dentro usando o poder de compute do destino. ELT é o padrão moderno com warehouses cloud."
+  },
+  {
+    question: "Qual ferramenta de orquestração usa DAGs (Directed Acyclic Graphs) em Python e é o padrão da industria?",
+    options: [
+      "dbt",
+      "Fivetran",
+      "Apache Airflow",
+      "Great Expectations"
+    ],
+    correct: 2,
+    explanation: "Apache Airflow é o padrão da industria para orquestração de pipelines. Pipelines são definidos como DAGs em Python, com controle de dependências, retries, scheduling e monitoramento."
+  },
+  {
+    question: "O que diferencia um Data Lakehouse de um Data Lake puro?",
+    options: [
+      "Lakehouse usa storage mais caro",
+      "Lakehouse adiciona ACID transactions, schema enforcement e time travel sobre storage barato",
+      "Lakehouse não suporta dados não-estruturados",
+      "Lakehouse e apenas um Data Warehouse renomeado"
+    ],
+    correct: 1,
+    explanation: "O Lakehouse combina storage barato de data lake (S3) com funcionalidades de data warehouse (ACID, schema, time travel) via table formats como Delta Lake, Iceberg ou Hudi. Dados ficam em formatos abertos (Parquet) com metadata que habilita features avançadas."
+  },
+  {
+    question: "No dbt, o que o comando {{ ref('stg_orders') }} faz dentro de um modelo SQL?",
+    options: [
+      "Cria uma copia da tabela stg_orders",
+      "Referencia outro modelo dbt, estabelecendo dependência no DAG e usando o nome correto da tabela",
+      "Importa um arquivo CSV chamado stg_orders",
+      "Executa um teste de qualidade na tabela stg_orders"
+    ],
+    correct: 1,
+    explanation: "A função ref() do dbt referência outro modelo, criando automáticamente uma dependência no DAG (garantindo ordem de execução) e resolvendo o nome correto da tabela no warehouse (incluindo schema e database). E o mecanismo central de lineage do dbt."
+  },
+  {
+    question: "Qual tipo de window em streaming NAO tem sobreposicao entre janelas adjacentes?",
+    options: [
+      "Tumbling Window",
+      "Hopping Window",
+      "Session Window",
+      "Sliding Window"
+    ],
+    correct: 0,
+    explanation: "Tumbling Windows são janelas de tamanho fixo sem sobreposicao — cada evento pertence a exatamente uma janela. Ex: janelas de 5 minutos (00:00-05:00, 05:00-10:00). Hopping Windows tem sobreposicao (janela de 10min a cada 5min = 50% overlap)."
+  },
+  {
+    question: "O que significa 'exactly-once semantics' em streaming?",
+    options: [
+      "Cada mensagem é enviada exatamente uma vez pelo producer",
+      "Cada evento é processado exatamente uma vez, mesmo em caso de falhas e retries",
+      "O consumer le cada mensagem exatamente uma vez",
+      "O broker armazena cada mensagem em exatamente uma particao"
+    ],
+    correct: 1,
+    explanation: "Exactly-once semantics garante que cada evento produz seu efeito exatamente uma vez no resultado final, mesmo com falhas, restarts e retries. Requer coordenacao transacional entre source, processor e sink. Kafka + Flink suportam nativamente via transactions."
+  },
+  {
+    question: "Qual NÃO é um dos 5 pilares de Data Observability?",
+    options: [
+      "Freshness (dados atualizados)",
+      "Volume (quantidade esperada)",
+      "Throughput (velocidade de ingestão)",
+      "Lineage (origem e impacto dos dados)"
+    ],
+    correct: 2,
+    explanation: "Os 5 pilares de Data Observability são: Freshness, Volume, Schema, Distribution e Lineage. Throughput (velocidade de ingestão) é uma métrica de infraestrutura/pipeline, não de qualidade dos dados em si."
+  },
+  {
+    question: "No dbt, qual a diferença entre um modelo 'incremental' e um modelo 'table'?",
+    options: [
+      "Incremental cria views e table cria tabelas fisicas",
+      "Incremental processa apenas dados novos desde a última execução; table recria a tabela inteira toda vez",
+      "Incremental é mais lento mas mais preciso",
+      "Table não suporta testes de qualidade"
+    ],
+    correct: 1,
+    explanation: "Modelos incrementais usam a clausula is_incremental() para filtrar apenas registros novos, evitando reprocessar toda a tabela. Modelos 'table' fazem DROP + CREATE + INSERT de todos os dados a cada execução. Incremental é essencial para tabelas grandes (bilhoes de linhas)."
+  },
+  {
+    question: "O que é 'stream-table duality' no Kafka?",
+    options: [
+      "Streams e tables são armazenados de forma identica no broker",
+      "Um stream é o changelog de uma table, e uma table é o snapshot de um stream",
+      "Você precisa escolher entre usar streams ou tables, nunca ambos",
+      "Tables no Kafka são identicas a tabelas em bancos relacionais"
+    ],
+    correct: 1,
+    explanation: "Stream-table duality é o conceito de que um stream é o historico de mudanças (changelog) que, aplicado sequêncialmente, produz o estado atual (a table). Inversamente, capturar mudanças em uma table (CDC) produz um stream. Isso unifica semânticamente batch e streaming."
+  },
+  {
+    question: "Qual abordagem é recomendada para validar data quality em pipelines dbt?",
+    options: [
+      "Verificar manualmente os dados no warehouse após cada execução",
+      "Usar dbt tests (not_null, unique, relationships) + source freshness checks automatizados",
+      "Confiar que o sistema transacional já garante qualidade dos dados",
+      "Adicionar válidacoes apenas quando um bug for reportado"
+    ],
+    correct: 1,
+    explanation: "A abordagem correta é usar dbt tests automatizados em cada model (not_null para PKs, unique para campos únicos, relationships para FKs) combinados com source freshness checks para detectar delays. Testes rodam automáticamente no pipeline e bloqueiam dados ruins antes que cheguem aos consumidores."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Engenharia de Dados.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

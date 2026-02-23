@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>46 — Fundamentos de Computação | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="45-dev-senior-era-ia.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>46</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="47-networking-protocolos.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:69.7%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 46</span>
+<h2>Fundamentos de Computação</h2>
+<div class="section-line"></div>
+
+<p>Antes de frameworks, antes de cloud, antes de IA — existe o <strong>computador</strong>. Um full-stack senior que não entende como bits viram instruções, como a CPU executa código, como a memória é gerenciada é como o sistema operacional orquestra tudo esta construindo sobre areia. Esta seção cobre os fundamentos que sustentam <strong>toda a stack</strong> — de Assembly a JavaScript, de registradores a Kubernetes.</p>
+
+<p>Não importa se você programa em Python, Go ou TypeScript. Quando seu serviço tem latency spikes inexplicaveis, quando o garbage collector pausa sua aplicação por 200ms, quando um deadlock congela seu worker — e nesses momentos que <strong>fundamentos de computação</strong> separam quem resolve em minutos de quem fica dias debugando as cegas.</p>
+
+<!-- ═══ SISTEMAS NUMERICOS ═══ -->
+<h3>Sistemas Numericos &amp; Representacao de Dados</h3>
+
+<p>Tudo no computador e representado como <strong>sequências de bits</strong> (0s e 1s). Entender como números, texto e dados reais são codificados em binário é o primeiro passó para entender bugs de precisão, overflow e representacao.</p>
+
+<h4>Bases Numericas</h4>
+<ul>
+<li><strong>Binario (base 2):</strong> Cada digito e 0 ou 1. Usado internamente pela CPU. Exemplo: <code>1010</code> = 10 em decimal</li>
+<li><strong>Octal (base 8):</strong> Digitos de 0-7. Usado em permissões Unix (<code>chmod 755</code>). Cada digito octal = 3 bits</li>
+<li><strong>Hexadecimal (base 16):</strong> Digitos 0-9 e A-F. Usado em cores CSS (<code>#FF5733</code>), endereços de memória, hashes. Cada digito hex = 4 bits</li>
+<li><strong>Conversões:</strong> Decimal para binário (divisoes sucessivas por 2), binário para hex (agrupe 4 bits), hex para octal (converta para binário primeiro, agrupe 3 bits)</li>
+</ul>
+
+<h4>IEEE 754 — Floating Point</h4>
+<p>Numeros decimais são representados em <strong>ponto flutuante</strong> usando o padrão IEEE 754. Precisao simples (32 bits): 1 bit sinal + 8 bits expoente + 23 bits mantissa. Precisao dupla (64 bits): 1 bit sinal + 11 bits expoente + 52 bits mantissa.</p>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>O clássico bug de floating point:</strong> <code>0.1 + 0.2 !== 0.3</code> em JavaScript (e na maioria das linguagens). O resultado e <code>0.30000000000000004</code>. Isso acontece porque 0.1 e 0.2 não tem representacao exata em binário — assim como 1/3 não tem representacao exata em decimal. Para dinheiro, use <strong>inteiros em centavos</strong> ou bibliotecas de precisão arbitraria (BigDecimal, Decimal.js).</div>
+</div>
+
+<h4>Complemento de Dois &amp; Overflow</h4>
+<ul>
+<li><strong>Complemento de dois:</strong> Forma padrão de representar números negativos em binário. Para negar um número: inverta todos os bits e some 1. Exemplo: 5 = <code>0101</code>, -5 = <code>1011</code> (em 4 bits)</li>
+<li><strong>Overflow:</strong> Quando o resultado excede o máximo representavel. Em int32: <code>2147483647 + 1 = -2147483648</code> (wrap-around)</li>
+<li><strong>Underflow:</strong> Em floating point, quando o número e tao pequeno que é arredondado para zero. Diferente de overflow em inteiros</li>
+</ul>
+
+<pre data-lang="python"><code><span class="cm"># ══ Conversões entre bases em Python ══</span>
+
+<span class="cm"># Decimal para outras bases</span>
+<span class="fn">num</span> <span class="op">=</span> <span class="num">42</span>
+<span class="fn">print</span>(<span class="fn">bin</span>(num))    <span class="cm"># 0b101010  (binário)</span>
+<span class="fn">print</span>(<span class="fn">oct</span>(num))    <span class="cm"># 0o52      (octal)</span>
+<span class="fn">print</span>(<span class="fn">hex</span>(num))    <span class="cm"># 0x2a      (hexadecimal)</span>
+
+<span class="cm"># Outras bases para decimal</span>
+<span class="fn">print</span>(<span class="fn">int</span>(<span class="str">'101010'</span>, <span class="num">2</span>))   <span class="cm"># 42 (binário para decimal)</span>
+<span class="fn">print</span>(<span class="fn">int</span>(<span class="str">'52'</span>, <span class="num">8</span>))       <span class="cm"># 42 (octal para decimal)</span>
+<span class="fn">print</span>(<span class="fn">int</span>(<span class="str">'2a'</span>, <span class="num">16</span>))      <span class="cm"># 42 (hex para decimal)</span>
+
+<span class="cm"># IEEE 754 — Demonstracao do problema de precisão</span>
+<span class="fn">print</span>(<span class="num">0.1</span> <span class="op">+</span> <span class="num">0.2</span>)            <span class="cm"># 0.30000000000000004</span>
+<span class="fn">print</span>(<span class="num">0.1</span> <span class="op">+</span> <span class="num">0.2</span> <span class="op">==</span> <span class="num">0.3</span>)     <span class="cm"># False!</span>
+<span class="fn">print</span>(<span class="fn">abs</span>((<span class="num">0.1</span> <span class="op">+</span> <span class="num">0.2</span>) <span class="op">-</span> <span class="num">0.3</span>) <span class="op">&lt;</span> <span class="num">1e-9</span>)  <span class="cm"># True (comparação correta)</span>
+
+<span class="cm"># Representacao interna de float</span>
+<span class="kw">import</span> struct
+<span class="fn">packed</span> <span class="op">=</span> struct.<span class="fn">pack</span>(<span class="str">'!d'</span>, <span class="num">0.1</span>)  <span class="cm"># empacota como double (64 bits)</span>
+<span class="fn">print</span>(<span class="str">' '</span>.<span class="fn">join</span>(<span class="fn">f</span><span class="str">'{b:08b}'</span> <span class="kw">for</span> b <span class="kw">in</span> packed))
+<span class="cm"># 00111111 10111001 10011001 10011001 10011001 10011001 10011001 10011010</span></code></pre>
+
+<pre data-lang="c"><code><span class="cm">/* ══ Operacoes de bits em C ══ */</span>
+<span class="tp">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="tp">#include</span> <span class="str">&lt;stdint.h&gt;</span>
+<span class="tp">#include</span> <span class="str">&lt;limits.h&gt;</span>
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+    <span class="tp">uint8_t</span> a <span class="op">=</span> <span class="num">0b11001010</span>;  <span class="cm">// 202 decimal</span>
+    <span class="tp">uint8_t</span> b <span class="op">=</span> <span class="num">0b10110101</span>;  <span class="cm">// 181 decimal</span>
+
+    <span class="cm">// Operacoes bitwise</span>
+    <span class="fn">printf</span>(<span class="str">"AND:  %08b\n"</span>, a <span class="op">&amp;</span> b);   <span class="cm">// 10000000 (128)</span>
+    <span class="fn">printf</span>(<span class="str">"OR:   %08b\n"</span>, a <span class="op">|</span> b);   <span class="cm">// 11111111 (255)</span>
+    <span class="fn">printf</span>(<span class="str">"XOR:  %08b\n"</span>, a <span class="op">^</span> b);   <span class="cm">// 01111111 (127)</span>
+    <span class="fn">printf</span>(<span class="str">"NOT:  %08b\n"</span>, <span class="op">~</span>a);      <span class="cm">// 00110101  (53)</span>
+    <span class="fn">printf</span>(<span class="str">"SHL:  %08b\n"</span>, a <span class="op">&lt;&lt;</span> <span class="num">2</span>);  <span class="cm">// shift left = multiplicar por 4</span>
+    <span class="fn">printf</span>(<span class="str">"SHR:  %08b\n"</span>, a <span class="op">&gt;&gt;</span> <span class="num">2</span>);  <span class="cm">// shift right = dividir por 4</span>
+
+    <span class="cm">// Usó prático: flags com bitmask</span>
+    <span class="tp">uint8_t</span> READ    <span class="op">=</span> <span class="num">0b00000100</span>;  <span class="cm">// 4</span>
+    <span class="tp">uint8_t</span> WRITE   <span class="op">=</span> <span class="num">0b00000010</span>;  <span class="cm">// 2</span>
+    <span class="tp">uint8_t</span> EXECUTE <span class="op">=</span> <span class="num">0b00000001</span>;  <span class="cm">// 1</span>
+
+    <span class="tp">uint8_t</span> perms <span class="op">=</span> READ <span class="op">|</span> WRITE;  <span class="cm">// chmod 6 (rw-)</span>
+    <span class="kw">if</span> (perms <span class="op">&amp;</span> READ)  <span class="fn">printf</span>(<span class="str">"Pode ler\n"</span>);
+    <span class="kw">if</span> (perms <span class="op">&amp;</span> EXECUTE) <span class="fn">printf</span>(<span class="str">"Pode executar\n"</span>);  <span class="cm">// não imprime</span>
+
+    <span class="cm">// Overflow em int32</span>
+    <span class="tp">int32_t</span> max <span class="op">=</span> INT32_MAX;  <span class="cm">// 2147483647</span>
+    <span class="fn">printf</span>(<span class="str">"MAX + 1 = %d\n"</span>, max <span class="op">+</span> <span class="num">1</span>);  <span class="cm">// -2147483648 (overflow!)</span>
+
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+
+<!-- ═══ ALGEBRA BOOLEANA ═══ -->
+<h3>Algebra Booleana &amp; Logica Digital</h3>
+
+<p>A algebra booleana é a matematica fundamental por tras de toda computação. Cada decisão que um processador toma — cada <code>if</code>, cada comparação, cada operação aritmetica — se resume a combinacoes de <strong>portas lógicas</strong> operando sobre bits.</p>
+
+<h4>Portas Logicas Fundamentais</h4>
+<ul>
+<li><strong>AND:</strong> Saida 1 somente se AMBAS entradas forem 1. Uso: verificar se duas condições são verdadeiras</li>
+<li><strong>OR:</strong> Saida 1 se QUALQUER entrada for 1. Uso: verificar se pelo menós uma condição e verdadeira</li>
+<li><strong>NOT:</strong> Inverte a entrada. 0 vira 1, 1 vira 0. Uso: negacao lógica</li>
+<li><strong>XOR (Exclusive OR):</strong> Saida 1 se as entradas forem DIFERENTES. Uso: detecção de diferença, criptografia, checksums</li>
+<li><strong>NAND:</strong> NOT(AND). E uma porta universal — qualquer circuito lógico pode ser construido apenas com NANDs</li>
+<li><strong>NOR:</strong> NOT(OR). Também é uma porta universal. Usada no computador de orientacao da Apollo 11</li>
+</ul>
+
+<h4>Leis de De Morgan</h4>
+<p>Duas leis fundamentais para simplificar expressões lógicas:</p>
+<ul>
+<li><strong>NOT(A AND B) = NOT(A) OR NOT(B)</strong> — Negar um AND equivale a OR das negacoes</li>
+<li><strong>NOT(A OR B) = NOT(A) AND NOT(B)</strong> — Negar um OR equivale a AND das negacoes</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Aplicacao prática:</strong> De Morgan aparece constantemente em código. <code>!(a && b)</code> equivale a <code>!a || !b</code>. Quando você refatora condições complexas em <code>if</code> statements, essas leis evitam bugs lógicos. Também são usadas por compiladores para otimizar branch prediction.</div>
+</div>
+
+<h4>Circuitos Combinacionais vs Sequenciais</h4>
+<ul>
+<li><strong>Combinacionais:</strong> A saida depende SOMENTE das entradas atuais. Sem memória. Exemplos: somadores, multiplexadores, decoders</li>
+<li><strong>Sequenciais:</strong> A saida depende das entradas atuais E do estado anterior (tem memória). Exemplos: flip-flops, registradores, contadores, RAM</li>
+</ul>
+
+<pre data-lang="python"><code><span class="cm"># ══ Tabela Verdade — Implementação completa ══</span>
+
+<span class="kw">def</span> <span class="fn">truth_table</span>():
+    <span class="str">"""Gera tabela verdade para todas as portas lógicas"""</span>
+    <span class="fn">print</span>(<span class="str">f"{'A':^3} {'B':^3} | {'AND':^4} {'OR':^4} {'XOR':^4} {'NAND':^5} {'NOR':^4}"</span>)
+    <span class="fn">print</span>(<span class="str">"-"</span> <span class="op">*</span> <span class="num">42</span>)
+
+    <span class="kw">for</span> a <span class="kw">in</span> [<span class="num">0</span>, <span class="num">1</span>]:
+        <span class="kw">for</span> b <span class="kw">in</span> [<span class="num">0</span>, <span class="num">1</span>]:
+            and_r  <span class="op">=</span> a <span class="op">&amp;</span> b
+            or_r   <span class="op">=</span> a <span class="op">|</span> b
+            xor_r  <span class="op">=</span> a <span class="op">^</span> b
+            nand_r <span class="op">=</span> <span class="kw">int</span>(<span class="kw">not</span> (a <span class="op">&amp;</span> b))
+            nor_r  <span class="op">=</span> <span class="kw">int</span>(<span class="kw">not</span> (a <span class="op">|</span> b))
+            <span class="fn">print</span>(<span class="str">f" {a}   {b}  |  {and_r}    {or_r}    {xor_r}     {nand_r}    {nor_r}"</span>)
+
+<span class="fn">truth_table</span>()
+<span class="cm"># A   B  | AND  OR   XOR  NAND  NOR</span>
+<span class="cm"># ------------------------------------------</span>
+<span class="cm">#  0   0  |  0    0    0     1    1</span>
+<span class="cm">#  0   1  |  0    1    1     1    0</span>
+<span class="cm">#  1   0  |  0    1    1     1    0</span>
+<span class="cm">#  1   1  |  1    1    0     0    0</span>
+
+<span class="cm"># Leis de De Morgan em Python</span>
+a, b <span class="op">=</span> <span class="kw">True</span>, <span class="kw">False</span>
+<span class="kw">assert</span> (<span class="kw">not</span> (a <span class="kw">and</span> b)) <span class="op">==</span> ((<span class="kw">not</span> a) <span class="kw">or</span> (<span class="kw">not</span> b))   <span class="cm"># Lei 1</span>
+<span class="kw">assert</span> (<span class="kw">not</span> (a <span class="kw">or</span> b))  <span class="op">==</span> ((<span class="kw">not</span> a) <span class="kw">and</span> (<span class="kw">not</span> b))  <span class="cm"># Lei 2</span>
+
+<span class="cm"># Usó prático: Half Adder (somador de 1 bit)</span>
+<span class="kw">def</span> <span class="fn">half_adder</span>(a, b):
+    <span class="str">"""Soma dois bits, retorna (soma, carry)"""</span>
+    soma  <span class="op">=</span> a <span class="op">^</span> b   <span class="cm"># XOR = soma sem carry</span>
+    carry <span class="op">=</span> a <span class="op">&amp;</span> b   <span class="cm"># AND = carry</span>
+    <span class="kw">return</span> soma, carry
+
+<span class="cm"># Full Adder (somador completo com carry-in)</span>
+<span class="kw">def</span> <span class="fn">full_adder</span>(a, b, carry_in):
+    <span class="str">"""Soma dois bits + carry de entrada"""</span>
+    s1, c1 <span class="op">=</span> <span class="fn">half_adder</span>(a, b)
+    soma, c2 <span class="op">=</span> <span class="fn">half_adder</span>(s1, carry_in)
+    carry_out <span class="op">=</span> c1 <span class="op">|</span> c2
+    <span class="kw">return</span> soma, carry_out
+
+<span class="fn">print</span>(<span class="fn">half_adder</span>(<span class="num">1</span>, <span class="num">1</span>))     <span class="cm"># (0, 1) → soma=0, carry=1 → resultado "10" = 2</span>
+<span class="fn">print</span>(<span class="fn">full_adder</span>(<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>))  <span class="cm"># (1, 1) → soma=1, carry=1 → resultado "11" = 3</span></code></pre>
+
+<!-- ═══ ARQUITETURA CPU ═══ -->
+<h3>Arquitetura de CPU &amp; Von Neumann</h3>
+
+<p>A CPU (Central Processing Unit) é o "cérebro" do computador. Entender como ela funciona ajuda a entender por que seu código tem a performance que tem — é como otimiza-lo.</p>
+
+<h4>Modelo Von Neumann vs Harvard</h4>
+<ul>
+<li><strong>Von Neumann:</strong> Instrucoes e dados compartilham a MESMA memória é o MESMO barramento. Simples, flexível, mas cria o "Von Neumann bottleneck" — a CPU fica esperando dados/instruções da memória. Usado na maioria dos PCs</li>
+<li><strong>Harvard:</strong> Instrucoes e dados tem memórias SEPARADAS e barramentos separados. A CPU pode buscar instrução e dado simultaneamente. Usado em microcontroladores (Arduino), DSPs e caches L1 de CPUs modernas</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box blue">CPU<br><small>ALU + Controle<br>+ Registradores</small></div>
+<span class="diagram-arrow">&#8596;</span>
+<div class="diagram-box purple">Barramento<br><small>Dados + Enderecos<br>+ Controle</small></div>
+<span class="diagram-arrow">&#8596;</span>
+<div class="diagram-box green">Memória<br><small>Instrucoes + Dados<br>(Von Neumann)</small></div>
+<span class="diagram-arrow">&#8596;</span>
+<div class="diagram-box orange">I/O<br><small>Disco, Rede,<br>Teclado, Tela</small></div>
+</div>
+
+<h4>Pipeline de Instrucoes</h4>
+<p>CPUs modernas não executam uma instrução por vez. Usam <strong>pipeline</strong> para executar várias instruções simultaneamente em diferentes estagios:</p>
+
+<div class="diagram">
+<div class="diagram-box cyan">Fetch<br><small>Buscar instrução<br>da memória</small></div>
+<span class="diagram-arrow">&#8594;</span>
+<div class="diagram-box blue">Decode<br><small>Decodificar<br>opcodes/operandos</small></div>
+<span class="diagram-arrow">&#8594;</span>
+<div class="diagram-box purple">Execute<br><small>ALU realiza<br>a operação</small></div>
+<span class="diagram-arrow">&#8594;</span>
+<div class="diagram-box green">Memory<br><small>Acessó a<br>memória (load/store)</small></div>
+<span class="diagram-arrow">&#8594;</span>
+<div class="diagram-box orange">Writeback<br><small>Escrever resultado<br>no registrador</small></div>
+</div>
+
+<h4>Componentes Internós da CPU</h4>
+<ul>
+<li><strong>Registradores:</strong> Memória ultra-rápida dentro da CPU (~1 ciclo de acesso). Poucos (16-32 registradores tipicamente). Armazenam operandos e resultados imediatos</li>
+<li><strong>ALU (Arithmetic Logic Unit):</strong> Executa operações aritmeticas (soma, subtracao, multiplicacao) e lógicas (AND, OR, XOR, comparacoes)</li>
+<li><strong>Unidade de Controle:</strong> Decodifica instruções e coordena todos os componentes. Decide o que cada parte da CPU faz a cada ciclo</li>
+<li><strong>Branch Predictor:</strong> Tenta adivinhar se um <code>if/else</code> vai seguir o branch true ou false. Se acertar, pipeline continua fluindo. Se errar, precisa descartar e recomeçar (pipeline flush = ~15-20 ciclos perdidos)</li>
+<li><strong>Out-of-Order Execution:</strong> A CPU reordena instruções para maximizar usó do pipeline. Se instrução A espera dado da memória, a CPU executa instrução B enquanto espera</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Por que isso importa para devs:</strong> Branch prediction explica por que ordenar dados antes de processar pode ser mais rápido — arrays ordenados geram branches previsiveis. Out-of-order execution explica por que microbenchmarks podem dar resultados enganosos — a CPU reordena seu código de formas inesperadas.</div>
+</div>
+
+<!-- ═══ HIERARQUIA DE MEMORIA ═══ -->
+<h3>Hierarquia de Memória</h3>
+
+<p>A memória e organizada em uma <strong>hierarquia de velocidade vs capacidade</strong>. Quanto mais rápida, menor é mais cara. Entender essa hierarquia é fundamental para escrever código performatico.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Registradores<br><small>~1 ciclo / ~1KB<br>Mais rápido</small></div>
+<span class="diagram-arrow">&#8594;</span>
+<div class="diagram-box blue">Cache L1<br><small>~4 ciclos / 64KB<br>Por core</small></div>
+<span class="diagram-arrow">&#8594;</span>
+<div class="diagram-box purple">Cache L2<br><small>~12 ciclos / 256KB<br>Por core</small></div>
+<span class="diagram-arrow">&#8594;</span>
+<div class="diagram-box orange">Cache L3<br><small>~40 ciclos / 8-32MB<br>Compartilhada</small></div>
+<span class="diagram-arrow">&#8594;</span>
+<div class="diagram-box red">RAM (DRAM)<br><small>~200 ciclos / 16-64GB<br>Principal</small></div>
+<span class="diagram-arrow">&#8594;</span>
+<div class="diagram-box cyan">SSD/Disco<br><small>~100K ciclos / TBs<br>Persistente</small></div>
+</div>
+
+<h4>Cache — Hits, Misses e Politicas</h4>
+<ul>
+<li><strong>Cache Hit:</strong> Dado encontrado no cache. Rapido. O objetivo e maximizar hits</li>
+<li><strong>Cache Miss:</strong> Dado não esta no cache. Precisa buscar no nível inferior (muito mais lento). Tipos: cold miss (primeiro acesso), capacity miss (cache cheio), conflict miss (colisão de endereços)</li>
+<li><strong>Politicas de substituição:</strong> Quando o cache esta cheio, qual entrada remover?
+    <ul>
+    <li><strong>LRU (Least Recently Used):</strong> Remove o item acessado ha mais tempo. O mais comum é geralmente o melhor</li>
+    <li><strong>FIFO (First In, First Out):</strong> Remove o mais antigo. Simples mas pode remover itens frequentemente usados</li>
+    <li><strong>LFU (Least Frequently Used):</strong> Remove o menós acessado. Bom para workloads com hotspots estaveis</li>
+    </ul>
+</li>
+<li><strong>Cache line:</strong> A CPU não busca 1 byte por vez. Busca blocos de 64 bytes (cache line). Isso significa que acessar dados contiguos em memória (arrays) e MUITO mais rápido que dados espalhados (linked lists)</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<tr><th>Nivel</th><th>Latencia</th><th>Capacidade</th><th>Analogia</th></tr>
+<tr><td><strong>Registrador</strong></td><td>~0.3 ns</td><td>~1 KB</td><td>Sua mesa de trabalho</td></tr>
+<tr><td><strong>Cache L1</strong></td><td>~1 ns</td><td>64 KB</td><td>Gaveta da mesa</td></tr>
+<tr><td><strong>Cache L2</strong></td><td>~4 ns</td><td>256 KB</td><td>Estante no escritorio</td></tr>
+<tr><td><strong>Cache L3</strong></td><td>~12 ns</td><td>8-32 MB</td><td>Armario no corredor</td></tr>
+<tr><td><strong>RAM</strong></td><td>~60 ns</td><td>16-64 GB</td><td>Almoxarifado do predio</td></tr>
+<tr><td><strong>SSD</strong></td><td>~100 us</td><td>1-4 TB</td><td>Deposito na cidade</td></tr>
+<tr><td><strong>HDD</strong></td><td>~10 ms</td><td>1-16 TB</td><td>Armazem em outro estado</td></tr>
+</table>
+</div>
+
+<h4>Stack vs Heap</h4>
+<ul>
+<li><strong>Stack:</strong> Memória automática. Alocacao/desalocação por função (LIFO). Extremamente rápida (mover o stack pointer). Tamanho limitado (~1-8MB). Variaveis locais, parametros, endereços de retorno</li>
+<li><strong>Heap:</strong> Memória dinâmica. Alocacao manual (<code>malloc</code>) ou por GC. Mais lenta (precisa buscar espaço livre). Tamanho limitado pela RAM. Objetos, arrays dinâmicos, closures</li>
+</ul>
+
+<h4>Memória Virtual, Paging &amp; TLB</h4>
+<ul>
+<li><strong>Memória virtual:</strong> Cada processo "acha" que tem toda a memória para si. O SO mapeia endereços virtuais para endereços fisicos usando page tables</li>
+<li><strong>Paging:</strong> Memória dividida em páginas (tipicamente 4KB). Paginas podem estar na RAM ou no disco (swap). Se uma página não esta na RAM: <strong>page fault</strong> (extremamente caro, ~ms)</li>
+<li><strong>TLB (Translation Lookaside Buffer):</strong> Cache de traducoes de endereço virtual para fisico. TLB miss = precisa consultar page table na memória = lento</li>
+</ul>
+
+<pre data-lang="c"><code><span class="cm">/* ══ Stack vs Heap em C — Memory Layout ══ */</span>
+<span class="tp">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="tp">#include</span> <span class="str">&lt;stdlib.h&gt;</span>
+<span class="tp">#include</span> <span class="str">&lt;string.h&gt;</span>
+
+<span class="cm">// Variaveis globais → segmento de dados</span>
+<span class="tp">int</span> global_var <span class="op">=</span> <span class="num">42</span>;          <span class="cm">// .data (inicializada)</span>
+<span class="tp">int</span> global_uninit;             <span class="cm">// .bss  (não inicializada, será 0)</span>
+
+<span class="tp">void</span> <span class="fn">demonstrar_memória</span>() {
+    <span class="cm">// Variaveis locais → Stack (automáticas, rápidas)</span>
+    <span class="tp">int</span> stack_var <span class="op">=</span> <span class="num">10</span>;
+    <span class="tp">int</span> stack_array[<span class="num">100</span>];        <span class="cm">// 400 bytes na stack</span>
+    <span class="fn">printf</span>(<span class="str">"Stack var: %p\n"</span>, (<span class="tp">void</span><span class="op">*</span>)<span class="op">&amp;</span>stack_var);
+
+    <span class="cm">// Alocacao dinâmica → Heap (manual, mais lenta)</span>
+    <span class="tp">int</span><span class="op">*</span> heap_ptr <span class="op">=</span> (<span class="tp">int</span><span class="op">*</span>)<span class="fn">malloc</span>(<span class="num">100</span> <span class="op">*</span> <span class="kw">sizeof</span>(<span class="tp">int</span>));
+    <span class="kw">if</span> (heap_ptr <span class="op">==</span> <span class="kw">NULL</span>) {
+        <span class="fn">fprintf</span>(stderr, <span class="str">"Falha na alocação!\n"</span>);
+        <span class="kw">return</span>;
+    }
+    <span class="fn">printf</span>(<span class="str">"Heap ptr:  %p\n"</span>, (<span class="tp">void</span><span class="op">*</span>)heap_ptr);
+
+    <span class="cm">// Uso</span>
+    <span class="fn">memset</span>(heap_ptr, <span class="num">0</span>, <span class="num">100</span> <span class="op">*</span> <span class="kw">sizeof</span>(<span class="tp">int</span>));
+
+    <span class="cm">// OBRIGATORIO: liberar memória do heap manualmente</span>
+    <span class="fn">free</span>(heap_ptr);
+    heap_ptr <span class="op">=</span> <span class="kw">NULL</span>;  <span class="cm">// Evita dangling pointer</span>
+
+    <span class="cm">// Quando a função retorna, stack_var e stack_array</span>
+    <span class="cm">// são desalocados automáticamente (stack pointer volta)</span>
+}
+
+<span class="tp">int</span> <span class="fn">main</span>() {
+    <span class="fn">printf</span>(<span class="str">"=== Memory Layout ===\n"</span>);
+    <span class="fn">printf</span>(<span class="str">"Global (.data):  %p\n"</span>, (<span class="tp">void</span><span class="op">*</span>)<span class="op">&amp;</span>global_var);
+    <span class="fn">printf</span>(<span class="str">"Global (.bss):   %p\n"</span>, (<span class="tp">void</span><span class="op">*</span>)<span class="op">&amp;</span>global_uninit);
+    <span class="fn">demonstrar_memória</span>();
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+
+<!-- ═══ SISTEMAS OPERACIONAIS ═══ -->
+<h3>Sistemas Operacionais — Fundamentos</h3>
+
+<p>O sistema operacional é a camada entre seu código é o hardware. Ele gerencia processos, memória, I/O e fornece abstrações que todo dev usa (arquivos, sockets, threads) sem perceber a complexidade por baixo.</p>
+
+<h4>Processos vs Threads</h4>
+<ul>
+<li><strong>Processo:</strong> Instancia de um programa em execução. Tem espaço de memória proprio (isolado). Comúnicação entre processos (IPC) é mais cara. Crash de um processo NAO afeta outros. O SO mantém um PCB (Process Control Block) com estado, registradores, page table, file descriptors</li>
+<li><strong>Thread:</strong> Unidade de execução dentro de um processo. Compartilha memória com outras threads do mesmo processo. Comúnicação barata (memória compartilhada). Crash de uma thread pode derrubar o processo inteiro. Context switch mais leve que entre processos</li>
+<li><strong>Context Switch:</strong> Quando o SO troca qual processo/thread esta rodando na CPU. Salva registradores, atualiza page table, restaura outro contexto. Custa ~1-100us dependendo do tamanho do working set (TLB flush é o mais caro)</li>
+</ul>
+
+<h4>Scheduling de Processos</h4>
+<ul>
+<li><strong>Round Robin:</strong> Cada processo recebe um "quantum" de tempo (ex: 10ms). Quando o tempo acaba, vai para o fim da fila. Simples, justo, mas não prioriza tarefas urgentes</li>
+<li><strong>Priority Scheduling:</strong> Processos tem prioridades. Maior prioridade executa primeiro. Risco: starvation (processo de baixa prioridade nunca roda). Solução: aging (prioridade aumenta com tempo de espera)</li>
+<li><strong>CFS (Completely Fair Scheduler):</strong> Usado pelo Linux. Usa uma red-black tree para rastrear o "virtual runtime" de cada processo. O processo que rodou MENOS fica na frente. Garante justica proporcional</li>
+</ul>
+
+<h4>Deadlocks</h4>
+<p>Um deadlock ocorre quando dois ou mais processos ficam permanentemente bloqueados, cada um esperando um recursó que o outro possui. As <strong>4 condições de Coffman</strong> (todas devem ser verdadeiras para deadlock):</p>
+<ol>
+<li><strong>Exclusao Mutua:</strong> O recursó só pode ser usado por um processo por vez</li>
+<li><strong>Hold and Wait:</strong> O processo segura um recursó enquanto espera por outro</li>
+<li><strong>No Preemption:</strong> Recursos não podem ser forçadamente tirados de um processo</li>
+<li><strong>Espera Circular:</strong> P1 espera recursó de P2, P2 espera recursó de P1 (ou cadeia maior)</li>
+</ol>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Deadlock no dia a dia:</strong> Em bancos de dados, duas transações podem dar deadlock ao bloquear rows em ordem diferente. Transacao A bloqueia row 1 e tenta row 2. Transacao B bloqueia row 2 e tenta row 1. Solução: sempre adquira locks na <strong>mesma ordem</strong> (ex: ordenar por ID) ou use timeout com retry.</div>
+</div>
+
+<h4>System Calls, Modo Kernel vs Modo Usuario</h4>
+<ul>
+<li><strong>Modo usuário:</strong> Onde seus programas rodam. Acessó restrito — não pode acessar hardware diretamente, não pode acessar memória de outros processos</li>
+<li><strong>Modo kernel:</strong> Onde o SO roda. Acessó total ao hardware é a toda a memória. Código privilegiado</li>
+<li><strong>System calls:</strong> A interface entre modo usuário e modo kernel. Quando seu código faz <code>read()</code>, <code>write()</code>, <code>open()</code>, <code>fork()</code> — ele faz uma syscall que transfere controle para o kernel. Isso envolve troca de contexto (caro, ~1-5us)</li>
+</ul>
+
+<h4>File Systems</h4>
+<ul>
+<li><strong>Inodes:</strong> Estrutura de dados que armazena metadados de um arquivo (permissões, tamanho, ponteiros para blocos de dados). O nome do arquivo NÃO esta no inode — esta no diretório (que mapeia nome → inode)</li>
+<li><strong>Journaling:</strong> Tecnica para evitar corrupcao de dados. Antes de alterár dados, escreve a operação em um journal. Se o sistema crashar no meio, o journal é usado para recovery. ext4, NTFS e XFS usam journaling</li>
+<li><strong>ext4:</strong> File system padrão do Linux. Suporta volumes até 1 exabyte, journaling, extents (blocos contiguos)</li>
+<li><strong>NTFS:</strong> File system padrão do Windows. ACLs detalhadas, compressão, encriptacao, shadow copies</li>
+</ul>
+
+<h4>IPC — Inter-Process Commúnication</h4>
+<ul>
+<li><strong>Pipes:</strong> Canal unidirecional entre processos. <code>ls | grep .txt</code> no shell usa pipe. Simples, mas limitado a processos relacionados (pai-filho)</li>
+<li><strong>Shared Memory:</strong> Regiao de memória mapeada em múltiplos processos. O mais rápido IPC (sem copia de dados). Mas requer sincronização explicita (mutex/semaforo)</li>
+<li><strong>Message Queues:</strong> Fila de mensagens gerenciada pelo kernel. Assíncrona, desacoplada. Base conceitual para RabbitMQ/SQS</li>
+<li><strong>Sockets:</strong> Comúnicação via rede (TCP/UDP) ou local (Unix sockets). O mecanismo mais versatil é usado. Toda API HTTP passa por sockets</li>
+</ul>
+
+<pre data-lang="python"><code><span class="cm"># ══ Processos vs Threads em Python ══</span>
+<span class="kw">import</span> multiprocessing
+<span class="kw">import</span> threading
+<span class="kw">import</span> time
+<span class="kw">import</span> os
+
+<span class="cm"># ── Multiprocessing: processos separados, memória isolada ──</span>
+<span class="kw">def</span> <span class="fn">cpu_bound_task</span>(name, n):
+    <span class="str">"""Tarefa que usa CPU intensivamente"""</span>
+    <span class="fn">print</span>(<span class="str">f"[{name}] PID: {os.getpid()}, calculando..."</span>)
+    total <span class="op">=</span> <span class="fn">sum</span>(i <span class="op">*</span> i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n))
+    <span class="fn">print</span>(<span class="str">f"[{name}] Resultado: {total}"</span>)
+    <span class="kw">return</span> total
+
+<span class="kw">def</span> <span class="fn">run_multiprocessing</span>():
+    start <span class="op">=</span> time.<span class="fn">time</span>()
+    processes <span class="op">=</span> []
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">4</span>):
+        p <span class="op">=</span> multiprocessing.<span class="fn">Process</span>(
+            target<span class="op">=</span>cpu_bound_task,
+            args<span class="op">=</span>(<span class="str">f"Proc-{i}"</span>, <span class="num">5_000_000</span>)
+        )
+        processes.<span class="fn">append</span>(p)
+        p.<span class="fn">start</span>()
+
+    <span class="kw">for</span> p <span class="kw">in</span> processes:
+        p.<span class="fn">join</span>()  <span class="cm"># Espera todos terminarem</span>
+    <span class="fn">print</span>(<span class="str">f"Multiprocessing: {time.time() - start:.2f}s"</span>)
+
+<span class="cm"># ── Threading: threads no mesmo processo, memória compartilhada ──</span>
+counter <span class="op">=</span> <span class="num">0</span>
+lock <span class="op">=</span> threading.<span class="fn">Lock</span>()
+
+<span class="kw">def</span> <span class="fn">increment_safely</span>(n):
+    <span class="str">"""Incrementa counter de forma thread-safe"""</span>
+    <span class="kw">global</span> counter
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n):
+        <span class="kw">with</span> lock:  <span class="cm"># Mutex — garante exclusao mutua</span>
+            counter <span class="op">+=</span> <span class="num">1</span>
+
+<span class="kw">def</span> <span class="fn">run_threading</span>():
+    <span class="kw">global</span> counter
+    counter <span class="op">=</span> <span class="num">0</span>
+    threads <span class="op">=</span> []
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">4</span>):
+        t <span class="op">=</span> threading.<span class="fn">Thread</span>(target<span class="op">=</span>increment_safely, args<span class="op">=</span>(<span class="num">100_000</span>,))
+        threads.<span class="fn">append</span>(t)
+        t.<span class="fn">start</span>()
+
+    <span class="kw">for</span> t <span class="kw">in</span> threads:
+        t.<span class="fn">join</span>()
+    <span class="fn">print</span>(<span class="str">f"Counter: {counter}"</span>)  <span class="cm"># 400000 (correto com lock)</span>
+
+<span class="fn">run_multiprocessing</span>()
+<span class="fn">run_threading</span>()</code></pre>
+
+<!-- ═══ GARBAGE COLLECTION ═══ -->
+<h3>Garbage Collection &amp; Gerenciamento de Memória</h3>
+
+<p>Quando você cria um objeto em JavaScript, Java ou Python — quem libera essa memória quando não é mais usada? O <strong>Garbage Collector (GC)</strong>. Mas GC não é magica — tem custos e limitações que todo senior deve entender.</p>
+
+<h4>Gerenciamento Manual vs Automatico</h4>
+<ul>
+<li><strong>Manual (C/C++, Rust):</strong> O programador aloca (<code>malloc</code>/<code>new</code>) e libera (<code>free</code>/<code>delete</code>) memória explicitamente. Máximo controle, máximo risco: memory leaks, dangling pointers, double free, use-after-free. Rust resolve com ownership system (compile-time)</li>
+<li><strong>Automatico (Java, Go, JS, Python):</strong> O runtime detecta objetos inacessiveis e libera automáticamente. Menós bugs de memória, mas adiciona latência (GC pauses), overhead de CPU e comportamento menós previsível</li>
+</ul>
+
+<h4>Algoritmos de GC</h4>
+<ul>
+<li><strong>Mark-and-Sweep:</strong> Fase 1 (Mark): partindo das "roots" (stack, globais), marca todos os objetos alcançaveis. Fase 2 (Sweep): percorre toda a heap e libera objetos não marcados. Problema: precisa pausar a aplicação (stop-the-world)</li>
+<li><strong>Generational GC:</strong> Observacao: a maioria dos objetos morre jovem ("infant mortality"). Divide a heap em geracoes: Young (objetos novos, coletado frequentemente), Old (objetos que sobreviveram várias coletas, coletado raramente). Java (G1GC), V8 (Orinoco), .NET usam esse approach</li>
+<li><strong>Reference Counting:</strong> Cada objeto tem um contador de referências. Quando o contador chega a zero, o objeto e liberado imediatamente. Problema: ciclos de referência (A aponta para B, B aponta para A — ambos com count > 0 mas inacessiveis). Python usa reference counting + cycle detector</li>
+<li><strong>Weak References:</strong> Referencias que NAO impedem o GC de coletar o objeto. Usadas em caches (WeakMap em JS, WeakRef em Java). O objeto pode desaparecer a qualquer momento</li>
+</ul>
+
+<div class="card blue">
+<div class="card-title">Memory Leaks Comuns e Como Detectar</div>
+<ul>
+<li><strong>Event listeners não removidos:</strong> Em SPAs (React, Vue), addEventListener sem removeEventListener no cleanup. Cada re-render adiciona mais listeners. Detectar: Chrome DevTools → Memory → Heap Snapshot</li>
+<li><strong>Closures segurando referências:</strong> Uma closure que captura uma variável grande impede o GC de liberar essa variável enquanto a closure existir. Comum em setInterval/setTimeout sem clearInterval</li>
+<li><strong>Cache sem limite:</strong> Um Map/object que só cresce e nunca remove entradas. Detectar: monitorar heap size ao longo do tempo — se cresce continuamente, ha leak</li>
+<li><strong>Timers esquecidos:</strong> setInterval que nunca e limpo continua rodando e segurando referências. Sempre retorne e limpe timers em useEffect cleanup</li>
+<li><strong>Detached DOM nodes:</strong> Remover um elemento do DOM mas manter referência a ele em JavaScript. O nodo e seus filhos ficam na memória</li>
+</ul>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>GC Pauses em produção:</strong> O V8 (Node.js) pode pausar até ~50ms para uma coleta major. Em aplicações de baixa latência (real-time, games, trading), essas pausas são inaceitaveis. Solucoes: tunar os parametros do GC (<code>--max-old-space-size</code>), usar object pooling para evitar alocacoes frequentes, ou migrar para linguagens com GC mais previsível (Go) ou sem GC (Rust).</div>
+</div>
+
+<!-- ═══ Q&A EXERCISES ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q">Por que acessar elementos de um array sequêncialmente é muito mais rápido do que acessar nodes de uma linked list, mesmo que ambos tenham complexidade O(n)?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Por causa da <strong>localidade espacial no cache</strong>. Arrays armazenam elementos em posicoes contíguas na memória. Quando a CPU busca o primeiro elemento, ela traz uma cache line inteira (64 bytes) — que já contém os próximos elementos. Resultado: cache hits consecutivos. Linked lists armazenam nodes espalhados pela heap (alocados em momentos diferentes). Cada acesso a um node provavelmente causa um <strong>cache miss</strong>, forçando busca na RAM (~60ns vs ~1ns do cache L1). Em benchmarks reais, iterár um array pode ser 10-100x mais rápido que uma linked list de mesmo tamanho, puramente por causa da hierarquia de cache.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">Explique como um deadlock pode acontecer em uma API web real é como preveni-lo.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Cenário real: uma API de transferencia bancaria. Endpoint <code>POST /transfer</code> precisa bloquear a conta de origem é a conta de destino para garantir atomicidade. Thread 1 processa transferencia de conta A para B: bloqueia A, tenta bloquear B. Thread 2 processa transferencia de B para A: bloqueia B, tenta bloquear A. Deadlock. <strong>Prevencao:</strong> (1) <strong>Ordered locking</strong>: sempre adquira locks em ordem crescente de ID. Se A.id=100 e B.id=200, ambas threads bloqueiam 100 primeiro, depois 200. (2) <strong>Lock timeout</strong>: <code>SELECT ... FOR UPDATE NOWAIT</code> ou <code>WAIT 5</code> no PostgreSQL. Se não conseguir o lock em 5s, retorna erro é o client faz retry. (3) <strong>Optimistic locking</strong>: use version column. Não bloqueia, mas detecta conflito no UPDATE e faz retry.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">Qual a diferença entre um page fault "minor" e um "major"? Quando cada um acontece?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>Minor page fault:</strong> A página existe na memória fisica mas a page table não tem o mapeamento. Acontece quando um processo acessa memória alocada mas ainda não usada (lazy allocation), ou quando uma página esta no page cache do kernel. Resolução rápida — só precisa atualizar a page table. <strong>Major page fault:</strong> A página NÃO esta na memória fisica — precisa ser lida do disco (swap ou arquivo mapeado). Isso envolve I/O de disco, que é ordens de magnitude mais lento (~10ms vs ~1us). Um sistema com muitos major page faults esta "thrashing" — gastando mais tempo movendo páginas entre RAM e disco do que executando código. Solução: mais RAM, reduzir working set, ou ajustar swappiness do kernel.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">Por que Python tem um GIL (Global Interpreter Lock) é como isso afeta performance multithread?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> O GIL é um mutex que permite apenas uma thread executar bytecode Python por vez. Existe porque o gerenciamento de memória do CPython (reference counting) não é thread-safe — sem o GIL, duas threads incrementando/decrementando o ref count simultaneamente causariam corrupcao de memória. <strong>Impacto:</strong> Para tarefas CPU-bound (cálculos pesados), threads Python NAO paralelizam de verdade — rodam intercaladas, não simultaneas. Solução: use <code>multiprocessing</code> (processos separados, cada um com seu GIL) ou C extensions que liberam o GIL. Para tarefas I/O-bound (HTTP requests, leitura de arquivo), threads FUNCIONAM bem porque o GIL e liberado durante operações de I/O. Por isso <code>asyncio</code> é tao popular em Python — concorrência sem threads.</p>
+</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Diagnosticando Latency Spike em Produção</h3>
+
+<p><strong>Cenário:</strong> Sua API Node.js começa a ter latency spikes de 200-500ms a cada 30-60 segundos. O P50 e normal (20ms), mas o P99 explodiu. CPU e memória do container parecem normais. Como você investiga usando fundamentos de computação?</p>
+
+<h4>Passó 1: Hipoteses Baseadas em Fundamentos</h4>
+<ul>
+<li><strong>GC Pauses:</strong> O V8 esta fazendo coletas major? Node.js com muitos objetos temporários causa GC frequente</li>
+<li><strong>Event Loop Blocking:</strong> Alguma operação síncrona bloqueando o event loop? JSON.parse de payload enorme? Regex catastrofica?</li>
+<li><strong>Memory Pressure:</strong> Container perto do limite de memória? Page faults? Swap?</li>
+<li><strong>Cache Misses:</strong> Redis/Memcached com TTL expirando em massa? Thundering herd?</li>
+</ul>
+
+<h4>Passó 2: Instrumentacao</h4>
+<pre data-lang="javascript"><code><span class="cm">// Monitorar GC do V8</span>
+<span class="kw">const</span> v8 <span class="op">=</span> <span class="fn">require</span>(<span class="str">'v8'</span>);
+<span class="kw">const</span> { PerformanceObserver } <span class="op">=</span> <span class="fn">require</span>(<span class="str">'perf_hooks'</span>);
+
+<span class="cm">// Observer para GC events</span>
+<span class="kw">const</span> obs <span class="op">=</span> <span class="kw">new</span> <span class="fn">PerformanceObserver</span>((list) <span class="kw">=></span> {
+    <span class="kw">for</span> (<span class="kw">const</span> entry <span class="kw">of</span> list.<span class="fn">getEntries</span>()) {
+        <span class="kw">if</span> (entry.duration <span class="op">></span> <span class="num">50</span>) {  <span class="cm">// Alerta se GC > 50ms</span>
+            console.<span class="fn">warn</span>(<span class="str">`[GC] ${entry.detail.kind}: ${entry.duration.toFixed(1)}ms`</span>);
+        }
+    }
+});
+obs.<span class="fn">observe</span>({ entryTypes: [<span class="str">'gc'</span>] });
+
+<span class="cm">// Monitorar event loop lag</span>
+<span class="kw">const</span> { monitorEventLoopDelay } <span class="op">=</span> <span class="fn">require</span>(<span class="str">'perf_hooks'</span>);
+<span class="kw">const</span> h <span class="op">=</span> <span class="fn">monitorEventLoopDelay</span>({ resolution: <span class="num">20</span> });
+h.<span class="fn">enable</span>();
+
+<span class="fn">setInterval</span>(() <span class="kw">=></span> {
+    console.<span class="fn">log</span>(<span class="str">`Event Loop - P50: ${(h.percentile(50) / 1e6).toFixed(1)}ms`</span>
+        <span class="op">+</span> <span class="str">` P99: ${(h.percentile(99) / 1e6).toFixed(1)}ms`</span>);
+    h.<span class="fn">reset</span>();
+}, <span class="num">10000</span>);
+
+<span class="cm">// Heap stats</span>
+<span class="fn">setInterval</span>(() <span class="kw">=></span> {
+    <span class="kw">const</span> stats <span class="op">=</span> v8.<span class="fn">getHeapStatistics</span>();
+    <span class="kw">const</span> usedMB <span class="op">=</span> (stats.used_heap_size <span class="op">/</span> <span class="num">1024</span> <span class="op">/</span> <span class="num">1024</span>).<span class="fn">toFixed</span>(<span class="num">1</span>);
+    <span class="kw">const</span> totalMB <span class="op">=</span> (stats.heap_size_limit <span class="op">/</span> <span class="num">1024</span> <span class="op">/</span> <span class="num">1024</span>).<span class="fn">toFixed</span>(<span class="num">1</span>);
+    console.<span class="fn">log</span>(<span class="str">`Heap: ${usedMB}MB / ${totalMB}MB`</span>);
+}, <span class="num">10000</span>);</code></pre>
+
+<h4>Passó 3: Diagnóstico e Solucao</h4>
+<ul>
+<li><strong>Se GC pauses > 100ms:</strong> Reduzir alocacoes com object pooling, aumentar <code>--max-old-space-size</code>, ou usar <code>--expose-gc</code> para forçar GC em momentos controlados</li>
+<li><strong>Se event loop lag alto:</strong> Identificar operação síncrona com <code>clinic doctor</code> ou <code>0x</code> (flame graph). Mover para worker thread</li>
+<li><strong>Se heap cresce continuamente:</strong> Memory leak. Tirar heap snapshot antes e depois de N requests. Comparar no Chrome DevTools para encontrar objetos retidos</li>
+<li><strong>Se tudo normal no Node.js:</strong> O problema pode ser externo — DNS resolution lento, connection pool esgotado, downstream service lento</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Fundamentos em acao:</strong> Note como cada hipotese se baseia em conceitos desta seção — GC, hierarquia de memória, processos/threads, virtual memory. Sem esses fundamentos, você ficaria tentando soluções aleatórias. Com eles, você segue um caminho lógico de investigacao.</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Fundamentos de Computação</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos sobre os fundamentos que sustentam toda a stack. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="45-dev-senior-era-ia.html">&#8592; Anterior: Dev Senior na Era da IA</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="47-networking-protocolos.html" class="primary">Próximo: Networking &amp; Protocolos &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// Q&A TOGGLE
+// ══════════════════════════════════════════
+document.querySelectorAll('.qa-q').forEach(q => q.addEventListener('click', () => q.parentElement.classList.toggle('open')));
+
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 46: Fundamentos de Computação
+// ══════════════════════════════════════════
+const SECTION_NUM = 46;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Por que 0.1 + 0.2 !== 0.3 em JavaScript (e na maioria das linguagens)?",
+    options: [
+      "Bug do JavaScript que nunca foi corrígido",
+      "0.1 e 0.2 não tem representacao exata em IEEE 754 floating point binário",
+      "O operador + faz concatenacao de strings internamente",
+      "O resultado e arredondado para economizar memória"
+    ],
+    correct: 1,
+    explanation: "Numeros como 0.1 e 0.2 não podem ser representados exatamente em binário (base 2), assim como 1/3 não tem representacao exata em decimal. O IEEE 754 armazena a aproximação mais próxima, e a soma dessas aproximações resulta em 0.30000000000000004."
+  },
+  {
+    question: "Qual a principal vantagem do modelo Harvard sobre o Von Neumann?",
+    options: [
+      "Usa menós memória total",
+      "E mais simples de implementar",
+      "Pode buscar instrução e dado simultaneamente (sem bottleneck de barramento)",
+      "Não precisa de cache"
+    ],
+    correct: 2,
+    explanation: "O modelo Harvard tem barramentos separados para instruções e dados, permitindo acesso simultaneo. No Von Neumann, instruções e dados competem pelo mesmo barramento, criando o 'Von Neumann bottleneck'. CPUs modernas usam Harvard no cache L1 (I-cache e D-cache separados) mas Von Neumann na memória principal."
+  },
+  {
+    question: "Qual porta lógica é considerada 'universal' — capaz de implementar qualquer circuito lógico sozinha?",
+    options: [
+      "AND",
+      "OR",
+      "XOR",
+      "NAND"
+    ],
+    correct: 3,
+    explanation: "NAND e uma porta universal. Qualquer outra porta lógica (AND, OR, NOT, XOR) pode ser construida usando apenas NANDs. NOR também e universal. Isso simplifica fabricacao de chips — um único tipo de transistor pode implementar toda a lógica necessária."
+  },
+  {
+    question: "Em complemento de dois com 8 bits, qual é o resultado de 01111111 + 00000001?",
+    options: [
+      "10000000 (128 em decimal)",
+      "10000000 (-128 em decimal — overflow!)",
+      "00000000 (0 em decimal)",
+      "11111111 (255 em decimal)"
+    ],
+    correct: 1,
+    explanation: "Em complemento de dois com 8 bits, o range e -128 a +127. 01111111 = 127 (máximo positivo). Somar 1 resulta em 10000000, que em complemento de dois e -128. Isso e integer overflow — o número 'deu a volta' do máximo positivo para o mínimo negativo."
+  },
+  {
+    question: "Por que iterár um array e significativamente mais rápido que iterár uma linked list de mesmo tamanho?",
+    options: [
+      "Arrays tem complexidade O(1) e linked lists tem O(n)",
+      "Linked lists usam mais memória por elemento",
+      "Arrays aproveitam localidade espacial do cache — elementos contiguos cabem na mesma cache line",
+      "O compilador otimiza loops em arrays mas não em linked lists"
+    ],
+    correct: 2,
+    explanation: "A iteráção de ambos e O(n), mas arrays armazenam elementos contiguamente na memória. Quando a CPU carrega um elemento, traz uma cache line de 64 bytes que já contém os próximos elementos (cache hits). Linked lists tem nodes espalhados pela heap, causando cache misses constantes e buscas na RAM (~60ns vs ~1ns do L1)."
+  },
+  {
+    question: "Quais são as 4 condições de Coffman necessárias para um deadlock?",
+    options: [
+      "Starvation, livelock, prioridade, preempcao",
+      "Exclusao mutua, hold and wait, no preemption, espera circular",
+      "Mutex, semaforo, monitor, barreira",
+      "Race condition, atomicidade, visibilidade, ordenacao"
+    ],
+    correct: 1,
+    explanation: "As 4 condições de Coffman são: (1) Exclusao Mutua — recursó usado por um processo por vez, (2) Hold and Wait — segura recursó enquanto espera outro, (3) No Preemption — recursos não podem ser tirados a força, (4) Espera Circular — cadeia circular de espera. Todas devem ser verdadeiras simultaneamente para deadlock ocorrer. Quebrar qualquer uma previne deadlock."
+  },
+  {
+    question: "O que é um 'major page fault' e por que é tao caro?",
+    options: [
+      "Erro crítico que causa crash do processo",
+      "A página não esta na RAM e precisa ser lida do disco (~10ms de latência)",
+      "O endereço virtual não existe no espaço do processo",
+      "A page table esta corrompida e precisa ser reconstruida"
+    ],
+    correct: 1,
+    explanation: "Um major page fault ocorre quando a página necessária não esta na memória fisica (RAM). O SO precisa ler a página do disco (swap ou arquivo mapeado), o que leva ~10ms — 10.000x mais lento que acessar RAM (~1us). Um sistema com muitos major page faults esta 'thrashing' e fica extremamente lento. Solução: mais RAM ou reduzir working set."
+  },
+  {
+    question: "No Generational GC, por que objetos são divididos em geracoes (Young e Old)?",
+    options: [
+      "Para reduzir o tamanho da heap total",
+      "Porque a maioria dos objetos morre jovem (infant mortality) — coletar o Young e rápido e recupera muita memória",
+      "Para evitar fragmentação de memória",
+      "Porque objetos antigos nunca precisam ser coletados"
+    ],
+    correct: 1,
+    explanation: "A 'hipotese geracional' observa que a maioria dos objetos tem vida curta. Variaveis temporárias, closures de callback, objetos intermediários — todos morrem rapidamente. Separar em geracoes permite coletar o Young frequentemente (rápido, pois a maioria dos objetos já morreu) é o Old raramente (mais caro, mas necessário com menós frequência). Isso reduz drasticamente o tempo total de GC."
+  },
+  {
+    question: "Qual a diferença fundamental entre processos e threads?",
+    options: [
+      "Processos são mais rápidos que threads",
+      "Threads só existem em linguagens modernas",
+      "Processos tem espaço de memória isolado; threads compartilham memória dentro do mesmo processo",
+      "Processos não podem se comúnicar entre si"
+    ],
+    correct: 2,
+    explanation: "A diferença fundamental é o isolamento de memória. Processos tem espaços de endereço separados — um processo não pode acessar a memória de outro diretamente (segurança). Threads dentro do mesmo processo compartilham heap, variáveis globais e file descriptors — comunicação e barata mas requer sincronização (mutex/lock) para evitar race conditions."
+  },
+  {
+    question: "Por que o branch predictor da CPU importa para performance de código?",
+    options: [
+      "Ele decide qual thread executar a seguir",
+      "Ele comprime instruções para economizar cache",
+      "Ele tenta adivinhar o resultado de condicionais para manter o pipeline cheio — erros causam pipeline flush (~15-20 ciclos perdidos)",
+      "Ele otimiza alocação de memória automáticamente"
+    ],
+    correct: 2,
+    explanation: "CPUs modernas usam pipeline para executar várias instruções simultaneamente. Quando encontra um if/else, o branch predictor 'apósta' no resultado e continua executando especulativamente. Se acertar, zero custo. Se errar, precisa descartar todo o trabalho especulativo (pipeline flush), perdendo ~15-20 ciclos. Por isso arrays ordenados podem ser processados mais rápido — branches são previsiveis."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina os fundamentos que sustentam toda a stack.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou — fundamentos são a base de tudo.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção com calma e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

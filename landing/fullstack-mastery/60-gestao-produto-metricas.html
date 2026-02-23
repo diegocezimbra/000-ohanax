@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>60 — Gestão de Produto & Métricas | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="59-low-level-systems-wasm.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>60</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="61-ai-engineering.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:90.9%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 60</span>
+<h2>Gestão de Produto & Métricas</h2>
+<div class="section-line"></div>
+
+<p>Um dev full-stack senior não apenas implementa features — ele entende <strong>por que</strong> aquela feature existe, <strong>como medir</strong> seu impacto e <strong>quando matar</strong> algo que não esta funcionando. Gestão de produto e métricas são o que separam um executor de um <strong>engenheiro de produto</strong>.</p>
+
+<p>Nesta seção, cobrimos frameworks de métricas (HEART, AARRR, North Star), estratégias de crescimento (PLG), e ferramentas técnicas que habilitam experimentacao (feature flags, A/B testing). Tudo com código real e exemplos práticos.</p>
+
+<!-- ═══ PRODUCT-LED GROWTH ═══ -->
+<h3>Product-Led Growth (PLG)</h3>
+
+<p><strong>Product-Led Growth</strong> é uma estratégia de go-to-market onde o <strong>produto é o principal motor de aquisicao, conversão e expansao</strong>. Ao inves de depender de vendedores ou marketing pesado, o produto se vende sozinho atraves de valor entregue ao usuário.</p>
+
+<h4>Modelos de PLG</h4>
+<ul>
+<li><strong>Freemium:</strong> Versao gratuita com limitações. O usuário experimenta valor real e faz upgrade para desbloquear mais. Ex: Slack (limite de 90 dias de historico), Notion (limite de blocos), Figma (até 3 projetos)</li>
+<li><strong>Free Trial:</strong> Acessó completo por tempo limitado (7, 14, 30 dias). Forca urgencia. Ex: Netflix (30 dias), Jira (7 dias)</li>
+<li><strong>Open-Core:</strong> Core open source + features enterprise pagas. Ex: GitLab (CE vs EE), Elastic (OSS vs Cloud), Redis (OSS vs Enterprise)</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<tr><th>Modelo</th><th>Vantagem</th><th>Desvantagem</th><th>Melhor para</th></tr>
+<tr><td><strong>Freemium</strong></td><td>Baixa barreira de entrada</td><td>Custo de servir usuários free</td><td>Produtos com efeito de rede</td></tr>
+<tr><td><strong>Free Trial</strong></td><td>Usuarios veem valor completo</td><td>Urgencia pode afastar</td><td>Produtos complexos (B2B)</td></tr>
+<tr><td><strong>Open-Core</strong></td><td>Comunidade + confiança</td><td>Manter OSS + enterprise</td><td>Ferramentas de dev/infra</td></tr>
+</table>
+</div>
+
+<h4>Viral Loops e Referral Programs</h4>
+<p>O poder do PLG esta nós <strong>viral loops</strong> — mecanismos que fazem o usó do produto gerar novos usuários organicamente.</p>
+
+<ul>
+<li><strong>Invite Flow:</strong> Slack — para usar com o time, você precisa convidar colegas. Cada usuário traz mais usuários</li>
+<li><strong>Referral Program:</strong> Dropbox — "convide um amigo, ganhe 500MB". Crescimento de 3900% em 15 meses</li>
+<li><strong>Content Sharing:</strong> Figma — compartilhar prototipos expoe a ferramenta para stakeholders que viram usuários</li>
+<li><strong>Embedded Virality:</strong> Calendly — o destinatario ve "Powered by Calendly" e descobre o produto</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Exemplo: Sistema de referral com tracking</span>
+<span class="kw">interface</span> <span class="tp">ReferralProgram</span> {
+  <span class="fn">referralCode</span>: <span class="tp">string</span>;
+  <span class="fn">referrerId</span>: <span class="tp">string</span>;
+  <span class="fn">reward</span>: {
+    <span class="fn">referrer</span>: <span class="tp">RewardConfig</span>;  <span class="cm">// quem indicou</span>
+    <span class="fn">referee</span>: <span class="tp">RewardConfig</span>;   <span class="cm">// quem foi indicado</span>
+  };
+}
+
+<span class="kw">class</span> <span class="tp">ReferralService</span> {
+  <span class="kw">async</span> <span class="fn">generateReferralLink</span>(<span class="fn">userId</span>: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+    <span class="kw">const</span> <span class="fn">code</span> = <span class="fn">generateUniqueCode</span>(<span class="fn">userId</span>);
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">repository</span>.<span class="fn">save</span>({ <span class="fn">code</span>, <span class="fn">referrerId</span>: <span class="fn">userId</span> });
+
+    <span class="cm">// Track evento de geracao de link</span>
+    <span class="fn">analytics</span>.<span class="fn">track</span>(<span class="str">'referral_link_generated'</span>, { <span class="fn">userId</span> });
+
+    <span class="kw">return</span> <span class="str">`https://app.com/signup?ref=${code}`</span>;
+  }
+
+  <span class="kw">async</span> <span class="fn">processReferral</span>(<span class="fn">code</span>: <span class="tp">string</span>, <span class="fn">newUserId</span>: <span class="tp">string</span>) {
+    <span class="kw">const</span> <span class="fn">referral</span> = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">repository</span>.<span class="fn">findByCode</span>(<span class="fn">code</span>);
+    <span class="kw">if</span> (!<span class="fn">referral</span>) <span class="kw">return</span>;
+
+    <span class="cm">// Recompensa dupla: quem indicou E quem foi indicado</span>
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">rewardService</span>.<span class="fn">grant</span>(<span class="fn">referral</span>.<span class="fn">referrerId</span>, <span class="str">'referrer_bonus'</span>);
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">rewardService</span>.<span class="fn">grant</span>(<span class="fn">newUserId</span>, <span class="str">'referee_welcome'</span>);
+
+    <span class="fn">analytics</span>.<span class="fn">track</span>(<span class="str">'referral_completed'</span>, {
+      <span class="fn">referrerId</span>: <span class="fn">referral</span>.<span class="fn">referrerId</span>,
+      <span class="fn">refereeId</span>: <span class="fn">newUserId</span>,
+    });
+  }
+}</code></pre>
+
+<h4>Time-to-Value (TTV) Optimization</h4>
+<p><strong>Time-to-Value</strong> é o tempo entre o signup é o momento "aha!" — quando o usuário percebe valor real no produto. Quanto menor o TTV, maior a conversão.</p>
+
+<ul>
+<li><strong>Slack:</strong> TTV = enviar a primeira mensagem no time (~2 minutos). Onboarding guia para criar canal e convidar colega</li>
+<li><strong>Notion:</strong> TTV = criar a primeira página com template. Templates pre-prontos reduzem fricacao</li>
+<li><strong>Figma:</strong> TTV = abrir um design compartilhado é fazer um comentário (nem precisa criar conta primeiro)</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra do PLG:</strong> Se o usuário não consegue experimentar valor em menós de 5 minutos sem falar com ninguem, seu produto provavelmente não é PLG-ready. Reduza steps de onboarding, ofereca templates, e elimine tudo que não contribui para o "aha moment".</div>
+</div>
+
+<h4>Self-Serve vs Sales-Assisted</h4>
+<ul>
+<li><strong>Self-Serve puro:</strong> Usuario descobre, experimenta, compra e escala sozinho. Funciona para ACV (Annual Contract Value) &lt; $5K. Ex: Notion, Canva</li>
+<li><strong>Product-Led Sales:</strong> PLG na aquisicao + vendedores para expansao enterprise. ACV $5K-$100K. Ex: Slack, Figma, Datadog</li>
+<li><strong>Sales-Led com PLG assist:</strong> Vendas tradicionais, mas o trial/freemium ajuda na validação técnica. ACV &gt; $100K. Ex: Snowflake, MongoDB Atlas</li>
+</ul>
+
+<!-- ═══ NORTH STAR METRIC ═══ -->
+<h3>North Star Metric (NSM)</h3>
+
+<p>A <strong>North Star Metric</strong> é a única métrica que melhor captura o <strong>valor central</strong> que seu produto entrega aos clientes. Definida por Sean Ellis, ela serve como bussola para toda a empresa — se essa métrica cresce, o negócio cresce.</p>
+
+<h4>Criterios para uma boa NSM</h4>
+<ol>
+<li><strong>Reflete valor entregue ao cliente</strong> (não apenas receita)</li>
+<li><strong>E mensurável e acionavel</strong> (o time pode influenciar diretamente)</li>
+<li><strong>E leading indicator</strong> (preve sucessó futuro, não mede passado)</li>
+<li><strong>Unifica a empresa</strong> (produto, marketing, vendas, suporte — todos olham para ela)</li>
+</ol>
+
+<h4>Exemplos por Tipo de Produto</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Tipo</th><th>Produto</th><th>North Star Metric</th><th>Justificativa</th></tr>
+<tr><td><strong>Marketplace</strong></td><td>Airbnb</td><td>Noites reservadas</td><td>Captura valor para host e guest</td></tr>
+<tr><td><strong>Marketplace</strong></td><td>Uber</td><td>Viagens completadas/semana</td><td>Mede usó real (não signups)</td></tr>
+<tr><td><strong>SaaS B2B</strong></td><td>Slack</td><td>Mensagens enviadas por time/dia</td><td>Mais mensagens = mais engajado = menor churn</td></tr>
+<tr><td><strong>SaaS B2B</strong></td><td>HubSpot</td><td>Times usando 5+ features/semana</td><td>Depth of use preve retenção</td></tr>
+<tr><td><strong>Media</strong></td><td>Spotify</td><td>Tempo de escuta/usuário/dia</td><td>Mais tempo = mais valor percebido</td></tr>
+<tr><td><strong>Media</strong></td><td>YouTube</td><td>Minutos assistidos/dia</td><td>Engagement sustentado = ad revenue</td></tr>
+<tr><td><strong>E-commerce</strong></td><td>Amazon</td><td>Compras por membro Prime/mes</td><td>Frequencia de compra = lifetime value</td></tr>
+<tr><td><strong>Fintech</strong></td><td>Nubank</td><td>Transacoes por usuário ativo/mes</td><td>Mais transações = banco principal</td></tr>
+</table>
+</div>
+
+<h4>Input Metrics vs Output Metrics</h4>
+<p>A NSM é uma <strong>output metric</strong> — resultado de várias <strong>input metrics</strong> que o time pode influenciar diretamente.</p>
+
+<div class="diagram">
+<div class="diagram-box blue">Input: Onboarding<br>completion rate</div>
+<div class="diagram-arrow">+</div>
+<div class="diagram-box blue">Input: Feature<br>adoption rate</div>
+<div class="diagram-arrow">+</div>
+<div class="diagram-box blue">Input: Session<br>frequency</div>
+<div class="diagram-arrow">=</div>
+<div class="diagram-box green">NSM: Weekly<br>Active Users</div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// NSM Framework: definindo métricas por camada</span>
+<span class="kw">interface</span> <span class="tp">NorthStarFramework</span> {
+  <span class="fn">northStar</span>: {
+    <span class="fn">metric</span>: <span class="tp">string</span>;       <span class="cm">// ex: "weekly_active_teams"</span>
+    <span class="fn">target</span>: <span class="tp">number</span>;       <span class="cm">// ex: 50000</span>
+    <span class="fn">timeframe</span>: <span class="tp">string</span>;    <span class="cm">// ex: "weekly"</span>
+  };
+  <span class="fn">inputMetrics</span>: {
+    <span class="fn">acquisition</span>: <span class="tp">string</span>;   <span class="cm">// "new_signups_per_week"</span>
+    <span class="fn">activation</span>: <span class="tp">string</span>;    <span class="cm">// "onboarding_completion_rate"</span>
+    <span class="fn">engagement</span>: <span class="tp">string</span>;    <span class="cm">// "messages_per_team_per_day"</span>
+    <span class="fn">retention</span>: <span class="tp">string</span>;     <span class="cm">// "week_4_retention_rate"</span>
+  };
+}
+
+<span class="cm">// Exemplo: calculando NSM para um SaaS</span>
+<span class="kw">async function</span> <span class="fn">calculateNorthStar</span>(): <span class="tp">Promise</span>&lt;<span class="tp">NorthStarResult</span>&gt; {
+  <span class="kw">const</span> <span class="fn">weekStart</span> = <span class="fn">startOfWeek</span>(<span class="kw">new</span> <span class="tp">Date</span>());
+  <span class="kw">const</span> <span class="fn">weekEnd</span> = <span class="fn">endOfWeek</span>(<span class="kw">new</span> <span class="tp">Date</span>());
+
+  <span class="kw">const</span> <span class="fn">activeTeams</span> = <span class="kw">await</span> <span class="fn">db</span>.<span class="fn">query</span>(<span class="str">`
+    SELECT COUNT(DISTINCT team_id) as count
+    FROM events
+    WHERE timestamp BETWEEN $1 AND $2
+      AND event_type IN ('message_sent', 'file_shared', 'call_started')
+    HAVING COUNT(*) >= 3  -- pelo menós 3 acoes = "ativo"
+  `</span>, [<span class="fn">weekStart</span>, <span class="fn">weekEnd</span>]);
+
+  <span class="kw">return</span> {
+    <span class="fn">metric</span>: <span class="str">'weekly_active_teams'</span>,
+    <span class="fn">value</span>: <span class="fn">activeTeams</span>.<span class="fn">count</span>,
+    <span class="fn">trend</span>: <span class="fn">calculateTrend</span>(<span class="fn">previousWeek</span>, <span class="fn">activeTeams</span>.<span class="fn">count</span>),
+  };
+}</code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>NSM não é revenue.</strong> Revenue é uma output metric que resulta de entregar valor. Se você otimiza diretamente para revenue (ex: dark patterns, forçando upgrade), pode crescer no curto prazo e destruir retenção no longo prazo. A NSM deve medir valor entregue.</div>
+</div>
+
+<!-- ═══ HEART FRAMEWORK ═══ -->
+<h3>HEART Framework (Google)</h3>
+
+<p>O <strong>HEART Framework</strong>, criado pelo Google, organiza métricas de experiência do usuário em 5 dimensões. Para cada dimensão, você define <strong>Goals</strong> (objetivos), <strong>Signals</strong> (sinais observaveis) e <strong>Metrics</strong> (métricas mensuaveis).</p>
+
+<div class="diagram">
+<div class="diagram-box green">H<br>Happiness</div>
+<div class="diagram-box blue">E<br>Engagement</div>
+<div class="diagram-box purple">A<br>Adoption</div>
+<div class="diagram-box orange">R<br>Retention</div>
+<div class="diagram-box cyan">T<br>Task Success</div>
+</div>
+
+<h4>H — Happiness (Satisfacao)</h4>
+<ul>
+<li><strong>Goal:</strong> Usuarios estão satisfeitos com o produto</li>
+<li><strong>Signals:</strong> Respostas a surveys, ratings, NPS, sentimento em reviews</li>
+<li><strong>Metrics:</strong> NPS score, CSAT (1-5), SUS score, App Store rating</li>
+</ul>
+
+<h4>E — Engagement (Engajamento)</h4>
+<ul>
+<li><strong>Goal:</strong> Usuarios usam o produto regularmente e com profundidade</li>
+<li><strong>Signals:</strong> Frequencia de visitas, features útilizadas, tempo na sessão</li>
+<li><strong>Metrics:</strong> DAU/MAU ratio, sessões/semana, acoes por sessão, stickiness</li>
+</ul>
+
+<h4>A — Adoption (Adocao)</h4>
+<ul>
+<li><strong>Goal:</strong> Novos usuários começam a usar o produto/feature</li>
+<li><strong>Signals:</strong> Signups, first-time use de features, onboarding completion</li>
+<li><strong>Metrics:</strong> Novos signups/semana, % que completa onboarding, feature adoption rate</li>
+</ul>
+
+<h4>R — Retention (Retencao)</h4>
+<ul>
+<li><strong>Goal:</strong> Usuarios existentes continuam usando ao longo do tempo</li>
+<li><strong>Signals:</strong> Retorno após primeira semana, renovação de assinatura</li>
+<li><strong>Metrics:</strong> D1/D7/D30 retention, churn rate, renewal rate, cohort curves</li>
+</ul>
+
+<h4>T — Task Success (Sucessó na Tarefa)</h4>
+<ul>
+<li><strong>Goal:</strong> Usuarios conseguem completar o que vieram fazer</li>
+<li><strong>Signals:</strong> Conclusao de fluxos críticos, erros encontrados, tempo no fluxo</li>
+<li><strong>Metrics:</strong> Task completion rate, error rate, time-on-task, search success rate</li>
+</ul>
+
+<div class="card blue">
+<div class="card-title">Goals → Signals → Metrics (Exemplo: App de Delivery)</div>
+<p style="color:var(--text2);font-size:.88rem;margin-bottom:8px"><strong>Happiness:</strong> Goal = clientes satisfeitos com a entrega → Signal = rating pos-entrega → Metric = media de rating >= 4.5</p>
+<p style="color:var(--text2);font-size:.88rem;margin-bottom:8px"><strong>Engagement:</strong> Goal = pedidos recorrentes → Signal = frequência de pedidos → Metric = pedidos/usuário/mes</p>
+<p style="color:var(--text2);font-size:.88rem;margin-bottom:8px"><strong>Adoption:</strong> Goal = novos usuários fazem primeiro pedido → Signal = onboarding → Metric = % de signup-to-first-order em 7 dias</p>
+<p style="color:var(--text2);font-size:.88rem;margin-bottom:8px"><strong>Retention:</strong> Goal = usuários voltam a pedir → Signal = retorno mensal → Metric = M1 retention > 40%</p>
+<p style="color:var(--text2);font-size:.88rem"><strong>Task Success:</strong> Goal = pedido sem erros → Signal = pedidos concluidos → Metric = order completion raté > 95%, cancelamento < 3%</p>
+</div>
+
+<h4>Quando usar HEART vs outras frameworks</h4>
+<ul>
+<li><strong>Use HEART</strong> quando precisa de uma visao holistica da experiência do usuário (UX teams, product reviews)</li>
+<li><strong>Use AARRR</strong> quando o foco e crescimento e conversão de funil (growth teams, startups early-stage)</li>
+<li><strong>Use NSM</strong> quando precisa de foco único para alinhar toda a empresa (OKRs, planejamento estrategico)</li>
+</ul>
+
+<!-- ═══ AARRR PIRATE METRICS ═══ -->
+<h3>AARRR — Piraté Metrics</h3>
+
+<p>Criado por Dave McClure, o framework <strong>AARRR</strong> (chamado "Piraté Metrics" pelo som) modela todo o ciclo de vida do usuário como um funil de 5 etapas. Cada etapa tem métricas específicas e acoes de otimização.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Acquisition<br><small>Como descobrem</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Activation<br><small>"Aha moment"</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Retention<br><small>Voltam a usar</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Revenue<br><small>Pagam</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box cyan">Referral<br><small>Indicam</small></div>
+</div>
+
+<h4>1. Acquisition (Aquisicao)</h4>
+<p>Como os usuários descobrem seu produto.</p>
+<ul>
+<li><strong>Métricas:</strong> Visitas ao site, signups, CAC (Customer Acquisition Cost), canais de tráfego</li>
+<li><strong>Acoes:</strong> SEO, content marketing, paid ads, partnerships, PLG virality</li>
+<li><strong>Benchmark:</strong> CAC deve ser &lt; 1/3 do LTV para ser sustentável</li>
+</ul>
+
+<h4>2. Activation (Ativacao)</h4>
+<p>O usuário experimenta o "aha moment" — o momento onde percebe valor.</p>
+<ul>
+<li><strong>Métricas:</strong> Onboarding completion rate, time-to-first-value, setup completion</li>
+<li><strong>Acoes:</strong> Simplificar onboarding, progressive disclosure, templates, in-app tours</li>
+<li><strong>Benchmark:</strong> Slack definiu ativacao como "time que enviou 2000 mensagens". Acima disso, 93% continuam pagando</li>
+</ul>
+
+<h4>3. Retention (Retencao)</h4>
+<p>Usuarios voltam a usar o produto ao longo do tempo. <strong>A métrica mais importante do funil.</strong></p>
+<ul>
+<li><strong>Métricas:</strong> D1/D7/D30 retention, churn rate, DAU/MAU ratio (stickiness)</li>
+<li><strong>Acoes:</strong> Notificacoes inteligentes, email drip campaigns, feature discovery, habit loops</li>
+<li><strong>Benchmark:</strong> SaaS B2B: &gt;90% monthly retention. Consumer app: 25% D30 e bom. Social: 50%+ D30</li>
+</ul>
+
+<h4>4. Revenue (Receita)</h4>
+<p>Usuarios pagam pelo produto — conversão de free para paid ou expansao de conta.</p>
+<ul>
+<li><strong>Métricas:</strong> MRR, ARPU, LTV, free-to-paid conversion rate, expansion revenue</li>
+<li><strong>Acoes:</strong> Paywall optimization, pricing experiments, upsell triggers, usage-based pricing</li>
+<li><strong>Benchmark:</strong> Freemium-to-paid: 2-5% e normal, &gt;7% é excelente. Net Revenue Retention &gt;110% e elite</li>
+</ul>
+
+<h4>5. Referral (Indicacao)</h4>
+<p>Usuarios ativos indicam para outros — o motor de crescimento organico.</p>
+<ul>
+<li><strong>Métricas:</strong> NPS, referral rate, viral coefficient (K-factor), invites sent per user</li>
+<li><strong>Acoes:</strong> Referral programs, share incentives, social proof, in-product sharing</li>
+<li><strong>Benchmark:</strong> K-factor &gt; 1 = crescimento viral. Dropbox atingiu K=1.2 com seu programa de referral</li>
+</ul>
+
+<h4>Cohort Analysis</h4>
+<p><strong>Cohort Analysis</strong> é a técnica de agrupar usuários pela data de entrada e acompanhar seu comportamento ao longo do tempo. Essencial para entender retenção real vs vaidade.</p>
+
+<pre data-lang="sql"><code><span class="cm">-- Cohort Analysis: retenção mensal por cohort de signup</span>
+<span class="kw">WITH</span> <span class="fn">user_cohorts</span> <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    <span class="fn">user_id</span>,
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, <span class="fn">created_at</span>) <span class="kw">AS</span> <span class="fn">cohort_month</span>
+  <span class="kw">FROM</span> <span class="fn">users</span>
+),
+<span class="fn">user_activity</span> <span class="kw">AS</span> (
+  <span class="kw">SELECT</span>
+    <span class="fn">e</span>.<span class="fn">user_id</span>,
+    <span class="fn">uc</span>.<span class="fn">cohort_month</span>,
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, <span class="fn">e</span>.<span class="fn">timestamp</span>) <span class="kw">AS</span> <span class="fn">activity_month</span>,
+    <span class="fn">EXTRACT</span>(<span class="str">MONTH</span> <span class="kw">FROM</span>
+      <span class="fn">AGE</span>(<span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, <span class="fn">e</span>.<span class="fn">timestamp</span>), <span class="fn">uc</span>.<span class="fn">cohort_month</span>)
+    ) <span class="kw">AS</span> <span class="fn">months_since_signup</span>
+  <span class="kw">FROM</span> <span class="fn">events</span> <span class="fn">e</span>
+  <span class="kw">JOIN</span> <span class="fn">user_cohorts</span> <span class="fn">uc</span> <span class="kw">ON</span> <span class="fn">e</span>.<span class="fn">user_id</span> = <span class="fn">uc</span>.<span class="fn">user_id</span>
+)
+<span class="kw">SELECT</span>
+  <span class="fn">cohort_month</span>,
+  <span class="fn">months_since_signup</span>,
+  <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="fn">user_id</span>) <span class="kw">AS</span> <span class="fn">active_users</span>,
+  <span class="fn">ROUND</span>(
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="fn">user_id</span>)::numeric /
+    <span class="fn">FIRST_VALUE</span>(<span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> <span class="fn">user_id</span>))
+      <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> <span class="fn">cohort_month</span> <span class="kw">ORDER BY</span> <span class="fn">months_since_signup</span>)
+    * <span class="num">100</span>, <span class="num">1</span>
+  ) <span class="kw">AS</span> <span class="fn">retention_pct</span>
+<span class="kw">FROM</span> <span class="fn">user_activity</span>
+<span class="kw">GROUP BY</span> <span class="fn">cohort_month</span>, <span class="fn">months_since_signup</span>
+<span class="kw">ORDER BY</span> <span class="fn">cohort_month</span>, <span class="fn">months_since_signup</span>;</code></pre>
+
+<h4>Analytics Tracking (Código)</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// Sistema de analytics tracking por etapa AARRR</span>
+<span class="kw">enum</span> <span class="tp">FunnelStage</span> {
+  <span class="fn">ACQUISITION</span> = <span class="str">'acquisition'</span>,
+  <span class="fn">ACTIVATION</span> = <span class="str">'activation'</span>,
+  <span class="fn">RETENTION</span> = <span class="str">'retention'</span>,
+  <span class="fn">REVENUE</span> = <span class="str">'revenue'</span>,
+  <span class="fn">REFERRAL</span> = <span class="str">'referral'</span>,
+}
+
+<span class="kw">class</span> <span class="tp">PirateMetricsTracker</span> {
+  <span class="cm">// Acquisition: usuário chegou ao site</span>
+  <span class="fn">trackAcquisition</span>(<span class="fn">source</span>: <span class="tp">string</span>, <span class="fn">medium</span>: <span class="tp">string</span>) {
+    <span class="kw">this</span>.<span class="fn">track</span>(<span class="tp">FunnelStage</span>.<span class="fn">ACQUISITION</span>, <span class="str">'page_visit'</span>, {
+      <span class="fn">source</span>, <span class="fn">medium</span>,
+      <span class="fn">landing_page</span>: <span class="fn">window</span>.<span class="fn">location</span>.<span class="fn">pathname</span>,
+    });
+  }
+
+  <span class="cm">// Activation: completou acao de valor</span>
+  <span class="fn">trackActivation</span>(<span class="fn">action</span>: <span class="tp">string</span>, <span class="fn">timeToActivate</span>: <span class="tp">number</span>) {
+    <span class="kw">this</span>.<span class="fn">track</span>(<span class="tp">FunnelStage</span>.<span class="fn">ACTIVATION</span>, <span class="fn">action</span>, {
+      <span class="fn">time_to_activate_ms</span>: <span class="fn">timeToActivate</span>,
+      <span class="fn">onboarding_completed</span>: <span class="kw">true</span>,
+    });
+  }
+
+  <span class="cm">// Retention: voltou a usar</span>
+  <span class="fn">trackRetention</span>(<span class="fn">userId</span>: <span class="tp">string</span>, <span class="fn">daysSinceSignup</span>: <span class="tp">number</span>) {
+    <span class="kw">this</span>.<span class="fn">track</span>(<span class="tp">FunnelStage</span>.<span class="fn">RETENTION</span>, <span class="str">'session_start'</span>, {
+      <span class="fn">user_id</span>: <span class="fn">userId</span>,
+      <span class="fn">days_since_signup</span>: <span class="fn">daysSinceSignup</span>,
+      <span class="fn">bucket</span>: <span class="fn">daysSinceSignup</span> &lt;= <span class="num">1</span> ? <span class="str">'D1'</span> :
+              <span class="fn">daysSinceSignup</span> &lt;= <span class="num">7</span> ? <span class="str">'D7'</span> :
+              <span class="fn">daysSinceSignup</span> &lt;= <span class="num">30</span> ? <span class="str">'D30'</span> : <span class="str">'D30+'</span>,
+    });
+  }
+
+  <span class="cm">// Revenue: converteu para pago</span>
+  <span class="fn">trackRevenue</span>(<span class="fn">plan</span>: <span class="tp">string</span>, <span class="fn">amount</span>: <span class="tp">number</span>, <span class="fn">isExpansion</span>: <span class="tp">boolean</span>) {
+    <span class="kw">this</span>.<span class="fn">track</span>(<span class="tp">FunnelStage</span>.<span class="fn">REVENUE</span>, <span class="fn">isExpansion</span> ? <span class="str">'expansion'</span> : <span class="str">'conversion'</span>, {
+      <span class="fn">plan</span>, <span class="fn">amount</span>,
+      <span class="fn">mrr_impact</span>: <span class="fn">amount</span>,
+    });
+  }
+
+  <span class="cm">// Referral: indicou alguem</span>
+  <span class="fn">trackReferral</span>(<span class="fn">referrerId</span>: <span class="tp">string</span>, <span class="fn">method</span>: <span class="tp">string</span>) {
+    <span class="kw">this</span>.<span class="fn">track</span>(<span class="tp">FunnelStage</span>.<span class="fn">REFERRAL</span>, <span class="str">'invite_sent'</span>, {
+      <span class="fn">referrer_id</span>: <span class="fn">referrerId</span>,
+      <span class="fn">method</span>, <span class="cm">// 'email', 'link', 'social'</span>
+    });
+  }
+
+  <span class="kw">private</span> <span class="fn">track</span>(<span class="fn">stage</span>: <span class="tp">FunnelStage</span>, <span class="fn">event</span>: <span class="tp">string</span>, <span class="fn">props</span>: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">any</span>&gt;) {
+    <span class="fn">analytics</span>.<span class="fn">track</span>({
+      <span class="fn">event</span>: <span class="str">`${stage}_${event}`</span>,
+      <span class="fn">properties</span>: { ...props, <span class="fn">stage</span>, <span class="fn">timestamp</span>: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">toISOString</span>() },
+    });
+  }
+}</code></pre>
+
+<!-- ═══ FEATURE FLAGS ═══ -->
+<h3>Feature Flags</h3>
+
+<p><strong>Feature flags</strong> (ou feature toggles) permitem ativar/desativar funcionalidades em produção sem fazer deploy. São a base técnica para <strong>progressive rollout</strong>, <strong>A/B testing</strong> é <strong>kill switches</strong>.</p>
+
+<h4>Ferramentas Populares</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Tipo</th><th>Diferencial</th><th>Preco</th></tr>
+<tr><td><strong>LaunchDarkly</strong></td><td>SaaS</td><td>Mais completo, targeting avançado, integrações</td><td>$$$ (enterprise)</td></tr>
+<tr><td><strong>Unleash</strong></td><td>Open-source</td><td>Self-hosted, bom para privacidade</td><td>Free (self-host)</td></tr>
+<tr><td><strong>Flagsmith</strong></td><td>Open-source/SaaS</td><td>Remote config + flags, API simples</td><td>Free tier generoso</td></tr>
+<tr><td><strong>GrowthBook</strong></td><td>Open-source</td><td>Feature flags + A/B testing nativo</td><td>Free (self-host)</td></tr>
+<tr><td><strong>ConfigCat</strong></td><td>SaaS</td><td>Simples, rápido, bom SDK</td><td>Free tier</td></tr>
+</table>
+</div>
+
+<h4>Implementação em TypeScript</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// Feature flag service com suporte a progressive rollout</span>
+<span class="kw">interface</span> <span class="tp">FeatureFlag</span> {
+  <span class="fn">key</span>: <span class="tp">string</span>;
+  <span class="fn">enabled</span>: <span class="tp">boolean</span>;
+  <span class="fn">rolloutPercentage</span>: <span class="tp">number</span>;     <span class="cm">// 0-100</span>
+  <span class="fn">targetedUsers</span>?: <span class="tp">string</span>[];     <span class="cm">// usuários específicos</span>
+  <span class="fn">targetedSegments</span>?: <span class="tp">string</span>[]; <span class="cm">// "beta_users", "enterprise"</span>
+  <span class="fn">killSwitch</span>: <span class="tp">boolean</span>;          <span class="cm">// override: desliga tudo</span>
+}
+
+<span class="kw">class</span> <span class="tp">FeatureFlagService</span> {
+  <span class="kw">private</span> <span class="fn">flags</span>: <span class="tp">Map</span>&lt;<span class="tp">string</span>, <span class="tp">FeatureFlag</span>&gt;;
+  <span class="kw">private</span> <span class="fn">cache</span>: <span class="tp">Map</span>&lt;<span class="tp">string</span>, <span class="tp">boolean</span>&gt; = <span class="kw">new</span> <span class="tp">Map</span>();
+
+  <span class="cm">// Avalia se a flag esta ativa para um usuário</span>
+  <span class="fn">isEnabled</span>(<span class="fn">flagKey</span>: <span class="tp">string</span>, <span class="fn">context</span>: <span class="tp">UserContext</span>): <span class="tp">boolean</span> {
+    <span class="kw">const</span> <span class="fn">flag</span> = <span class="kw">this</span>.<span class="fn">flags</span>.<span class="fn">get</span>(<span class="fn">flagKey</span>);
+    <span class="kw">if</span> (!<span class="fn">flag</span>) <span class="kw">return false</span>;
+
+    <span class="cm">// Kill switch: desliga tudo imediatamente</span>
+    <span class="kw">if</span> (<span class="fn">flag</span>.<span class="fn">killSwitch</span>) <span class="kw">return false</span>;
+
+    <span class="cm">// Flag desabilitada globalmente</span>
+    <span class="kw">if</span> (!<span class="fn">flag</span>.<span class="fn">enabled</span>) <span class="kw">return false</span>;
+
+    <span class="cm">// Targeted users: lista explicita</span>
+    <span class="kw">if</span> (<span class="fn">flag</span>.<span class="fn">targetedUsers</span>?.<span class="fn">includes</span>(<span class="fn">context</span>.<span class="fn">userId</span>)) <span class="kw">return true</span>;
+
+    <span class="cm">// Targeted segments</span>
+    <span class="kw">if</span> (<span class="fn">flag</span>.<span class="fn">targetedSegments</span>?.<span class="fn">some</span>(<span class="fn">s</span> =&gt; <span class="fn">context</span>.<span class="fn">segments</span>.<span class="fn">includes</span>(<span class="fn">s</span>))) {
+      <span class="kw">return true</span>;
+    }
+
+    <span class="cm">// Progressive rollout: hash deterministico do userId</span>
+    <span class="kw">const</span> <span class="fn">hash</span> = <span class="kw">this</span>.<span class="fn">hashUserId</span>(<span class="fn">context</span>.<span class="fn">userId</span>, <span class="fn">flagKey</span>);
+    <span class="kw">return</span> <span class="fn">hash</span> &lt; <span class="fn">flag</span>.<span class="fn">rolloutPercentage</span>;
+  }
+
+  <span class="cm">// Hash deterministico: mesmo usuário sempre recebe mesmo resultado</span>
+  <span class="kw">private</span> <span class="fn">hashUserId</span>(<span class="fn">userId</span>: <span class="tp">string</span>, <span class="fn">flagKey</span>: <span class="tp">string</span>): <span class="tp">number</span> {
+    <span class="kw">const</span> <span class="fn">input</span> = <span class="str">`${flagKey}:${userId}`</span>;
+    <span class="kw">let</span> <span class="fn">hash</span> = <span class="num">0</span>;
+    <span class="kw">for</span> (<span class="kw">let</span> <span class="fn">i</span> = <span class="num">0</span>; <span class="fn">i</span> &lt; <span class="fn">input</span>.<span class="fn">length</span>; <span class="fn">i</span>++) {
+      <span class="fn">hash</span> = ((<span class="fn">hash</span> &lt;&lt; <span class="num">5</span>) - <span class="fn">hash</span> + <span class="fn">input</span>.<span class="fn">charCodeAt</span>(<span class="fn">i</span>)) | <span class="num">0</span>;
+    }
+    <span class="kw">return</span> <span class="fn">Math</span>.<span class="fn">abs</span>(<span class="fn">hash</span>) % <span class="num">100</span>;
+  }
+}
+
+<span class="cm">// Usó no código</span>
+<span class="kw">const</span> <span class="fn">flags</span> = <span class="kw">new</span> <span class="tp">FeatureFlagService</span>();
+
+<span class="kw">if</span> (<span class="fn">flags</span>.<span class="fn">isEnabled</span>(<span class="str">'new-checkout-flow'</span>, <span class="fn">userContext</span>)) {
+  <span class="kw">return</span> <span class="fn">renderNewCheckout</span>();
+} <span class="kw">else</span> {
+  <span class="kw">return</span> <span class="fn">renderLegacyCheckout</span>();
+}</code></pre>
+
+<h4>Progressive Rollout (Canary / Percentage-Based)</h4>
+<p>Estrategia de liberar uma feature gradualmente para minimizar risco.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Progressive rollout strategy</span>
+<span class="kw">interface</span> <span class="tp">RolloutPlan</span> {
+  <span class="fn">stages</span>: <span class="tp">RolloutStage</span>[];
+  <span class="fn">currentStage</span>: <span class="tp">number</span>;
+  <span class="fn">autoAdvance</span>: <span class="tp">boolean</span>;
+}
+
+<span class="kw">const</span> <span class="fn">rolloutPlan</span>: <span class="tp">RolloutPlan</span> = {
+  <span class="fn">stages</span>: [
+    { <span class="fn">name</span>: <span class="str">'internal'</span>,  <span class="fn">percentage</span>: <span class="num">0</span>,   <span class="fn">segments</span>: [<span class="str">'employees'</span>] },
+    { <span class="fn">name</span>: <span class="str">'canary'</span>,    <span class="fn">percentage</span>: <span class="num">5</span>,   <span class="fn">duration</span>: <span class="str">'2 days'</span> },
+    { <span class="fn">name</span>: <span class="str">'early'</span>,     <span class="fn">percentage</span>: <span class="num">25</span>,  <span class="fn">duration</span>: <span class="str">'3 days'</span> },
+    { <span class="fn">name</span>: <span class="str">'half'</span>,      <span class="fn">percentage</span>: <span class="num">50</span>,  <span class="fn">duration</span>: <span class="str">'3 days'</span> },
+    { <span class="fn">name</span>: <span class="str">'general'</span>,   <span class="fn">percentage</span>: <span class="num">100</span>, <span class="fn">duration</span>: <span class="str">'permanent'</span> },
+  ],
+  <span class="fn">currentStage</span>: <span class="num">0</span>,
+  <span class="fn">autoAdvance</span>: <span class="kw">true</span>, <span class="cm">// avança se métricas estiverem saudaveis</span>
+};
+
+<span class="cm">// Criterios para avançar de stage automáticamente</span>
+<span class="kw">interface</span> <span class="tp">HealthCheck</span> {
+  <span class="fn">errorRate</span>: <span class="tp">number</span>;    <span class="cm">// deve ser &lt; 1%</span>
+  <span class="fn">latencyP99</span>: <span class="tp">number</span>;   <span class="cm">// deve ser &lt; 500ms</span>
+  <span class="fn">crashRate</span>: <span class="tp">number</span>;    <span class="cm">// deve ser &lt; 0.1%</span>
+}
+
+<span class="kw">function</span> <span class="fn">shouldAdvanceStage</span>(<span class="fn">health</span>: <span class="tp">HealthCheck</span>): <span class="tp">boolean</span> {
+  <span class="kw">return</span> <span class="fn">health</span>.<span class="fn">errorRate</span> &lt; <span class="num">0.01</span>
+    && <span class="fn">health</span>.<span class="fn">latencyP99</span> &lt; <span class="num">500</span>
+    && <span class="fn">health</span>.<span class="fn">crashRate</span> &lt; <span class="num">0.001</span>;
+}</code></pre>
+
+<h4>Kill Switches</h4>
+<p>Kill switches são feature flags especiais que permitem <strong>desligar funcionalidades instantaneamente</strong> em produção sem deploy. Criticos para incidentes.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Kill switch: desliga feature em emergência</span>
+<span class="kw">class</span> <span class="tp">KillSwitchService</span> {
+  <span class="kw">async</span> <span class="fn">activateKillSwitch</span>(<span class="fn">flagKey</span>: <span class="tp">string</span>, <span class="fn">reason</span>: <span class="tp">string</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">flagStore</span>.<span class="fn">update</span>(<span class="fn">flagKey</span>, { <span class="fn">killSwitch</span>: <span class="kw">true</span> });
+
+    <span class="cm">// Inválida cache de todas as instancias</span>
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">redis</span>.<span class="fn">publish</span>(<span class="str">'flag:inválidate'</span>, <span class="fn">flagKey</span>);
+
+    <span class="cm">// Alert on-call</span>
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">alertService</span>.<span class="fn">notify</span>({
+      <span class="fn">severity</span>: <span class="str">'critical'</span>,
+      <span class="fn">message</span>: <span class="str">`Kill switch ativado: ${flagKey}. Razao: ${reason}`</span>,
+    });
+
+    <span class="cm">// Log para auditoria</span>
+    <span class="kw">this</span>.<span class="fn">auditLog</span>.<span class="fn">record</span>(<span class="str">'kill_switch_activated'</span>, { <span class="fn">flagKey</span>, <span class="fn">reason</span> });
+  }
+}</code></pre>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Technical Debt de Feature Flags:</strong> Feature flags esquecidas são uma das maiores fontes de tech debt. Regras: (1) Toda flag deve ter um <code>expiresAt</code> no metadata. (2) Flags que estão 100% ON por mais de 30 dias devem ser removidas é o código limpo. (3) Mantenha um dashboard de flags ativas e quem é responsável por cada uma. (4) Nunca tenha mais de 20 flags ativas simultaneamente.</div>
+</div>
+
+<!-- ═══ A/B TESTING ═══ -->
+<h3>A/B Testing</h3>
+
+<p><strong>A/B Testing</strong> é a prática de comparar duas ou mais variantes de uma feature para determinar qual performa melhor. E a base para decisões orientadas a dados, mas exige rigor estatistico para evitar conclusoes erradas.</p>
+
+<h4>Significancia Estatistica</h4>
+
+<ul>
+<li><strong>p-value:</strong> Probabilidade do resultado observado ter acontecido por acaso. Padrão: p &lt; 0.05 (95% confiança). Para decisões de alto impacto: p &lt; 0.01</li>
+<li><strong>Sample size:</strong> Quantidade de observacoes necessárias para detectar um efeito real. Depende do MDE (Minimum Detectable Effect) e do baseline conversion rate</li>
+<li><strong>Statistical power:</strong> Probabilidade de detectar um efeito real quando ele existe. Padrão: 80%. Se o poder e baixo, você pode concluir "sem efeito" quando ha efeito (false negative)</li>
+<li><strong>Confidence interval:</strong> Range onde o valor verdadeiro provavelmente esta. Ex: "conversão entre 3.2% e 4.1% com 95% confiança"</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Cálculo de sample size necessário para A/B test</span>
+<span class="kw">function</span> <span class="fn">calculateSampleSize</span>(
+  <span class="fn">baselineRate</span>: <span class="tp">number</span>,     <span class="cm">// taxa de conversão atual (ex: 0.05 = 5%)</span>
+  <span class="fn">mde</span>: <span class="tp">number</span>,              <span class="cm">// efeito mínimo detectavel (ex: 0.01 = 1pp)</span>
+  <span class="fn">alpha</span>: <span class="tp">number</span> = <span class="num">0.05</span>,    <span class="cm">// significancia (5%)</span>
+  <span class="fn">power</span>: <span class="tp">number</span> = <span class="num">0.80</span>,    <span class="cm">// poder estatistico (80%)</span>
+): <span class="tp">number</span> {
+  <span class="cm">// Z-scores para alpha e power</span>
+  <span class="kw">const</span> <span class="fn">zAlpha</span> = <span class="num">1.96</span>;  <span class="cm">// para alpha = 0.05</span>
+  <span class="kw">const</span> <span class="fn">zBeta</span> = <span class="num">0.84</span>;   <span class="cm">// para power = 0.80</span>
+
+  <span class="kw">const</span> <span class="fn">p1</span> = <span class="fn">baselineRate</span>;
+  <span class="kw">const</span> <span class="fn">p2</span> = <span class="fn">baselineRate</span> + <span class="fn">mde</span>;
+  <span class="kw">const</span> <span class="fn">pAvg</span> = (<span class="fn">p1</span> + <span class="fn">p2</span>) / <span class="num">2</span>;
+
+  <span class="kw">const</span> <span class="fn">n</span> = (
+    (<span class="fn">zAlpha</span> * <span class="fn">Math</span>.<span class="fn">sqrt</span>(<span class="num">2</span> * <span class="fn">pAvg</span> * (<span class="num">1</span> - <span class="fn">pAvg</span>)) +
+     <span class="fn">zBeta</span> * <span class="fn">Math</span>.<span class="fn">sqrt</span>(<span class="fn">p1</span> * (<span class="num">1</span> - <span class="fn">p1</span>) + <span class="fn">p2</span> * (<span class="num">1</span> - <span class="fn">p2</span>)))
+    ** <span class="num">2</span>
+  ) / (<span class="fn">mde</span> ** <span class="num">2</span>);
+
+  <span class="kw">return</span> <span class="fn">Math</span>.<span class="fn">ceil</span>(<span class="fn">n</span>); <span class="cm">// por variante!</span>
+}
+
+<span class="cm">// Exemplo: baseline 5%, quero detectar +1pp (6%), precisó de ~3.783 usuários POR variante</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="fn">calculateSampleSize</span>(<span class="num">0.05</span>, <span class="num">0.01</span>)); <span class="cm">// ~3783</span></code></pre>
+
+<h4>Multi-Armed Bandits vs Classical A/B</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Classical A/B</th><th>Multi-Armed Bandit</th></tr>
+<tr><td><strong>Abordagem</strong></td><td>Trafego 50/50, avalia no final</td><td>Direciona mais tráfego para o vencedor gradualmente</td></tr>
+<tr><td><strong>Duracao</strong></td><td>Fixa (até atingir sample size)</td><td>Continua (adaptativa)</td></tr>
+<tr><td><strong>Regret</strong></td><td>Alto (50% do tráfego na variante pior)</td><td>Baixo (minimiza perda durante teste)</td></tr>
+<tr><td><strong>Rigor estatistico</strong></td><td>Mais rigorosó (p-value claro)</td><td>Menós rigorosó para conclusao definitiva</td></tr>
+<tr><td><strong>Melhor para</strong></td><td>Decisoes estrategicas, features grandes</td><td>Headlines, CTAs, otimizações continuas</td></tr>
+</table>
+</div>
+
+<h4>Bayesian vs Frequentist</h4>
+
+<ul>
+<li><strong>Frequentist (clássico):</strong> "Qual a probabilidade dos dados dado que a hipotese nula e verdadeira?" (p-value). Precisa de sample size fixo antecipadamente. Não pode "espiar" resultados parciais</li>
+<li><strong>Bayesian:</strong> "Qual a probabilidade de B ser melhor que A dado os dados observados?" Mais intuitivo — da uma probabilidade direta (ex: "92% de chance de B ser melhor"). Permite analisar resultados a qualquer momento</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Análise Bayesian simplificada de A/B test</span>
+<span class="kw">interface</span> <span class="tp">ABTestResult</span> {
+  <span class="fn">variant</span>: <span class="tp">string</span>;
+  <span class="fn">visitors</span>: <span class="tp">number</span>;
+  <span class="fn">conversions</span>: <span class="tp">number</span>;
+  <span class="fn">conversionRate</span>: <span class="tp">number</span>;
+}
+
+<span class="kw">interface</span> <span class="tp">BayesianResult</span> {
+  <span class="fn">probabilityBBeatsA</span>: <span class="tp">number</span>;  <span class="cm">// ex: 0.94 = "94% de chance de B ser melhor"</span>
+  <span class="fn">expectedLift</span>: <span class="tp">number</span>;         <span class="cm">// ex: 0.12 = "+12% improvement esperado"</span>
+  <span class="fn">credibleInterval</span>: [<span class="tp">number</span>, <span class="tp">number</span>]; <span class="cm">// ex: [0.03, 0.21]</span>
+}
+
+<span class="cm">// Simular resultados com Monte Carlo (Beta distribution)</span>
+<span class="kw">function</span> <span class="fn">bayesianABTest</span>(
+  <span class="fn">controlConversions</span>: <span class="tp">number</span>, <span class="fn">controlTotal</span>: <span class="tp">number</span>,
+  <span class="fn">variantConversions</span>: <span class="tp">number</span>, <span class="fn">variantTotal</span>: <span class="tp">number</span>,
+  <span class="fn">simulations</span>: <span class="tp">number</span> = <span class="num">100000</span>
+): <span class="tp">BayesianResult</span> {
+  <span class="kw">let</span> <span class="fn">bWins</span> = <span class="num">0</span>;
+  <span class="kw">const</span> <span class="fn">lifts</span>: <span class="tp">number</span>[] = [];
+
+  <span class="kw">for</span> (<span class="kw">let</span> <span class="fn">i</span> = <span class="num">0</span>; <span class="fn">i</span> &lt; <span class="fn">simulations</span>; <span class="fn">i</span>++) {
+    <span class="cm">// Amostra da distribuição Beta para cada variante</span>
+    <span class="kw">const</span> <span class="fn">pA</span> = <span class="fn">sampleBeta</span>(
+      <span class="fn">controlConversions</span> + <span class="num">1</span>,
+      <span class="fn">controlTotal</span> - <span class="fn">controlConversions</span> + <span class="num">1</span>
+    );
+    <span class="kw">const</span> <span class="fn">pB</span> = <span class="fn">sampleBeta</span>(
+      <span class="fn">variantConversions</span> + <span class="num">1</span>,
+      <span class="fn">variantTotal</span> - <span class="fn">variantConversions</span> + <span class="num">1</span>
+    );
+
+    <span class="kw">if</span> (<span class="fn">pB</span> &gt; <span class="fn">pA</span>) <span class="fn">bWins</span>++;
+    <span class="fn">lifts</span>.<span class="fn">push</span>((<span class="fn">pB</span> - <span class="fn">pA</span>) / <span class="fn">pA</span>);
+  }
+
+  <span class="fn">lifts</span>.<span class="fn">sort</span>((<span class="fn">a</span>, <span class="fn">b</span>) =&gt; <span class="fn">a</span> - <span class="fn">b</span>);
+
+  <span class="kw">return</span> {
+    <span class="fn">probabilityBBeatsA</span>: <span class="fn">bWins</span> / <span class="fn">simulations</span>,
+    <span class="fn">expectedLift</span>: <span class="fn">lifts</span>.<span class="fn">reduce</span>((<span class="fn">a</span>, <span class="fn">b</span>) =&gt; <span class="fn">a</span> + <span class="fn">b</span>) / <span class="fn">simulations</span>,
+    <span class="fn">credibleInterval</span>: [
+      <span class="fn">lifts</span>[<span class="fn">Math</span>.<span class="fn">floor</span>(<span class="fn">simulations</span> * <span class="num">0.025</span>)],  <span class="cm">// 2.5th percentile</span>
+      <span class="fn">lifts</span>[<span class="fn">Math</span>.<span class="fn">floor</span>(<span class="fn">simulations</span> * <span class="num">0.975</span>)],  <span class="cm">// 97.5th percentile</span>
+    ],
+  };
+}</code></pre>
+
+<h4>Common Pitfalls de A/B Testing</h4>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Peeking (espiar resultados cedo):</strong> Olhar resultados antes de atingir o sample size planejado inflaciona o false positive rate. Com frequentist A/B, se você checa 10 vezes durante o teste, seu p-value real pode ser 0.25 ao inves de 0.05. Solução: defina sample size antes, só análise quando atingir. Ou use Bayesian (permite análise a qualquer momento).</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Multiple comparisons problem:</strong> Se você testa 20 variantes com alpha=0.05, estatisticamente UMA delas vai "ganhar" por acaso. Solução: aplique correcao de Bonferroni (alpha/n_comparisons) ou use um framework que lide com isso automáticamente.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Novelty effect:</strong> Usuarios podem interágir mais com algo novo simplesmente porque é novo — não porque é melhor. Solução: rode o teste por pelo menós 2-4 semanas para o efeito novidade dissipar. Compare cohorts de usuários novos vs existentes.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Simpson's Paradox:</strong> Uma variante pode parecer pior no agregado mas ser melhor em cada segmento individual (e vice-versa). Sempre análise resultados por segmento (mobile vs desktop, novos vs existentes, pais) além do agregado.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Feature Flags & A/B Testing para SaaS</h3>
+
+<p><strong>Cenário:</strong> Você precisa implementar um sistema de feature flags com suporte a A/B testing para uma plataforma SaaS com 500K usuários ativos. O sistema deve ter latência < 10ms, consistência de atribuicao e analytics integrado.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Admin Dashboard<br><small>Gerenciar flags</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Flag Service<br><small>Avaliacao + Cache</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">SDKs<br><small>Frontend + Backend</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Event Pipeline<br><small>Analytics + Métricas</small></div>
+</div>
+
+<h4>Arquitetura Proposta</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// 1. Flag Store (Fonte de verdade)</span>
+<span class="cm">//    - PostgreSQL para persistência</span>
+<span class="cm">//    - Redis para cache distribuido (TTL 30s)</span>
+<span class="cm">//    - Pub/Sub para invalidação em tempo real</span>
+
+<span class="kw">interface</span> <span class="tp">FlagConfig</span> {
+  <span class="fn">key</span>: <span class="tp">string</span>;
+  <span class="fn">type</span>: <span class="str">'boolean'</span> | <span class="str">'multivariate'</span> | <span class="str">'experiment'</span>;
+  <span class="fn">enabled</span>: <span class="tp">boolean</span>;
+  <span class="fn">rules</span>: <span class="tp">TargetingRule</span>[];
+  <span class="fn">variants</span>?: <span class="tp">Variant</span>[];      <span class="cm">// para A/B testing</span>
+  <span class="fn">rollout</span>: <span class="tp">number</span>;           <span class="cm">// 0-100%</span>
+  <span class="fn">killSwitch</span>: <span class="tp">boolean</span>;
+  <span class="fn">metadata</span>: {
+    <span class="fn">owner</span>: <span class="tp">string</span>;
+    <span class="fn">createdAt</span>: <span class="tp">Date</span>;
+    <span class="fn">expiresAt</span>: <span class="tp">Date</span>;         <span class="cm">// OBRIGATORIO: previne tech debt</span>
+    <span class="fn">description</span>: <span class="tp">string</span>;
+  };
+}
+
+<span class="cm">// 2. Evaluation Engine (Coração do sistema)</span>
+<span class="kw">class</span> <span class="tp">FlagEvaluator</span> {
+  <span class="kw">private</span> <span class="fn">localCache</span>: <span class="tp">LRUCache</span>&lt;<span class="tp">string</span>, <span class="tp">FlagConfig</span>&gt;;
+  <span class="kw">private</span> <span class="fn">redis</span>: <span class="tp">RedisClient</span>;
+
+  <span class="kw">async</span> <span class="fn">evaluate</span>(<span class="fn">flagKey</span>: <span class="tp">string</span>, <span class="fn">ctx</span>: <span class="tp">EvalContext</span>): <span class="tp">Promise</span>&lt;<span class="tp">EvalResult</span>&gt; {
+    <span class="cm">// L1: In-memory cache (< 1ms)</span>
+    <span class="kw">let</span> <span class="fn">flag</span> = <span class="kw">this</span>.<span class="fn">localCache</span>.<span class="fn">get</span>(<span class="fn">flagKey</span>);
+
+    <span class="cm">// L2: Redis cache (< 5ms)</span>
+    <span class="kw">if</span> (!<span class="fn">flag</span>) {
+      <span class="fn">flag</span> = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">redis</span>.<span class="fn">get</span>(<span class="str">`flag:${flagKey}`</span>);
+      <span class="kw">if</span> (<span class="fn">flag</span>) <span class="kw">this</span>.<span class="fn">localCache</span>.<span class="fn">set</span>(<span class="fn">flagKey</span>, <span class="fn">flag</span>);
+    }
+
+    <span class="cm">// L3: Database (fallback)</span>
+    <span class="kw">if</span> (!<span class="fn">flag</span>) {
+      <span class="fn">flag</span> = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">db</span>.<span class="fn">findOne</span>(<span class="fn">flagKey</span>);
+      <span class="kw">if</span> (<span class="fn">flag</span>) <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">cacheFlag</span>(<span class="fn">flag</span>);
+    }
+
+    <span class="kw">if</span> (!<span class="fn">flag</span> || !<span class="fn">flag</span>.<span class="fn">enabled</span> || <span class="fn">flag</span>.<span class="fn">killSwitch</span>) {
+      <span class="kw">return</span> { <span class="fn">enabled</span>: <span class="kw">false</span>, <span class="fn">variant</span>: <span class="str">'control'</span> };
+    }
+
+    <span class="cm">// Atribuicao deterministica de variante (sticky)</span>
+    <span class="kw">const</span> <span class="fn">hash</span> = <span class="fn">murmurHash3</span>(<span class="str">`${flagKey}:${ctx.userId}`</span>) % <span class="num">100</span>;
+
+    <span class="kw">if</span> (<span class="fn">flag</span>.<span class="fn">type</span> === <span class="str">'experiment'</span> && <span class="fn">flag</span>.<span class="fn">variants</span>) {
+      <span class="kw">const</span> <span class="fn">variant</span> = <span class="kw">this</span>.<span class="fn">assignVariant</span>(<span class="fn">hash</span>, <span class="fn">flag</span>.<span class="fn">variants</span>);
+      <span class="cm">// Emitir evento de exposicao (para analytics)</span>
+      <span class="kw">this</span>.<span class="fn">emitExposure</span>(<span class="fn">flagKey</span>, <span class="fn">ctx</span>.<span class="fn">userId</span>, <span class="fn">variant</span>);
+      <span class="kw">return</span> { <span class="fn">enabled</span>: <span class="kw">true</span>, <span class="fn">variant</span>: <span class="fn">variant</span>.<span class="fn">key</span> };
+    }
+
+    <span class="kw">return</span> { <span class="fn">enabled</span>: <span class="fn">hash</span> &lt; <span class="fn">flag</span>.<span class="fn">rollout</span>, <span class="fn">variant</span>: <span class="str">'default'</span> };
+  }
+}
+
+<span class="cm">// 3. Event Pipeline (Analytics)</span>
+<span class="cm">//    Exposure events → Kafka → ClickHouse → Dashboard</span>
+<span class="cm">//    - Calcular conversão por variante</span>
+<span class="cm">//    - Detectar significancia estatistica automáticamente</span>
+<span class="cm">//    - Alertar quando sample size atingido</span></code></pre>
+
+<h4>Decisoes Arquiteturais</h4>
+<ol>
+<li><strong>Cache em 3 níveis (L1/L2/L3):</strong> Garante latência &lt; 10ms mesmo com 500K usuários. L1 (in-memory) e consultado em &lt; 1ms na maioria dos casos</li>
+<li><strong>MurmurHash3 para atribuicao:</strong> Hash deterministico garante que o mesmo usuário sempre recebe a mesma variante (sticky assignment), essencial para consistência do experimento</li>
+<li><strong>Kafka para eventos:</strong> Desacopla avaliacao de analytics. O path crítico (avaliacao) não depende do pipeline de dados</li>
+<li><strong>Pub/Sub para invalidação:</strong> Quando admin muda uma flag, todas as instancias inválidam cache local em &lt; 1s</li>
+</ol>
+
+<!-- ═══ ARMADILHAS COMUNS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Vanity Metrics:</strong> Métricas que parecem boas mas não indicam saude real do negócio. Exemplos: total de signups (sem olhar ativacao), pageviews (sem olhar engajamento), downloads (sem olhar retenção). Sempre pergunte: "Se essa métrica sobe, o negócio melhora?" Se a resposta for "talvez", e vanity.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Otimizar para proxy metrics:</strong> Se a NSM e "weekly active users" e você otimiza para "sessões/semana" enviando notificações spam, as sessões sobem mas a satisfacao desaba. Proxy metrics devem sempre ser válidadas contra a NSM e métricas de satisfacao (CSAT, NPS).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>A/B testing tudo:</strong> Nem tudo precisa de A/B test. Se a mudança e claramente melhor (fix de bug, acessibilidade, performance), faca. A/B test e para decisões onde genuinamente não sabemos qual opcao é melhor. O custo de rodar um teste e real (tempo, complexidade, tráfego).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Feature flags sem governanca:</strong> Sem processo de limpeza, você acaba com 200 flags ativas, ninguem sabe quais ainda são necessárias, e combinacoes de flags criam bugs impossiveis de reproduzir. Estabeleca um processo: owner, expiration date, review mensal.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática para métricas:</strong> Defina uma NSM que reflete valor entregue ao cliente. Decomponha em 3-5 input metrics que times podem influenciar. Para cada feature, defina success criteria ANTES de construir. Depois de lancar, compare contra os criterios. Maté features que não atingiram os criterios após N semanas.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Defina a North Star Metric para um app de educacao online (cursos em video). Justifique por que NAO e "número de usuários cadastrados".</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> A NSM ideal seria <strong>"horas de video assistidas por usuário ativo por semana"</strong> ou <strong>"licoes completadas por usuário ativo por mes"</strong>. "Usuarios cadastrados" e uma vanity metric — alguem pode se cadastrar e nunca assistir nada. A NSM deve capturar valor entregue: se o usuário esta assistindo e completando licoes, ele esta aprendendo (valor). Isso preve retenção (quem completa licoes volta), revenue (quem percebe valor assina), e referral (quem aprende recomenda). Input metrics: onboarding completion rate, tempo até primeira aula assistida, taxa de conclusao de lição.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Você quer testar um novo layout de checkout. O baseline de conversão e 3.5% e você quer detectar uma melhora de pelo menós 0.5pp. Quantos usuários precisa por variante? E se a melhora mínima for 0.2pp?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Para baseline 3.5% e MDE 0.5pp (alpha=0.05, power=0.80): você precisa de apróximadamente <strong>5.200 usuários por variante</strong> (~10.400 total). Para MDE 0.2pp: você precisa de ~<strong>32.400 usuários por variante</strong> (~64.800 total). Isso mostra por que detectar efeitos menores exige MUITO mais tráfego. Se você só tem 1.000 visitas/dia, o primeiro teste leva ~5 dias, o segundo leva ~32 dias. Conclusao prática: defina MDEs realisticos baseados no tráfego disponível. Testar mudanças de 0.2pp em sites com pouco tráfego e inviavel.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Sua empresa tem 47 feature flags ativas, ninguem sabe quem criou metade delas, e na semana passada uma combinação de 3 flags causou um bug em produção. Desenhe um processo de governanca de feature flags.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Processó proposto: (1) <strong>Obrigatoriedades na criação:</strong> owner, descricao, data de expiracao (max 90 dias), métrica de sucesso, plano de cleanup. (2) <strong>Review semanal:</strong> reuniao de 15min onde o time revisa flags próximas de expirar. Flag expirada sem renovação = removida. (3) <strong>Limite máximo:</strong> 25 flags ativas simultaneamente. Para adicionar além de 25, precisa remover outra. (4) <strong>Dashboard de saude:</strong> lista todas as flags com status (ativa, expirada, 100% ON ha 30+ dias). Alerta automático para flags "zombies". (5) <strong>Testes de combinação:</strong> CI roda testes com combinacoes de flags mais comuns. (6) <strong>Kill switch global:</strong> botao que desliga TODAS as flags experimentais (fallback para default). (7) <strong>Post-mortem obrigatório:</strong> quando uma flag causa incidente, documentar e ajustar processo.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Gestão de Produto & Métricas</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="59-low-level-systems-wasm.html">&#8592; Anterior: Low-Level & Systems Programming</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="61-ai-engineering.html" class="primary">Próximo: AI Engineering Completa &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 60: Gestão de Produto & Métricas
+// ══════════════════════════════════════════
+const SECTION_NUM = 60;
+const STORAGE_KEY = 'fsm_quiz_60';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual a principal diferença entre Product-Led Growth (PLG) e Sales-Led Growth?",
+    options: [
+      "PLG não tem vendedores; Sales-Led não tem produto",
+      "No PLG o produto é o principal motor de aquisicao e conversão; no Sales-Led, vendedores conduzem o processo",
+      "PLG e para B2C e Sales-Led e para B2B exclusivamente",
+      "PLG é mais caro que Sales-Led"
+    ],
+    correct: 1,
+    explanation: "No PLG, o proprio produto atrai, converte e retém usuários (Slack, Figma, Notion). No Sales-Led, vendedores qualificam leads e fecham deals. Ambos podem coexistir (Product-Led Sales), e PLG também funciona em B2B."
+  },
+  {
+    question: "Qual dessas NAO e uma boa North Star Metric para um marketplace de delivery?",
+    options: [
+      "Pedidos completados por semana",
+      "Numero total de restaurantes cadastrados",
+      "Valor medio por pedido x frequência por usuário ativo",
+      "Pedidos por usuário ativo por mes"
+    ],
+    correct: 1,
+    explanation: "Numero de restaurantes cadastrados é uma vanity metric — não mede valor entregue ao usuário final. Um marketplace pode ter 10.000 restaurantes mas se ninguem pede, não ha valor. NSM deve capturar valor entregue: pedidos completados ou frequência de uso."
+  },
+  {
+    question: "No HEART Framework do Google, o que a dimensão 'Task Success' mede?",
+    options: [
+      "Se os usuários estão felizes com o produto",
+      "Se novos usuários começam a usar o produto",
+      "Se os usuários conseguem completar o que vieram fazer (eficiência e eficacia)",
+      "Se os usuários voltam a usar o produto ao longo do tempo"
+    ],
+    correct: 2,
+    explanation: "Task Success mede se usuários conseguem completar suas tarefas com sucesso. Métricas: task completion rate, time-on-task, error rate. Happiness mede satisfacao, Adoption mede novos usuários, e Retention mede retorno."
+  },
+  {
+    question: "No funil AARRR (Piraté Metrics), qual etapa é considerada a mais importante para sustentabilidade do negócio?",
+    options: [
+      "Acquisition — sem usuários novos o negócio morre",
+      "Activation — sem aha moment ninguem fica",
+      "Retention — sem retenção, adquirir usuários e jogar agua em balde furado",
+      "Revenue — sem receita não ha negócio"
+    ],
+    correct: 2,
+    explanation: "Retention é a base de tudo. Se usuários não voltam, investir em acquisition e desperdicar dinheiro (leaky bucket). Revenue depende de retention. Referral depende de usuários satisfeitos que ficam. Melhore retention antes de escalar acquisition."
+  },
+  {
+    question: "O que é 'peeking' em A/B testing e por que é problematico?",
+    options: [
+      "Copiar o teste de um concorrente",
+      "Olhar resultados antes de atingir o sample size planejado, inflacionando o false positive rate",
+      "Mostrar variantes diferentes para o mesmo usuário",
+      "Rodar o teste por tempo demais"
+    ],
+    correct: 1,
+    explanation: "Peeking (espiar) e verificar resultados parciais repetidamente. No framework frequentist, cada 'espiada' aumenta a chance de false positive. Se você checa 10 vezes, seu alpha real pode ser 0.25 ao inves de 0.05. Solução: defina sample size antes e só análise ao final, ou use Bayesian."
+  },
+  {
+    question: "Qual a principal vantagem do Bayesian A/B testing sobre o Frequentist?",
+    options: [
+      "Bayesian é mais preciso",
+      "Bayesian permite analisar resultados a qualquer momento sem inflar false positives",
+      "Bayesian não precisa de sample size",
+      "Bayesian funciona com menós dados"
+    ],
+    correct: 1,
+    explanation: "Bayesian responde diretamente 'qual a probabilidade de B ser melhor que A?' e permite análise a qualquer momento. Frequentist exige sample size fixo definido antecipadamente e análise só no final. Bayesian ainda precisa de dados suficientes para conclusoes confiaveis."
+  },
+  {
+    question: "Qual é o maior risco de ter muitas feature flags ativas sem governanca?",
+    options: [
+      "Aumento de latência no servidor",
+      "Combinacoes imprevistas de flags criam bugs impossiveis de reproduzir, além de tech debt crescente",
+      "Usuarios ficam confusos com as opcoes",
+      "O custo de ferramentas de feature flag aumenta"
+    ],
+    correct: 1,
+    explanation: "O principal risco e combinatorio: com 20 flags, existem 2^20 (> 1 milhão) de combinacoes possiveis. Flags esquecidas acumulam tech debt e criam caminhos de código que ninguem testa. Governanca com owner, expiracao e limite máximo é essencial."
+  },
+  {
+    question: "No progressive rollout, por que o hash de atribuicao de usuário deve ser deterministico?",
+    options: [
+      "Para o sistema ser mais rápido",
+      "Para garantir que o mesmo usuário sempre vejá a mesma variante (sticky assignment), mantendo consistência do experimento",
+      "Para fácilitar o debug",
+      "Para reduzir usó de memória"
+    ],
+    correct: 1,
+    explanation: "Hash deterministico (mesmo input = mesmo output) garante 'sticky assignment': o usuário X sempre ve a variante A, não importa quantas vezes acesse. Sem isso, o mesmo usuário poderia ver variantes diferentes em sessões diferentes, inválidando o experimento."
+  },
+  {
+    question: "O Dropbox cresceu 3900% em 15 meses usando qual estratégia PLG?",
+    options: [
+      "Free trial de 30 dias",
+      "Modelo open-core com versão community",
+      "Referral program com incentivo bilaterál (quem indica e quem e indicado ganham storage)",
+      "Campanha massiva de paid ads"
+    ],
+    correct: 2,
+    explanation: "Dropbox usou referral bilaterál: quem indicava ganhava 500MB e quem era indicado também. Isso criou um viral loop poderosó com K-factor > 1, gerando crescimento exponencial sem precisar de budget de marketing proporcional."
+  },
+  {
+    question: "Qual framework de métricas é mais adequado para um growth team de startup early-stage focado em crescimento de funil?",
+    options: [
+      "HEART Framework — cobre todas as dimensões de UX",
+      "North Star Metric — foca toda a empresa em uma única métrica",
+      "AARRR (Piraté Metrics) — modela todo o ciclo de vida do usuário como funil com métricas acionaveis por etapa",
+      "OKRs — define objetivos trimestrais"
+    ],
+    correct: 2,
+    explanation: "AARRR é ideal para growth teams porque modela o funil completo (Acquisition → Activation → Retention → Revenue → Referral) com métricas acionaveis em cada etapa. HEART é melhor para UX teams. NSM e para alinhamento estrategico da empresa. OKRs são um framework de gestão, não de métricas."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Gestão de Produto & Métricas.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

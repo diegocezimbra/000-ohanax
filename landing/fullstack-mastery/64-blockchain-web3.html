@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>64 — Blockchain & Web3 | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="63-seguranca-ia.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>64</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="65-computacao-quantica.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:97%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 64</span>
+<h2>Blockchain & Web3</h2>
+<div class="section-line"></div>
+
+<p>Blockchain é uma das tecnologias mais <strong>hypeadas e mal-compreendidas</strong> da última decada. Para um dev senior, o desafio não é aprender a sintaxe do Solidity — e entender <strong>quando blockchain resolve um problema real</strong> é quando é apenas um banco de dados mais lento é mais caro. Nesta seção, vamos dos fundamentos criptográficos até smart contracts, DeFi, NFTs e Layer 2 — sempre com visao critica de engenharia.</p>
+
+<p>O objetivo não é transformar você em um "web3 developer" — e dar o conhecimento suficiente para <strong>avaliar propostas de blockchain em system design</strong>, identificar quando faz sentido, e implementar quando necessário.</p>
+
+<!-- ═══ FUNDAMENTOS DE BLOCKCHAIN ═══ -->
+<h3>1. Fundamentos de Blockchain</h3>
+
+<h4>Hash Chains e Merkle Trees</h4>
+<p>A base de toda blockchain é a <strong>hash chain</strong>: cada bloco contém o hash do bloco anterior, criando uma cadeia imutável. Se você alterár qualquer bit em um bloco antigo, o hash muda, quebrando todos os blocos subsequentes.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Bloco #0<br><small>Hash: 0x00a3...</small><br><small>Prev: 0x0000</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Bloco #1<br><small>Hash: 0x7f2b...</small><br><small>Prev: 0x00a3...</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Bloco #2<br><small>Hash: 0xc4e1...</small><br><small>Prev: 0x7f2b...</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Bloco #3<br><small>Hash: 0x91d8...</small><br><small>Prev: 0xc4e1...</small></div>
+</div>
+
+<p><strong>Merkle Trees</strong> são árvores binárias de hashes usadas dentro de cada bloco para verificar a integridade de transações individuais sem precisar baixar o bloco inteiro. Cada folha é o hash de uma transação, e cada no pai é o hash da concatenacao dos filhos.</p>
+
+<pre data-lang="pseudocode"><code><span class="cm">// Merkle Tree para 4 transações</span>
+<span class="cm">//</span>
+<span class="cm">//              Root Hash</span>
+<span class="cm">//             /        \</span>
+<span class="cm">//        Hash(AB)    Hash(CD)</span>
+<span class="cm">//        /    \       /    \</span>
+<span class="cm">//    Hash(A) Hash(B) Hash(C) Hash(D)</span>
+<span class="cm">//      |       |       |       |</span>
+<span class="cm">//     Tx A    Tx B    Tx C    Tx D</span>
+
+<span class="fn">merkle_root</span> = <span class="fn">hash</span>(
+    <span class="fn">hash</span>(<span class="fn">hash</span>(txA) + <span class="fn">hash</span>(txB)),
+    <span class="fn">hash</span>(<span class="fn">hash</span>(txC) + <span class="fn">hash</span>(txD))
+)
+
+<span class="cm">// Para provar que Tx C esta no bloco,</span>
+<span class="cm">// basta fornecer: Hash(D) + Hash(AB) + Root</span>
+<span class="cm">// Isso e uma "Merkle Proof" — O(log n) ao inves de O(n)</span></code></pre>
+
+<h4>Estrutura de um Bloco</h4>
+<p>Cada bloco contém um <strong>header</strong> (metadados) é um <strong>body</strong> (transações). O header inclui:</p>
+
+<ul>
+<li><strong>Previous Block Hash:</strong> liga este bloco ao anterior (a "chain")</li>
+<li><strong>Merkle Root:</strong> hash raiz de todas as transações no bloco</li>
+<li><strong>Timestamp:</strong> quando o bloco foi criado</li>
+<li><strong>Nonce:</strong> número arbitrario usado no Proof of Work (mineracao)</li>
+<li><strong>Difficulty Target:</strong> quantos zeros o hash precisa ter no início</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Estrutura simplificada de um bloco</span>
+<span class="kw">interface</span> <span class="tp">Block</span> {
+  <span class="fn">index</span>: <span class="tp">number</span>;           <span class="cm">// posicao na chain</span>
+  <span class="fn">timestamp</span>: <span class="tp">number</span>;       <span class="cm">// unix timestamp</span>
+  <span class="fn">transactions</span>: <span class="tp">Transaction</span>[];
+  <span class="fn">previousHash</span>: <span class="tp">string</span>;    <span class="cm">// hash do bloco anterior</span>
+  <span class="fn">nonce</span>: <span class="tp">number</span>;           <span class="cm">// para mineracao PoW</span>
+  <span class="fn">hash</span>: <span class="tp">string</span>;            <span class="cm">// hash deste bloco</span>
+  <span class="fn">merkleRoot</span>: <span class="tp">string</span>;      <span class="cm">// raiz da merkle tree</span>
+}
+
+<span class="kw">interface</span> <span class="tp">Transaction</span> {
+  <span class="fn">from</span>: <span class="tp">string</span>;      <span class="cm">// endereço do remetente</span>
+  <span class="fn">to</span>: <span class="tp">string</span>;        <span class="cm">// endereço do destinatario</span>
+  <span class="fn">amount</span>: <span class="tp">bigint</span>;    <span class="cm">// valor em wei (1 ETH = 10^18 wei)</span>
+  <span class="fn">data</span>: <span class="tp">string</span>;      <span class="cm">// calldata para smart contracts</span>
+  <span class="fn">signature</span>: <span class="tp">string</span>; <span class="cm">// assinatura ECDSA</span>
+  <span class="fn">nonce</span>: <span class="tp">number</span>;     <span class="cm">// previne replay attacks</span>
+}
+
+<span class="cm">// Mineracao simplificada (PoW)</span>
+<span class="kw">function</span> <span class="fn">mineBlock</span>(<span class="fn">block</span>: <span class="tp">Block</span>, <span class="fn">difficulty</span>: <span class="tp">number</span>): <span class="tp">Block</span> {
+  <span class="kw">const</span> <span class="fn">target</span> = <span class="str">'0'</span>.<span class="fn">repeat</span>(<span class="fn">difficulty</span>);
+  <span class="kw">while</span> (!<span class="fn">block</span>.<span class="fn">hash</span>.<span class="fn">startsWith</span>(<span class="fn">target</span>)) {
+    <span class="fn">block</span>.<span class="fn">nonce</span>++;
+    <span class="fn">block</span>.<span class="fn">hash</span> = <span class="fn">calculateHash</span>(<span class="fn">block</span>);
+  }
+  <span class="kw">return</span> <span class="fn">block</span>;
+}</code></pre>
+
+<h4>Consenso: PoW vs PoS</h4>
+<p>O mecanismo de consensó é o que permite que milhares de nós <strong>concordem sobre o estado da blockchain</strong> sem uma autoridade central. Os dois principais:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Proof of Work (PoW)</th><th>Proof of Stake (PoS)</th></tr>
+<tr><td><strong>Como funciona</strong></td><td>Mineradores competem para resolver puzzle criptográfico (encontrar nonce)</td><td>Validadores "apóstam" ETH como garantia. Selecionados aleatóriamente (ponderado por stake)</td></tr>
+<tr><td><strong>Segurança</strong></td><td>Ataque 51%: precisa controlar maioria do poder computacional</td><td>Ataque 51%: precisa controlar maioria do ETH em stake (~$40B+)</td></tr>
+<tr><td><strong>Energia</strong></td><td>Altissimo consumo (Bitcoin = Argentina em energia)</td><td>~99.95% menós energia que PoW</td></tr>
+<tr><td><strong>Throughput</strong></td><td>Bitcoin: ~7 TPS, Ethereum PoW: ~15 TPS</td><td>Ethereum PoS: ~15-30 TPS (base layer)</td></tr>
+<tr><td><strong>Finalidade</strong></td><td>Probabilistica (mais blocos = mais seguro)</td><td>Mais rápida (~12 min para finalidade em Ethereum)</td></tr>
+<tr><td><strong>Quem usa</strong></td><td>Bitcoin, Litecoin, Dogecoin</td><td>Ethereum (pos-Merge 2022), Solana, Cardano, Polygon</td></tr>
+</table>
+</div>
+
+<h4>Byzantine Fault Tolerance (BFT)</h4>
+<p>O <strong>Problema dos Generais Bizantinos</strong>: como nós distribuídos chegam a consensó quando alguns nós podem ser maliciosos ou falhar arbitrariamente? Blockchain resolve isso com incentivos economicos:</p>
+
+<ul>
+<li><strong>PoW:</strong> atacar custa mais energia do que o benefício (game theory)</li>
+<li><strong>PoS:</strong> válidadores maliciosos perdem seu stake (slashing)</li>
+<li><strong>Tolerancia:</strong> blockchains tipicamente toleram até 1/3 de nós maliciosos (BFT clássico) ou 1/2 (Nakamoto consensus)</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Por que isso importa para system design:</strong> BFT é o que diferencia blockchain de um banco de dados distribuido tradicional. Se todos os participantes são confiaveis (ex: serviços internós da sua empresa), você não precisa de blockchain — um banco distribuido normal é mais rápido é mais barato.</div>
+</div>
+
+<!-- ═══ SMART CONTRACTS ═══ -->
+<h3>2. Smart Contracts</h3>
+
+<h4>Solidity Basics (Ethereum)</h4>
+<p>Smart contracts são <strong>programas imutaveis</strong> deployados na blockchain que executam automáticamente quando as condições são atendidas. Solidity é a linguagem principal do Ethereum — sintaticamente similar a JavaScript/TypeScript, mas com semântica radicalmente diferente.</p>
+
+<pre data-lang="solidity"><code><span class="cm">// SPDX-License-Identifier: MIT</span>
+<span class="kw">pragma solidity</span> ^<span class="num">0.8.20</span>;
+
+<span class="cm">// Contrato simples de armazenamento com controle de acesso</span>
+<span class="kw">contract</span> <span class="tp">SimpleVault</span> {
+    <span class="cm">// Estado — armazenado na blockchain (custa gas!)</span>
+    <span class="kw">address</span> <span class="kw">public</span> <span class="fn">owner</span>;
+    <span class="kw">mapping</span>(<span class="kw">address</span> =&gt; <span class="kw">uint256</span>) <span class="kw">public</span> <span class="fn">balances</span>;
+    <span class="kw">uint256</span> <span class="kw">public</span> <span class="fn">totalDeposits</span>;
+
+    <span class="cm">// Eventos — logs imutaveis na blockchain (barato vs storage)</span>
+    <span class="kw">event</span> <span class="fn">Deposited</span>(<span class="kw">address indexed</span> <span class="fn">user</span>, <span class="kw">uint256</span> <span class="fn">amount</span>);
+    <span class="kw">event</span> <span class="fn">Withdrawn</span>(<span class="kw">address indexed</span> <span class="fn">user</span>, <span class="kw">uint256</span> <span class="fn">amount</span>);
+
+    <span class="cm">// Modifier — reútilizavel para controle de acesso</span>
+    <span class="kw">modifier</span> <span class="fn">onlyOwner</span>() {
+        <span class="fn">require</span>(<span class="fn">msg.sender</span> == <span class="fn">owner</span>, <span class="str">"Não autorizado"</span>);
+        _;
+    }
+
+    <span class="cm">// Constructor — executado uma vez no deploy</span>
+    <span class="kw">constructor</span>() {
+        <span class="fn">owner</span> = <span class="fn">msg.sender</span>;
+    }
+
+    <span class="cm">// Funcao payable — aceita ETH</span>
+    <span class="kw">function</span> <span class="fn">deposit</span>() <span class="kw">external payable</span> {
+        <span class="fn">require</span>(<span class="fn">msg.value</span> &gt; <span class="num">0</span>, <span class="str">"Valor deve ser &gt; 0"</span>);
+        <span class="fn">balances</span>[<span class="fn">msg.sender</span>] += <span class="fn">msg.value</span>;
+        <span class="fn">totalDeposits</span> += <span class="fn">msg.value</span>;
+        <span class="kw">emit</span> <span class="fn">Deposited</span>(<span class="fn">msg.sender</span>, <span class="fn">msg.value</span>);
+    }
+
+    <span class="cm">// Withdraw seguro (Checks-Effects-Interáctions pattern)</span>
+    <span class="kw">function</span> <span class="fn">withdraw</span>(<span class="kw">uint256</span> <span class="fn">amount</span>) <span class="kw">external</span> {
+        <span class="cm">// 1. Checks</span>
+        <span class="fn">require</span>(<span class="fn">balances</span>[<span class="fn">msg.sender</span>] &gt;= <span class="fn">amount</span>, <span class="str">"Saldo insuficiente"</span>);
+
+        <span class="cm">// 2. Effects (atualiza estado ANTES da transferencia)</span>
+        <span class="fn">balances</span>[<span class="fn">msg.sender</span>] -= <span class="fn">amount</span>;
+        <span class="fn">totalDeposits</span> -= <span class="fn">amount</span>;
+
+        <span class="cm">// 3. Interáctions (transferencia externa por último)</span>
+        (<span class="kw">bool</span> <span class="fn">success</span>, ) = <span class="fn">msg.sender</span>.<span class="fn">call</span>{<span class="fn">value</span>: <span class="fn">amount</span>}(<span class="str">""</span>);
+        <span class="fn">require</span>(<span class="fn">success</span>, <span class="str">"Transferencia falhou"</span>);
+
+        <span class="kw">emit</span> <span class="fn">Withdrawn</span>(<span class="fn">msg.sender</span>, <span class="fn">amount</span>);
+    }
+}</code></pre>
+
+<h4>EVM e Gas</h4>
+<p>A <strong>Ethereum Virtual Machine (EVM)</strong> é a máquina virtual que executa smart contracts. Cada operação tem um custo em <strong>gas</strong> — isso previne loops infinitos e abusó de recursos.</p>
+
+<ul>
+<li><strong>Gas:</strong> unidade de computação. Cada opcode tem custo fixo (ADD = 3 gas, SSTORE = 20.000 gas)</li>
+<li><strong>Gas Price:</strong> quanto você paga por unidade de gas (em gwei). Varia com demanda da rede</li>
+<li><strong>Gas Limit:</strong> máximo de gas que a transação pode consumir</li>
+<li><strong>Custo total:</strong> <code>gas_used * gas_price</code>. Uma transação simples custa ~21.000 gas (~$1-5 em Ethereum mainnet)</li>
+<li><strong>Storage é o mais caro:</strong> SSTORE (escrever em storage) = 20.000 gas. SLOAD (ler) = 2.100 gas. Use events para dados que não precisam ser lidos on-chain</li>
+</ul>
+
+<h4>Vulnerabilidades Classicas</h4>
+
+<div class="card orange">
+<div class="card-title">Vulnerabilidades Criticas em Smart Contracts</div>
+<p style="color:var(--text2);font-size:.88rem;margin-bottom:12px">Smart contracts são imutaveis após deploy. Um bug = perda permanente de fundos. As 3 vulnerabilidades mais exploradas:</p>
+</div>
+
+<p><strong>1. Reentrancy Attack</strong> — O ataque que derrubou a DAO ($60M em 2016):</p>
+
+<pre data-lang="solidity"><code><span class="cm">// VULNERAVEL — NAO USE ESTE CODIGO</span>
+<span class="kw">function</span> <span class="fn">withdrawUnsafe</span>() <span class="kw">external</span> {
+    <span class="kw">uint256</span> <span class="fn">bal</span> = <span class="fn">balances</span>[<span class="fn">msg.sender</span>];
+    <span class="fn">require</span>(<span class="fn">bal</span> &gt; <span class="num">0</span>);
+
+    <span class="cm">// PERIGO: transfere ANTES de zerar o saldo</span>
+    (<span class="kw">bool</span> <span class="fn">success</span>, ) = <span class="fn">msg.sender</span>.<span class="fn">call</span>{<span class="fn">value</span>: <span class="fn">bal</span>}(<span class="str">""</span>);
+    <span class="fn">require</span>(<span class="fn">success</span>);
+
+    <span class="cm">// Atacante: contrato maliciosó com receive() que</span>
+    <span class="cm">// chama withdrawUnsafe() novamente ANTES desta linha</span>
+    <span class="fn">balances</span>[<span class="fn">msg.sender</span>] = <span class="num">0</span>; <span class="cm">// nunca executa!</span>
+}
+
+<span class="cm">// SEGURO — Checks-Effects-Interáctions Pattern</span>
+<span class="kw">function</span> <span class="fn">withdrawSafe</span>() <span class="kw">external</span> {
+    <span class="kw">uint256</span> <span class="fn">bal</span> = <span class="fn">balances</span>[<span class="fn">msg.sender</span>];
+    <span class="fn">require</span>(<span class="fn">bal</span> &gt; <span class="num">0</span>);
+
+    <span class="fn">balances</span>[<span class="fn">msg.sender</span>] = <span class="num">0</span>; <span class="cm">// Effect ANTES da interáction</span>
+
+    (<span class="kw">bool</span> <span class="fn">success</span>, ) = <span class="fn">msg.sender</span>.<span class="fn">call</span>{<span class="fn">value</span>: <span class="fn">bal</span>}(<span class="str">""</span>);
+    <span class="fn">require</span>(<span class="fn">success</span>);
+}</code></pre>
+
+<p><strong>2. Integer Overflow/Underflow</strong> — Antes do Solidity 0.8, operações aritmeticas não verificavam overflow:</p>
+
+<pre data-lang="solidity"><code><span class="cm">// Solidity &lt; 0.8 — VULNERAVEL</span>
+<span class="kw">uint8</span> <span class="fn">balance</span> = <span class="num">255</span>;
+<span class="fn">balance</span> += <span class="num">1</span>; <span class="cm">// = 0 (overflow silencioso!)</span>
+
+<span class="kw">uint8</span> <span class="fn">zero</span> = <span class="num">0</span>;
+<span class="fn">zero</span> -= <span class="num">1</span>;     <span class="cm">// = 255 (underflow silencioso!)</span>
+
+<span class="cm">// Solidity >= 0.8 — SEGURO (reverte automáticamente)</span>
+<span class="cm">// Mas se usar unchecked{} para economizar gas, cuidado!</span>
+<span class="kw">unchecked</span> {
+    <span class="kw">uint8</span> <span class="fn">x</span> = <span class="num">255</span> + <span class="num">1</span>; <span class="cm">// = 0 novamente!</span>
+}</code></pre>
+
+<p><strong>3. Front-Running</strong> — Bots veem transações no mempool antes de serem mineradas e as "ultrapassam" pagando mais gas:</p>
+<ul>
+<li>Você envia uma transação de swap no Uniswap por 100 ETH</li>
+<li>Bot ve sua transação no mempool (publica)</li>
+<li>Bot envia transação identica com gas mais alto (executada primeiro)</li>
+<li>Bot lucra com a diferença de preço que você causou (sandwich attack)</li>
+<li><strong>Mitigacao:</strong> commit-reveal schemes, privaté mempools (Flashbots), limites de slippage</li>
+</ul>
+
+<h4>Ferramentas de Desenvolvimento</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Tipo</th><th>Quando Usar</th></tr>
+<tr><td><strong>Hardhat</strong></td><td>Framework completo (JS/TS)</td><td>Maioria dos projetos. Ecossistema maduro, plugins, debugging avançado</td></tr>
+<tr><td><strong>Foundry</strong></td><td>Framework (Solidity nativo)</td><td>Testes em Solidity puro, fuzzing integrado, muito mais rápido que Hardhat</td></tr>
+<tr><td><strong>Remix</strong></td><td>IDE browser</td><td>Prototipagem rápida, aprendizado, debugging visual</td></tr>
+<tr><td><strong>OpenZeppelin</strong></td><td>Biblioteca de contratos</td><td>Implementacoes auditadas de ERC-20, ERC-721, Access Control, etc.</td></tr>
+<tr><td><strong>Slither</strong></td><td>Analisador estático</td><td>Detecta vulnerabilidades automáticamente antes do deploy</td></tr>
+</table>
+</div>
+
+<!-- ═══ DEFI ═══ -->
+<h3>3. DeFi (Decentralized Finance)</h3>
+
+<h4>AMMs (Automated Market Makers)</h4>
+<p>AMMs substituem o order book tradicional por uma <strong>formula matematica</strong>. O Uniswap v2 usa a formula do <strong>Constant Product</strong>:</p>
+
+<pre data-lang="math"><code><span class="cm">// Formula fundamental do Uniswap (Constant Product AMM)</span>
+x * y = k
+
+<span class="cm">// x = reserva do token A no pool</span>
+<span class="cm">// y = reserva do token B no pool</span>
+<span class="cm">// k = constante (nunca muda, exceto em add/remove liquidity)</span>
+
+<span class="cm">// Exemplo: Pool ETH/USDC</span>
+<span class="cm">// 100 ETH * 200.000 USDC = 20.000.000 (k)</span>
+<span class="cm">//</span>
+<span class="cm">// Alguem compra 10 ETH:</span>
+<span class="cm">// (100 - 10) * y_novo = 20.000.000</span>
+<span class="cm">// 90 * y_novo = 20.000.000</span>
+<span class="cm">// y_novo = 222.222 USDC</span>
+<span class="cm">// Custo = 222.222 - 200.000 = 22.222 USDC por 10 ETH</span>
+<span class="cm">// Preco efetivo = 2.222 USDC/ETH (vs 2.000 inicial)</span>
+<span class="cm">// = 11.1% de slippage!</span>
+<span class="cm">//</span>
+<span class="cm">// Quanto maior o pool (mais liquidez), menor o slippage</span></code></pre>
+
+<p><strong>Impermanent Loss:</strong> quando você fornece liquidez a um pool é o preço relativo dos tokens muda, você teria mais valor se tivesse simplesmente mantido os tokens (HODL). Chamado "impermanent" porque a perda se reverte se o preço voltar ao original.</p>
+
+<h4>Lending Protocols (Aave, Compound)</h4>
+<p>Protocolos de emprestimo descentralizado permitem <strong>emprestar e tomar emprestado</strong> sem intermediário:</p>
+
+<ul>
+<li><strong>Supply:</strong> você deposita ETH como colateral e ganha juros (APY variável)</li>
+<li><strong>Borrow:</strong> você toma USDC emprestado contra seu colateral (overcollaterálized — precisa depositar mais do que empresta)</li>
+<li><strong>Liquidacao:</strong> se o valor do colateral cair abaixo do threshold (ex: 80%), qualquer pessoa pode liquidar sua posicao (ganha bonus de ~5%)</li>
+<li><strong>Taxas de juros:</strong> determinadas algoritmicamente pela taxa de útilização do pool (mais demanda = mais juros)</li>
+</ul>
+
+<h4>Flash Loans</h4>
+<p>Flash loans são emprestimos que devem ser <strong>tomados e devolvidos na mesma transação</strong>. Se o emprestimo não for devolvido, a transação inteira reverte (como se nunca tivesse acontecido).</p>
+
+<pre data-lang="solidity"><code><span class="cm">// Flash Loan simplificado — empresta e devolve no mesmo tx</span>
+<span class="kw">contract</span> <span class="tp">FlashLoanReceiver</span> {
+    <span class="kw">function</span> <span class="fn">executeFlashLoan</span>(<span class="kw">uint256</span> <span class="fn">amount</span>) <span class="kw">external</span> {
+        <span class="cm">// 1. Empresta 1M USDC do Aave (sem colateral!)</span>
+        <span class="fn">aave</span>.<span class="fn">flashLoan</span>(<span class="fn">amount</span>);
+
+        <span class="cm">// 2. Usa os fundos para arbitragem:</span>
+        <span class="cm">//    - Compra ETH no Uniswap por 2.000 USDC</span>
+        <span class="cm">//    - Vende ETH no SushiSwap por 2.010 USDC</span>
+        <span class="cm">//    - Lucro: 10 USDC por ETH</span>
+
+        <span class="cm">// 3. Devolve 1M USDC + 0.09% fee</span>
+        <span class="cm">// Se não devolver, TODA a transação reverte</span>
+    }
+}
+
+<span class="cm">// Riscos de Flash Loans:</span>
+<span class="cm">// - Ataques de manipação de preço (oracle manipulation)</span>
+<span class="cm">// - Exploits de governanca (empresta tokens, vota, devolve)</span>
+<span class="cm">// - Usado em 90%+ dos exploits DeFi em 2022-2024</span></code></pre>
+
+<h4>Yield Farming e Liquidity Mining</h4>
+<ul>
+<li><strong>Yield Farming:</strong> mover capital entre protocolos DeFi para maximizar retorno (APY). Ex: depositar no Aave, pegar emprestimo, depositar em outro protocolo</li>
+<li><strong>Liquidity Mining:</strong> protocolos distribuem tokens de governanca como incentivo para fornecer liquidez. Ex: fornecer liquidez no Uniswap e receber tokens UNI</li>
+<li><strong>APY vs APR:</strong> APY inclui compounding (juros sobre juros). Um APR de 100% = APY de ~172% com compounding diario</li>
+<li><strong>Risco real:</strong> APYs altos (>100%) são tipicamente insustentaveis. Tokens de recompensa geralmente perdem valor. Impermanent loss pode consumir os ganhos</li>
+</ul>
+
+<!-- ═══ NFTS & TOKENS ═══ -->
+<h3>4. NFTs & Token Standards</h3>
+
+<h4>ERC-20 (Fungible Tokens)</h4>
+<p>O padrão para tokens fungíveis (cada unidade e identica). USDC, UNI, LINK são todos ERC-20:</p>
+
+<pre data-lang="solidity"><code><span class="cm">// SPDX-License-Identifier: MIT</span>
+<span class="kw">pragma solidity</span> ^<span class="num">0.8.20</span>;
+
+<span class="kw">import</span> <span class="str">"@openzeppelin/contracts/token/ERC20/ERC20.sol"</span>;
+
+<span class="cm">// Token ERC-20 mínimo usando OpenZeppelin</span>
+<span class="kw">contract</span> <span class="tp">MyToken</span> <span class="kw">is</span> <span class="tp">ERC20</span> {
+    <span class="kw">constructor</span>(<span class="kw">uint256</span> <span class="fn">initialSupply</span>) <span class="tp">ERC20</span>(<span class="str">"MyToken"</span>, <span class="str">"MTK"</span>) {
+        <span class="fn">_mint</span>(<span class="fn">msg.sender</span>, <span class="fn">initialSupply</span> * <span class="num">10</span> ** <span class="fn">decimals</span>());
+    }
+}
+
+<span class="cm">// Interface ERC-20 — funções obrigatórias:</span>
+<span class="cm">// totalSupply()  — quantidade total de tokens</span>
+<span class="cm">// balanceOf(addr) — saldo de um endereço</span>
+<span class="cm">// transfer(to, amount) — transferir para outro endereço</span>
+<span class="cm">// approve(spender, amount) — autorizar outro contrato a gastar</span>
+<span class="cm">// transferFrom(from, to, amount) — gastar tokens autorizados</span>
+<span class="cm">// allowance(owner, spender) — verificar autorização</span></code></pre>
+
+<h4>ERC-721 (NFTs)</h4>
+<p>Tokens não-fungiveis — cada token tem um ID único. Arte digital, itens de jogos, nomes de domínio (ENS):</p>
+
+<pre data-lang="solidity"><code><span class="kw">import</span> <span class="str">"@openzeppelin/contracts/token/ERC721/ERC721.sol"</span>;
+<span class="kw">import</span> <span class="str">"@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol"</span>;
+
+<span class="kw">contract</span> <span class="tp">MyNFT</span> <span class="kw">is</span> <span class="tp">ERC721URIStorage</span> {
+    <span class="kw">uint256</span> <span class="kw">private</span> <span class="fn">_tokenIds</span>;
+
+    <span class="kw">constructor</span>() <span class="tp">ERC721</span>(<span class="str">"MyNFT"</span>, <span class="str">"MNFT"</span>) {}
+
+    <span class="kw">function</span> <span class="fn">mintNFT</span>(<span class="kw">address</span> <span class="fn">to</span>, <span class="kw">string memory</span> <span class="fn">tokenURI</span>)
+        <span class="kw">external returns</span> (<span class="kw">uint256</span>)
+    {
+        _tokenIds++;
+        <span class="kw">uint256</span> <span class="fn">newId</span> = <span class="fn">_tokenIds</span>;
+
+        <span class="fn">_mint</span>(<span class="fn">to</span>, <span class="fn">newId</span>);
+        <span class="fn">_setTokenURI</span>(<span class="fn">newId</span>, <span class="fn">tokenURI</span>);
+        <span class="cm">// tokenURI aponta para JSON com metadata:</span>
+        <span class="cm">// { "name": "...", "image": "ipfs://...", "attributes": [...] }</span>
+
+        <span class="kw">return</span> <span class="fn">newId</span>;
+    }
+}
+
+<span class="cm">// Funcoes chave do ERC-721:</span>
+<span class="cm">// ownerOf(tokenId) — quem possui este NFT</span>
+<span class="cm">// safeTransferFrom(from, to, tokenId) — transferir NFT</span>
+<span class="cm">// approve(to, tokenId) — autorizar transferencia</span>
+<span class="cm">// setApprovalForAll(operator, bool) — autorizar operador</span></code></pre>
+
+<h4>ERC-1155 (Multi-Token)</h4>
+<p>Combina fungíveis e não-fungiveis no mesmo contrato. Ideal para jogos (espadas fungíveis + armaduras únicas):</p>
+
+<ul>
+<li><strong>Batch operations:</strong> transferir múltiplos tipos de token em uma transação (economiza gas)</li>
+<li><strong>Fungível + NFT:</strong> token ID 1 pode ter supply 1000 (fungível), token ID 2 pode ter supply 1 (NFT)</li>
+<li><strong>Usó real:</strong> OpenSea, jogos blockchain, plataformas de fidelidade</li>
+</ul>
+
+<h4>Token Economics Basics</h4>
+<p>Tokenomics define como o token captura e distribui valor:</p>
+
+<ul>
+<li><strong>Supply:</strong> fixed (Bitcoin = 21M), inflationary (emissao constante), deflationary (burn mecanismo)</li>
+<li><strong>Distribuicao:</strong> team (15-20%), investidores (15-25%), comunidade (40-60%), vesting schedule (4 anós tipico)</li>
+<li><strong>Utility:</strong> governanca (votar em propostas), staking (segurança da rede), pagamento (taxas de serviço), acesso (gaté para features)</li>
+<li><strong>Velocity problem:</strong> se o token circula rápido demais (compra e vende imediato), o preço não se sustenta. Staking/lock-up reduz velocidade</li>
+</ul>
+
+<!-- ═══ LAYER 2 SOLUTIONS ═══ -->
+<h3>5. Layer 2 Solutions</h3>
+
+<p>Ethereum processa ~15-30 TPS. Para escalar sem sacrificar segurança, <strong>Layer 2 (L2)</strong> processa transações off-chain e posta provas ou dados comprimidos na Layer 1 (Ethereum mainnet).</p>
+
+<h4>Rollups: Optimistic vs ZK</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Optimistic Rollups</th><th>ZK Rollups</th></tr>
+<tr><td><strong>Como funciona</strong></td><td>Assume que transações são válidas. Permite "challenge period" (~7 dias) para disputas</td><td>Gera prova matematica (ZK-SNARK/STARK) de que as transações são válidas</td></tr>
+<tr><td><strong>Finality</strong></td><td>~7 dias (challenge period)</td><td>Minutos (assim que a prova e verificada na L1)</td></tr>
+<tr><td><strong>Custo</strong></td><td>Mais barato que mainnet, mas publica dados completos na L1</td><td>Mais barato ainda — publica apenas provas compactas</td></tr>
+<tr><td><strong>Compatibilidade EVM</strong></td><td>Alta (Arbitrum, Optimism são EVM-equivalentes)</td><td>Variavel (zkSync e compatível, StarkNet usa Cairo)</td></tr>
+<tr><td><strong>Throughput</strong></td><td>~2.000-4.000 TPS</td><td>~2.000-10.000+ TPS</td></tr>
+<tr><td><strong>Exemplos</strong></td><td>Arbitrum, Optimism, Base</td><td>zkSync Era, StarkNet, Polygon zkEVM, Scroll</td></tr>
+<tr><td><strong>Maturidade</strong></td><td>Produção (2021+), TVL alto</td><td>Emergente (2023+), TVL crescendo rápido</td></tr>
+</table>
+</div>
+
+<div class="diagram">
+<div class="diagram-box green">Usuarios<br><small>Transacoes</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Layer 2<br><small>Processa off-chain</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Batch/Proof<br><small>Dados comprimidos</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Ethereum L1<br><small>Segurança final</small></div>
+</div>
+
+<h4>Sidechains</h4>
+<p>Sidechains são <strong>blockchains independentes</strong> com ponte para Ethereum. Diferente de rollups, sidechains tem seu proprio mecanismo de consensó — a segurança não depende de Ethereum.</p>
+
+<ul>
+<li><strong>Polygon PoS:</strong> sidechain mais popular. ~2s block time, ~65.000 TPS teorico, gas de centavos</li>
+<li><strong>Trade-off crítico:</strong> segurança depende dos válidadores da sidechain, não do Ethereum. Se os válidadores da sidechain forem comprometidos, fundos podem ser roubados</li>
+<li><strong>Bridge risk:</strong> pontes entre chains são alvos frequentes de hacks (Ronin Bridge = $625M, Wormhole = $320M)</li>
+</ul>
+
+<h4>Staté Channels</h4>
+<p>Dois participantes abrem um "canal" na L1, fazem milhares de transações off-chain entre si, e só postam o resultado final na L1:</p>
+
+<ul>
+<li><strong>Exemplo:</strong> Lightning Network (Bitcoin) — micropagamentos instantaneos</li>
+<li><strong>Vantagem:</strong> latência quase zero, custo quase zero para transações dentro do canal</li>
+<li><strong>Limitacao:</strong> só funciona bem para interáções bilateráis ou redes pequenas. Não serve para smart contracts complexos</li>
+</ul>
+
+<h4>Comparacao de Throughput e Custo</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Solucao</th><th>TPS</th><th>Custo por Tx</th><th>Finality</th><th>Segurança</th></tr>
+<tr><td><strong>Ethereum L1</strong></td><td>~15-30</td><td>$1-50+</td><td>~12 min</td><td>Maxima</td></tr>
+<tr><td><strong>Optimistic Rollup</strong></td><td>~2.000-4.000</td><td>$0.01-0.50</td><td>~7 dias*</td><td>Herda da L1</td></tr>
+<tr><td><strong>ZK Rollup</strong></td><td>~2.000-10.000+</td><td>$0.001-0.10</td><td>~minutos</td><td>Herda da L1</td></tr>
+<tr><td><strong>Sidechain</strong></td><td>~5.000-65.000</td><td>$0.001-0.01</td><td>~2-5s</td><td>Propria</td></tr>
+<tr><td><strong>Staté Channel</strong></td><td>Ilimitado*</td><td>~$0</td><td>Instantaneo</td><td>Herda da L1</td></tr>
+</table>
+</div>
+<p><small>* Optimistic Rollups: finality de 7 dias para saques. Transacoes internas são "soft-confirmed" em segundos. Staté Channels: TPS ilimitado entre participantes, mas limitado ao número de canais.</small></p>
+
+<!-- ═══ DECISION FRAMEWORK ═══ -->
+<h3>6. Decision Framework: Quando Usar Blockchain</h3>
+
+<p>A pergunta mais importante que um dev senior deve fazer: <strong>"Este problema realmente precisa de blockchain, ou um banco de dados resolve melhor?"</strong></p>
+
+<h4>Arvore de Decisao Pratica</h4>
+
+<div class="card">
+<div class="card-title">Blockchain Decision Tree</div>
+<ol style="color:var(--text2);font-size:.88rem">
+<li><strong>Existem multiplas partes que NAO confiam umas nas outras?</strong> Se não → Use banco de dados tradicional</li>
+<li><strong>Existe uma autoridade central confiável que poderia gerenciar os dados?</strong> Se sim → Use banco de dados com essa autoridade</li>
+<li><strong>Os participantes precisam escrever dados (não apenas ler)?</strong> Se não → Use banco de dados com API publica read-only</li>
+<li><strong>Os dados precisam ser imutaveis e auditaveis?</strong> Se não → Use banco de dados replicado</li>
+<li><strong>Os participantes precisam concordar sobre as regras de forma descentralizada?</strong> Se não → Use distributed ledger privado (Hyperledger)</li>
+<li><strong>Precisa ser resistente a censura (nenhuma entidade pode bloquear transações)?</strong> Se sim → <strong>Use blockchain publica</strong></li>
+</ol>
+</div>
+
+<h4>Casos onde Blockchain FAZ Sentido</h4>
+<ul>
+<li><strong>Pagamentos cross-border:</strong> sem intermediários bancarios, settlement em minutos vs dias</li>
+<li><strong>Supply chain com múltiplos participantes:</strong> rastreabilidade imutável que nenhuma parte pode falsificar</li>
+<li><strong>Identidade descentralizada (DID):</strong> usuário controla seus proprios dados de identidade</li>
+<li><strong>Tokenizacao de ativos reais:</strong> fracionamento de imoveis, arte, commodities</li>
+<li><strong>DAOs:</strong> governanca transparente e automatizada de organizacoes</li>
+</ul>
+
+<h4>Casos onde Blockchain e Hype (Use DB Tradicional)</h4>
+<ul>
+<li><strong>"Blockchain para health records":</strong> dados medicos precisam ser editaveis/deletaveis (LGPD right to erasure). Imutabilidade é um problema, não uma feature</li>
+<li><strong>"Blockchain para votacao":</strong> voto precisa ser secreto E verificavel — blockchain publica expoe votos</li>
+<li><strong>"Blockchain para IoT":</strong> dispositivos IoT geram milhões de data points. Gas fees inviabilizam. Use time-series DB</li>
+<li><strong>"Blockchain para supply chain interno":</strong> se todos os participantes são da mesma empresa, não ha problema de confiança. Use banco de dados</li>
+</ul>
+
+<h4>Alternativas: Distributed Ledgers Privados</h4>
+<p>Quando você precisa de auditabilidade e múltiplos participantes, mas não de descentralizacao total:</p>
+
+<ul>
+<li><strong>Hyperledger Fabric:</strong> blockchain permissionado. Participantes conhecidos, sem mineracao, throughput alto (~3.000 TPS). Usado em supply chain corporativo</li>
+<li><strong>R3 Corda:</strong> projetado para financas. Transacoes privadas entre partes, sem broadcast global</li>
+<li><strong>Amazon QLDB:</strong> ledger centralizado com historico imutável verificavel. Não e blockchain (sem descentralizacao), mas tem as propriedades de audit trail</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Se o problema principal e "não confio nas outras partes E não existe autoridade central", blockchain pode ser a resposta. Se você confia nas partes OU existe uma autoridade central confiável, um banco de dados distribuido resolve melhor, mais rápido é mais barato.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Supply Chain com Blockchain</h3>
+
+<p><strong>Cenário:</strong> Uma rede de supermercados quer rastrear a origem de alimentos desde o produtor até a prateleira. Participantes: produtores rurais, transportadoras, centros de distribuição, lojas. Nenhum participante confia plenamente nós outros (fraude em certificacao organica é comum).</p>
+
+<h4>Análise: Blockchain Faz Sentido Aqui?</h4>
+<ol>
+<li><strong>Multiplas partes sem confiança mutua?</strong> Sim — produtores, transportadoras, CD e lojas</li>
+<li><strong>Autoridade central confiável?</strong> Não — o supermercado não é neutro (pode pressionar fornecedores)</li>
+<li><strong>Todos escrevem dados?</strong> Sim — cada etapa registra recebimento e envio</li>
+<li><strong>Imutabilidade necessária?</strong> Sim — prevenir fraude em certificacoes</li>
+<li><strong>Descentralizacao total?</strong> Não — participantes são conhecidos</li>
+</ol>
+
+<p><strong>Decisao:</strong> Blockchain permissionado (Hyperledger Fabric), não Ethereum publica.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Produtor Rural<br><small>Registra colheita</small><br><small>+ certificacao</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Transportadora<br><small>Registra temp,</small><br><small>GPS, horario</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Centro Distrib.<br><small>Verifica qualidade</small><br><small>+ repassa</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Loja/Consumidor<br><small>Escaneia QR code</small><br><small>ve historico</small></div>
+</div>
+
+<h4>Arquitetura Proposta</h4>
+
+<pre data-lang="yaml"><code><span class="cm"># Arquitetura Supply Chain + Hyperledger Fabric</span>
+
+<span class="fn">Participantes</span>:
+  - <span class="fn">Org1</span>: <span class="str">Produtores Rurais</span>    <span class="cm"># 1 peer node cada</span>
+  - <span class="fn">Org2</span>: <span class="str">Transportadoras</span>       <span class="cm"># 1 peer node cada</span>
+  - <span class="fn">Org3</span>: <span class="str">Centros Distribuicao</span>  <span class="cm"># 1 peer node cada</span>
+  - <span class="fn">Org4</span>: <span class="str">Supermercado (lojas)</span>   <span class="cm"># 1 peer node cada</span>
+
+<span class="fn">Smart Contract (Chaincode)</span>:
+  - <span class="fn">registerHarvest</span>(<span class="fn">productId</span>, <span class="fn">farm</span>, <span class="fn">certifications</span>)
+  - <span class="fn">registerTransport</span>(<span class="fn">productId</span>, <span class="fn">temp</span>, <span class="fn">gps</span>, <span class="fn">timestamp</span>)
+  - <span class="fn">registerReceived</span>(<span class="fn">productId</span>, <span class="fn">qualityCheck</span>)
+  - <span class="fn">getFullHistory</span>(<span class="fn">productId</span>) <span class="cm"># retorna cadeia completa</span>
+
+<span class="fn">Off-chain</span>:
+  - <span class="fn">IoT sensors</span>: <span class="str">temperatura em transito</span> <span class="cm"># dados brutos no S3</span>
+  - <span class="fn">On-chain</span>: <span class="str">apenas hashes dos dados IoT</span> <span class="cm"># economiza storage</span>
+
+<span class="fn">Frontend</span>:
+  - <span class="fn">App mobile</span>: <span class="str">consumidor escaneia QR code do produto</span>
+  - <span class="fn">Dashboard</span>: <span class="str">supermercado ve métricas de compliance</span></code></pre>
+
+<p><strong>Trade-offs aceitos:</strong></p>
+<ul>
+<li><strong>Não usamos Ethereum publica:</strong> gas fees por transação inviabilizariam milhões de registros/dia. Hyperledger não tem custo por transação</li>
+<li><strong>Dados IoT off-chain:</strong> sensores geram GBs de dados. Armazenamos dados brutos no S3 e apenas hashes on-chain para verificação</li>
+<li><strong>Permissionado, não trustless:</strong> participantes precisam de aprovacao para entrar na rede. Aceito porque os participantes são conhecidos (não é um marketplace aberto)</li>
+</ul>
+
+<!-- ═══ ARMADILHAS COMUNS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>"Blockchain resolve tudo":</strong> Blockchain é um banco de dados lento, caro é difícil de manter. Ela só se justifica quando você precisa de confiança entre partes que não se conhecem E não existe autoridade central. Em 95% dos casos corporativos, um PostgreSQL com audit trail resolve melhor.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Deploiar smart contract sem auditoria:</strong> Smart contracts são imutaveis após deploy. Um bug em produção não pode ser "hotfixed" — precisa de proxy pattern ou migração. A DAO perdeu $60M por um bug de reentrancy. Auditorias profissionais custam $50K-500K mas previnem desastrês.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Ignorar custos de gas na arquitetura:</strong> Gravar 1 KB de dados on-chain na Ethereum mainnet pode custar $10-100 em gas. Projete para armazenar o mínimo necessário on-chain (hashes, provas) e dados volumosos off-chain (IPFS, S3, banco tradicional).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Confundir "descentralizado" com "sem ponto de falha":</strong> Muitos projetos "DeFi" dependem de um frontend centralizado (um domínio), um oraculo centralizado (Chainlink é um avanco mas não é perfeito), ou chaves admin que podem pausar o contrato. Descentralizacao real é um espectro, não um binário.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Em entrevistas de system design:</strong> Quando alguem sugere blockchain, pergunte: (1) Quem são os participantes e por que não confiam uns nós outros? (2) Existe uma autoridade central possível? (3) Quantas transações por segundo? (4) Os dados precisam ser publicos? Se as respostas não justificarem blockchain, proponha alternativas (DB + audit log, QLDB, Hyperledger).</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Um hospital quer usar blockchain para armazenar prontuarios medicos. Avalie se faz sentido e quais são os problemas.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Blockchain para prontuarios medicos e <strong>problematico</strong> por vários motivos: (1) <strong>LGPD/GDPR exige "right to erasure"</strong> — blockchain e imutável por design, não permite deletar dados. (2) <strong>Dados medicos precisam ser editaveis</strong> — diagnósticos podem ser corrígidos. (3) <strong>Volume de dados</strong> — imagens de exames (MRI, raio-x) geram GBs, inviavel on-chain. (4) <strong>Confianca centralizada já existe</strong> — o hospital é a autoridade central confiável. <strong>Alternativa melhor:</strong> banco de dados com audit trail imutável (append-only log), encryption at rest, RBAC, e backup versionado. Amazon QLDB ou PostgreSQL com tabela de auditoria resolve 100% dos requisitos sem a complexidade de blockchain.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Explique por que o pattern Checks-Effects-Interáctions previne reentrancy attacks em smart contracts.</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> O pattern funciona em 3 passos obrigatórios: (1) <strong>Checks</strong> — verifica pre-condições (saldo suficiente? usuário autorizado?). (2) <strong>Effects</strong> — atualiza TODO o estado interno ANTES de interágir com contratos externós (zera o saldo). (3) <strong>Interáctions</strong> — só então faz chamadas externas (transfer de ETH). Na reentrancy, o atacante re-entra na função via <code>receive()</code> durante a transferencia. Se o saldo já foi zerado no passó 2, a re-entrada falha no passó 1 (<code>require(balance > 0)</code>). Sem CEI, o saldo só e zerado APOS a transferencia, permitindo multiplas retiradas do mesmo saldo. <strong>Protecao adicional:</strong> use <code>ReentrancyGuard</code> do OpenZeppelin (modifier <code>nonReentrant</code>) como segunda camada de defesa.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Compare Optimistic Rollups vs ZK Rollups para um DEX (exchange descentralizada). Qual você escolheria e por que?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Para um DEX, <strong>ZK Rollup e preferivel</strong>: (1) <strong>Finality rápida</strong> — traders precisam de certeza que a transação foi finalizada em minutos, não em 7 dias. No Optimistic Rollup, saques para L1 levam 7 dias (challenge period). (2) <strong>Throughput maior</strong> — DEXs processam milhares de trades por segundo. ZK Rollups podem atingir 10.000+ TPS vs ~4.000 TPS do Optimistic. (3) <strong>Custo menor por transação</strong> — ZK publica provas compactas vs dados completos. (4) <strong>Trade-off</strong> — ZK Rollups tem menor compatibilidade EVM (depende da implementação). Se o DEX usa lógica Solidity complexa, zkSync Era e Polygon zkEVM são boas opcoes por serem EVM-compativeis. Se precisa de lógica customizada, StarkNet com Cairo oferece mais flexibilidade mas exige aprender nova linguagem. <strong>Exemplos reais:</strong> dYdX migrou de Ethereum para StarkNet (ZK) por performance. Uniswap esta em multiplas L2s incluindo Arbitrum (Optimistic) e zkSync (ZK).</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Blockchain & Web3</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="63-seguranca-ia.html">&#8592; Anterior: Segurança de IA</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="65-computacao-quantica.html" class="primary">Próximo: Computação Quantica &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 64: Blockchain & Web3
+// ══════════════════════════════════════════
+const SECTION_NUM = 64;
+const STORAGE_KEY = 'fsm_quiz_64';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a função principal de uma Merkle Tree em um bloco de blockchain?",
+    options: [
+      "Armazenar as chaves privadas dos usuários",
+      "Permitir verificação eficiente de transações individuais sem baixar o bloco inteiro (Merkle Proof em O(log n))",
+      "Criptografar o conteúdo das transações para privacidade",
+      "Determinar qual minerador pode criar o próximo bloco"
+    ],
+    correct: 1,
+    explanation: "Merkle Trees permitem verificar se uma transação específica esta incluida em um bloco fornecendo apenas O(log n) hashes (Merkle Proof), ao inves de precisar verificar todas as n transações. Isso é essencial para light clients (SPV nodes) que não baixam blocos inteiros."
+  },
+  {
+    question: "Qual a principal vantagem do Proof of Stake (PoS) sobre o Proof of Work (PoW)?",
+    options: [
+      "PoS é mais descentralizado que PoW",
+      "PoS tem throughput ilimitado",
+      "PoS consome ~99.95% menós energia é a segurança vem do capital em stake ao inves de poder computacional",
+      "PoS elimina completamente o risco de ataque de 51%"
+    ],
+    correct: 2,
+    explanation: "PoS substitui competicao computacional (energia) por capital em stake. Validadores 'apóstam' ETH como garantia e são punidos (slashing) se agirem maliciosamente. A Ethereum reduziu consumo de energia em ~99.95% após o Merge (PoW -> PoS). O ataque de 51% ainda é possível mas exige controlar maioria do ETH em stake (~$40B+)."
+  },
+  {
+    question: "O que é o 'Checks-Effects-Interáctions' pattern e qual vulnerabilidade ele previne?",
+    options: [
+      "Pattern de design para testes unitários; previne race conditions",
+      "Pattern que atualiza estado antes de chamadas externas; previne reentrancy attacks",
+      "Pattern de validação de inputs; previne SQL injection em smart contracts",
+      "Pattern de logging; previne perda de eventos em caso de falha"
+    ],
+    correct: 1,
+    explanation: "CEI é o pattern mais importante em Solidity: (1) Checks — válida pre-condições, (2) Effects — atualiza estado interno (ex: zera saldo), (3) Interáctions — só então faz chamadas externas. Isso previne reentrancy porque se o atacante re-entra na função via receive(), o estado já foi atualizado é a re-entrada falha na fase de Checks."
+  },
+  {
+    question: "Na formula do Uniswap (x * y = k), o que acontece quando alguem compra uma grande quantidade de token em um pool com pouca liquidez?",
+    options: [
+      "O preço permanece constante independente do volume",
+      "A transação e rejeitada automáticamente",
+      "O slippage e alto — o comprador paga significativamente mais que o preço de mercado",
+      "O pool cria novos tokens para atender a demanda"
+    ],
+    correct: 2,
+    explanation: "Na formula x * y = k, retirar uma grande proporcao de um token requer adicionar uma quantidade desproporcionalmente grande do outro. Isso causa slippage alto. No exemplo da seção: comprar 10 ETH de um pool de 100 ETH causou 11.1% de slippage. Pools com mais liquidez (k maior) tem menós slippage."
+  },
+  {
+    question: "Qual é o risco principal de Flash Loans que os torna frequentemente usados em exploits DeFi?",
+    options: [
+      "Permitem tomar emprestado sem colateral e manipular preços de oraculos em uma única transação atomica",
+      "São muito lentos e bloqueiam a blockchain durante a execução",
+      "Exigem aprovacao de governanca que pode ser corrompida",
+      "Geram taxas de gas tao altas que inviabilizam a rede"
+    ],
+    correct: 0,
+    explanation: "Flash loans permitem tomar emprestimo de milhões sem colateral (desde que devolvido na mesma transação). Atacantes usam isso para: emprestar grande volume -> manipular preço em um DEX -> explorar outro protocolo que usa esse DEX como oraculo de preço -> lucrar -> devolver emprestimo. Tudo em uma transação atomica. 90%+ dos exploits DeFi em 2022-2024 usaram flash loans."
+  },
+  {
+    question: "Qual a diferença fundamental entre ERC-20 e ERC-721?",
+    options: [
+      "ERC-20 e para Ethereum e ERC-721 e para outras blockchains",
+      "ERC-20 são tokens fungiveis (cada unidade identica); ERC-721 são não-fungiveis (cada token tem ID único)",
+      "ERC-20 é mais antigo e obsoleto; ERC-721 o substituiu",
+      "ERC-20 não pode ser transferido; ERC-721 pode"
+    ],
+    correct: 1,
+    explanation: "ERC-20 define tokens fungiveis — 1 USDC e identico a qualquer outro USDC. ERC-721 define NFTs — cada token tem um ID único e pode representar um ativo distinto (arte, item de jogo, domínio). ERC-1155 combina ambos no mesmo contrato."
+  },
+  {
+    question: "Qual a diferença principal entre Optimistic Rollups e ZK Rollups?",
+    options: [
+      "Optimistic são mais rápidos; ZK são mais seguros",
+      "Optimistic assumem válidade e permitem disputas em ~7 dias; ZK provam válidade matematicamente com finality em minutos",
+      "Optimistic rodam off-chain; ZK rodam on-chain",
+      "Optimistic são para DeFi; ZK são para NFTs"
+    ],
+    correct: 1,
+    explanation: "Optimistic Rollups assumem que transações são válidas e dao ~7 dias para alguem provar fraude (challenge period). ZK Rollups geram provas criptograficas (ZK-SNARK/STARK) de que as transações são válidas — finality em minutos. ZK tem custo menor e finality mais rápida, mas Optimistic tem melhor compatibilidade EVM atualmente."
+  },
+  {
+    question: "Quando blockchain publica NAO faz sentido é um banco de dados tradicional resolve melhor?",
+    options: [
+      "Quando os participantes não confiam uns nós outros",
+      "Quando não existe autoridade central confiável",
+      "Quando todos os participantes são da mesma empresa e existe uma autoridade central confiável",
+      "Quando os dados precisam ser imutaveis e auditaveis"
+    ],
+    correct: 2,
+    explanation: "Se todos os participantes pertencem a mesma organização ou confiam em uma autoridade central, não ha problema de confiança para resolver. Um banco de dados tradicional com audit trail é mais rápido, mais barato é mais simples. Blockchain só se justifica quando ha desconfiança entre partes E não existe autoridade central."
+  },
+  {
+    question: "Por que armazenar dados de sensores IoT diretamente on-chain na Ethereum e problematico?",
+    options: [
+      "Ethereum não suporta dados binários",
+      "Sensores IoT geram volume alto de dados é o custo de gas para storage on-chain seria astronomico ($10-100 por KB)",
+      "Dados de IoT mudam muito rápido para a velocidade de bloco do Ethereum",
+      "Smart contracts não podem receber dados externos"
+    ],
+    correct: 1,
+    explanation: "SSTORE (escrever em storage) custa ~20.000 gas por 32 bytes. Com milhões de leituras de sensores por dia, o custo em gas seria inviavel. A abordagem correta e armazenar dados brutos off-chain (S3, time-series DB) e colocar apenas hashes on-chain para verificação de integridade."
+  },
+  {
+    question: "Qual a principal preocupacao de segurança com bridges (pontes) entre blockchains?",
+    options: [
+      "Bridges reduzem o throughput da blockchain de destino",
+      "Bridges são alvos frequentes de hacks porque concentram grande valor e sua segurança depende de um conjunto menor de válidadores",
+      "Bridges aumentam o consumo de gas em ambas as chains",
+      "Bridges impedem que smart contracts funcionem cross-chain"
+    ],
+    correct: 1,
+    explanation: "Bridges concentram bilhoes de dolares em contratos que conectam chains diferentes. Sua segurança frequentemente depende de um conjunto menor de válidadores do que a L1. Exemplos: Ronin Bridge hack ($625M, 2022) — atacante comprometeu 5 de 9 válidadores. Wormhole hack ($320M) — vulnerabilidade no contrato da bridge. Bridges são o elo mais fraco da segurança cross-chain."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Blockchain & Web3.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

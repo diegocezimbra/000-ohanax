@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11 — EDA - Event-Driven Architecture | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="10-cqrs-event-sourcing.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>11</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="12-bancos-sql-relacional.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:16.7%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 11</span>
+<h2>EDA - Event-Driven Architecture</h2>
+<div class="section-line"></div>
+
+<p>Event-Driven Architecture (EDA) é um paradigma de design onde o fluxo do sistema e determinado por <strong>eventos</strong> — fatos que aconteceram. Ao inves de serviços chamarem uns aos outros diretamente (acoplamento síncrono), eles <strong>emitem eventos</strong> é outros serviços <strong>reagem</strong>. O resultado é um sistema naturalmente desacoplado, assíncrono e escalável.</p>
+
+<p>Uma analogia: pense em um jornal. O jornal publica noticias (eventos). Leitores que assinam (consumers) recebem e reagem as noticias de formas diferentes — um investidor vende acoes, um professor discute em aula, um politico faz um pronunciamento. O jornal não sabe (e não precisa saber) quem leu ou o que fizeram com a informação. Essa é a essencia do EDA.</p>
+
+<!-- ═══ CONCEITOS FUNDAMENTAIS ═══ -->
+<h3>Conceitos Fundamentais</h3>
+
+<p><strong>Os três atores do EDA:</strong></p>
+<ul>
+<li><strong>Producer (Emissor)</strong> — o serviço que detecta que algo aconteceu e emite o evento. Ex: OrderService emite <code>OrderPlaced</code></li>
+<li><strong>Event Broker (Intermediario)</strong> — infraestrutura que recebe, armazena e distribui eventos. Ex: Kafka, RabbitMQ, Amazon SNS/SQS, Redis Streams</li>
+<li><strong>Consumer (Consumidor)</strong> — serviço que se inscreve em eventos e reage. Ex: PaymentService ouve <code>OrderPlaced</code> é processa pagamento</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box green">Producer<br><small>OrderService</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Event Broker<br><small>Kafka / RabbitMQ</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Consumer 1<br><small>PaymentService</small></div>
+<div class="diagram-arrow" style="visibility:hidden">&rarr;</div>
+<div class="diagram-box orange">Consumer 2<br><small>InventoryService</small></div>
+<div class="diagram-arrow" style="visibility:hidden">&rarr;</div>
+<div class="diagram-box cyan">Consumer 3<br><small>NotificationService</small></div>
+</div>
+
+<h4>Tipos de Eventos</h4>
+<ul>
+<li><strong>Domain Event</strong> — algo aconteceu no domínio de negócio. Fato imutável. Ex: <code>OrderPlaced</code>, <code>PaymentApproved</code>, <code>UserRegistered</code>. Sempre no passado (past tense)</li>
+<li><strong>Integration Event</strong> — evento que cruza fronteiras de serviços (bounded contexts). Carrega dados necessários para o consumidor agir sem precisar consultar o emissor</li>
+<li><strong>Command Event</strong> — solicitacao para que algo sejá feito (diferente de notificação). Ex: <code>ProcessPayment</code>, <code>SendEmail</code>. Tem um destinatario específico e espera execução</li>
+</ul>
+
+<div class="card blue">
+<div class="card-title">Classificacao de Martin Fowler</div>
+<ul>
+<li><strong>Event Notification</strong> — evento mínimo, apenas notifica que algo aconteceu. Consumer precisa buscar dados adicionais via API. Leve, mas cria acoplamento em runtime. Ex: <code>{ type: "OrderPlaced", orderId: "123" }</code></li>
+<li><strong>Event-Carried Staté Transfer</strong> — evento carrega todos os dados necessários. Consumer não precisa chamar o emissor. Mais pesado, mas elimina acoplamento. Ex: <code>{ type: "OrderPlaced", order: { id, items, total, customer } }</code></li>
+<li><strong>Event Sourcing</strong> — todos os eventos são armazenados como fonte da verdade. Estado atual é reconstruido a partir do replay dos eventos. Não e apenas notificação — é o modelo de persistência</li>
+</ul>
+</div>
+
+<h4>Topologias: Broker vs Mediator</h4>
+<p>Existem duas formas fundamentais de coordenar eventos entre serviços:</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Choreography (Broker)</th><th>Orchestration (Mediator)</th></tr>
+<tr><td><strong>Coordenacao</strong></td><td>Descentralizada — cada serviço sabe o que fazer ao receber um evento</td><td>Centralizada — um orquestrador dita a sequência</td></tr>
+<tr><td><strong>Acoplamento</strong></td><td>Baixo — serviços não se conhecem</td><td>Medio — orquestrador conhece todos</td></tr>
+<tr><td><strong>Visibilidade</strong></td><td>Dificil de rastrear o fluxo completo</td><td>Facil — o fluxo esta no orquestrador</td></tr>
+<tr><td><strong>Complexidade</strong></td><td>Cresce com número de serviços</td><td>Concentrada no orquestrador</td></tr>
+<tr><td><strong>Ferramentas</strong></td><td>Kafka, RabbitMQ, SNS/SQS</td><td>Temporal, AWS Step Functions, Camunda</td></tr>
+<tr><td><strong>Melhor para</strong></td><td>Fluxos simples, poucos serviços</td><td>Fluxos complexos com muitas etapas e condições</td></tr>
+</table>
+</div>
+
+<!-- ═══ SAGA PATTERN ═══ -->
+<h3>Saga Pattern</h3>
+
+<p>Em arquiteturas distribuidas, você não tem transações ACID entre serviços. Um pedido envolve OrderService, PaymentService, InventoryService — cada um com seu banco. Se o pagamento falha após o estoque já ter sido reservado, como fazer rollback?</p>
+
+<p>A <strong>Saga</strong> é o padrão que resolve isso: uma sequência de transações locais onde cada etapa publica um evento que aciona a próxima. Se uma etapa falha, <strong>compensating transactions</strong> desfazem as etapas anteriores.</p>
+
+<h4>Choreography-based Saga (eventos em cadeia)</h4>
+<div class="diagram">
+<div class="diagram-box green">OrderPlaced</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">PaymentProcessed</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">StockReserved</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">OrderConfirmed</div>
+</div>
+
+<p><strong>Fluxo de compensação (rollback):</strong></p>
+<div class="diagram">
+<div class="diagram-box red">StockReserveFailed</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">PaymentRefunded</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">OrderCancelled</div>
+</div>
+
+<h4>Orchestration-based Saga (coordenador central)</h4>
+<p>Um <strong>OrderSagaOrchestrator</strong> controla a sequência: chama PaymentService, espera resposta, chama InventoryService, espera resposta. Se qualquer etapa falha, o orquestrador sabe exatamente quais compensacoes executar.</p>
+
+<!-- ═══ OUTBOX PATTERN ═══ -->
+<h3>Outbox Pattern</h3>
+
+<p>O maior desafio em EDA é o <strong>dual-write problem</strong>: você precisa salvar no banco de dados E publicar um evento no broker. Se o save funciona mas o publish falha (ou vice-versa), o sistema fica inconsistente.</p>
+
+<p>O <strong>Outbox Pattern</strong> resolve isso: ao inves de publicar o evento diretamente, você salva o evento em uma tabela <code>outbox</code> na mesma transação do banco. Um processo separado (poller ou CDC) le a tabela outbox e publica os eventos no broker.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Service<br><small>save() + outbox.insert()</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">DB Transaction<br><small>Atomica</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Outbox Poller<br><small>le + publica</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Event Broker<br><small>Kafka / RabbitMQ</small></div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>CDC (Change Data Capture):</strong> Uma alternativa ao polling da tabela outbox é usar CDC com ferramentas como <strong>Debezium</strong>. Ele monitora o WAL (Write-Ahead Log) do banco e publica mudanças automáticamente no Kafka. Zero polling, latência baixissima.</div>
+</div>
+
+<!-- ═══ IDEMPOTENCY ═══ -->
+<h3>Idempotencia</h3>
+
+<p>Em sistemas distribuídos, eventos podem ser entregues <strong>mais de uma vez</strong> (at-least-once delivery). Se o consumer processa o mesmo evento duas vezes, pode cobrar o cliente duas vezes, enviar dois emails, reservar estoque duplicado. A <strong>idempotencia</strong> garante que processar o mesmo evento N vezes produz o mesmo resultado que processar 1 vez.</p>
+
+<p><strong>Estrategias de idempotencia:</strong></p>
+<ul>
+<li><strong>Idempotency Key</strong> — cada evento carrega um ID único. O consumer armazena IDs já processados e ignora duplicatas</li>
+<li><strong>Upsert ao inves de Insert</strong> — use <code>ON CONFLICT DO UPDATE</code> ao inves de <code>INSERT</code> puro</li>
+<li><strong>Verificacao de estado</strong> — antes de processar, verifique se a acao já foi feita (ex: pedido já esta "pago"? ignore o evento)</li>
+<li><strong>Operacoes naturalmente idempotentes</strong> — <code>SET status = 'paid'</code> é idempotente. <code>balance = balance - 100</code> não e</li>
+</ul>
+
+<!-- ═══ EXEMPLOS DE CODIGO ═══ -->
+<h3>Exemplos de Código</h3>
+
+<h4>Definição de Domain Event</h4>
+<pre data-lang="typescript"><code><span class="cm">// Base class para todos os Domain Events</span>
+<span class="kw">export abstract class</span> <span class="tp">DomainEvent</span> {
+  <span class="kw">readonly</span> eventId: <span class="tp">string</span>;
+  <span class="kw">readonly</span> occurredAt: <span class="tp">Date</span>;
+  <span class="kw">readonly</span> eventType: <span class="tp">string</span>;
+
+  <span class="kw">constructor</span>() {
+    <span class="kw">this</span>.eventId = <span class="fn">randomUUID</span>();
+    <span class="kw">this</span>.occurredAt = <span class="kw">new</span> <span class="tp">Date</span>();
+    <span class="kw">this</span>.eventType = <span class="kw">this</span>.constructor.name;
+  }
+}
+
+<span class="cm">// Evento concreto — sempre no passado</span>
+<span class="kw">export class</span> <span class="tp">OrderPlacedEvent</span> <span class="kw">extends</span> <span class="tp">DomainEvent</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">public readonly</span> orderId: <span class="tp">string</span>,
+    <span class="kw">public readonly</span> customerId: <span class="tp">string</span>,
+    <span class="kw">public readonly</span> items: <span class="tp">OrderItem</span>[],
+    <span class="kw">public readonly</span> totalAmount: <span class="tp">number</span>,
+  ) {
+    <span class="kw">super</span>();
+  }
+}
+
+<span class="kw">export class</span> <span class="tp">PaymentProcessedEvent</span> <span class="kw">extends</span> <span class="tp">DomainEvent</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">public readonly</span> orderId: <span class="tp">string</span>,
+    <span class="kw">public readonly</span> paymentId: <span class="tp">string</span>,
+    <span class="kw">public readonly</span> status: <span class="str">'approved'</span> | <span class="str">'rejected'</span>,
+  ) {
+    <span class="kw">super</span>();
+  }
+}
+
+<span class="kw">export class</span> <span class="tp">PaymentFailedEvent</span> <span class="kw">extends</span> <span class="tp">DomainEvent</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">public readonly</span> orderId: <span class="tp">string</span>,
+    <span class="kw">public readonly</span> reason: <span class="tp">string</span>,
+  ) {
+    <span class="kw">super</span>();
+  }
+}</code></pre>
+
+<h4>Event Publisher com NestJS EventEmitter</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> { <span class="tp">Injectable</span> } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+<span class="kw">import</span> { <span class="tp">EventEmitter2</span> } <span class="kw">from</span> <span class="str">'@nestjs/event-emitter'</span>;
+
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">OrderService</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> orderRepo: <span class="tp">OrderRepository</span>,
+    <span class="kw">private</span> eventEmitter: <span class="tp">EventEmitter2</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">placeOrder</span>(dto: <span class="tp">CreateOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>&gt; {
+    <span class="kw">const</span> order = Order.<span class="fn">create</span>(dto);
+    <span class="kw">await</span> <span class="kw">this</span>.orderRepo.<span class="fn">save</span>(order);
+
+    <span class="cm">// Emite o evento — consumers reagem de forma desacoplada</span>
+    <span class="kw">this</span>.eventEmitter.<span class="fn">emit</span>(<span class="str">'order.placed'</span>, <span class="kw">new</span> <span class="tp">OrderPlacedEvent</span>(
+      order.id,
+      order.customerId,
+      order.items,
+      order.totalAmount,
+    ));
+
+    <span class="kw">return</span> order;
+  }
+}
+
+<span class="cm">// Consumer 1 — processa pagamento</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">PaymentListener</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> paymentService: <span class="tp">PaymentService</span>) {}
+
+  <span class="ann">@OnEvent</span>(<span class="str">'order.placed'</span>)
+  <span class="kw">async</span> <span class="fn">handleOrderPlaced</span>(event: <span class="tp">OrderPlacedEvent</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.paymentService.<span class="fn">processPayment</span>(
+      event.orderId,
+      event.totalAmount,
+    );
+  }
+}
+
+<span class="cm">// Consumer 2 — envia notificação</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">NotificationListener</span> {
+  <span class="ann">@OnEvent</span>(<span class="str">'order.placed'</span>)
+  <span class="kw">async</span> <span class="fn">handleOrderPlaced</span>(event: <span class="tp">OrderPlacedEvent</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">sendEmail</span>(event.customerId, <span class="str">'Pedido recebido!'</span>);
+  }
+}
+
+<span class="cm">// Consumer 3 — reserva estoque</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">InventoryListener</span> {
+  <span class="ann">@OnEvent</span>(<span class="str">'order.placed'</span>)
+  <span class="kw">async</span> <span class="fn">handleOrderPlaced</span>(event: <span class="tp">OrderPlacedEvent</span>) {
+    <span class="kw">for</span> (<span class="kw">const</span> item <span class="kw">of</span> event.items) {
+      <span class="kw">await</span> <span class="kw">this</span>.inventoryService.<span class="fn">reserve</span>(item.productId, item.quantity);
+    }
+  }
+}</code></pre>
+
+<h4>Saga: Order Choreography Completa</h4>
+<pre data-lang="typescript"><code><span class="cm">// ═══ FLUXO FELIZ ═══</span>
+<span class="cm">// OrderPlaced → PaymentProcessed → StockReserved → OrderConfirmed</span>
+
+<span class="cm">// ═══ FLUXO DE COMPENSACAO ═══</span>
+<span class="cm">// StockReserveFailed → RefundPayment → CancelOrder</span>
+<span class="cm">// PaymentFailed → CancelOrder</span>
+
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">PaymentSagaListener</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> paymentService: <span class="tp">PaymentService</span>,
+    <span class="kw">private</span> eventEmitter: <span class="tp">EventEmitter2</span>,
+  ) {}
+
+  <span class="ann">@OnEvent</span>(<span class="str">'order.placed'</span>)
+  <span class="kw">async</span> <span class="fn">handleOrderPlaced</span>(event: <span class="tp">OrderPlacedEvent</span>) {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> payment = <span class="kw">await</span> <span class="kw">this</span>.paymentService.<span class="fn">charge</span>(
+        event.customerId, event.totalAmount,
+      );
+      <span class="kw">this</span>.eventEmitter.<span class="fn">emit</span>(<span class="str">'payment.processed'</span>,
+        <span class="kw">new</span> <span class="tp">PaymentProcessedEvent</span>(event.orderId, payment.id, <span class="str">'approved'</span>),
+      );
+    } <span class="kw">catch</span> (error) {
+      <span class="cm">// Compensacao: notifica que pagamento falhou</span>
+      <span class="kw">this</span>.eventEmitter.<span class="fn">emit</span>(<span class="str">'payment.failed'</span>,
+        <span class="kw">new</span> <span class="tp">PaymentFailedEvent</span>(event.orderId, error.message),
+      );
+    }
+  }
+}
+
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">InventorySagaListener</span> {
+  <span class="ann">@OnEvent</span>(<span class="str">'payment.processed'</span>)
+  <span class="kw">async</span> <span class="fn">handlePaymentProcessed</span>(event: <span class="tp">PaymentProcessedEvent</span>) {
+    <span class="kw">try</span> {
+      <span class="kw">await</span> <span class="kw">this</span>.inventoryService.<span class="fn">reserveStock</span>(event.orderId);
+      <span class="kw">this</span>.eventEmitter.<span class="fn">emit</span>(<span class="str">'stock.reserved'</span>,
+        <span class="kw">new</span> <span class="tp">StockReservedEvent</span>(event.orderId),
+      );
+    } <span class="kw">catch</span> (error) {
+      <span class="cm">// Compensacao: estoque falhou, precisa estornar pagamento</span>
+      <span class="kw">this</span>.eventEmitter.<span class="fn">emit</span>(<span class="str">'stock.reserve.failed'</span>,
+        <span class="kw">new</span> <span class="tp">StockReserveFailedEvent</span>(event.orderId, event.paymentId),
+      );
+    }
+  }
+}
+
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">CompensationListener</span> {
+  <span class="cm">// Se pagamento falhou, cancela o pedido</span>
+  <span class="ann">@OnEvent</span>(<span class="str">'payment.failed'</span>)
+  <span class="kw">async</span> <span class="fn">handlePaymentFailed</span>(event: <span class="tp">PaymentFailedEvent</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.orderService.<span class="fn">cancel</span>(event.orderId, event.reason);
+  }
+
+  <span class="cm">// Se estoque falhou, estorna pagamento E cancela pedido</span>
+  <span class="ann">@OnEvent</span>(<span class="str">'stock.reserve.failed'</span>)
+  <span class="kw">async</span> <span class="fn">handleStockFailed</span>(event: <span class="tp">StockReserveFailedEvent</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.paymentService.<span class="fn">refund</span>(event.paymentId);
+    <span class="kw">await</span> <span class="kw">this</span>.orderService.<span class="fn">cancel</span>(event.orderId, <span class="str">'Estoque indisponível'</span>);
+  }
+
+  <span class="cm">// Tudo ok — confirma o pedido</span>
+  <span class="ann">@OnEvent</span>(<span class="str">'stock.reserved'</span>)
+  <span class="kw">async</span> <span class="fn">handleStockReserved</span>(event: <span class="tp">StockReservedEvent</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.orderService.<span class="fn">confirm</span>(event.orderId);
+  }
+}</code></pre>
+
+<h4>Outbox Pattern: Save + Poll + Publish</h4>
+<pre data-lang="typescript"><code><span class="cm">// ═══ ENTIDADE OUTBOX ═══</span>
+<span class="ann">@Entity</span>(<span class="str">'outbox_events'</span>)
+<span class="kw">export class</span> <span class="tp">OutboxEvent</span> {
+  <span class="ann">@PrimaryGeneratedColumn</span>(<span class="str">'uuid'</span>)
+  id: <span class="tp">string</span>;
+
+  <span class="ann">@Column</span>()
+  eventType: <span class="tp">string</span>;
+
+  <span class="ann">@Column</span>(<span class="str">'jsonb'</span>)
+  payload: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">any</span>&gt;;
+
+  <span class="ann">@Column</span>({ default: <span class="kw">false</span> })
+  published: <span class="tp">boolean</span>;
+
+  <span class="ann">@CreateDateColumn</span>()
+  createdAt: <span class="tp">Date</span>;
+}
+
+<span class="cm">// ═══ SAVE NA MESMA TRANSACAO ═══</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">OrderService</span> {
+  <span class="kw">async</span> <span class="fn">placeOrder</span>(dto: <span class="tp">CreateOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>&gt; {
+    <span class="kw">return</span> <span class="kw">this</span>.dataSource.<span class="fn">transaction</span>(<span class="kw">async</span> (manager) => {
+      <span class="cm">// 1. Salva o pedido</span>
+      <span class="kw">const</span> order = Order.<span class="fn">create</span>(dto);
+      <span class="kw">await</span> manager.<span class="fn">save</span>(order);
+
+      <span class="cm">// 2. Salva o evento na outbox (mesma transação!)</span>
+      <span class="kw">const</span> outboxEvent = <span class="kw">new</span> <span class="tp">OutboxEvent</span>();
+      outboxEvent.eventType = <span class="str">'order.placed'</span>;
+      outboxEvent.payload = {
+        orderId: order.id,
+        customerId: order.customerId,
+        items: order.items,
+        totalAmount: order.totalAmount,
+      };
+      <span class="kw">await</span> manager.<span class="fn">save</span>(outboxEvent);
+
+      <span class="cm">// Se qualquer um falhar, ambos fazem rollback</span>
+      <span class="kw">return</span> order;
+    });
+  }
+}
+
+<span class="cm">// ═══ POLLER — le outbox e publica no broker ═══</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">OutboxPollerService</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> outboxRepo: <span class="tp">Repository</span>&lt;<span class="tp">OutboxEvent</span>&gt;,
+    <span class="kw">private</span> kafkaProducer: <span class="tp">KafkaProducer</span>,
+  ) {}
+
+  <span class="cm">// Roda a cada 5 segundos via cron</span>
+  <span class="ann">@Cron</span>(<span class="str">'*/5 * * * * *'</span>)
+  <span class="kw">async</span> <span class="fn">pollAndPublish</span>() {
+    <span class="kw">const</span> events = <span class="kw">await</span> <span class="kw">this</span>.outboxRepo.<span class="fn">find</span>({
+      where: { published: <span class="kw">false</span> },
+      order: { createdAt: <span class="str">'ASC'</span> },
+      take: <span class="num">100</span>,
+    });
+
+    <span class="kw">for</span> (<span class="kw">const</span> event <span class="kw">of</span> events) {
+      <span class="kw">await</span> <span class="kw">this</span>.kafkaProducer.<span class="fn">send</span>({
+        topic: event.eventType,
+        messages: [{ key: event.id, value: <span class="tp">JSON</span>.<span class="fn">stringify</span>(event.payload) }],
+      });
+      event.published = <span class="kw">true</span>;
+      <span class="kw">await</span> <span class="kw">this</span>.outboxRepo.<span class="fn">save</span>(event);
+    }
+  }
+}</code></pre>
+
+<h4>Consumer Idempotente com Deduplicação</h4>
+<pre data-lang="typescript"><code><span class="ann">@Entity</span>(<span class="str">'processed_events'</span>)
+<span class="kw">export class</span> <span class="tp">ProcessedEvent</span> {
+  <span class="ann">@PrimaryColumn</span>()
+  eventId: <span class="tp">string</span>; <span class="cm">// ID único do evento</span>
+
+  <span class="ann">@Column</span>()
+  processedAt: <span class="tp">Date</span>;
+}
+
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">IdempotentPaymentConsumer</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> processedRepo: <span class="tp">Repository</span>&lt;<span class="tp">ProcessedEvent</span>&gt;,
+    <span class="kw">private</span> paymentService: <span class="tp">PaymentService</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">handle</span>(event: <span class="tp">OrderPlacedEvent</span>) {
+    <span class="cm">// 1. Verifica se já processou este evento</span>
+    <span class="kw">const</span> alreadyProcessed = <span class="kw">await</span> <span class="kw">this</span>.processedRepo.<span class="fn">findOne</span>({
+      where: { eventId: event.eventId },
+    });
+
+    <span class="kw">if</span> (alreadyProcessed) {
+      console.<span class="fn">log</span>(<span class="str">`Evento ${event.eventId} já processado. Ignorando.`</span>);
+      <span class="kw">return</span>; <span class="cm">// Idempotente: ignora duplicata</span>
+    }
+
+    <span class="cm">// 2. Processa o evento</span>
+    <span class="kw">await</span> <span class="kw">this</span>.paymentService.<span class="fn">charge</span>(event.customerId, event.totalAmount);
+
+    <span class="cm">// 3. Marca como processado</span>
+    <span class="kw">await</span> <span class="kw">this</span>.processedRepo.<span class="fn">save</span>({
+      eventId: event.eventId,
+      processedAt: <span class="kw">new</span> <span class="tp">Date</span>(),
+    });
+  }
+}</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: E-Commerce Order Flow com EDA</h3>
+<p><strong>Cenário:</strong> Projete o fluxo de pedidos de um e-commerce usando Event-Driven Architecture. O sistema deve ser resiliente a falhas é manter consistência eventual entre os serviços.</p>
+
+<h4>Serviços Envolvidos</h4>
+<div class="diagram">
+<div class="diagram-box green">OrderService<br><small>Cria e gerencia pedidos</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">PaymentService<br><small>Processa pagamentos</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">InventoryService<br><small>Reserva estoque</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">NotificationService<br><small>Emails, SMS, Push</small></div>
+</div>
+
+<h4>Fluxo de Eventos (Happy Path)</h4>
+<ol>
+<li><strong>Cliente faz pedido</strong> &rarr; OrderService cria Order com status <code>PENDING</code> é emite <code>OrderPlaced</code></li>
+<li><strong>PaymentService</strong> consome <code>OrderPlaced</code>, processa pagamento, emite <code>PaymentApproved</code></li>
+<li><strong>InventoryService</strong> consome <code>PaymentApproved</code>, reserva itens, emite <code>StockReserved</code></li>
+<li><strong>OrderService</strong> consome <code>StockReserved</code>, atualiza status para <code>CONFIRMED</code>, emite <code>OrderConfirmed</code></li>
+<li><strong>NotificationService</strong> consome <code>OrderConfirmed</code>, envia email de confirmacao ao cliente</li>
+</ol>
+
+<h4>Cenários de Falha e Compensacao</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Falha</th><th>Evento Emitido</th><th>Compensacao</th></tr>
+<tr><td>Pagamento recusado</td><td><code>PaymentFailed</code></td><td>OrderService cancela pedido, NotificationService avisa cliente</td></tr>
+<tr><td>Estoque insuficiente</td><td><code>StockReserveFailed</code></td><td>PaymentService estorna, OrderService cancela pedido</td></tr>
+<tr><td>Timeout no pagamento</td><td><code>PaymentTimedOut</code></td><td>Saga expira após 5min, cancela pedido automáticamente</td></tr>
+<tr><td>Evento duplicado</td><td>N/A</td><td>Consumer idempotente ignora com base no eventId</td></tr>
+</table>
+</div>
+
+<div class="card purple">
+<div class="card-title">Decisoes Arquiteturais</div>
+<ul>
+<li><strong>Broker:</strong> Kafka para eventos de alta vazao (pedidos, pagamentos) com retenção de 7 dias. SQS para notificações (fire-and-forget)</li>
+<li><strong>Outbox Pattern:</strong> Obrigatorio no OrderService e PaymentService para garantir consistência entre DB e broker</li>
+<li><strong>Dead Letter Queue:</strong> Eventos que falharam 3x vao para DLQ para investigacao manual</li>
+<li><strong>Idempotencia:</strong> Todos os consumers armazenam eventId na tabela <code>processed_events</code></li>
+<li><strong>Observabilidade:</strong> Correlation ID propagado em todos os eventos para rastrear o fluxo completo de um pedido</li>
+</ul>
+</div>
+
+<!-- ═══ ARMADILHAS COMUNS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Ordenacao de eventos entre particoes:</strong> Kafka garante ordem apenas dentro de uma particao. Se você tem 10 particoes e eventos do mesmo pedido caem em particoes diferentes, <code>PaymentProcessed</code> pode chegar antes de <code>OrderPlaced</code>. Solução: use o <code>orderId</code> como partition key para garantir que todos os eventos de um pedido vao para a mesma particao.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Eventual consistency confundindo o usuário:</strong> O cliente faz um pedido, atualiza a página imediatamente e não ve nada — porque o evento ainda esta sendo processado. Solução: retorne o <code>orderId</code> com status <code>PENDING</code> síncronamente na resposta HTTP, e atualize via WebSocket/polling quando o evento for processado.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Não implementar Dead Letter Queue (DLQ):</strong> Se um consumer falha ao processar um evento, sem DLQ o evento fica sendo retentado infinitamente (poison pill) ou e perdido. Sempre configure DLQ para investigar e re-processar eventos problematicos.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Acoplamento por schema de evento:</strong> Se o PaymentService depende da estrutura exata do evento <code>OrderPlaced</code>, qualquer mudança no schema quebra o consumer. Solução: use versionamento de eventos (<code>OrderPlaced.v1</code>, <code>OrderPlaced.v2</code>) e Schema Registry (Confluent, AWS Glue) para validação.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Saga sem timeout:</strong> Se um serviço cai e nunca emite o próximo evento, a saga fica pendurada para sempre. Sempre implemente <strong>timeouts</strong> é <strong>saga expiration</strong> — se não receber resposta em X minutos, execute compensação automáticamente.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Eventos devem ser <strong>fatos imutaveis</strong> (algo que aconteceu), não comandos (algo que deve acontecer). <code>OrderPlaced</code> (fato) ao inves de <code>PlaceOrder</code> (comando). Isso torna o sistema mais robusto e os eventos reútilizaveis por múltiplos consumers.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem um OrderService que salva no banco e publica evento no Kafka. O save funciona mas o publish falha. O pedido existe no banco mas ninguem sabe dele. Como resolver?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use o <strong>Outbox Pattern</strong>. Ao inves de publicar diretamente no Kafka, salve o evento em uma tabela <code>outbox_events</code> na mesma transação do banco de dados. Um processo separado (poller com cron ou CDC com Debezium) le os eventos não publicados da tabela outbox e os publica no Kafka. Se o save falhar, ambos fazem rollback (atomicidade). Se o publish do poller falhar, ele tentara novamente no próximo ciclo (o evento permanece na outbox com <code>published = false</code>).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu PaymentConsumer recebe o mesmo evento OrderPlaced duas vezes (Kafka at-least-once). Na primeira vez cobra o cliente. Na segunda vez cobra de novo. Como evitar?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Implemente <strong>idempotencia no consumer</strong>. Cada evento tem um <code>eventId</code> único. O consumer mantém uma tabela <code>processed_events</code> com os IDs já processados. Antes de processar, verifica se o eventId já existe na tabela. Se sim, ignora (retorna sem processar). Se não, processa e salva o eventId. Para garantia extra, faca o check + insert + processamento na mesma transação de banco.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Em uma Saga choreography-based, o InventoryService reservou estoque e emitiu StockReserved. Mas o OrderService que deveria consumir esse evento esta fora do ar ha 30 minutos. O que acontece?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Com um broker como Kafka, os eventos ficam retidos (retenção configuravel, geralmente 7 dias). Quando o OrderService volta, ele consome todos os eventos pendentes a partir do último offset commitado. Mas a saga precisa ter um <strong>timeout</strong>: se o OrderService não confirmar dentro de X minutos, um <strong>saga monitor</strong> detecta a saga expirada e dispara compensacoes automáticas (liberar estoque, estornar pagamento). Ferramentas como Temporal.io resolvem isso nativamente com workflow timeouts.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — EDA: Event-Driven Architecture</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="10-cqrs-event-sourcing.html">&#8592; CQRS &amp; Event Sourcing</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="12-bancos-sql-relacional.html" class="primary">Próximo: Bancos SQL &amp; Relacional &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 11: EDA - Event-Driven Architecture
+// ══════════════════════════════════════════
+const SECTION_NUM = 11;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a principal caracteristica de uma Event-Driven Architecture?",
+    options: [
+      "Serviços chamam uns aos outros via HTTP síncrono",
+      "O fluxo é determinado por eventos — producers emitem, consumers reagem de forma desacoplada",
+      "Todos os serviços compartilham o mesmo banco de dados",
+      "Um orquestrador central controla todas as operações via RPC"
+    ],
+    correct: 1,
+    explanation: "Em EDA, o fluxo e dirígido por eventos. Producers emitem fatos (eventos) e consumers reagem a eles de forma desacoplada e assíncrona, sem que o producer saiba quem esta consumindo."
+  },
+  {
+    question: "Qual a diferença entre um Domain Event é um Command Event?",
+    options: [
+      "Domain Event e síncrono, Command Event e assíncrono",
+      "Domain Event é um fato que já aconteceu (passado), Command Event é uma solicitacao para que algo sejá feito (futuro)",
+      "Não ha diferença — são sinônimos",
+      "Domain Event é usado em monolitos, Command Event em microserviços"
+    ],
+    correct: 1,
+    explanation: "Domain Events representam fatos imutaveis que já aconteceram (OrderPlaced, PaymentApproved). Command Events são solicitacoes para executar uma acao (ProcessPayment, SendEmail). Domain Events são nomeados no passado, Commands no imperativo."
+  },
+  {
+    question: "Na classificação de Martin Fowler, o que é 'Event-Carried Staté Transfer'?",
+    options: [
+      "Evento que apenas notifica que algo aconteceu, sem dados adicionais",
+      "Evento que carrega todos os dados necessários para o consumer agir sem consultar o emissor",
+      "Evento que é armazenado como fonte da verdade para reconstruir estado",
+      "Evento enviado via HTTP POST entre serviços"
+    ],
+    correct: 1,
+    explanation: "Event-Carried Staté Transfer carrega todos os dados necessários no payload do evento. O consumer não precisa fazer callback ao producer para buscar informações. E mais pesado mas elimina acoplamento em runtime."
+  },
+  {
+    question: "Qual o problema que o Outbox Pattern resolve?",
+    options: [
+      "Ordenacao de eventos entre particoes do Kafka",
+      "O dual-write problem — garantir atomicidade entre salvar no banco e publicar evento no broker",
+      "Escalabilidade horizontal de consumers",
+      "Versionamento de schemas de eventos"
+    ],
+    correct: 1,
+    explanation: "O dual-write problem ocorre quando você precisa salvar no DB e publicar no broker. Se um falha é o outro não, ha inconsistência. O Outbox Pattern salva o evento na mesma transação do banco, é um processo separado publica no broker."
+  },
+  {
+    question: "Em uma Saga choreography-based, como funciona a compensação quando uma etapa falha?",
+    options: [
+      "Um coordenador central executa rollback em todas as etapas",
+      "O serviço que falhou emite um evento de falha, e os serviços anteriores reagem com compensating transactions",
+      "O banco de dados faz rollback distribuido automáticamente (2PC)",
+      "O evento e reenviado até funcionar (retry infinito)"
+    ],
+    correct: 1,
+    explanation: "Na choreography, cada serviço e autônomo. Quando uma etapa falha, o serviço emite um evento de falha (ex: StockReserveFailed). Serviços anteriores consomem esse evento e executam compensacoes (ex: PaymentService estorna o pagamento)."
+  },
+  {
+    question: "Por que idempotencia e critica em consumers de eventos?",
+    options: [
+      "Porque eventos são sempre entregues exatamente uma vez",
+      "Porque com at-least-once delivery, o mesmo evento pode ser entregue multiplas vezes e processar duplicatas causa erros de negócio",
+      "Porque idempotencia melhora a performance do consumer",
+      "Porque o Kafka exige que consumers sejam idempotentes para funcionar"
+    ],
+    correct: 1,
+    explanation: "A maioria dos brokers usa at-least-once delivery — o evento pode ser entregue mais de uma vez (ex: consumer falha após processar mas antes de commitar offset). Sem idempotencia, o mesmo pagamento seria cobrado duas vezes."
+  },
+  {
+    question: "Qual a diferença entre Choreography e Orchestration no contexto de Sagas?",
+    options: [
+      "Choreography usa HTTP, Orchestration usa mensageria",
+      "Choreography e descentralizada (serviços reagem a eventos), Orchestration e centralizada (um coordenador dita a sequência)",
+      "Choreography e para sistemas pequenos, Orchestration e para sistemas grandes",
+      "Não ha diferença funcional — e apenas nomenclatura"
+    ],
+    correct: 1,
+    explanation: "Na Choreography, cada serviço sabe o que fazer ao receber um evento (descentralizado). Na Orchestration, um componente central (orquestrador) coordena toda a sequência, chamando cada serviço e tratando falhas. Orchestration oferece melhor visibilidade do fluxo."
+  },
+  {
+    question: "O que é uma Dead Letter Queue (DLQ) e por que é importante em EDA?",
+    options: [
+      "Uma fila onde eventos antigos são arquivados para historico",
+      "Uma fila que recebe eventos que falharam após multiplas tentativas, permitindo investigacao e reprocessamento manual",
+      "Uma fila prioritaria para eventos críticos",
+      "Uma fila temporária usada durante deploy de novas versões"
+    ],
+    correct: 1,
+    explanation: "DLQ recebe eventos que falharam após N tentativas (poison pills). Sem DLQ, eventos problematicos ficam em loop de retry infinito bloqueando outros eventos, ou são perdidos silenciosamente. Com DLQ, você pode investigar e re-processar manualmente."
+  },
+  {
+    question: "Kafka garante ordenacao de eventos em qual nível?",
+    options: [
+      "Global — todos os eventos de todos os tópicos são ordenados",
+      "Por tópico — todos os eventos de um tópico são ordenados",
+      "Por particao — eventos dentro da mesma particao são ordenados",
+      "Kafka não garante nenhuma ordenacao"
+    ],
+    correct: 2,
+    explanation: "Kafka garante ordenacao apenas dentro de uma particao. Para garantir que todos os eventos de um pedido sejam processados em ordem, use o orderId como partition key — assim todos os eventos do mesmo pedido vao para a mesma particao."
+  },
+  {
+    question: "Qual das alternativas é a melhor prática para lidar com eventual consistency na UX do usuário?",
+    options: [
+      "Bloquear a interface até todos os serviços processarem o evento (timeout de 30s)",
+      "Retornar o recursó com status PENDING síncronamente e atualizar via WebSocket/polling quando o evento for processado",
+      "Não mostrar nada até o processamento completo e redirecionar para a home",
+      "Usar transações distribuidas (2PC) para garantir consistência imediata"
+    ],
+    correct: 1,
+    explanation: "A melhor abordagem e retornar imediatamente um status intermediário (PENDING) e atualizar a UI de forma assíncrona via WebSocket ou polling. Isso da feedback imediato ao usuário sem bloquear a interface. 2PC e inviavel em microserviços por performance e disponibilidade."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Event-Driven Architecture.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

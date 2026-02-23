@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>51 — Reliability Engineering | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="50-platform-engineering.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>51</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="52-finops.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:77.3%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 51</span>
+<h2>Reliability Engineering</h2>
+<div class="section-line"></div>
+
+<p>Reliability Engineering é a disciplina que garante que sistemas complexos <strong>funcionem corretamente, de forma previsível, mesmo sob falhas</strong>. Enquanto a seção de Quality Attributes tratou reliability como um atributo isolado, aqui mergulhamos nas práticas concretas: como times de SRE operam no dia a dia, como gerenciar incidentes sem panico, como <strong>injetar falhas de proposito</strong> para descobrir fraquezas, é como planejar para desastrês que inevitavelmente vao acontecer.</p>
+
+<p>A ideia central é simples: <strong>falhas são inevitáveis, downtime não precisa ser</strong>. A diferença entre um sistema frágil é um sistema resiliente não é a ausência de falhas — é a capacidade de antecipar, detectar, responder e se recuperar delas rapidamente.</p>
+
+<p>Esta seção cobre os 5 pilares de Reliability Engineering: <strong>SRE avançado</strong> (toil e error budgets), <strong>incident management</strong>, <strong>chaos engineering</strong>, <strong>disaster recovery</strong> é <strong>capacity planning</strong>.</p>
+
+<!-- ═══ SRE AVANCADO ═══ -->
+<h3>SRE Avancado — Toil &amp; Error Budgets na Pratica</h3>
+
+<h4>Toil: O Inimigo Silencioso</h4>
+<p><strong>Toil</strong> é qualquer trabalho operacional que é manual, repetitivo, automatizavel, tatico (sem valor duradouro), é que escala linearmente com o crescimento do serviço. Não confunda com "overhead" (reunioes, planning) — toil e específicamente trabalho de engenharia que <strong>deveria ser automatizado mas ainda não foi</strong>.</p>
+
+<ul>
+<li><strong>Exemplos de toil:</strong> reiniciar pods manualmente, rodar scripts de migração a mao, aprovar deploys clicando em botao, escalar instancias respondendo alertas, criar usuários/permissões manualmente</li>
+<li><strong>Budget de toil:</strong> Google SRE recomenda que no máximo <strong>50% do tempo de um SRE</strong> sejá gasto em toil. Os outros 50%+ devem ser engenharia de automação, melhorias de reliability, tooling</li>
+<li><strong>Como medir:</strong> Classifique cada tarefa do time como "toil" ou "engineering". Se toil > 50%, pare features e invista em automação</li>
+<li><strong>Eliminacao progressiva:</strong> Priorize por frequência x tempo gasto. O que acontece 10x/dia e leva 5 minutos cada = 50min/dia de toil automatizavel</li>
+</ul>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Armadilha:</strong> Times que normalizam toil. "Sempre fizemos assim" não justifica trabalho manual repetitivo. Se você faz a mesma tarefa mais de 3 vezes, automatize na quarta. Se não pode automatizar imediatamente, pelo menós crie um runbook documentado.</div>
+</div>
+
+<h4>Error Budgets na Pratica</h4>
+<p>Error budget é a <strong>quantidade de unreliability permitida</strong> dentro do SLO. Se seu SLO é 99.9% de availability, você tem 0.1% de error budget — ou seja, ~43 minutos de downtime permitido por mes.</p>
+
+<ul>
+<li><strong>Budget cheio:</strong> Pode fazer deploys agressivos, experimentar, lancar features. O sistema "comprou" espaço para falhar</li>
+<li><strong>Budget baixo (&lt;25% restante):</strong> Alerta amarelo. Reduzir frequência de deploys, aumentar testes de canary</li>
+<li><strong>Budget esgotado (0%):</strong> Freeze de features. Todo o esforco de engenharia vai para reliability até o budget se repor no próximo ciclo</li>
+<li><strong>Politica de error budget:</strong> Documento formal assinado por SRE e produto definindo acoes em cada faixa de budget</li>
+</ul>
+
+<div class="diagram">
+<div class="diagram-box green">Budget &gt; 50%<br><small>Deploy livremente</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Budget 10-50%<br><small>Cautela em deploys</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box red">Budget &lt; 10%<br><small>Feature freeze</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Budget reposto<br><small>Novo ciclo mensal</small></div>
+</div>
+
+<h4>Modelos de SRE</h4>
+<ul>
+<li><strong>Embedded SRE:</strong> SREs trabalham dentro dos times de produto. Maior contexto, mas menor consistência entre times. Ideal para empresas com poucos serviços críticos</li>
+<li><strong>Dedicated SRE:</strong> Time de SRE separado com ownership de serviços específicos. Modelo Google clássico. Risco: virar "ops team" glorificado se não houver politica clara de engagement</li>
+<li><strong>Consulting SRE:</strong> SREs como consultores internós que auditam, fazem reviews de reliability e treinam devs. Escala bem mas depende de devs adotarem as práticas. Bom para empresas com muitos times</li>
+</ul>
+
+<!-- ═══ INCIDENT MANAGEMENT ═══ -->
+<h3>Incident Management</h3>
+
+<h4>Severity Levels</h4>
+<p>Cada incidente recebe um nível de severidade que define urgencia, escopo de resposta e SLA de resolução.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Severidade</th><th>Descricao</th><th>Resposta</th><th>SLA Resolução</th></tr>
+<tr><td><strong>SEV1 / Critical</strong></td><td>Serviço principal fora do ar. Perda de receita ativa. Dados em risco</td><td>All-hands, war room, comunicação para executivos</td><td>&lt; 1 hora</td></tr>
+<tr><td><strong>SEV2 / Major</strong></td><td>Funcionalidade importante degradada. Workaround existe mas impacta usuários</td><td>On-call + time do serviço. Escalar se não resolver em 30min</td><td>&lt; 4 horas</td></tr>
+<tr><td><strong>SEV3 / Minor</strong></td><td>Funcionalidade secundária afetada. Impacto limitado a subset de usuários</td><td>On-call investiga, prioriza no sprint se não resolver no turno</td><td>&lt; 24 horas</td></tr>
+<tr><td><strong>SEV4 / Low</strong></td><td>Cosmetic, performance levemente degradada, issue em tooling interno</td><td>Ticket no backlog, resolve quando possível</td><td>&lt; 1 semana</td></tr>
+</table>
+</div>
+
+<h4>Incident Commander (IC)</h4>
+<p>O IC é o <strong>coordenador do incidente</strong>, não necessariamente o mais senior. Responsabilidades:</p>
+<ul>
+<li><strong>Coordenar:</strong> Delegar investigacao, comunicação, mitigacao para pessoas diferentes</li>
+<li><strong>Comúnicar:</strong> Updates regulares a stakeholders (a cada 15-30min para SEV1)</li>
+<li><strong>Decidir:</strong> Quando escalar, quando fazer rollback, quando declarar resolvido</li>
+<li><strong>NÃO debugar:</strong> O IC não deve estar debugando código. Deve manter visao macro e coordenar</li>
+</ul>
+
+<h4>On-Call Rotation e Escalation</h4>
+<ul>
+<li><strong>Rotacao saudavel:</strong> Turnós de 1 semana, máximo 2 alertas noturnós por turno (senão burnout). Compensacao justa (folga ou adicional)</li>
+<li><strong>Escalation policies:</strong> Alerta não acknowledgado em 5min escala para backup. Não resolvido em 30min escala para manager. SEV1 aciona automáticamente o IC de plantao</li>
+<li><strong>Ferramentas:</strong> <code>PagerDuty</code> (lider de mercado), <code>Opsgenie</code> (Atlassian, bom com Jira), <code>Grafana OnCall</code> (open-source, integra com Grafana stack)</li>
+</ul>
+
+<h4>Postmortem Blameless</h4>
+<p>Apos cada incidente SEV1/SEV2, um postmortem é obrigatório. O princípio fundamental: <strong>blameless</strong> — focamos em sistemas e processos, não em culpar individuos.</p>
+
+<div class="card">
+<div class="card-title">Templaté de Postmortem</div>
+<ul>
+<li><strong>Titulo:</strong> [DATA] - Descricao curta do incidente</li>
+<li><strong>Severity:</strong> SEV1/SEV2 | Duracao: X horas | Impacto: Y usuários afetados</li>
+<li><strong>Timeline:</strong> Cronologia detalhada (detecção, triagem, mitigacao, resolução)</li>
+<li><strong>Root Cause:</strong> Causa raiz técnica (não "erro humano" — o que permitiu que o erro acontecesse?)</li>
+<li><strong>Contributing Factors:</strong> O que piorou ou atrasou a resolução</li>
+<li><strong>What Went Well:</strong> O que funcionou na resposta</li>
+<li><strong>Action Items:</strong> Lista com owner e deadline (P0 = esta semana, P1 = este sprint, P2 = este quarter)</li>
+<li><strong>Follow-up Tracking:</strong> Revisar action items semanalmente até 100% concluido</li>
+</ul>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro dos postmortems:</strong> Se seu postmortem não gera pelo menós 3 action items concretos com owners e deadlines, ele foi superficial demais. E se os action items do postmortem anterior não foram concluidos, você tem um problema de processo maior que o incidente.</div>
+</div>
+
+<!-- ═══ CHAOS ENGINEERING ═══ -->
+<h3>Chaos Engineering</h3>
+
+<h4>Princípios de Chaos Engineering</h4>
+<p>Chaos Engineering é a prática de <strong>injetar falhas controladas em produção</strong> para descobrir fraquezas antes que causem incidentes reais. Não e "quebrar coisas por diversão" — e ciencia experimental aplicada a sistemas distribuídos.</p>
+
+<ol>
+<li><strong>Defina um steady-state:</strong> Qual é o comportamento normal do sistema? Ex: latência P99 &lt; 200ms, error raté &lt; 0.1%, throughput &gt; 1000 rps</li>
+<li><strong>Formule uma hipotese:</strong> "Se matarmos 1 de 3 replicas do serviço de pagamento, o sistema continua operando normalmente via load balancing"</li>
+<li><strong>Introduza variáveis do mundo real:</strong> Kill de instancia, latência de rede, falha de dependência, disco cheio, CPU spike</li>
+<li><strong>Tente refutar a hipotese:</strong> Se o steady-state se mantém, confiança aumenta. Se quebra, você descobriu uma vulnerabilidade ANTES de um incidente real</li>
+<li><strong>Minimize blast radius:</strong> Comece pequeno (1 instancia, 1% de tráfego). Tenha abort conditions claros. Nunca faca chaos experiments sem monitoring ativo</li>
+</ol>
+
+<h4>Ferramentas de Chaos Engineering</h4>
+<ul>
+<li><strong>Chaos Monkey (Netflix):</strong> Mata instancias EC2 aleatóriamente em produção. O OG do chaos engineering. Parte da suite Simian Army</li>
+<li><strong>LitmusChaos:</strong> Framework open-source para Kubernetes. Experiments definidos como CRDs YAML. Hub de experiments pre-construidos</li>
+<li><strong>Gremlin:</strong> Plataforma SaaS de chaos engineering. UI amigavel, controle granular de blast radius, abort automático</li>
+<li><strong>AWS Fault Injection Simulator (FIS):</strong> Serviço gerenciado AWS. Injeta falhas em EC2, ECS, EKS, RDS. Integra com CloudWatch para safety stops</li>
+</ul>
+
+<pre data-lang="yaml"><code><span class="cm"># LitmusChaos — Experiment: Pod Kill</span>
+<span class="tp">apiVersion:</span> <span class="str">litmuschaos.io/v1alpha1</span>
+<span class="tp">kind:</span> <span class="str">ChaosEngine</span>
+<span class="tp">metadata:</span>
+  <span class="tp">name:</span> <span class="str">payment-service-chaos</span>
+  <span class="tp">namespace:</span> <span class="str">production</span>
+<span class="tp">spec:</span>
+  <span class="tp">engineState:</span> <span class="str">"active"</span>
+  <span class="tp">appinfo:</span>
+    <span class="tp">appns:</span> <span class="str">"production"</span>
+    <span class="tp">applabel:</span> <span class="str">"app=payment-service"</span>
+    <span class="tp">appkind:</span> <span class="str">"deployment"</span>
+  <span class="tp">chaosServiceAccount:</span> <span class="str">litmus-admin</span>
+  <span class="tp">experiments:</span>
+    - <span class="tp">name:</span> <span class="str">pod-delete</span>
+      <span class="tp">spec:</span>
+        <span class="tp">components:</span>
+          <span class="tp">env:</span>
+            - <span class="tp">name:</span> <span class="str">TOTAL_CHAOS_DURATION</span>
+              <span class="tp">value:</span> <span class="str">"60"</span>          <span class="cm"># duracao em segundos</span>
+            - <span class="tp">name:</span> <span class="str">CHAOS_INTERVAL</span>
+              <span class="tp">value:</span> <span class="str">"15"</span>          <span class="cm"># intervalo entre kills</span>
+            - <span class="tp">name:</span> <span class="str">FORCE</span>
+              <span class="tp">value:</span> <span class="str">"false"</span>        <span class="cm"># graceful termination</span>
+            - <span class="tp">name:</span> <span class="str">PODS_AFFECTED_PERC</span>
+              <span class="tp">value:</span> <span class="str">"33"</span>          <span class="cm"># mata 33% dos pods (1 de 3)</span>
+        <span class="tp">probe:</span>
+          - <span class="tp">name:</span> <span class="str">"check-steady-state"</span>
+            <span class="tp">type:</span> <span class="str">"httpProbe"</span>
+            <span class="tp">httpProbe/inputs:</span>
+              <span class="tp">url:</span> <span class="str">"http://payment-service:8080/health"</span>
+              <span class="tp">method:</span>
+                <span class="tp">get:</span>
+                  <span class="tp">criteria:</span> <span class="str">"=="</span>
+                  <span class="tp">responseCode:</span> <span class="str">"200"</span>
+            <span class="tp">mode:</span> <span class="str">"Continuous"</span>
+            <span class="tp">runProperties:</span>
+              <span class="tp">probeTimeout:</span> <span class="str">5</span>
+              <span class="tp">interval:</span> <span class="str">5</span>
+              <span class="tp">retry:</span> <span class="str">3</span></code></pre>
+
+<div class="card orange">
+<div class="card-title">Chaos Engineering Tools — Comparacao Rapida</div>
+<div class="table-wrap" style="margin:0">
+<table>
+<tr><th>Ferramenta</th><th>Plataforma</th><th>Tipo</th><th>Melhor Para</th></tr>
+<tr><td><strong>Chaos Monkey</strong></td><td>AWS EC2</td><td>Open-source (Netflix)</td><td>Kill de instancias aleatório, cultura de chaos</td></tr>
+<tr><td><strong>LitmusChaos</strong></td><td>Kubernetes</td><td>Open-source (CNCF)</td><td>Experiments declarativos em K8s, CRDs YAML</td></tr>
+<tr><td><strong>Gremlin</strong></td><td>Multi-cloud</td><td>SaaS comercial</td><td>UI amigavel, enterprise, controle granular</td></tr>
+<tr><td><strong>AWS FIS</strong></td><td>AWS nativo</td><td>Serviço gerenciado</td><td>Integra com CloudWatch, safety stops nativos</td></tr>
+<tr><td><strong>Toxiproxy</strong></td><td>Qualquer</td><td>Open-source (Shopify)</td><td>Simulacao de falhas de rede (latência, timeout)</td></tr>
+<tr><td><strong>ChaosBlade</strong></td><td>Multi-plataforma</td><td>Open-source (Alibaba)</td><td>Chaos em JVM, containers, cloud, rede</td></tr>
+</table>
+</div>
+</div>
+
+<h4>GameDays: Planejamento e Execucao</h4>
+<p>GameDay é um evento estruturado onde o time executa chaos experiments coordenados, com observadores, métricas e debriefing formal.</p>
+
+<ul>
+<li><strong>Pre-GameDay:</strong> Definir hipoteses, preparar dashboards, notificar stakeholders, confirmar rollback plans, definir abort criteria</li>
+<li><strong>Durante:</strong> Executar experiments gradualmente, monitorar métricas em tempo real, documentar observacoes, abortar se blast radius exceder limites</li>
+<li><strong>Pos-GameDay:</strong> Debriefing em grupo, documentar findings, criar action items para vulnerabilidades descobertas, agendar próximo GameDay</li>
+<li><strong>Frequencia recomendada:</strong> Mensal para times maduros, trimestral para times iniciantes em chaos engineering</li>
+</ul>
+
+<div class="tip info">
+<span class="tip-icon">&#8505;</span>
+<div><strong>Comece em staging:</strong> Se seu time nunca fez chaos engineering, não comece em produção. Faca os primeiros GameDays em staging/pre-prod para construir confiança e processos. Migre para produção gradualmente quando o time demonstrar maturidade.</div>
+</div>
+
+<!-- ═══ DISASTER RECOVERY ═══ -->
+<h3>Disaster Recovery</h3>
+
+<h4>Estrategias de DR</h4>
+<p>Disaster Recovery (DR) define como você restaura o serviço após uma falha catastrofica — region inteira fora do ar, corrupcao de dados, ataque ransomware. As 4 estratégias variam em custo e velocidade de recuperação.</p>
+
+<div class="diagram">
+<div class="diagram-box red">Backup/Restore<br><small>RTO: horas<br>Custo: $</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Pilot Light<br><small>RTO: 10-30min<br>Custo: $$</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Warm Standby<br><small>RTO: minutos<br>Custo: $$$</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box green">Active-Active<br><small>RTO: ~0<br>Custo: $$$$</small></div>
+</div>
+
+<ul>
+<li><strong>Backup/Restore:</strong> Dados são backupados regularmente em outra region. Em caso de desastre, provisiona infra e restaura. Mais barato, mas RTO de horas. Adequado para sistemas não-críticos</li>
+<li><strong>Pilot Light:</strong> Core infrastructure (DB replicas, configs) mantida ligada na region de DR, mas compute esta desligado. Em caso de desastre, liga compute e redireciona tráfego. RTO de 10-30 minutos</li>
+<li><strong>Warm Standby:</strong> Versao reduzida do ambiente rodando na region de DR (ex: 20% da capacidade). Em caso de desastre, escala para 100% e redireciona. RTO de minutos</li>
+<li><strong>Active-Active (Multi-Region):</strong> Ambas as regions processam tráfego simultaneamente. Se uma cai, a outra absorve 100%. RTO próximo de zero. Custo dobrado + complexidade de data sync</li>
+</ul>
+
+<h4>RPO/RTO: Como Calcular e Garantir</h4>
+<ul>
+<li><strong>RPO (Recovery Point Objective):</strong> Quanto dado você pode perder. RPO = 0 exige replicação síncrona (cross-region, alto custo). RPO = 1h permite backup hourly (mais barato)</li>
+<li><strong>RTO (Recovery Time Objective):</strong> Quanto tempo até voltar ao ar. RTO = 0 exige active-active. RTO = 4h permite pilot light</li>
+<li><strong>Cálculo de negócio:</strong> RPO/RTO são decisões de negócio, não técnicas. Pergunte: "quanto custa 1 hora de downtime?" e "quanto custa perder 1 hora de dados?" Compare com o custo de cada estratégia de DR</li>
+<li><strong>Validação:</strong> RPO/RTO são números no papel até você <strong>testar</strong>. Execute DR drills trimestrais. Se o RTO declarado e 30min mas o drill leva 4h, seu RTO real e 4h</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<tr><th>Estrategia</th><th>RPO Tipico</th><th>RTO Tipico</th><th>Custo Relativo</th><th>Casó de Uso</th></tr>
+<tr><td><strong>Backup/Restore</strong></td><td>1-24 horas</td><td>Horas</td><td>1x</td><td>Dev/staging, dados frios, analytics</td></tr>
+<tr><td><strong>Pilot Light</strong></td><td>Minutos (replicação async)</td><td>10-30 min</td><td>1.5-2x</td><td>Sistemas internos, B2B com SLA moderado</td></tr>
+<tr><td><strong>Warm Standby</strong></td><td>Segundos (replicação async)</td><td>Minutos</td><td>2-3x</td><td>E-commerce, SaaS com SLA 99.95%+</td></tr>
+<tr><td><strong>Active-Active</strong></td><td>Zero (replicação sync)</td><td>Próximo de zero</td><td>3-4x</td><td>Financeiro, healthcare, infra critica</td></tr>
+</table>
+</div>
+
+<h4>Multi-Region Deployment Patterns</h4>
+<ul>
+<li><strong>Active-Passive:</strong> Uma region primária, outra em standby. DNS failover (Route53 health checks) redireciona tráfego. Simples mas com RTO de minutos (DNS propagation)</li>
+<li><strong>Active-Active Read:</strong> Ambas regions servem leituras, mas writes vao só para primária e replicam async. Bom para read-heavy workloads (99% dos web apps)</li>
+<li><strong>Active-Active Write:</strong> Ambas regions aceitam writes. Requer conflict resolution (last-writer-wins, CRDTs, application-level merge). Complexo mas RTO zero</li>
+<li><strong>Desafio principal:</strong> Data consistency cross-region. Replicacao síncrona adiciona latência (~50-100ms cross-region). A maioria opta por async com conflict detection</li>
+</ul>
+
+<h4>Runbook Automation</h4>
+<p>Runbooks são documentos passo-a-passo para responder a cenários de falha. Runbook <strong>automation</strong> transforma esses passos em scripts executáveis.</p>
+
+<ul>
+<li><strong>Nivel 1 — Documentado:</strong> Wiki com instruções manuais. Melhor que nada, mas depende de humanós as 3h da manha</li>
+<li><strong>Nivel 2 — Semi-automatizado:</strong> Scripts que executam os passos, humano inicia e confirma. Ex: script de failover que pede confirmacao antes de cada passo</li>
+<li><strong>Nivel 3 — Full automation:</strong> Sistema detecta falha e executa runbook automáticamente. Humano e notificado mas não precisa intervir. Ex: auto-failover de RDS Multi-AZ</li>
+<li><strong>Ferramentas:</strong> AWS Systems Manager Automation, Rundeck, PagerDuty Runbook Automation, scripts Terraform para reprovisionar infra</li>
+</ul>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>DR que nunca foi testado não é DR — e wishful thinking.</strong> Se você nunca restaurou um backup em produção, você não sabe se funciona. Se nunca fez failover para a region de DR, você não sabe se o RTO e real. Traté DR drills como obrigatórios, não opcionais.</div>
+</div>
+
+<!-- ═══ CAPACITY PLANNING ═══ -->
+<h3>Capacity Planning &amp; Load Testing</h3>
+
+<h4>Forecasting de Capacidade</h4>
+<ul>
+<li><strong>Demand forecasting:</strong> Análise historico de tráfego, identifique padrões sazonais (Black Friday, fim de mes para fintech, volta as aulas para edtech). Use regressão linear simples ou modelos mais sofisticados (Prophet, ARIMA)</li>
+<li><strong>Growth-based planning:</strong> Se o produto cresce 20% mes/mes, sua infra precisa acomodar 2.5x em 6 meses. Planeje com headroom de 30-50% acima da projecao</li>
+<li><strong>Burst capacity:</strong> Capacidade de absorver spikes imprevistos. Regra: provisione para 2x do pico previsto. Autoscaling cobre o gap, mas tem lag de minutos</li>
+<li><strong>Capacity review:</strong> Reuniao mensal com métricas de útilização atual, projecao para próximo mes/quarter, acoes necessárias (scale up, optimize, migrate)</li>
+</ul>
+
+<h4>Load Testing</h4>
+<p>Load testing válida que o sistema aguenta a carga projetada e identifica onde ele quebra (bottleneck).</p>
+
+<ul>
+<li><strong>Smoke test:</strong> Carga mínima para validar que o teste funciona corretamente</li>
+<li><strong>Load test:</strong> Carga esperada normal. Valida que SLOs são atingidos</li>
+<li><strong>Strêss test:</strong> Carga acima do esperado. Identifica ponto de saturacao e modo de falha</li>
+<li><strong>Spike test:</strong> Burst repentino de tráfego. Valida autoscaling e circuit breakers</li>
+<li><strong>Soak test:</strong> Carga moderada por periodo longo (horas). Identifica memory leaks e degradação gradual</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<tr><th>Ferramenta</th><th>Linguagem dos Scripts</th><th>Forca</th><th>Fraqueza</th></tr>
+<tr><td><strong>k6</strong></td><td>JavaScript/TypeScript</td><td>Leve, excelente DX, integração Grafana Cloud</td><td>Sem UI nativa, requer CLI</td></tr>
+<tr><td><strong>Gatling</strong></td><td>Scala / Java</td><td>Alta performance na geracao de carga, reports HTML excelentes</td><td>Curva de aprendizado para Scala</td></tr>
+<tr><td><strong>Locust</strong></td><td>Python</td><td>UI web embutida, fácil de extender, Pythonic</td><td>Menós eficiente para carga extrema (GIL)</td></tr>
+<tr><td><strong>Artillery</strong></td><td>YAML + JS</td><td>Cenários declarativos em YAML, bom para APIs</td><td>Comunidade menor que k6/Gatling</td></tr>
+<tr><td><strong>JMeter</strong></td><td>GUI / XML</td><td>Maduro, muitos plugins, GUI para iniciantes</td><td>Pesado, GUI desatualizada, XML verbose</td></tr>
+</table>
+</div>
+
+<div class="tag-list">
+<span class="tag">k6 (Grafana)</span>
+<span class="tag">Gatling (Scala)</span>
+<span class="tag">Locust (Python)</span>
+<span class="tag">Artillery (Node.js)</span>
+<span class="tag">JMeter (Java)</span>
+<span class="tag">wrk / wrk2</span>
+</div>
+
+<pre data-lang="javascript"><code><span class="cm">// k6 — Load Test Script</span>
+<span class="kw">import</span> http <span class="kw">from</span> <span class="str">'k6/http'</span>;
+<span class="kw">import</span> { check, sleep } <span class="kw">from</span> <span class="str">'k6'</span>;
+<span class="kw">import</span> { Rate, Trend } <span class="kw">from</span> <span class="str">'k6/metrics'</span>;
+
+<span class="cm">// Custom metrics</span>
+<span class="kw">const</span> <span class="fn">errorRate</span> = <span class="kw">new</span> <span class="fn">Rate</span>(<span class="str">'errors'</span>);
+<span class="kw">const</span> <span class="fn">paymentDuration</span> = <span class="kw">new</span> <span class="fn">Trend</span>(<span class="str">'payment_duration'</span>);
+
+<span class="cm">// Test configuration: ramp-up, sustain, ramp-down</span>
+<span class="kw">export const</span> options = {
+  stages: [
+    { duration: <span class="str">'2m'</span>,  target: <span class="num">50</span> },   <span class="cm">// ramp up para 50 VUs</span>
+    { duration: <span class="str">'5m'</span>,  target: <span class="num">50</span> },   <span class="cm">// sustenta 50 VUs por 5min</span>
+    { duration: <span class="str">'2m'</span>,  target: <span class="num">200</span> },  <span class="cm">// strêss: sobe para 200 VUs</span>
+    { duration: <span class="str">'5m'</span>,  target: <span class="num">200</span> },  <span class="cm">// sustenta 200 VUs por 5min</span>
+    { duration: <span class="str">'2m'</span>,  target: <span class="num">0</span> },    <span class="cm">// ramp down</span>
+  ],
+  thresholds: {
+    <span class="str">'http_req_duration'</span>: [<span class="str">'p(95)&lt;500'</span>],   <span class="cm">// P95 &lt; 500ms</span>
+    <span class="str">'http_req_duration'</span>: [<span class="str">'p(99)&lt;1000'</span>],  <span class="cm">// P99 &lt; 1s</span>
+    <span class="str">'errors'</span>: [<span class="str">'rate&lt;0.01'</span>],              <span class="cm">// error raté &lt; 1%</span>
+  },
+};
+
+<span class="kw">export default function</span> () {
+  <span class="cm">// Simula fluxo real: listar produtos → ver detalhes → criar pagamento</span>
+
+  <span class="cm">// 1. Listar produtos</span>
+  <span class="kw">const</span> listRes = http.<span class="fn">get</span>(<span class="str">'https://api.example.com/products'</span>, {
+    headers: { <span class="str">'Authorization'</span>: <span class="str">`Bearer ${__ENV.API_TOKEN}`</span> },
+  });
+  <span class="fn">check</span>(listRes, {
+    <span class="str">'list status 200'</span>: (r) => r.status === <span class="num">200</span>,
+    <span class="str">'list has products'</span>: (r) => <span class="tp">JSON</span>.<span class="fn">parse</span>(r.body).length > <span class="num">0</span>,
+  });
+  <span class="fn">errorRate</span>.<span class="fn">add</span>(listRes.status !== <span class="num">200</span>);
+
+  <span class="fn">sleep</span>(<span class="num">1</span>); <span class="cm">// think time: simula usuário lendo a página</span>
+
+  <span class="cm">// 2. Criar pagamento (operação critica)</span>
+  <span class="kw">const</span> paymentRes = http.<span class="fn">post</span>(
+    <span class="str">'https://api.example.com/payments'</span>,
+    <span class="tp">JSON</span>.<span class="fn">stringify</span>({
+      productId: <span class="str">'prod_123'</span>,
+      amount: <span class="num">9990</span>,
+      currency: <span class="str">'BRL'</span>,
+      idempotencyKey: <span class="str">`test_${__VU}_${__ITER}`</span>,
+    }),
+    {
+      headers: {
+        <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>,
+        <span class="str">'Authorization'</span>: <span class="str">`Bearer ${__ENV.API_TOKEN}`</span>,
+      },
+    }
+  );
+
+  <span class="fn">paymentDuration</span>.<span class="fn">add</span>(paymentRes.timings.duration);
+  <span class="fn">check</span>(paymentRes, {
+    <span class="str">'payment status 201'</span>: (r) => r.status === <span class="num">201</span>,
+    <span class="str">'payment has id'</span>: (r) => <span class="tp">JSON</span>.<span class="fn">parse</span>(r.body).id !== <span class="kw">undefined</span>,
+  });
+  <span class="fn">errorRate</span>.<span class="fn">add</span>(paymentRes.status !== <span class="num">201</span>);
+
+  <span class="fn">sleep</span>(<span class="fn">Math</span>.<span class="fn">random</span>() * <span class="num">3</span> + <span class="num">1</span>); <span class="cm">// think time variável: 1-4 segundos</span>
+}</code></pre>
+
+<h4>Autoscaling Policies</h4>
+<ul>
+<li><strong>CPU-based:</strong> Mais simples. Scale up quando CPU > 70%, scale down quando CPU &lt; 30%. Problema: não reflete realidade para I/O-bound workloads</li>
+<li><strong>Memory-based:</strong> Util para apps com cache in-memory ou JVM. Scale up em Memory > 80%. Cuidado: memory geralmente não diminui (GC não devolve ao OS)</li>
+<li><strong>Custom metrics:</strong> O mais preciso. Scale baseado em métricas de negócio: queue depth (SQS messages), request latency P95, connections ativas. Requer export de métricas para CloudWatch/Prometheus</li>
+<li><strong>Predictive scaling:</strong> AWS oferece predictive scaling que analisa padrões historicos e pre-escala antes do spike. Ideal para tráfego previsível (ex: pico diario as 20h)</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Scale-down gradual:</strong> Configure cooldown periods agressivos no scale-down (10-15 minutos) para evitar "flapping" — escalar para cima e para baixo repetidamente. Scale-up deve ser rápido (1-2 minutos), scale-down deve ser conservador.</div>
+</div>
+
+<!-- ═══ INCIDENT RESPONSE FLOW ═══ -->
+<h3>Incident Response Flow — Do Alerta ao Postmortem</h3>
+
+<p>O fluxo completo de resposta a incidentes segue fases bem definidas. Cada fase tem responsaveis, acoes e criterios de transição claros.</p>
+
+<div class="diagram">
+<div class="diagram-box red">1. Deteccao<br><small>Alerta dispara</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">2. Triagem<br><small>Classifica SEV</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">3. Mitigacao<br><small>Para o sangramento</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">4. Resolução<br><small>Fix definitivo</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box green">5. Postmortem<br><small>Aprende e previne</small></div>
+</div>
+
+<ol>
+<li><strong>Deteccao (0-5min):</strong> Alerta automático via monitoring (Datadog, PagerDuty, CloudWatch Alarm). SLO-based alerts são melhores que threshold-based — alertar quando error budget esta queimando rápido demais</li>
+<li><strong>Triagem (5-15min):</strong> On-call acknowledge o alerta, classifica severidade (SEV1-4), declara incidente se necessário, aciona Incident Commander para SEV1/2</li>
+<li><strong>Mitigacao (15min-1h):</strong> Prioridade 1 e <strong>parar a hemorragia</strong>. Rollback, feature flag off, redirect tráfego, scale up. NAO e hora de achar root cause — e hora de restaurar o serviço</li>
+<li><strong>Resolução (1h-24h):</strong> Apos mitigar, investigar root cause com calma. Deploy de fix definitivo. Validar que métricas voltaram ao steady-state</li>
+<li><strong>Postmortem (24-72h):</strong> Documentar timeline, root cause, action items. Reuniao blameless com todos os envolvidos. Publicar internamente para learning organizacional</li>
+</ol>
+
+<div class="card blue">
+<div class="card-title">On-Call Health Metrics</div>
+<p style="color:var(--text2);font-size:.88rem;margin-bottom:12px">Métricas para garantir que on-call não esta destruindo seu time:</p>
+<ul>
+<li><strong>Alertas por turno:</strong> Saudavel &lt; 2 alertas noturnos/semana. Se &gt; 5, investir em redução de ruido</li>
+<li><strong>% de alertas actionable:</strong> Alvo &gt; 80%. Se metade dos alertas são falsos positivos, afine os thresholds</li>
+<li><strong>MTTA (Mean Time To Acknowledge):</strong> Alvo &lt; 5 minutos. Se &gt; 15min, revise escalation policies</li>
+<li><strong>Toil ratio do on-call:</strong> Se o on-call gasta 100% do tempo em toil reativo, o time tem debt de automação</li>
+<li><strong>Compensacao:</strong> On-call não remunerado causa burnout e rotatividade. Defina politica clara (folga compensatoria ou adicional financeiro)</li>
+</ul>
+</div>
+
+<!-- ═══ SRE MATURITY MODEL ═══ -->
+<h3>SRE Maturity Model — Onde Você Esta?</h3>
+
+<p>Use este modelo para avaliar a maturidade de reliability engineering da sua organização e identificar próximos passos.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Nivel</th><th>Práticas</th><th>Indicadores</th></tr>
+<tr><td><strong>Nivel 0 — Reativo</strong></td><td>Sem SLOs, sem on-call formal, incidentes resolvidos ad-hoc, sem postmortems</td><td>Downtime frequente, MTTR alto (horas), culpa em individuos, mesmos incidentes se repetem</td></tr>
+<tr><td><strong>Nivel 1 — Basico</strong></td><td>SLOs definidos, on-call rotativo, alertas básicos, postmortems para SEV1</td><td>MTTR melhorando (30min-1h), alertas existem mas com ruido, action items mas sem follow-up consistente</td></tr>
+<tr><td><strong>Nivel 2 — Estruturado</strong></td><td>Error budgets ativos, incident management formal, toil tracking, runbooks documentados</td><td>MTTR &lt; 30min, error budget influencia decisões de produto, toil &lt; 50%, postmortems com action items tracked</td></tr>
+<tr><td><strong>Nivel 3 — Proativo</strong></td><td>Chaos engineering, DR drills, capacity planning, SLO-based alerting, runbook automation</td><td>Incidentes descobertos antes de impactar usuários, DR testado trimestralmente, scale events são non-events</td></tr>
+<tr><td><strong>Nivel 4 — Excelencia</strong></td><td>Full automation, predictive scaling, self-healing systems, reliability como cultura</td><td>Zero surpresas, MTTR em segundos (auto-remediation), reliability e responsabilidade de todos (não só SRE)</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">&#8505;</span>
+<div><strong>Não pule níveis.</strong> Cada nível constroi sobre o anterior. Fazer chaos engineering (Nivel 3) sem ter postmortems e error budgets (Nivel 2) é como fazer testes de carga sem ter monitoring — você injeta falhas mas não aprende nada com elas. Construa a fundacao antes de avançar.</div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Reliability para um Sistema de Pagamentos</h3>
+
+<p><strong>Cenário:</strong> Você é o SRE lead de um sistema de pagamentos que processa R$50M/dia. O sistema tem 3 microserviços (gateway, processor, notifier) rodando em EKS com RDS Aurora. Como você estruturaria reliability engineering end-to-end?</p>
+
+<h4>1. SLOs e Error Budget</h4>
+<ul>
+<li><strong>Gateway:</strong> 99.95% availability, P99 &lt; 300ms, error raté &lt; 0.1%</li>
+<li><strong>Processor:</strong> 99.99% availability (mais crítico — processa dinheiro), P99 &lt; 500ms, zero double-charges</li>
+<li><strong>Notifier:</strong> 99.9% (menós crítico, notificação pode atrasar). Delivery raté &gt; 99.5%</li>
+<li><strong>Error budget:</strong> Processor tem ~4.3min/mes de budget. Feature freeze automático ao atingir 50% consumido</li>
+</ul>
+
+<h4>2. Incident Management</h4>
+<ul>
+<li>On-call: 2 rotacoes (primary + secondary), turnós de 7 dias, max 2 pages/noite</li>
+<li>SEV1 criteria: qualquer falha no Processor, perda de dados, downtime total</li>
+<li>War room automático via Slack + PagerDuty quando SEV1 declarado</li>
+<li>Postmortem obrigatório para SEV1/2 dentro de 48h</li>
+</ul>
+
+<h4>3. Chaos Engineering</h4>
+<ul>
+<li>GameDay mensal: pod kill no Processor, simulacao de falha Aurora, latência injetada no Notifier</li>
+<li>Hipoteses testadas: "Processor continua operando com 1 de 3 pods", "Failover Aurora completa em &lt; 30s"</li>
+<li>Abort criteria: error raté &gt; 1% ou latência P99 &gt; 2s</li>
+</ul>
+
+<h4>4. Disaster Recovery</h4>
+<ul>
+<li>Estrategia: Warm Standby em outra region (sa-east-1 primária, us-east-1 DR)</li>
+<li>RPO: &lt; 1 minuto (Aurora cross-region replication async)</li>
+<li>RTO: &lt; 15 minutos (warm standby com compute pre-escalado a 30%)</li>
+<li>DR drill trimestral obrigatório, simulando failover completo</li>
+</ul>
+
+<h4>5. Capacity Planning</h4>
+<ul>
+<li>Load test mensal com k6 simulando 3x tráfego normal</li>
+<li>Autoscaling: custom metric baseado em queue depth (SQS) para Processor, CPU para Gateway</li>
+<li>Pre-scaling automático para dias de pagamento (dia 5, 15, 25 de cada mes)</li>
+<li>Capacity review mensal com projecao de crescimento de 15% mes/mes</li>
+</ul>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Reliability não é gratis.</strong> Este setup custa significativamente mais do que rodar em single-region sem DR. A justificativa e clara: R$50M/dia dividido por 24h = ~R$2M/hora. Uma hora de downtime custa mais do que um ano inteiro de infra de DR. O investimento se paga na primeira hora de incidente que não vira downtime.</div>
+</div>
+
+<!-- ═══ RELIABILITY CHECKLIST ═══ -->
+<h3>Checklist de Reliability — Antes de Ir para Produção</h3>
+
+<p>Use este checklist como gaté de quality antes de colocar qualquer novo serviço em produção.</p>
+
+<div class="card purple">
+<div class="card-title">Production Readiness Checklist</div>
+<ul>
+<li><strong>SLOs definidos:</strong> Availability, latency, error raté documentados e medidos</li>
+<li><strong>Alertas configurados:</strong> SLO-based alerts, escalation policies, runbooks linkados</li>
+<li><strong>On-call assignment:</strong> Time responsável definido, rotacao configurada no PagerDuty/Opsgenie</li>
+<li><strong>Monitoring dashboard:</strong> Golden signals visíveis (latência, tráfego, erros, saturacao)</li>
+<li><strong>Graceful degradation:</strong> Circuit breakers, fallbacks, timeouts configurados para cada dependência</li>
+<li><strong>Health checks:</strong> Liveness e readiness probes (K8s) ou health endpoints (ECS/EC2)</li>
+<li><strong>Rollback plan:</strong> Como reverter o deploy em &lt; 5 minutos</li>
+<li><strong>Load tested:</strong> Serviço aguenta 2x o tráfego esperado com SLOs mantidos</li>
+<li><strong>DR plan:</strong> Backup verificado, failover testado, RPO/RTO documentados</li>
+<li><strong>Runbook:</strong> Pelo menos: "serviço caiu", "latência alta", "erro raté alto"</li>
+<li><strong>Dependency map:</strong> Todos os serviços upstream/downstream documentados com impacto de falha</li>
+<li><strong>Logging estruturado:</strong> Correlation IDs, request tracing, logs em JSON</li>
+</ul>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Production Readiness Review (PRR):</strong> Google exige que todo novo serviço passe por um PRR antes de ir para produção. O checklist acima é baseado nesse processo. Implemente como um gaté no seu pipeline: serviço não vai para prod sem PRR aprovado.</div>
+</div>
+
+<!-- ═══ Q&A ═══ -->
+<h3>Perguntas e Respostas</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Qual a diferença entre chaos engineering e testes de falha tradicionais?</div>
+<div class="qa-a">
+<p><strong>Testes de falha tradicionais</strong> verificam cenários <strong>conhecidos</strong>: "se o DB cair, o circuit breaker abre?" São deterministicos e rodam em staging. <strong>Chaos engineering</strong> é experimental: formula hipoteses sobre o comportamento do sistema e tenta refuta-las injetando falhas do mundo real, idealmente em produção. A diferença fundamental é que chaos engineering descobre <strong>unknown unknowns</strong> — falhas que você nem sabia que eram possiveis. Testes tradicionais válidam known knowns.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Error budget zerou no meio do sprint. O PM quer continuar lancando features. Como resolver?</div>
+<div class="qa-a">
+<p>A politica de error budget deve ser <strong>pre-acordada e documentada</strong> com assinaturas de engineering e produto. Quando o budget zera: (1) Feature freeze entra automáticamente — não é uma "sugestão", e uma regra do jogo. (2) Todo esforco de engenharia vai para reliability (fixing the issues that burned the budget). (3) O PM pode escalar para VP/CTO, mas a escalação deve reforçar a politica, não contorna-la. (4) Se o PM consistentemente pressiona contra error budgets, o problema e cultural e precisa ser resolvido no nível de lideranca. Error budgets sem enforcement são decorativos.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Como convencer a lideranca a investir em disaster recovery se "nunca tivemos um desastre"?</div>
+<div class="qa-a">
+<p>Use números: (1) Calcule o <strong>custo por hora de downtime</strong> — receita perdida + custo de engenharia em emergência + dano reputacional + multas regulatorias (LGPD, PCI). Para e-commerce, downtime na Black Friday pode custar milhões. (2) Mostre <strong>probabilidade</strong>: AWS tem SLA de 99.99% por region, mas já teve outages multi-hora (us-east-1 em 2021, por exemplo). Não e "se" vai acontecer, e "quando". (3) Compare o custo de <strong>prevenção vs reacao</strong>: DR drill trimestral custa talvez 2 dias de engenharia. Disaster recovery improvisado custa semanas + dados perdidos + clientes perdidos. (4) Enquadre como <strong>seguro</strong>: você paga seguro do carro esperando nunca usar. DR é o seguro da empresa.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">k6 vs Gatling vs Locust — qual escolher para load testing?</div>
+<div class="qa-a">
+<p><strong>k6</strong> (Grafana Labs): Scripts em JavaScript, leve, excelente CLI, integração nativa com Grafana Cloud. Melhor para times que já usam Grafana stack. <strong>Gatling</strong>: Scripts em Scala/Java, muito eficiente para gerar carga alta (usa Akka), excelentes reports HTML. Melhor para times Java/Scala e cenários enterprise. <strong>Locust</strong>: Scripts em Python, UI web embutida, fácil de extender. Melhor para times Python e prototipos rápidos. Recomendacao geral: <strong>k6</strong> para a maioria dos times (JavaScript universal, leve, boa doc). Gatling se precisa de performance extrema na geracao de carga. Locust se o time e forte em Python.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Reliability Engineering</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="50-platform-engineering.html">&#8592; Anterior: Platform Engineering</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="52-finops.html" class="primary">Próximo: FinOps &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 51: Reliability Engineering
+// ══════════════════════════════════════════
+const SECTION_NUM = 51;
+const STORAGE_KEY = 'fsm_quiz_51';
+
+const QUIZ_DATA = [
+  {
+    question: "O que é 'toil' no contexto de SRE?",
+    options: [
+      "Qualquer trabalho de engenharia, incluindo design e code reviews",
+      "Trabalho repetitivo, manual e automatizavel que escala linearmente com o serviço",
+      "Trabalho de on-call durante incidentes críticos",
+      "Reunioes de planejamento e retrospectivas do time de SRE"
+    ],
+    correct: 1,
+    explanation: "Toil e específicamente trabalho operacional que é manual, repetitivo, automatizavel, tatico e escala linearmente. Google SRE recomenda que no máximo 50% do tempo de um SRE sejá gasto em toil."
+  },
+  {
+    question: "Se o error budget do seu serviço esta em 0%, qual acao correta segundo as práticas de SRE?",
+    options: [
+      "Continuar lancando features normalmente, o budget se repoe automáticamente",
+      "Fazer feature freeze e focar todo esforco de engenharia em reliability",
+      "Aumentar o SLO para ganhar mais budget",
+      "Ignorar o budget — e apenas uma métrica sugestiva"
+    ],
+    correct: 1,
+    explanation: "Quando o error budget zera, a politica pre-acordada entra em vigor: feature freeze. Todo esforco vai para melhorar reliability até o budget se repor no próximo ciclo. Sem enforcement, error budgets são decorativos."
+  },
+  {
+    question: "Qual o papel do Incident Commander (IC) durante um incidente SEV1?",
+    options: [
+      "Debugar o código e encontrar o root cause o mais rápido possível",
+      "Coordenar a resposta, comúnicar stakeholders e decidir escalacoes — sem debugar",
+      "Escrever o postmortem em tempo real durante o incidente",
+      "Aprovar o deploy do hotfix é garantir que passe nós testes"
+    ],
+    correct: 1,
+    explanation: "O IC coordena, comúnica e decide — NAO debuga. Se o IC esta debugando, perde a visao macro da situação. Ele delega investigacao para engenheiros e mantém updates regulares para stakeholders."
+  },
+  {
+    question: "Qual o princípio fundamental de um postmortem blameless?",
+    options: [
+      "Não documentar quem causou o incidente para proteger o time",
+      "Focar em sistemas e processos que permitirám a falha, não em culpar individuos",
+      "Permitir que cada pessoa envolvida escreva sua versão dos fatos",
+      "So fazer postmortem se o incidente durou mais de 1 hora"
+    ],
+    correct: 1,
+    explanation: "Blameless significa focar em 'o que no sistema/processo permitiu que isso acontecesse?' ao inves de 'quem errou?'. O objetivo é melhorar sistemas, não punir pessoas. Isso incentiva transparência e aprendizado."
+  },
+  {
+    question: "No chaos engineering, o que é uma 'steady-state hypothesis'?",
+    options: [
+      "A previsao de que o sistema vai falhar de forma específica",
+      "A definição do comportamento normal do sistema que deve se manter durante o experimento",
+      "O estado do sistema após a falha ser injetada",
+      "A configuração de rollback automático para chaos experiments"
+    ],
+    correct: 1,
+    explanation: "Steady-state hypothesis define o comportamento normal (ex: P99 < 200ms, error raté < 0.1%). O experimento injeta falhas e verifica se o steady-state se mantém. Se quebrar, você descobriu uma vulnerabilidade."
+  },
+  {
+    question: "Qual estratégia de DR oferece RTO próximo de zero mas com maior custo?",
+    options: [
+      "Backup/Restore",
+      "Pilot Light",
+      "Warm Standby",
+      "Active-Active (Multi-Region)"
+    ],
+    correct: 3,
+    explanation: "Active-Active (Multi-Region) processa tráfego em ambas as regions simultaneamente. Se uma cai, a outra absorve 100%. RTO próximo de zero, mas custo de infra práticamente dobra, além da complexidade de data sync cross-region."
+  },
+  {
+    question: "Qual a diferença entre RPO e RTO?",
+    options: [
+      "RPO mede tempo de resposta; RTO mede uptime do serviço",
+      "RPO define a perda máxima de dados aceitável; RTO define o tempo máximo para restaurar o serviço",
+      "RPO e métrica de performance; RTO e métrica de capacidade",
+      "RPO se aplica a banco de dados; RTO se aplica a servidores"
+    ],
+    correct: 1,
+    explanation: "RPO (Recovery Point Objective) = quanto dado possó perder (ex: RPO 1h = até 1h de dados perdidos). RTO (Recovery Time Objective) = quanto tempo para voltar ao ar (ex: RTO 30min = serviço restaurado em até 30min). Ambos são decisões de negócio."
+  },
+  {
+    question: "Em um script k6, qual é o proposito do 'think time' (sleep entre requests)?",
+    options: [
+      "Evitar raté limiting do servidor",
+      "Simular o comportamento real de usuários que pausam entre acoes",
+      "Dar tempo para o servidor processar a resposta",
+      "Reduzir o consumo de CPU da máquina que roda o teste"
+    ],
+    correct: 1,
+    explanation: "Think time simula o comportamento real: usuários leem páginas, preenchem formulários, pensam antes de clicar. Sem think time, o teste gera carga irrealisticamente alta e não representa tráfego real."
+  },
+  {
+    question: "Qual abordagem de autoscaling é mais precisa para um serviço que processa filas (queue-based)?",
+    options: [
+      "CPU-based: scale up quando CPU > 70%",
+      "Memory-based: scale up quando memória > 80%",
+      "Custom metrics: scale baseado na profundidade da fila (queue depth)",
+      "Scheduled scaling: pre-configurar horarios de pico"
+    ],
+    correct: 2,
+    explanation: "Para serviços queue-based, a métrica ideal e queue depth (número de mensagens pendentes). CPU pode estar baixa mesmo com fila enorme (se o serviço esta esperando I/O). Custom metrics como queue depth refletem a demanda real de processamento."
+  },
+  {
+    question: "Por que DR drills (simulacoes de desastre) são considerados obrigatórios em Reliability Engineering?",
+    options: [
+      "São exigidos por regulamentacoes como LGPD e PCI-DSS",
+      "Porque RPO/RTO são números teoricos até serem válidados com testes reais",
+      "Para treinar novos membros do time em procedimentos de emergência",
+      "Para justificar o custo da infraestrutura de DR ao time financeiro"
+    ],
+    correct: 1,
+    explanation: "Um plano de DR que nunca foi testado e apenas um documento. DR drills válidam que o RPO/RTO declarados são alcançaveis na prática. E comum descobrir em drills que o RTO 'de 30 minutos' na verdade leva 4 horas com problemas reais."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Reliability Engineering.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>29 — Auth - OAuth, JWT, RBAC, Zero Trust | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="28-owasp-top-10.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>29</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="30-criptografia-app-security.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:43.9%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 29</span>
+<h2>Auth — OAuth, JWT, RBAC, Zero Trust</h2>
+<div class="section-line"></div>
+
+<p>Autenticação e autorização são dois pilares fundamentais da segurança de qualquer sistema. <strong>Autenticação</strong> responde "quem e você?" — prova a identidade. <strong>Autorização</strong> responde "o que você pode fazer?" — controla o acesso. Confundir os dois é um dos erros mais comuns em sistemas inseguros. Nesta seção, vamos explorar em profundidade cada protocolo, padrão e estratégia, com exemplos reais em TypeScript.</p>
+
+<p>A complexidade de auth cresce exponencialmente com o número de serviços. Um monolito pode usar sessions simples. Mas quando você tem 20 microsserviços, um app mobile, um SPA e parceiros externos, precisa de um sistema robusto com <strong>OAuth 2.0, JWT, RBAC e Zero Trust</strong>.</p>
+
+<!-- ═══ OAUTH 2.0 ═══ -->
+<h3>OAuth 2.0 — O Protocolo de Autorização</h3>
+<p>OAuth 2.0 não é um protocolo de autenticação — e de <strong>autorização delegada</strong>. Ele permite que um aplicativo (client) acesse recursos em nome de um usuário (resource owner) sem que o usuário compartilhe suas credenciais. O Google, GitHub, Facebook — todos usam OAuth 2.0.</p>
+
+<p><strong>Papeis no OAuth 2.0:</strong></p>
+<ul>
+<li><strong>Resource Owner</strong> — o usuário que possui os dados</li>
+<li><strong>Client</strong> — a aplicação que quer acessar os dados</li>
+<li><strong>Authorization Server</strong> — emite tokens (ex: Google Auth, Auth0, Keycloak)</li>
+<li><strong>Resource Server</strong> — a API que protege os recursos</li>
+</ul>
+
+<h4>Authorization Code + PKCE (SPAs e Apps Nativos)</h4>
+<p>O fluxo mais seguro para Single Page Applications e aplicações mobile. <strong>PKCE</strong> (Proof Key for Code Exchange) protege contra ataques de interceptação do authorization code — essencial porque SPAs não conseguem manter um <code>client_secret</code> seguro.</p>
+
+<div class="diagram">
+<div class="diagram-box blue">SPA (Client)<br><small>Gera code_verifier<br>+ code_challenge</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Auth Server<br><small>/authorize<br>+ code_challenge</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Login do Usuário<br><small>Consentimento</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Auth Server<br><small>Redireciona com<br>authorization_code</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">SPA<br><small>Troca code +<br>code_verifier por tokens</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Resource Server<br><small>API protegida</small></div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// Passó 1: Gerar PKCE code_verifier e code_challenge</span>
+<span class="kw">function</span> <span class="fn">generatePKCE</span>() {
+  <span class="kw">const</span> array = <span class="kw">new</span> <span class="tp">Uint8Array</span>(<span class="num">32</span>);
+  crypto.<span class="fn">getRandomValues</span>(array);
+  <span class="kw">const</span> codeVerifier = <span class="fn">base64UrlEncode</span>(array);
+
+  <span class="cm">// SHA-256 do verifier = challenge</span>
+  <span class="kw">const</span> hash = <span class="kw">await</span> crypto.subtle.<span class="fn">digest</span>(<span class="str">'SHA-256'</span>,
+    <span class="kw">new</span> <span class="tp">TextEncoder</span>().<span class="fn">encode</span>(codeVerifier));
+  <span class="kw">const</span> codeChallenge = <span class="fn">base64UrlEncode</span>(<span class="kw">new</span> <span class="tp">Uint8Array</span>(hash));
+
+  <span class="kw">return</span> { codeVerifier, codeChallenge };
+}
+
+<span class="cm">// Passó 2: Redirecionar para o Authorization Server</span>
+<span class="kw">const</span> { codeVerifier, codeChallenge } = <span class="kw">await</span> <span class="fn">generatePKCE</span>();
+sessionStorage.<span class="fn">setItem</span>(<span class="str">'pkce_verifier'</span>, codeVerifier);
+
+<span class="kw">const</span> authUrl = <span class="kw">new</span> <span class="tp">URL</span>(<span class="str">'https://auth.example.com/authorize'</span>);
+authUrl.searchParams.<span class="fn">set</span>(<span class="str">'response_type'</span>, <span class="str">'code'</span>);
+authUrl.searchParams.<span class="fn">set</span>(<span class="str">'client_id'</span>, <span class="str">'my-spa-client'</span>);
+authUrl.searchParams.<span class="fn">set</span>(<span class="str">'redirect_uri'</span>, <span class="str">'https://app.example.com/callback'</span>);
+authUrl.searchParams.<span class="fn">set</span>(<span class="str">'scope'</span>, <span class="str">'openid profile email'</span>);
+authUrl.searchParams.<span class="fn">set</span>(<span class="str">'code_challenge'</span>, codeChallenge);
+authUrl.searchParams.<span class="fn">set</span>(<span class="str">'code_challenge_method'</span>, <span class="str">'S256'</span>);
+authUrl.searchParams.<span class="fn">set</span>(<span class="str">'state'</span>, <span class="fn">generateRandomState</span>());
+
+window.location.<span class="fn">assign</span>(authUrl.<span class="fn">toString</span>());
+
+<span class="cm">// Passó 3: No callback — trocar code por tokens</span>
+<span class="kw">async function</span> <span class="fn">handleCallback</span>() {
+  <span class="kw">const</span> params = <span class="kw">new</span> <span class="tp">URLSearchParams</span>(window.location.search);
+  <span class="kw">const</span> code = params.<span class="fn">get</span>(<span class="str">'code'</span>);
+  <span class="kw">const</span> verifier = sessionStorage.<span class="fn">getItem</span>(<span class="str">'pkce_verifier'</span>);
+
+  <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'https://auth.example.com/token'</span>, {
+    method: <span class="str">'POST'</span>,
+    headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/x-www-form-urlencoded'</span> },
+    body: <span class="kw">new</span> <span class="tp">URLSearchParams</span>({
+      grant_type: <span class="str">'authorization_code'</span>,
+      code,
+      redirect_uri: <span class="str">'https://app.example.com/callback'</span>,
+      client_id: <span class="str">'my-spa-client'</span>,
+      code_verifier: verifier,  <span class="cm">// PKCE: prova que somos nos</span>
+    }),
+  });
+
+  <span class="kw">const</span> tokens = <span class="kw">await</span> response.<span class="fn">json</span>();
+  <span class="cm">// tokens = { access_token, id_token, refresh_token, expires_in }</span>
+}</code></pre>
+
+<h4>Client Credentials (Machine-to-Machine)</h4>
+<p>Usado quando não ha usuário envolvido — um serviço precisa chamar outro serviço. O client se autentica diretamente com <code>client_id</code> é <code>client_secret</code>.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Backend microserviço chamando outro microserviço</span>
+<span class="kw">async function</span> <span class="fn">getM2MToken</span>(): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+  <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'https://auth.example.com/token'</span>, {
+    method: <span class="str">'POST'</span>,
+    headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/x-www-form-urlencoded'</span> },
+    body: <span class="kw">new</span> <span class="tp">URLSearchParams</span>({
+      grant_type: <span class="str">'client_credentials'</span>,
+      client_id: process.env.<span class="str">SERVICE_CLIENT_ID</span>,
+      client_secret: process.env.<span class="str">SERVICE_CLIENT_SECRET</span>,
+      scope: <span class="str">'orders:read payments:write'</span>,
+    }),
+  });
+
+  <span class="kw">const</span> { access_token } = <span class="kw">await</span> response.<span class="fn">json</span>();
+  <span class="kw">return</span> access_token;
+}</code></pre>
+
+<h4>Refresh Token Rotation</h4>
+<p>Access tokens devem ter vida curta (5-15 minutos). Refresh tokens permitem obter novos access tokens sem re-login. <strong>Refresh Token Rotation</strong> inválida o refresh token anterior a cada usó — se um token for roubado, o atacante só consegue usa-lo uma vez antes de ser inválidado.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Refresh Token Rotation — backend</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">TokenService</span> {
+  <span class="kw">async</span> <span class="fn">refreshTokens</span>(oldRefreshToken: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">TokenPair</span>&gt; {
+    <span class="cm">// 1. Buscar token no banco</span>
+    <span class="kw">const</span> stored = <span class="kw">await</span> <span class="kw">this</span>.tokenRepo.<span class="fn">findOne</span>({
+      <span class="kw">where</span>: { token: oldRefreshToken, revoked: <span class="num">false</span> },
+    });
+
+    <span class="kw">if</span> (!stored) {
+      <span class="cm">// Token já foi usado ou não existe — possível roubo!</span>
+      <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">revokeAllTokensForUser</span>(stored?.userId);
+      <span class="kw">throw new</span> <span class="tp">UnauthorizedException</span>(<span class="str">'Refresh token inválido'</span>);
+    }
+
+    <span class="cm">// 2. Revogar o token antigo (rotation)</span>
+    stored.revoked = <span class="num">true</span>;
+    <span class="kw">await</span> <span class="kw">this</span>.tokenRepo.<span class="fn">save</span>(stored);
+
+    <span class="cm">// 3. Gerar novo par de tokens</span>
+    <span class="kw">const</span> accessToken = <span class="kw">this</span>.<span class="fn">generateAccessToken</span>(stored.userId);
+    <span class="kw">const</span> refreshToken = <span class="kw">this</span>.<span class="fn">generateRefreshToken</span>(stored.userId);
+
+    <span class="cm">// 4. Salvar novo refresh token</span>
+    <span class="kw">await</span> <span class="kw">this</span>.tokenRepo.<span class="fn">save</span>({
+      userId: stored.userId,
+      token: refreshToken,
+      expiresAt: <span class="fn">addDays</span>(<span class="kw">new</span> <span class="tp">Date</span>(), <span class="num">30</span>),
+    });
+
+    <span class="kw">return</span> { accessToken, refreshToken };
+  }
+}</code></pre>
+
+<!-- ═══ OIDC ═══ -->
+<h3>OpenID Connect (OIDC)</h3>
+<p>OAuth 2.0 e sobre <strong>autorização</strong> — ele não diz quem é o usuário. <strong>OpenID Connect</strong> é uma camada de identidade construída SOBRE o OAuth 2.0 que adiciona <strong>autenticação</strong>. A diferença crucial:</p>
+
+<ul>
+<li><strong>Access Token</strong> — autoriza acesso a recursos. O client NÃO deve ler seu conteúdo (e opaco para o client)</li>
+<li><strong>ID Token</strong> — JWT que contém informações sobre o usuário (claims). E para o CLIENT consumir, não para a API</li>
+</ul>
+
+<div class="card blue">
+<div class="card-title">Claims Padrão do ID Token (OIDC)</div>
+<ul>
+<li><strong>sub</strong> — Subject, identificador único do usuário</li>
+<li><strong>iss</strong> — Issuer, quem emitiu o token (URL do auth server)</li>
+<li><strong>aud</strong> — Audience, para quem o token foi emitido (client_id)</li>
+<li><strong>exp</strong> — Expiration time (Unix timestamp)</li>
+<li><strong>iat</strong> — Issued at (quando foi emitido)</li>
+<li><strong>nonce</strong> — Previne replay attacks</li>
+<li><strong>name, email, picture</strong> — Dados do perfil (se scope permitir)</li>
+</ul>
+</div>
+
+<p><strong>Discovery Endpoint:</strong> Todo provider OIDC expõe um endpoint <code>/.well-known/openid-configuration</code> que retorna as URLs de autorização, token, userinfo, JWKs, etc. Seu client não precisa hardcodar nada — basta consultar esse endpoint.</p>
+
+<pre data-lang="bash"><code><span class="cm"># Exemplo: Discovery endpoint do Google</span>
+curl https://accounts.google.com/.well-known/openid-configuration | jq .
+
+<span class="cm"># Retorna:</span>
+<span class="cm"># {</span>
+<span class="cm">#   "authorization_endpoint": "https://accounts.google.com/o/oauth2/v2/auth",</span>
+<span class="cm">#   "token_endpoint": "https://oauth2.googleapis.com/token",</span>
+<span class="cm">#   "userinfo_endpoint": "https://openidconnect.googleapis.com/v1/userinfo",</span>
+<span class="cm">#   "jwks_uri": "https://www.googleapis.com/oauth2/v3/certs",</span>
+<span class="cm">#   "scopes_supported": ["openid", "email", "profile"],</span>
+<span class="cm">#   ...</span>
+<span class="cm"># }</span></code></pre>
+
+<!-- ═══ JWT DEEP ═══ -->
+<h3>JWT — JSON Web Tokens em Profundidade</h3>
+<p>Um JWT e uma string composta por três partes separadas por pontos: <code>header.payload.signature</code>. Cada parte e Base64Url-encoded.</p>
+
+<div class="diagram">
+<div class="diagram-box red">Header<br><small>{"alg":"RS256",<br>"typ":"JWT"}</small></div>
+<div class="diagram-arrow">.</div>
+<div class="diagram-box blue">Payload<br><small>{"sub":"user123",<br>"role":"admin",<br>"exp":1700000000}</small></div>
+<div class="diagram-arrow">.</div>
+<div class="diagram-box green">Signature<br><small>RSASHA256(<br>base64(header) + "." +<br>base64(payload),<br>privateKey)</small></div>
+</div>
+
+<h4>Algoritmos de Assinatura</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Algoritmo</th><th>Tipo</th><th>Chave</th><th>Usó Ideal</th></tr>
+<tr><td><strong>HS256</strong></td><td>Simetrico (HMAC)</td><td>Mesma chave para assinar e verificar</td><td>Monolitos, serviços internos</td></tr>
+<tr><td><strong>RS256</strong></td><td>Assimetrico (RSA)</td><td>Chave privada assina, pública verifica</td><td>Microsserviços, APIs públicas</td></tr>
+<tr><td><strong>ES256</strong></td><td>Assimetrico (ECDSA)</td><td>Curva eliptica, chaves menores</td><td>Mobile, IoT, alta performance</td></tr>
+</table>
+</div>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>RS256 vs HS256:</strong> Em microsserviços, use <strong>RS256</strong>. O auth server assina com a chave privada, e qualquer serviço pode verificar com a chave pública (obtida via JWKS endpoint). Com HS256, todos os serviços precisariam compartilhar o mesmo secret — se um for comprometido, todos são.</div>
+</div>
+
+<h4>Criando e Verificando JWT com TypeScript</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> * <span class="kw">as</span> jwt <span class="kw">from</span> <span class="str">'jsonwebtoken'</span>;
+<span class="kw">import</span> { readFileSync } <span class="kw">from</span> <span class="str">'fs'</span>;
+
+<span class="cm">// ── Assimetrico (RS256) — recomendado para produção ──</span>
+<span class="kw">const</span> privateKey = <span class="fn">readFileSync</span>(<span class="str">'./keys/private.pem'</span>, <span class="str">'utf8'</span>);
+<span class="kw">const</span> publicKey = <span class="fn">readFileSync</span>(<span class="str">'./keys/public.pem'</span>, <span class="str">'utf8'</span>);
+
+<span class="cm">// Gerar token (no Auth Server)</span>
+<span class="kw">function</span> <span class="fn">generateToken</span>(user: <span class="tp">User</span>): <span class="tp">string</span> {
+  <span class="kw">return</span> jwt.<span class="fn">sign</span>(
+    {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      permissions: user.permissions,
+    },
+    privateKey,
+    {
+      algorithm: <span class="str">'RS256'</span>,
+      expiresIn: <span class="str">'15m'</span>,        <span class="cm">// Curta duração!</span>
+      issuer: <span class="str">'https://auth.myapp.com'</span>,
+      audience: <span class="str">'https://api.myapp.com'</span>,
+    }
+  );
+}
+
+<span class="cm">// Verificar token (em qualquer microserviço)</span>
+<span class="kw">function</span> <span class="fn">verifyToken</span>(token: <span class="tp">string</span>): <span class="tp">JwtPayload</span> {
+  <span class="kw">try</span> {
+    <span class="kw">return</span> jwt.<span class="fn">verify</span>(token, publicKey, {
+      algorithms: [<span class="str">'RS256'</span>],   <span class="cm">// NUNCA aceite 'none'!</span>
+      issuer: <span class="str">'https://auth.myapp.com'</span>,
+      audience: <span class="str">'https://api.myapp.com'</span>,
+    }) <span class="kw">as</span> <span class="tp">JwtPayload</span>;
+  } <span class="kw">catch</span> (err) {
+    <span class="kw">if</span> (err <span class="kw">instanceof</span> jwt.<span class="tp">TokenExpiredError</span>) {
+      <span class="kw">throw new</span> <span class="tp">UnauthorizedException</span>(<span class="str">'Token expirado'</span>);
+    }
+    <span class="kw">throw new</span> <span class="tp">UnauthorizedException</span>(<span class="str">'Token inválido'</span>);
+  }
+}</code></pre>
+
+<h4>Onde Armazenar Tokens no Frontend?</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Local</th><th>XSS</th><th>CSRF</th><th>Veredicto</th></tr>
+<tr><td><strong>localStorage</strong></td><td>Vulnerável (JS acessa)</td><td>Imune</td><td>Evitar para tokens sensíveis</td></tr>
+<tr><td><strong>sessionStorage</strong></td><td>Vulnerável (JS acessa)</td><td>Imune</td><td>Melhor que localStorage, mas ainda vulnerável a XSS</td></tr>
+<tr><td><strong>httpOnly cookie</strong></td><td>Imune (JS não acessa)</td><td>Vulnerável (precisa SameSite + CSRF token)</td><td>Recomendado para access tokens</td></tr>
+<tr><td><strong>BFF Pattern</strong></td><td>Imune</td><td>Imune</td><td>Ideal — token fica no backend, cookie de sessão no frontend</td></tr>
+</table>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Melhor prática:</strong> Use o <strong>BFF (Backend for Frontend) pattern</strong>. O token JWT fica no servidor BFF, e o browser recebe apenas um cookie de sessão <code>httpOnly</code>, <code>Secure</code>, <code>SameSite=Strict</code>. Nenhum token e exposto ao JavaScript.</div>
+</div>
+
+<!-- ═══ SESSION-BASED AUTH ═══ -->
+<h3>Session-Based Auth — Quando Sessions Vencem JWT</h3>
+<p>Sessions são o modelo clássico: o servidor armazena o estado da sessão, e o browser recebe um cookie com o session ID. Embora JWT sejá mais popular para APIs stateless, sessions tem vantagens claras em certos cenários:</p>
+
+<ul>
+<li><strong>Revogação instantanea</strong> — Deletou a session no Redis? Usuário deslogado imediatamente. Com JWT, você precisa esperar o token expirar ou manter uma blacklist</li>
+<li><strong>Payloads grandes</strong> — Se você precisa guardar muitos dados no contexto do usuário, session é melhor que inflar o JWT</li>
+<li><strong>Monolitos tradicionais</strong> — Se você tem um único servidor (ou cluster com sticky sessions/Redis), sessions são mais simples</li>
+</ul>
+
+<h4>Redis Session Store com Express</h4>
+<pre data-lang="typescript"><code><span class="kw">import</span> session <span class="kw">from</span> <span class="str">'express-session'</span>;
+<span class="kw">import</span> RedisStore <span class="kw">from</span> <span class="str">'connect-redis'</span>;
+<span class="kw">import</span> { createClient } <span class="kw">from</span> <span class="str">'redis'</span>;
+
+<span class="kw">const</span> redisClient = <span class="fn">createClient</span>({ url: process.env.<span class="str">REDIS_URL</span> });
+<span class="kw">await</span> redisClient.<span class="fn">connect</span>();
+
+app.<span class="fn">use</span>(<span class="fn">session</span>({
+  store: <span class="kw">new</span> <span class="tp">RedisStore</span>({ client: redisClient }),
+  secret: process.env.<span class="str">SESSION_SECRET</span>,
+  resave: <span class="num">false</span>,
+  saveUninitialized: <span class="num">false</span>,
+  cookie: {
+    secure: <span class="num">true</span>,           <span class="cm">// Apenas HTTPS</span>
+    httpOnly: <span class="num">true</span>,         <span class="cm">// JS não acessa</span>
+    sameSite: <span class="str">'strict'</span>,     <span class="cm">// Protege contra CSRF</span>
+    maxAge: <span class="num">1000</span> * <span class="num">60</span> * <span class="num">60</span>, <span class="cm">// 1 hora</span>
+  },
+}));
+
+<span class="cm">// Login — cria sessão</span>
+app.<span class="fn">post</span>(<span class="str">'/login'</span>, <span class="kw">async</span> (req, res) => {
+  <span class="kw">const</span> user = <span class="kw">await</span> <span class="fn">authenticate</span>(req.body.email, req.body.password);
+  req.session.userId = user.id;
+  req.session.role = user.role;
+  res.<span class="fn">json</span>({ success: <span class="num">true</span> });
+});
+
+<span class="cm">// Logout — destroi sessão instantaneamente</span>
+app.<span class="fn">post</span>(<span class="str">'/logout'</span>, (req, res) => {
+  req.session.<span class="fn">destroy</span>(() => {
+    res.<span class="fn">clearCookie</span>(<span class="str">'connect.sid'</span>);
+    res.<span class="fn">json</span>({ success: <span class="num">true</span> });
+  });
+});</code></pre>
+
+<!-- ═══ PASSKEYS / WEBAUTHN ═══ -->
+<h3>Passkeys / WebAuthn (FIDO2) — O Futuro Passwordless</h3>
+<p>Passkeys são o futuro da autenticação. Baseadas no padrão <strong>WebAuthn (FIDO2)</strong>, usam criptografia de chave pública para autenticar sem senhas. O usuário confirma sua identidade com biometria (TouchID, FaceID), PIN ou chave de segurança fisica.</p>
+
+<p><strong>Como funciona:</strong></p>
+<ol>
+<li><strong>Registro:</strong> O autenticador (dispositivo) gera um par de chaves (pública + privada). A chave privada NUNCA sai do dispositivo. A chave pública é enviada ao servidor</li>
+<li><strong>Login:</strong> O servidor envia um challenge. O autenticador assina o challenge com a chave privada. O servidor verifica a assinatura com a chave pública armazenada</li>
+<li><strong>Resultado:</strong> Nenhuma senha transmitida. Imune a phishing (a chave e vinculada ao domínio). Imune a credential stuffing</li>
+</ol>
+
+<pre data-lang="typescript"><code><span class="cm">// Registro de Passkey (browser)</span>
+<span class="kw">async function</span> <span class="fn">registerPasskey</span>() {
+  <span class="cm">// Servidor gera options (challenge, user info, etc.)</span>
+  <span class="kw">const</span> options = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/webauthn/register/options'</span>)
+    .<span class="fn">then</span>(r => r.<span class="fn">json</span>());
+
+  <span class="cm">// Browser solicita ao autenticador (biometria/PIN)</span>
+  <span class="kw">const</span> credential = <span class="kw">await</span> navigator.credentials.<span class="fn">create</span>({
+    publicKey: {
+      challenge: <span class="fn">base64ToBuffer</span>(options.challenge),
+      rp: { name: <span class="str">'MyApp'</span>, id: <span class="str">'myapp.com'</span> },
+      user: {
+        id: <span class="fn">base64ToBuffer</span>(options.userId),
+        name: options.email,
+        displayName: options.name,
+      },
+      pubKeyCredParams: [
+        { alg: <span class="num">-7</span>,  type: <span class="str">'public-key'</span> },  <span class="cm">// ES256</span>
+        { alg: <span class="num">-257</span>, type: <span class="str">'public-key'</span> },  <span class="cm">// RS256</span>
+      ],
+      authenticatorSelection: {
+        authenticatorAttachment: <span class="str">'platform'</span>,  <span class="cm">// Biometria do device</span>
+        residentKey: <span class="str">'required'</span>,             <span class="cm">// Passkey discoverable</span>
+        userVerification: <span class="str">'required'</span>,
+      },
+    },
+  });
+
+  <span class="cm">// Envia chave pública ao servidor para armazenar</span>
+  <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/webauthn/register/verify'</span>, {
+    method: <span class="str">'POST'</span>,
+    body: <span class="fn">JSON.stringify</span>(<span class="fn">serializeCredential</span>(credential)),
+  });
+}
+
+<span class="cm">// Login com Passkey (browser)</span>
+<span class="kw">async function</span> <span class="fn">loginWithPasskey</span>() {
+  <span class="kw">const</span> options = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/webauthn/login/options'</span>)
+    .<span class="fn">then</span>(r => r.<span class="fn">json</span>());
+
+  <span class="kw">const</span> assertion = <span class="kw">await</span> navigator.credentials.<span class="fn">get</span>({
+    publicKey: {
+      challenge: <span class="fn">base64ToBuffer</span>(options.challenge),
+      rpId: <span class="str">'myapp.com'</span>,
+      userVerification: <span class="str">'required'</span>,
+    },
+  });
+
+  <span class="cm">// Servidor verifica a assinatura com a chave pública armazenada</span>
+  <span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/webauthn/login/verify'</span>, {
+    method: <span class="str">'POST'</span>,
+    body: <span class="fn">JSON.stringify</span>(<span class="fn">serializeAssertion</span>(assertion)),
+  });
+}</code></pre>
+
+<!-- ═══ MFA / 2FA ═══ -->
+<h3>MFA / 2FA — Autenticação Multi-Fator</h3>
+<p>Algo que você <strong>sabe</strong> (senha) + algo que você <strong>tem</strong> (telefone, chave) + algo que você <strong>e</strong> (biometria). MFA combina pelo menós dois desses fatores.</p>
+
+<h4>TOTP — Time-based One-Time Password</h4>
+<p>O algoritmo por trás do Google Authenticator e similares. Baseado em <strong>HMAC-SHA1</strong> com um segredo compartilhado é o timestamp atual (janelas de 30 segundos).</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { authenticator } <span class="kw">from</span> <span class="str">'otplib'</span>;
+
+<span class="cm">// Setup — gerar segredo e QR code para o usuário</span>
+<span class="kw">function</span> <span class="fn">setupTOTP</span>(user: <span class="tp">User</span>): { secret: <span class="tp">string</span>; qrUrl: <span class="tp">string</span> } {
+  <span class="kw">const</span> secret = authenticator.<span class="fn">generateSecret</span>();
+
+  <span class="cm">// Salvar secret encriptado no banco (associado ao usuário)</span>
+  <span class="cm">// NUNCA armazene em plaintext!</span>
+
+  <span class="kw">const</span> otpauthUrl = authenticator.<span class="fn">keyuri</span>(
+    user.email,
+    <span class="str">'MyApp'</span>,
+    secret
+  );
+
+  <span class="kw">return</span> { secret, qrUrl: otpauthUrl };
+  <span class="cm">// Frontend gera QR code a partir do qrUrl para o usuário escanear</span>
+}
+
+<span class="cm">// Verificação — usuário envia o código de 6 digitos</span>
+<span class="kw">function</span> <span class="fn">verifyTOTP</span>(secret: <span class="tp">string</span>, code: <span class="tp">string</span>): <span class="tp">boolean</span> {
+  <span class="kw">return</span> authenticator.<span class="fn">verify</span>({
+    token: code,     <span class="cm">// "482917" — código do app</span>
+    secret: secret,  <span class="cm">// Segredo armazenado no banco</span>
+  });
+  <span class="cm">// Aceita o código atual e +/- 1 janela de 30s (tolerância)</span>
+}
+
+<span class="cm">// No fluxo de login</span>
+<span class="kw">async function</span> <span class="fn">loginWith2FA</span>(email: <span class="tp">string</span>, password: <span class="tp">string</span>, totpCode: <span class="tp">string</span>) {
+  <span class="cm">// Passó 1: Verificar credenciais</span>
+  <span class="kw">const</span> user = <span class="kw">await</span> <span class="fn">verifyCredentials</span>(email, password);
+  <span class="kw">if</span> (!user) <span class="kw">throw new</span> <span class="tp">UnauthorizedException</span>(<span class="str">'Credenciais inválidas'</span>);
+
+  <span class="cm">// Passó 2: Se MFA habilitado, verificar TOTP</span>
+  <span class="kw">if</span> (user.mfaEnabled) {
+    <span class="kw">const</span> secret = <span class="kw">await</span> <span class="fn">decryptSecret</span>(user.mfaSecret);
+    <span class="kw">if</span> (!<span class="fn">verifyTOTP</span>(secret, totpCode)) {
+      <span class="kw">throw new</span> <span class="tp">UnauthorizedException</span>(<span class="str">'Código MFA inválido'</span>);
+    }
+  }
+
+  <span class="cm">// Passó 3: Emitir tokens</span>
+  <span class="kw">return</span> <span class="fn">generateTokenPair</span>(user);
+}</code></pre>
+
+<div class="card orange">
+<div class="card-title">Comparação de Fatores 2FA</div>
+<ul>
+<li><strong>TOTP (Google Authenticator, Authy)</strong> — Bom equilíbrio entre segurança e UX. Offline. Recomendado</li>
+<li><strong>WebAuthn / Passkeys</strong> — Mais seguro. Resistente a phishing. Melhor UX. Padrão ideal</li>
+<li><strong>SMS</strong> — Menós seguro (SIM swap, SS7 attacks). Usar apenas como fallback, nunca como método principal</li>
+<li><strong>Email OTP</strong> — Aceitável. Depende da segurança do email do usuário</li>
+<li><strong>Push Notification</strong> — Boa UX (Duo, Microsoft Authenticator). Vulnerável a MFA fatigue attacks</li>
+</ul>
+</div>
+
+<!-- ═══ AUTHORIZATION — RBAC ═══ -->
+<h3>RBAC — Role-Based Access Control</h3>
+<p>O modelo mais comum de autorização. Usuários recebem <strong>roles</strong> (papeis), e cada role tem um conjunto de <strong>permissions</strong> (permissões). Simples de entender e implementar.</p>
+
+<h4>NestJS Guard com @Roles Decorator</h4>
+<pre data-lang="typescript"><code><span class="cm">// ── roles.decorator.ts ──</span>
+<span class="kw">import</span> { SetMetadata } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+
+<span class="kw">export</span> <span class="kw">const</span> ROLES_KEY = <span class="str">'roles'</span>;
+<span class="kw">export</span> <span class="kw">const</span> <span class="fn">Roles</span> = (...roles: <span class="tp">string</span>[]) =>
+  <span class="fn">SetMetadata</span>(ROLES_KEY, roles);
+
+<span class="cm">// ── permissions.decorator.ts ──</span>
+<span class="kw">export</span> <span class="kw">const</span> PERMISSIONS_KEY = <span class="str">'permissions'</span>;
+<span class="kw">export</span> <span class="kw">const</span> <span class="fn">Permissions</span> = (...permissions: <span class="tp">string</span>[]) =>
+  <span class="fn">SetMetadata</span>(PERMISSIONS_KEY, permissions);
+
+<span class="cm">// ── roles.guard.ts ──</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">RolesGuard</span> <span class="kw">implements</span> <span class="tp">CanActivate</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> reflector: <span class="tp">Reflector</span>) {}
+
+  <span class="fn">canActivate</span>(context: <span class="tp">ExecutionContext</span>): <span class="tp">boolean</span> {
+    <span class="cm">// Busca roles necessárias do decorator</span>
+    <span class="kw">const</span> requiredRoles = <span class="kw">this</span>.reflector.<span class="fn">getAllAndOverride</span>&lt;<span class="tp">string</span>[]&gt;(
+      ROLES_KEY, [context.<span class="fn">getHandler</span>(), context.<span class="fn">getClass</span>()]);
+
+    <span class="kw">if</span> (!requiredRoles) <span class="kw">return true</span>; <span class="cm">// Sem decorator = público</span>
+
+    <span class="kw">const</span> request = context.<span class="fn">switchToHttp</span>().<span class="fn">getRequest</span>();
+    <span class="kw">const</span> user = request.user; <span class="cm">// Populado pelo AuthGuard</span>
+
+    <span class="kw">return</span> requiredRoles.<span class="fn">some</span>(role => user.roles?.<span class="fn">includes</span>(role));
+  }
+}
+
+<span class="cm">// ── Usó no Controller ──</span>
+<span class="ann">@Controller</span>(<span class="str">'users'</span>)
+<span class="ann">@UseGuards</span>(<span class="tp">AuthGuard</span>, <span class="tp">RolesGuard</span>)
+<span class="kw">export class</span> <span class="tp">UsersController</span> {
+  <span class="ann">@Get</span>()
+  <span class="ann">@Roles</span>(<span class="str">'admin'</span>, <span class="str">'manager'</span>)  <span class="cm">// Apenas admin e manager</span>
+  <span class="fn">findAll</span>() {
+    <span class="kw">return</span> <span class="kw">this</span>.usersService.<span class="fn">findAll</span>();
+  }
+
+  <span class="ann">@Delete</span>(<span class="str">':id'</span>)
+  <span class="ann">@Roles</span>(<span class="str">'admin'</span>)  <span class="cm">// Apenas admin pode deletar</span>
+  <span class="fn">remove</span>(<span class="ann">@Param</span>(<span class="str">'id'</span>) id: <span class="tp">string</span>) {
+    <span class="kw">return</span> <span class="kw">this</span>.usersService.<span class="fn">remove</span>(id);
+  }
+
+  <span class="ann">@Get</span>(<span class="str">'profile'</span>)
+  <span class="cm">// Sem @Roles — qualquer usuário autenticado acessa</span>
+  <span class="fn">getProfile</span>(<span class="ann">@CurrentUser</span>() user: <span class="tp">AuthUser</span>) {
+    <span class="kw">return</span> <span class="kw">this</span>.usersService.<span class="fn">findById</span>(user.id);
+  }
+}</code></pre>
+
+<h4>RBAC com Permissions Granulares</h4>
+<pre data-lang="typescript"><code><span class="cm">// Modelo: Role -> Permissions (many-to-many)</span>
+<span class="kw">const</span> ROLE_PERMISSIONS: <span class="tp">Record</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>[]&gt; = {
+  admin:   [<span class="str">'users:read'</span>, <span class="str">'users:write'</span>, <span class="str">'users:delete'</span>,
+            <span class="str">'posts:read'</span>, <span class="str">'posts:write'</span>, <span class="str">'posts:delete'</span>,
+            <span class="str">'settings:read'</span>, <span class="str">'settings:write'</span>],
+  editor:  [<span class="str">'posts:read'</span>, <span class="str">'posts:write'</span>,
+            <span class="str">'users:read'</span>],
+  viewer:  [<span class="str">'posts:read'</span>, <span class="str">'users:read'</span>],
+};
+
+<span class="cm">// Guard baseado em permissões</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">PermissionsGuard</span> <span class="kw">implements</span> <span class="tp">CanActivate</span> {
+  <span class="kw">constructor</span>(<span class="kw">private</span> reflector: <span class="tp">Reflector</span>) {}
+
+  <span class="fn">canActivate</span>(context: <span class="tp">ExecutionContext</span>): <span class="tp">boolean</span> {
+    <span class="kw">const</span> required = <span class="kw">this</span>.reflector.<span class="fn">get</span>&lt;<span class="tp">string</span>[]&gt;(
+      PERMISSIONS_KEY, context.<span class="fn">getHandler</span>());
+    <span class="kw">if</span> (!required) <span class="kw">return true</span>;
+
+    <span class="kw">const</span> user = context.<span class="fn">switchToHttp</span>().<span class="fn">getRequest</span>().user;
+    <span class="kw">const</span> userPerms = ROLE_PERMISSIONS[user.role] || [];
+
+    <span class="kw">return</span> required.<span class="fn">every</span>(perm => userPerms.<span class="fn">includes</span>(perm));
+  }
+}
+
+<span class="cm">// Uso:</span>
+<span class="ann">@Delete</span>(<span class="str">':id'</span>)
+<span class="ann">@Permissions</span>(<span class="str">'posts:delete'</span>)
+<span class="fn">deletePost</span>(<span class="ann">@Param</span>(<span class="str">'id'</span>) id: <span class="tp">string</span>) { ... }</code></pre>
+
+<!-- ═══ ABAC ═══ -->
+<h3>ABAC — Attribute-Based Access Control</h3>
+<p>ABAC vai além de roles: autoriza baseado em <strong>atributos</strong> do usuário, do recurso, do ambiente e da ação. Muito mais flexível que RBAC para regras complexas.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Exemplo: "usuário pode editar documento se pertence ao mesmo departamento"</span>
+<span class="kw">interface</span> <span class="tp">ABACPolicy</span> {
+  action: <span class="tp">string</span>;
+  resource: <span class="tp">string</span>;
+  <span class="fn">condition</span>(user: <span class="tp">AuthUser</span>, resource: <span class="tp">any</span>, env: <span class="tp">Environment</span>): <span class="tp">boolean</span>;
+}
+
+<span class="kw">const</span> policies: <span class="tp">ABACPolicy</span>[] = [
+  {
+    action: <span class="str">'edit'</span>,
+    resource: <span class="str">'document'</span>,
+    <span class="fn">condition</span>(user, doc, env) {
+      <span class="cm">// Mesmo departamento OU admin</span>
+      <span class="kw">return</span> user.department === doc.department || user.role === <span class="str">'admin'</span>;
+    },
+  },
+  {
+    action: <span class="str">'approve'</span>,
+    resource: <span class="str">'expense'</span>,
+    <span class="fn">condition</span>(user, expense, env) {
+      <span class="cm">// Gerente do departamento + valor abaixo do limite + horário comercial</span>
+      <span class="kw">return</span> user.role === <span class="str">'manager'</span>
+        && user.department === expense.department
+        && expense.amount &lt;= user.approvalLimit
+        && env.hour >= <span class="num">9</span> && env.hour &lt;= <span class="num">18</span>;
+    },
+  },
+];
+
+<span class="cm">// Engine ABAC</span>
+<span class="kw">function</span> <span class="fn">isAuthorized</span>(
+  user: <span class="tp">AuthUser</span>,
+  action: <span class="tp">string</span>,
+  resourceType: <span class="tp">string</span>,
+  resource: <span class="tp">any</span>,
+): <span class="tp">boolean</span> {
+  <span class="kw">const</span> env = { hour: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">getHours</span>(), ip: <span class="fn">getClientIP</span>() };
+  <span class="kw">const</span> policy = policies.<span class="fn">find</span>(p =>
+    p.action === action && p.resource === resourceType);
+  <span class="kw">if</span> (!policy) <span class="kw">return false</span>; <span class="cm">// Deny by default</span>
+  <span class="kw">return</span> policy.<span class="fn">condition</span>(user, resource, env);
+}</code></pre>
+
+<!-- ═══ ReBAC ═══ -->
+<h3>ReBAC — Relationship-Based Access Control (Google Zanzibar)</h3>
+<p>Modelo criado pelo Google para o Zanzibar (sistema de autorização do Google Drive, YouTube, etc.). A autorização é baseada em <strong>relacionamentos</strong> entre entidades, expressos como <strong>tuplas</strong>.</p>
+
+<p><strong>Formato da tupla:</strong> <code>object#relation@subject</code></p>
+
+<pre data-lang="text"><code><span class="cm">// Exemplos de tuplas de relacionamento</span>
+document:readme#owner@user:alice      <span class="cm">// Alice e dona do documento readme</span>
+document:readme#viewer@team:eng       <span class="cm">// Time eng pode ver readme</span>
+team:eng#member@user:bob              <span class="cm">// Bob e membro do time eng</span>
+folder:root#parent@document:readme    <span class="cm">// readme está dentro de root</span>
+
+<span class="cm">// Query: "Bob pode ver readme?"</span>
+<span class="cm">// Zanzibar resolve: Bob -> member of eng -> eng is viewer of readme -> SIM</span></code></pre>
+
+<p>Implementações open-source: <strong>SpiceDB</strong>, <strong>OpenFGA</strong> (by Auth0), <strong>Permify</strong>. Ideal para sistemas com compartilhamento complexo (Google Drive, Notion, Figma).</p>
+
+<!-- ═══ PBAC ═══ -->
+<h3>PBAC — Policy-Based Access Control (OPA / Cedar)</h3>
+<p>Policy engines externalizam a lógica de autorização em uma linguagem declarativa. O código da aplicação não contém regras de acesso — ele pergunta ao policy engine.</p>
+
+<h4>Exemplo com OPA (Open Policy Agent) — Rego</h4>
+<pre data-lang="text"><code><span class="cm"># policy.rego — Regras de acesso declarativas</span>
+package authz
+
+default allow = false
+
+<span class="cm"># Admin pode tudo</span>
+allow {
+  input.user.role == "admin"
+}
+
+<span class="cm"># Editor pode criar e editar posts</span>
+allow {
+  input.user.role == "editor"
+  input.action in ["create", "update"]
+  input.resource.type == "post"
+}
+
+<span class="cm"># Usuários podem editar seus próprios posts</span>
+allow {
+  input.action == "update"
+  input.resource.type == "post"
+  input.resource.owner_id == input.user.id
+}
+
+<span class="cm"># Negar acesso fora do horário comercial para não-admins</span>
+deny {
+  input.user.role != "admin"
+  not is_business_hours
+}
+
+is_business_hours {
+  hour := time.clock(time.now_ns())[0]
+  hour >= 9
+  hour < 18
+}</code></pre>
+
+<div class="table-wrap">
+<table>
+<tr><th>Modelo</th><th>Complexidade</th><th>Melhor Para</th><th>Exemplo</th></tr>
+<tr><td><strong>RBAC</strong></td><td>Baixa</td><td>Maioria dos apps. Roles claras e estáticas</td><td>Admin, Editor, Viewer</td></tr>
+<tr><td><strong>ABAC</strong></td><td>Media</td><td>Regras baseadas em contexto (departamento, horário)</td><td>Healthcare, financeiro</td></tr>
+<tr><td><strong>ReBAC</strong></td><td>Alta</td><td>Compartilhamento complexo (Google Drive model)</td><td>Docs, wikis, file sharing</td></tr>
+<tr><td><strong>PBAC</strong></td><td>Alta</td><td>Compliance rigorosa, regras externalizadas</td><td>Enterprise, multi-tenant</td></tr>
+</table>
+</div>
+
+<!-- ═══ ZERO TRUST ═══ -->
+<h3>Zero Trust Architecture</h3>
+<p><strong>"Nunca confie, sempre verifique."</strong> Zero Trust é um modelo de segurança que assume que nenhuma rede, usuário ou dispositivo e confiável por padrão — mesmo dentro do perimetro corporativo. Cada requisição deve ser autenticada, autorizada e criptografada, independente de onde vem.</p>
+
+<p><strong>Princípios fundamentais:</strong></p>
+<ul>
+<li><strong>Verify explicitly</strong> — Sempre autentique e autorize baseado em todos os dados disponíveis (identidade, localização, device health, serviço, classificação de dados)</li>
+<li><strong>Least privilege access</strong> — Limite acesso com JIT (Just-In-Time) e JEA (Just-Enough-Access). Não de permissões "just in case"</li>
+<li><strong>Assume breach</strong> — Projete como se o atacante já estivesse dentro. Minimize blast radius. Segmente acesso. Verifique end-to-end encryption</li>
+</ul>
+
+<div class="card purple">
+<div class="card-title">Checklist de Implementação Zero Trust</div>
+<ul>
+<li><strong>mTLS (mutual TLS)</strong> — Ambos os lados (client e server) verificam certificados. Serviço-a-serviço nunca confia sem mTLS</li>
+<li><strong>Micro-segmentação</strong> — Cada serviço só pode se comúnicar com os serviços que precisa. Firewall rules por serviço, não por rede</li>
+<li><strong>Verificação continua</strong> — Não basta autenticar no login. Revalide a cada request. Tokens de curta duração. Análise comportamental</li>
+<li><strong>Device posture</strong> — Verifique se o dispositivo esta atualizado, com antivirus ativo, disco encriptado antes de permitir acesso</li>
+<li><strong>Identity-aware proxy</strong> — Google BeyondCorp model. Acessó baseado em identidade, não em VPN. Exemplo: Cloudflare Access, Google IAP</li>
+<li><strong>Logging e monitoramento</strong> — Toda ação e logada. SIEM para detecção de anomalias. Audit trail completo</li>
+<li><strong>Encriptação everywhere</strong> — TLS para dados em transito. Encriptação em repouso. Chaves gerenciadas por KMS</li>
+<li><strong>Service mesh</strong> — Istio, Linkerd para enforcement automático de mTLS, circuit breakers e policies entre microsserviços</li>
+</ul>
+</div>
+
+<div class="diagram">
+<div class="diagram-box red">Request<br><small>Qualquer origem</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Identity Proxy<br><small>Verifica identidade<br>+ device posture</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Policy Engine<br><small>RBAC/ABAC rules<br>Least privilege</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">mTLS<br><small>Encriptação<br>ponta-a-ponta</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Microserviço<br><small>Segmento isolado</small></div>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Auth para SaaS Multi-Tenant</h3>
+<p><strong>Cenário:</strong> Projete o sistema de autenticação e autorização para um SaaS multi-tenant onde cada tenant (empresa) tem seus próprios usuários, roles e permissões. Usuários podem pertencer a múltiplos tenants.</p>
+
+<div class="diagram">
+<div class="diagram-box blue">SPA / Mobile<br><small>Login via OAuth2<br>+ PKCE</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box green">Auth Server<br><small>(Keycloak/Auth0)<br>OIDC + MFA</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">BFF<br><small>httpOnly cookie<br>Token storage</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">API Gateway<br><small>JWT válidation<br>Raté limiting</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Microsserviços<br><small>RBAC per tenant<br>mTLS</small></div>
+</div>
+
+<p><strong>Decisões de design:</strong></p>
+<ul>
+<li><strong>Auth Server:</strong> Keycloak ou Auth0 — não reinvente a roda. Suporte a OIDC, MFA, social login, tenant isolation</li>
+<li><strong>JWT Claims:</strong> Inclua <code>tenantId</code>, <code>roles</code> (por tenant), <code>permissions</code>. Exemplo: <code>{"sub": "user1", "tenant": "acme", "roles": ["admin"], "permissions": ["billing:write"]}</code></li>
+<li><strong>Multi-tenancy:</strong> Cada tenant tem seu próprio namespace de roles. Admin no tenant A não é admin no tenant B</li>
+<li><strong>Token lifecycle:</strong> Access token 15min (JWT RS256), Refresh token 30 dias (opaco, no banco com rotation)</li>
+<li><strong>BFF Pattern:</strong> SPA nunca ve o JWT. BFF armazena tokens e repassa via httpOnly cookie de sessão</li>
+<li><strong>Zero Trust:</strong> mTLS entre microsserviços. Cada serviço válida o JWT independentemente. API Gateway faz raté limiting e pre-validação</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// JWT payload para SaaS multi-tenant</span>
+<span class="kw">interface</span> <span class="tp">MultiTenantJwtPayload</span> {
+  sub: <span class="tp">string</span>;           <span class="cm">// User ID</span>
+  email: <span class="tp">string</span>;
+  tenantId: <span class="tp">string</span>;       <span class="cm">// Tenant atual (selecionado no login)</span>
+  tenants: {               <span class="cm">// Todos os tenants do usuário</span>
+    id: <span class="tp">string</span>;
+    name: <span class="tp">string</span>;
+    roles: <span class="tp">string</span>[];
+  }[];
+  roles: <span class="tp">string</span>[];         <span class="cm">// Roles no tenant atual</span>
+  permissions: <span class="tp">string</span>[];   <span class="cm">// Permissions resolvidas</span>
+  iat: <span class="tp">number</span>;
+  exp: <span class="tp">number</span>;
+  iss: <span class="tp">string</span>;
+  aud: <span class="tp">string</span>;
+}
+
+<span class="cm">// Middleware que injeta tenant context</span>
+<span class="ann">@Injectable</span>()
+<span class="kw">export class</span> <span class="tp">TenantMiddleware</span> <span class="kw">implements</span> <span class="tp">NestMiddleware</span> {
+  <span class="fn">use</span>(req: <span class="tp">Request</span>, res: <span class="tp">Response</span>, next: <span class="tp">NextFunction</span>) {
+    <span class="kw">const</span> payload = req.user <span class="kw">as</span> <span class="tp">MultiTenantJwtPayload</span>;
+
+    <span class="cm">// Verifica se o tenant no header pertence ao usuário</span>
+    <span class="kw">const</span> requestedTenant = req.headers[<span class="str">'x-tenant-id'</span>] <span class="kw">as</span> <span class="tp">string</span>;
+    <span class="kw">const</span> allowed = payload.tenants.<span class="fn">find</span>(t => t.id === requestedTenant);
+
+    <span class="kw">if</span> (!allowed) {
+      <span class="kw">throw new</span> <span class="tp">ForbiddenException</span>(<span class="str">'Sem acesso a este tenant'</span>);
+    }
+
+    <span class="cm">// Injeta contexto do tenant na request</span>
+    req[<span class="str">'tenantContext'</span>] = {
+      tenantId: requestedTenant,
+      roles: allowed.roles,
+    };
+
+    <span class="fn">next</span>();
+  }
+}</code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>JWT sem expiração:</strong> Um JWT sem <code>exp</code> é um token eterno. Se vazar, o atacante tem acesso permanente. Sempre defina <code>expiresIn</code> curto (5-15 minutos) e use refresh tokens para renovar.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Tokens em localStorage:</strong> Qualquer script XSS no seu site pode roubar o token de localStorage. Use httpOnly cookies ou o BFF pattern. Se precisar de localStorage (edge cases), sanitize TODO o input religiosamente.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Não rotacionar refresh tokens:</strong> Se um refresh token e roubado e não tem rotation, o atacante pode gerar access tokens infinitamente. Sempre invalide o refresh token anterior ao emitir um novo.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Roles muito amplas:</strong> Um único role "admin" que pode tudo é perigoso. Prefira permissions granulares (<code>users:read</code>, <code>users:write</code>, <code>users:delete</code>) agrupadas em roles. Facilita auditoria e princípio de menor privilégio.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Não implementar MFA para admins:</strong> Contas administrativas sem MFA são o alvo #1 de atacantes. No mínimo, force MFA para qualquer role com permissões elevadas. Idealmente, use passkeys.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Aceitar algoritmo "none" no JWT:</strong> Alguns libraries aceitam JWTs com <code>"alg": "none"</code> (sem assinatura). Sempre especifique o algoritmo esperado na verificação: <code>algorithms: ['RS256']</code>. Nunca confie no header do JWT para decidir o algoritmo.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Autenticação e autorização são <strong>defense in depth</strong>. Não confie em apenas uma camada. JWT + RBAC + raté limiting + mTLS + logging. Cada camada compensa as fraquezas da outra.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você está construindo uma SPA com React que consome uma API NestJS. Qual a forma mais segura de armazenar o access token? Descreva o fluxo completo.</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use o <strong>BFF (Backend for Frontend) pattern</strong>. O SPA nunca recebe o JWT diretamente. O fluxo e: (1) SPA redireciona para o auth server via OAuth2 + PKCE. (2) O auth server retorna o authorization code para o BFF (NestJS). (3) O BFF troca o code por tokens e armazena o access token + refresh token em memória/Redis no servidor. (4) O BFF emite um cookie de sessão <code>httpOnly</code>, <code>Secure</code>, <code>SameSite=Strict</code> para o browser. (5) Em cada request, o browser envia o cookie automáticamente, o BFF busca o JWT associado e faz o proxy para a API com o JWT no header Authorization. Resultado: nenhum token e exposto ao JavaScript do browser.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu sistema precisa que "gerentes possam aprovar despesas do seu departamento até R$10.000, mas apenas em horário comercial". RBAC puro resolve? Qual modelo usar?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> RBAC puro <strong>não</strong> resolve porque a decisão depende de atributos (departamento, valor, horário) e não apenas do role. Você precisa de <strong>ABAC (Attribute-Based Access Control)</strong>. A policy seria: <code>allow if user.role == 'manager' AND user.department == expense.department AND expense.amount &lt;= 10000 AND currentHour BETWEEN 9 AND 18</code>. Alternativamente, você poderia usar PBAC com OPA/Rego para externalizar essa regra. RBAC pode ser a base (role "manager"), mas a decisão final precisa de atributos contextuais.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Explique por que PKCE é necessário para SPAs no fluxo OAuth2 Authorization Code. O que aconteceria sem ele?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> SPAs são <strong>public clients</strong> — não conseguem manter um <code>client_secret</code> seguro (o código fonte e acessível no browser). Sem PKCE, um atacante que intercepte o authorization code no redirect (via extensão maliciosa, open redirect, ou log de referrer) poderia troca-lo diretamente por tokens. Com PKCE, o SPA gera um <code>code_verifier</code> aleatório e envia o <code>code_challenge</code> (SHA-256 do verifier) ao auth server no início. Na troca do code por tokens, o SPA envia o <code>code_verifier</code> original. O auth server verifica que SHA-256(verifier) == challenge. Um atacante que interceptou apenas o code não tem o verifier e não consegue obter os tokens.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Auth: OAuth, JWT, RBAC, Zero Trust</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="28-owasp-top-10.html">&#8592; OWASP Top 10</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="30-criptografia-app-security.html" class="primary">Próximo: Criptografia e App Security &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 29: Auth - OAuth, JWT, RBAC, Zero Trust
+// ══════════════════════════════════════════
+const SECTION_NUM = 29;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual a principal razão para usar PKCE no fluxo OAuth2 Authorization Code em SPAs?",
+    options: [
+      "Melhorar a performance da troca de tokens",
+      "Proteger o authorization code contra interceptação, já que SPAs não podem manter client_secret",
+      "Encriptar o access token durante o transporte",
+      "Permitir que o SPA armazene tokens em localStorage de forma segura"
+    ],
+    correct: 1,
+    explanation: "PKCE protege o authorization code contra interceptação. Como SPAs são public clients (não podem guardar client_secret), o code_verifier/challenge garante que apenas quem iníciou o fluxo pode trocar o code por tokens."
+  },
+  {
+    question: "Qual a diferença fundamental entre um Access Token é um ID Token no OIDC?",
+    options: [
+      "Access Token e para autenticação e ID Token para autorização",
+      "Access Token é sempre um JWT e ID Token é sempre opaco",
+      "Access Token autoriza acesso a recursos (para a API), ID Token contém identidade do usuário (para o client)",
+      "Não ha diferença — são nomes diferentes para o mesmo conceito"
+    ],
+    correct: 2,
+    explanation: "Access Token e para a API (Resource Server) validar autorização. ID Token é um JWT com claims de identidade do usuário, destinado ao Client (SPA) consumir. O client NÃO deve ler o conteúdo do access token."
+  },
+  {
+    question: "Você usa HS256 para assinar JWTs em um sistema com 15 microsserviços. Qual o problema de segurança?",
+    options: [
+      "HS256 é mais lento que RS256 em ambientes distribuídos",
+      "HS256 não suporta expiração de tokens",
+      "Todos os 15 serviços precisam compartilhar o mesmo secret — se um for comprometido, todos são",
+      "HS256 gera tokens maiores que RS256"
+    ],
+    correct: 2,
+    explanation: "HS256 e simetrico — a mesma chave assina e verifica. Em microsserviços, todos os serviços precisam do secret. Com RS256 (assimetrico), apenas o auth server tem a chave privada e os demais verificam com a chave pública."
+  },
+  {
+    question: "Sobre Refresh Token Rotation, o que acontece quando um refresh token já usado e apresentado novamente?",
+    options: [
+      "O servidor gera um novo access token normalmente",
+      "O servidor ignora o request e retorna 200 sem token",
+      "O servidor detecta possível roubo e revoga TODOS os tokens do usuário",
+      "O servidor retorna 429 Too Many Requests"
+    ],
+    correct: 2,
+    explanation: "Um refresh token reútilizado indica que ele foi roubado (ou o legitimo ou o atacante já o usou). A resposta correta e revogar toda a familia de tokens do usuário, forçando re-login, para limitar o dano."
+  },
+  {
+    question: "Qual o local MAIS seguro para armazenar access tokens em uma SPA no browser?",
+    options: [
+      "localStorage com encriptação AES",
+      "sessionStorage com prefixo randomico",
+      "httpOnly cookie com Secure e SameSite=Strict (ou BFF pattern)",
+      "Variável global JavaScript em closure"
+    ],
+    correct: 2,
+    explanation: "httpOnly cookies não são acessíveis via JavaScript, protegendo contra XSS. Com Secure (HTTPS only) e SameSite=Strict (protege contra CSRF). O BFF pattern e ainda melhor — o token fica no servidor é o browser só recebe um cookie de sessão."
+  },
+  {
+    question: "Qual modelo de autorização resolve: 'usuário pode editar documento se pertence ao mesmo departamento E o valor é menor que seu limite E está em horário comercial'?",
+    options: [
+      "RBAC — basta criar roles por departamento",
+      "ABAC — usa atributos do usuário, recursó e ambiente para decidir",
+      "ACL — lista de controle de acesso por recurso",
+      "ReBAC — relacionamentos entre entidades"
+    ],
+    correct: 1,
+    explanation: "ABAC (Attribute-Based Access Control) autoriza baseado em atributos contextuais: atributos do usuário (departamento, limite), do recursó (valor) e do ambiente (horário). RBAC puro não consegue expressar essas condições."
+  },
+  {
+    question: "No modelo Zero Trust, qual afirmação e CORRETA?",
+    options: [
+      "Dispositivos dentro da rede corporativa são confiáveis por padrão",
+      "VPN é suficiente para garantir segurança de acesso remoto",
+      "Toda requisição deve ser autenticada e autorizada independente da origem, e o acesso segue o princípio de menor privilégio",
+      "Zero Trust elimina a necessidade de firewalls e encriptação"
+    ],
+    correct: 2,
+    explanation: "Zero Trust = 'nunca confie, sempre verifique'. Nenhuma rede e confiável. Toda requisição e verificada. Acessó com menor privilégio (JIT/JEA). mTLS entre serviços. Assume que o atacante pode já estar dentro."
+  },
+  {
+    question: "O que é o Google Zanzibar e qual modelo de autorização ele implementa?",
+    options: [
+      "Um OAuth provider — implementa RBAC",
+      "Um sistema de autorização baseado em relacionamentos (ReBAC) usando tuplas objeto#relação@sujeito",
+      "Um policy engine — implementa PBAC com linguagem Rego",
+      "Um service mesh — implementa Zero Trust com mTLS"
+    ],
+    correct: 1,
+    explanation: "Google Zanzibar é o sistema de autorização do Google (Drive, YouTube, etc.) que implementa ReBAC. Relacionamentos são expressos como tuplas: document:readme#viewer@user:alice. Permite queries como 'Alice pode ver readme?'."
+  },
+  {
+    question: "Por que SMS é considerado o método MFA MENOS seguro?",
+    options: [
+      "Porque os códigos SMS tem apenas 4 digitos",
+      "Porque SMS não funciona offline",
+      "Porque e vulnerável a SIM swap e ataques ao protocolo SS7, permitindo interceptação",
+      "Porque os códigos SMS não expiram"
+    ],
+    correct: 2,
+    explanation: "SMS e vulnerável a SIM swap (atacante transfere seu número para outro chip) e ataques ao protocolo SS7 (interceptação de mensagens na rede da operadora). TOTP e WebAuthn são significativamente mais seguros."
+  },
+  {
+    question: "Em um SaaS multi-tenant, qual a forma correta de incluir informações de tenant no JWT?",
+    options: [
+      "Colocar o tenantId na URL e não no token",
+      "Incluir tenantId e roles específicas do tenant atual no payload do JWT, e validar no backend que o usuário pertence ao tenant",
+      "Criar um JWT separado para cada tenant do usuário",
+      "Armazenar o tenantId apenas no localStorage do frontend"
+    ],
+    correct: 1,
+    explanation: "O JWT deve incluir o tenantId selecionado e as roles/permissions específicas daquele tenant. O backend SEMPRE válida que o usuário realmente pertence ao tenant requisitado. Isso garante isolamento entre tenants."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Auth, JWT, OAuth e Zero Trust.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

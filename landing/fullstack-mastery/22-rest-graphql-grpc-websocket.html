@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>22 — REST, GraphQL, gRPC & WebSocket | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="21-performance-otimizacao.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>22</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="23-api-design-versionamento.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:33.3%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 22</span>
+<h2>REST, GraphQL, gRPC &amp; WebSocket</h2>
+<div class="section-line"></div>
+
+<p>A escolha do protocolo de comunicação é uma das decisões arquiteturais mais impactantes de um sistema. Não existe "melhor protocolo" — existe o <strong>protocolo certo para o problema certo</strong>. Um chat em tempo real com REST polling e tão errado quanto um CRUD simples com gRPC bidirecional. Esta seção cobre em profundidade cada opção, quando usar, é como implementar.</p>
+
+<p>A regra de ouro: <strong>comece com REST</strong> (simples, universal, bem documentado), e adicione outros protocolos conforme a necessidade surgir. Complexidade prematura em protocolos de comunicação é uma das formas mais caras de over-engineering.</p>
+
+<!-- ═══ REST ═══ -->
+<h3>REST — Representational Staté Transfer</h3>
+
+<p>REST não é um protocolo — é um <strong>estilo arquitetural</strong> definido por Roy Fielding em 2000. A maioria das APIs chamadas "REST" são na verdade <strong>HTTP APIs</strong> que seguem apenas parte das restrições REST. Para entender o quao "REST" sua API realmente e, usamos o Richardson Maturity Model.</p>
+
+<h4>Richardson Maturity Model</h4>
+
+<div class="card">
+<div class="card-title">Níveis de Maturidade REST</div>
+<ul>
+<li><strong>Level 0 — The Swamp of POX:</strong> Um único endpoint (<code>POST /api</code>) que recebe tudo. O body decide a ação. Basicamente RPC sobre HTTP. Exemplo: SOAP, XML-RPC</li>
+<li><strong>Level 1 — Resources:</strong> URIs separadas para cada recursó (<code>/users</code>, <code>/orders</code>), mas tudo via POST. Melhor que Level 0, mas ainda não aproveita HTTP</li>
+<li><strong>Level 2 — HTTP Verbs:</strong> Usa GET, POST, PUT, DELETE, PATCH corretamente + status codes semânticos. Onde 95% das APIs "REST" estão. Suficiente para a maioria dos casos</li>
+<li><strong>Level 3 — HATEOAS:</strong> Respostas incluem links para ações disponíveis (hypermedia controls). O cliente descobre a API navegando, sem precisar de documentação. Pouquissimas APIs implementam isso na prática</li>
+</ul>
+</div>
+
+<h4>Semântica dos Métodos HTTP</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Método</th><th>Semântica</th><th>Idempotente</th><th>Safe</th><th>Body</th></tr>
+<tr><td><strong>GET</strong></td><td>Leitura de recurso</td><td>Sim</td><td>Sim</td><td>Não</td></tr>
+<tr><td><strong>POST</strong></td><td>Criação de recurso</td><td>Não</td><td>Não</td><td>Sim</td></tr>
+<tr><td><strong>PUT</strong></td><td>Substituição total do recurso</td><td>Sim</td><td>Não</td><td>Sim</td></tr>
+<tr><td><strong>PATCH</strong></td><td>Atualização parcial</td><td>Não*</td><td>Não</td><td>Sim</td></tr>
+<tr><td><strong>DELETE</strong></td><td>Remocao de recurso</td><td>Sim</td><td>Não</td><td>Opcional</td></tr>
+<tr><td><strong>HEAD</strong></td><td>GET sem body (apenas headers)</td><td>Sim</td><td>Sim</td><td>Não</td></tr>
+<tr><td><strong>OPTIONS</strong></td><td>Métodos disponíveis (CORS preflight)</td><td>Sim</td><td>Sim</td><td>Não</td></tr>
+</table>
+</div>
+
+<p><strong>Idempotente</strong> significa que chamar N vezes tem o mesmo efeito que chamar 1 vez. <code>PUT /users/1 { name: "Ana" }</code> sempre resulta no mesmo estado. <code>POST /users</code> cria um novo recursó a cada chamada — não é idempotente.</p>
+
+<p>*PATCH pode ser idempotente se a operação for deterministica (ex: <code>{ name: "Ana" }</code>), mas não é garantido (ex: <code>{ $inc: { views: 1 } }</code>).</p>
+
+<h4>Status Codes Essenciais</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Código</th><th>Nome</th><th>Quando Usar</th></tr>
+<tr><td><strong>200</strong></td><td>OK</td><td>GET/PUT/PATCH com sucesso, retornando dados</td></tr>
+<tr><td><strong>201</strong></td><td>Created</td><td>POST criou recursó com sucesso</td></tr>
+<tr><td><strong>204</strong></td><td>No Content</td><td>DELETE com sucesso, sem body de retorno</td></tr>
+<tr><td><strong>400</strong></td><td>Bad Request</td><td>Dados inválidos, validação falhou</td></tr>
+<tr><td><strong>401</strong></td><td>Unauthorized</td><td>Não autenticado (token ausente ou inválido)</td></tr>
+<tr><td><strong>403</strong></td><td>Forbidden</td><td>Autenticado, mas sem permissão para este recurso</td></tr>
+<tr><td><strong>404</strong></td><td>Not Found</td><td>Recursó não existe</td></tr>
+<tr><td><strong>409</strong></td><td>Conflict</td><td>Conflito de estado (ex: email já cadastrado)</td></tr>
+<tr><td><strong>422</strong></td><td>Unprocessable Entity</td><td>Dados sintaticamente válidos mas semânticamente errados</td></tr>
+<tr><td><strong>429</strong></td><td>Too Many Requests</td><td>Raté limiting atingido</td></tr>
+<tr><td><strong>500</strong></td><td>Internal Server Error</td><td>Erro inesperado no servidor</td></tr>
+<tr><td><strong>503</strong></td><td>Service Unavailable</td><td>Servidor em manutenção ou sobrecarregado</td></tr>
+</table>
+</div>
+
+<h4>HATEOAS — Hypermedia as the Engine of Application State</h4>
+
+<pre data-lang="json"><code><span class="cm">// Resposta REST Level 3 — com links de navegação</span>
+{
+  <span class="str">"id"</span>: <span class="num">42</span>,
+  <span class="str">"status"</span>: <span class="str">"pending"</span>,
+  <span class="str">"total"</span>: <span class="num">159.90</span>,
+  <span class="str">"_links"</span>: {
+    <span class="str">"self"</span>: { <span class="str">"href"</span>: <span class="str">"/orders/42"</span> },
+    <span class="str">"cancel"</span>: { <span class="str">"href"</span>: <span class="str">"/orders/42/cancel"</span>, <span class="str">"method"</span>: <span class="str">"POST"</span> },
+    <span class="str">"pay"</span>: { <span class="str">"href"</span>: <span class="str">"/orders/42/pay"</span>, <span class="str">"method"</span>: <span class="str">"POST"</span> },
+    <span class="str">"items"</span>: { <span class="str">"href"</span>: <span class="str">"/orders/42/items"</span> }
+  }
+}
+<span class="cm">// Se o pedido já estiver pago, o link "pay" desaparece</span>
+<span class="cm">// O cliente descobre o que pode fazer navegando os links</span></code></pre>
+
+<h4>Content Negotiation</h4>
+<p>REST permite que o cliente negocie o formato da resposta via headers. O servidor decide o que suporta:</p>
+<ul>
+<li><code>Accept: application/json</code> — cliente quer JSON</li>
+<li><code>Accept: application/xml</code> — cliente quer XML</li>
+<li><code>Content-Type: application/json</code> — cliente envia JSON no body</li>
+<li><code>Accept-Language: pt-BR</code> — cliente quer resposta em português</li>
+</ul>
+
+<h4>NestJS REST Controller — Exemplo Completo</h4>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { Controller, Get, Post, Put, Delete, Param,
+  Body, Query, HttpCode, HttpStatus, ParseUUIDPipe } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+
+<span class="ann">@Controller</span>(<span class="str">'users'</span>)
+<span class="kw">export class</span> <span class="tp">UsersController</span> {
+  <span class="kw">constructor</span>(<span class="kw">privaté readonly</span> usersService: <span class="tp">UsersService</span>) {}
+
+  <span class="cm">// GET /users?page=1&limit=20&search=ana</span>
+  <span class="ann">@Get</span>()
+  <span class="kw">async</span> <span class="fn">findAll</span>(<span class="ann">@Query</span>() query: <span class="tp">PaginationDto</span>) {
+    <span class="kw">return</span> <span class="kw">this</span>.usersService.<span class="fn">findAll</span>(query);
+  }
+
+  <span class="cm">// GET /users/:id</span>
+  <span class="ann">@Get</span>(<span class="str">':id'</span>)
+  <span class="kw">async</span> <span class="fn">findOne</span>(<span class="ann">@Param</span>(<span class="str">'id'</span>, ParseUUIDPipe) id: <span class="tp">string</span>) {
+    <span class="kw">return</span> <span class="kw">this</span>.usersService.<span class="fn">findOne</span>(id);
+  }
+
+  <span class="cm">// POST /users — retorna 201 Created</span>
+  <span class="ann">@Post</span>()
+  <span class="ann">@HttpCode</span>(HttpStatus.CREATED)
+  <span class="kw">async</span> <span class="fn">create</span>(<span class="ann">@Body</span>() dto: <span class="tp">CreateUserDto</span>) {
+    <span class="kw">return</span> <span class="kw">this</span>.usersService.<span class="fn">create</span>(dto);
+  }
+
+  <span class="cm">// PUT /users/:id — substituição total</span>
+  <span class="ann">@Put</span>(<span class="str">':id'</span>)
+  <span class="kw">async</span> <span class="fn">update</span>(
+    <span class="ann">@Param</span>(<span class="str">'id'</span>, ParseUUIDPipe) id: <span class="tp">string</span>,
+    <span class="ann">@Body</span>() dto: <span class="tp">UpdateUserDto</span>,
+  ) {
+    <span class="kw">return</span> <span class="kw">this</span>.usersService.<span class="fn">update</span>(id, dto);
+  }
+
+  <span class="cm">// DELETE /users/:id — retorna 204 No Content</span>
+  <span class="ann">@Delete</span>(<span class="str">':id'</span>)
+  <span class="ann">@HttpCode</span>(HttpStatus.NO_CONTENT)
+  <span class="kw">async</span> <span class="fn">remove</span>(<span class="ann">@Param</span>(<span class="str">'id'</span>, ParseUUIDPipe) id: <span class="tp">string</span>) {
+    <span class="kw">await</span> <span class="kw">this</span>.usersService.<span class="fn">remove</span>(id);
+  }
+}</code></pre>
+
+<!-- ═══ GRAPHQL ═══ -->
+<h3>GraphQL — Query Language for APIs</h3>
+
+<p>Criado pelo Facebook em 2012 e open-sourced em 2015. GraphQL resolve dois problemas fundamentais do REST: <strong>over-fetching</strong> (receber dados que você não precisa) e <strong>under-fetching</strong> (precisar de múltiplas requests para montar uma tela). O cliente define EXATAMENTE quais campos quer na resposta.</p>
+
+<h4>Schema Definition Language (SDL)</h4>
+
+<pre data-lang="graphql"><code><span class="cm"># Tipos de dados — o contrato da API</span>
+<span class="kw">type</span> <span class="tp">User</span> {
+  <span class="fn">id</span>: <span class="tp">ID!</span>
+  <span class="fn">name</span>: <span class="tp">String!</span>
+  <span class="fn">email</span>: <span class="tp">String!</span>
+  <span class="fn">posts</span>: [<span class="tp">Post!</span>!]
+  <span class="fn">createdAt</span>: <span class="tp">DateTime!</span>
+}
+
+<span class="kw">type</span> <span class="tp">Post</span> {
+  <span class="fn">id</span>: <span class="tp">ID!</span>
+  <span class="fn">title</span>: <span class="tp">String!</span>
+  <span class="fn">content</span>: <span class="tp">String!</span>
+  <span class="fn">author</span>: <span class="tp">User!</span>
+  <span class="fn">comments</span>: [<span class="tp">Comment!</span>!]
+}
+
+<span class="cm"># Queries — leitura de dados</span>
+<span class="kw">type</span> <span class="tp">Query</span> {
+  <span class="fn">user</span>(id: <span class="tp">ID!</span>): <span class="tp">User</span>
+  <span class="fn">users</span>(first: <span class="tp">Int</span>, after: <span class="tp">String</span>): <span class="tp">UserConnection!</span>
+  <span class="fn">post</span>(id: <span class="tp">ID!</span>): <span class="tp">Post</span>
+}
+
+<span class="cm"># Mutations — escrita de dados</span>
+<span class="kw">type</span> <span class="tp">Mutation</span> {
+  <span class="fn">createUser</span>(input: <span class="tp">CreateUserInput!</span>): <span class="tp">User!</span>
+  <span class="fn">updatePost</span>(id: <span class="tp">ID!</span>, input: <span class="tp">UpdatePostInput!</span>): <span class="tp">Post!</span>
+  <span class="fn">deletePost</span>(id: <span class="tp">ID!</span>): <span class="tp">Boolean!</span>
+}
+
+<span class="cm"># Subscriptions — dados em tempo real</span>
+<span class="kw">type</span> <span class="tp">Subscription</span> {
+  <span class="fn">postCreated</span>: <span class="tp">Post!</span>
+  <span class="fn">commentAdded</span>(postId: <span class="tp">ID!</span>): <span class="tp">Comment!</span>
+}
+
+<span class="cm"># Input types — dados de entrada para mutations</span>
+<span class="kw">input</span> <span class="tp">CreateUserInput</span> {
+  <span class="fn">name</span>: <span class="tp">String!</span>
+  <span class="fn">email</span>: <span class="tp">String!</span>
+  <span class="fn">password</span>: <span class="tp">String!</span>
+}
+
+<span class="cm"># Relay-style Pagination</span>
+<span class="kw">type</span> <span class="tp">UserConnection</span> {
+  <span class="fn">edges</span>: [<span class="tp">UserEdge!</span>!]
+  <span class="fn">pageInfo</span>: <span class="tp">PageInfo!</span>
+}
+
+<span class="kw">type</span> <span class="tp">UserEdge</span> {
+  <span class="fn">node</span>: <span class="tp">User!</span>
+  <span class="fn">cursor</span>: <span class="tp">String!</span>
+}
+
+<span class="kw">type</span> <span class="tp">PageInfo</span> {
+  <span class="fn">hasNextPage</span>: <span class="tp">Boolean!</span>
+  <span class="fn">endCursor</span>: <span class="tp">String</span>
+}</code></pre>
+
+<h4>O Problema N+1 e DataLoader</h4>
+
+<p>O maior problema de performance em GraphQL. Quando você busca 20 users com seus posts, o resolver de <code>posts</code> é chamado 20 vezes — cada um faz uma query SQL separada. Com DataLoader, as 20 chamadas são <strong>agrupadas em uma única query</strong>.</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> DataLoader <span class="kw">from</span> <span class="str">'dataloader'</span>;
+
+<span class="cm">// &#10060; SEM DataLoader — N+1 queries</span>
+<span class="cm">// Query 1: SELECT * FROM users LIMIT 20</span>
+<span class="cm">// Query 2: SELECT * FROM posts WHERE author_id = 1</span>
+<span class="cm">// Query 3: SELECT * FROM posts WHERE author_id = 2</span>
+<span class="cm">// ... 20 queries adicionais!</span>
+
+<span class="cm">// &#9989; COM DataLoader — apenas 2 queries</span>
+<span class="cm">// Query 1: SELECT * FROM users LIMIT 20</span>
+<span class="cm">// Query 2: SELECT * FROM posts WHERE author_id IN (1,2,3,...,20)</span>
+
+<span class="kw">const</span> postsByAuthorLoader = <span class="kw">new</span> <span class="tp">DataLoader</span>&lt;<span class="tp">string</span>, <span class="tp">Post</span>[]&gt;(
+  <span class="kw">async</span> (authorIds) => {
+    <span class="kw">const</span> posts = <span class="kw">await</span> db.<span class="fn">query</span>(
+      <span class="str">`SELECT * FROM posts WHERE author_id = ANY($1)`</span>,
+      [authorIds]
+    );
+    <span class="cm">// Agrupar posts por author_id mantendo a ordem</span>
+    <span class="kw">return</span> authorIds.<span class="fn">map</span>(id =>
+      posts.<span class="fn">filter</span>(p => p.authorId === id)
+    );
+  }
+);
+
+<span class="cm">// Resolver do campo User.posts</span>
+<span class="kw">const</span> resolvers = {
+  User: {
+    <span class="fn">posts</span>: (parent: <span class="tp">User</span>) =>
+      postsByAuthorLoader.<span class="fn">load</span>(parent.id),
+  },
+};</code></pre>
+
+<h4>Segurança em GraphQL</h4>
+
+<p>GraphQL permite queries arbitrariamente complexas. Sem proteção, um atacante pode enviar uma query profunda que derruba o servidor:</p>
+
+<pre data-lang="graphql"><code><span class="cm"># &#10060; Query maliciosa — profundidade infinita</span>
+{
+  <span class="fn">user</span>(id: <span class="str">"1"</span>) {
+    posts {
+      author {
+        posts {
+          author {
+            posts {
+              <span class="cm"># ... 100 níveis de profundidade</span>
+            }
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+
+<pre data-lang="typescript"><code><span class="cm">// &#9989; Protecoes essenciais</span>
+<span class="kw">import</span> depthLimit <span class="kw">from</span> <span class="str">'graphql-depth-limit'</span>;
+<span class="kw">import</span> { createComplexityLimitRule } <span class="kw">from</span> <span class="str">'graphql-válidation-complexity'</span>;
+
+<span class="kw">const</span> server = <span class="kw">new</span> <span class="tp">ApolloServer</span>({
+  typeDefs,
+  resolvers,
+  válidationRules: [
+    <span class="fn">depthLimit</span>(<span class="num">7</span>),                    <span class="cm">// Max 7 níveis de profundidade</span>
+    <span class="fn">createComplexityLimitRule</span>(<span class="num">1000</span>),  <span class="cm">// Max 1000 de complexidade total</span>
+  ],
+  plugins: [
+    <span class="fn">ApolloServerPluginLandingPageLocalDefault</span>(),
+  ],
+});</code></pre>
+
+<h4>Apollo Server — Exemplo Completo (TypeScript)</h4>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { ApolloServer } <span class="kw">from</span> <span class="str">'@apollo/server'</span>;
+<span class="kw">import</span> { startStandaloneServer } <span class="kw">from</span> <span class="str">'@apollo/server/standalone'</span>;
+
+<span class="kw">const</span> typeDefs = <span class="str">`#graphql
+  type User {
+    id: ID!
+    name: String!
+    email: String!
+  }
+
+  type Query {
+    users: [User!]!
+    user(id: ID!): User
+  }
+
+  type Mutation {
+    createUser(name: String!, email: String!): User!
+  }
+`</span>;
+
+<span class="kw">const</span> resolvers = {
+  Query: {
+    <span class="fn">users</span>: <span class="kw">async</span> (_, __, { dataSources }) =>
+      dataSources.usersAPI.<span class="fn">findAll</span>(),
+
+    <span class="fn">user</span>: <span class="kw">async</span> (_, { id }, { dataSources }) =>
+      dataSources.usersAPI.<span class="fn">findById</span>(id),
+  },
+  Mutation: {
+    <span class="fn">createUser</span>: <span class="kw">async</span> (_, { name, email }, { dataSources }) =>
+      dataSources.usersAPI.<span class="fn">create</span>({ name, email }),
+  },
+};
+
+<span class="kw">const</span> server = <span class="kw">new</span> <span class="tp">ApolloServer</span>({ typeDefs, resolvers });
+
+<span class="kw">const</span> { url } = <span class="kw">await</span> <span class="fn">startStandaloneServer</span>(server, {
+  listen: { port: <span class="num">4000</span> },
+  context: <span class="kw">async</span> ({ req }) => ({
+    dataSources: { usersAPI: <span class="kw">new</span> <span class="tp">UsersDataSource</span>() },
+    token: req.headers.authorization,
+  }),
+});
+
+console.<span class="fn">log</span>(<span class="str">`GraphQL server at ${url}`</span>);</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Over-fetching vs Under-fetching:</strong> REST retorna todos os campos de um recursó (over-fetching: você só precisa do nome mas recebe 30 campos). Para montar uma tela de dashboard, você precisa chamar 5 endpoints (under-fetching). GraphQL resolve ambos: o cliente pede EXATAMENTE o que precisa em uma única request.</div>
+</div>
+
+<!-- ═══ gRPC ═══ -->
+<h3>gRPC — Remote Procedure Call</h3>
+
+<p>Criado pelo Google, gRPC usa <strong>Protocol Buffers (protobuf)</strong> como formato de serialização (binário, 5-10x mais rápido que JSON) e <strong>HTTP/2</strong> como transporte (multiplexing, header compression, server push). É o padrão para <strong>comunicação entre microsserviços</strong> onde performance e tipo de contrato são críticos.</p>
+
+<h4>Protocol Buffers — Definição do Serviço</h4>
+
+<pre data-lang="protobuf"><code><span class="cm">// user.proto — Contrato do serviço</span>
+<span class="kw">syntax</span> = <span class="str">"proto3"</span>;
+
+<span class="kw">package</span> <span class="tp">user</span>;
+
+<span class="cm">// Definição do serviço e seus métodos</span>
+<span class="kw">service</span> <span class="tp">UserService</span> {
+  <span class="cm">// Unary — request/response simples</span>
+  <span class="kw">rpc</span> <span class="fn">GetUser</span> (<span class="tp">GetUserRequest</span>) <span class="kw">returns</span> (<span class="tp">User</span>);
+
+  <span class="cm">// Server Streaming — servidor envia multiplas respostas</span>
+  <span class="kw">rpc</span> <span class="fn">ListUsers</span> (<span class="tp">ListUsersRequest</span>) <span class="kw">returns</span> (<span class="kw">stream</span> <span class="tp">User</span>);
+
+  <span class="cm">// Client Streaming — cliente envia múltiplos requests</span>
+  <span class="kw">rpc</span> <span class="fn">UploadUsers</span> (<span class="kw">stream</span> <span class="tp">CreateUserRequest</span>) <span class="kw">returns</span> (<span class="tp">UploadSummary</span>);
+
+  <span class="cm">// Bidirectional Streaming — ambos enviam streams</span>
+  <span class="kw">rpc</span> <span class="fn">SyncUsers</span> (<span class="kw">stream</span> <span class="tp">UserUpdate</span>) <span class="kw">returns</span> (<span class="kw">stream</span> <span class="tp">UserUpdate</span>);
+}
+
+<span class="cm">// Mensagens — tipos de dados fortemente tipados</span>
+<span class="kw">message</span> <span class="tp">User</span> {
+  <span class="tp">string</span> id = <span class="num">1</span>;
+  <span class="tp">string</span> name = <span class="num">2</span>;
+  <span class="tp">string</span> email = <span class="num">3</span>;
+  <span class="tp">UserRole</span> role = <span class="num">4</span>;
+  <span class="tp">google.protobuf.Timestamp</span> created_at = <span class="num">5</span>;
+}
+
+<span class="kw">enum</span> <span class="tp">UserRole</span> {
+  USER = <span class="num">0</span>;
+  ADMIN = <span class="num">1</span>;
+  MODERATOR = <span class="num">2</span>;
+}
+
+<span class="kw">message</span> <span class="tp">GetUserRequest</span> {
+  <span class="tp">string</span> id = <span class="num">1</span>;
+}
+
+<span class="kw">message</span> <span class="tp">ListUsersRequest</span> {
+  <span class="tp">int32</span> page_size = <span class="num">1</span>;
+  <span class="tp">string</span> page_token = <span class="num">2</span>;
+}
+
+<span class="kw">message</span> <span class="tp">UploadSummary</span> {
+  <span class="tp">int32</span> total_created = <span class="num">1</span>;
+  <span class="tp">int32</span> total_errors = <span class="num">2</span>;
+}</code></pre>
+
+<h4>Tipos de Comúnicação gRPC</h4>
+
+<div class="diagram">
+<div class="diagram-box green">Unary<br><small>1 req &rarr; 1 res</small></div>
+<div class="diagram-box blue">Server Stream<br><small>1 req &rarr; N res</small></div>
+<div class="diagram-box purple">Client Stream<br><small>N req &rarr; 1 res</small></div>
+<div class="diagram-box orange">Bidi Stream<br><small>N req &harr; N res</small></div>
+</div>
+
+<h4>TypeScript gRPC Client</h4>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { credentials } <span class="kw">from</span> <span class="str">'@grpc/grpc-js'</span>;
+<span class="kw">import</span> { UserServiceClient } <span class="kw">from</span> <span class="str">'./generated/user_grpc_pb'</span>;
+<span class="kw">import</span> { GetUserRequest } <span class="kw">from</span> <span class="str">'./generated/user_pb'</span>;
+
+<span class="cm">// Conexao com o serviço gRPC</span>
+<span class="kw">const</span> client = <span class="kw">new</span> <span class="tp">UserServiceClient</span>(
+  <span class="str">'localhost:50051'</span>,
+  credentials.<span class="fn">createInsecure</span>()
+);
+
+<span class="cm">// Unary call</span>
+<span class="kw">const</span> request = <span class="kw">new</span> <span class="tp">GetUserRequest</span>();
+request.<span class="fn">setId</span>(<span class="str">'user-123'</span>);
+
+client.<span class="fn">getUser</span>(request, (err, response) => {
+  <span class="kw">if</span> (err) {
+    console.<span class="fn">error</span>(<span class="str">'gRPC error:'</span>, err.message);
+    <span class="kw">return</span>;
+  }
+  console.<span class="fn">log</span>(<span class="str">'User:'</span>, response.<span class="fn">toObject</span>());
+});
+
+<span class="cm">// Server streaming call</span>
+<span class="kw">const</span> listReq = <span class="kw">new</span> <span class="tp">ListUsersRequest</span>();
+listReq.<span class="fn">setPageSize</span>(<span class="num">100</span>);
+
+<span class="kw">const</span> stream = client.<span class="fn">listUsers</span>(listReq);
+
+stream.<span class="fn">on</span>(<span class="str">'data'</span>, (user) => {
+  console.<span class="fn">log</span>(<span class="str">'Received user:'</span>, user.<span class="fn">toObject</span>());
+});
+
+stream.<span class="fn">on</span>(<span class="str">'end'</span>, () => {
+  console.<span class="fn">log</span>(<span class="str">'Stream finished'</span>);
+});
+
+stream.<span class="fn">on</span>(<span class="str">'error'</span>, (err) => {
+  console.<span class="fn">error</span>(<span class="str">'Stream error:'</span>, err);
+});</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Quando usar gRPC:</strong> Comúnicação entre microsserviços (service-to-service), sistemas de alta performance, streaming de dados, mobile apps (menor payload). Não use para APIs públicas consumidas por browsers — protobuf e binário, browsers preferem JSON.</div>
+</div>
+
+<!-- ═══ WEBSOCKET ═══ -->
+<h3>WebSocket — Full-Duplex Bidirectional</h3>
+
+<p>WebSocket cria uma conexão <strong>persistente e bidirecional</strong> entre cliente é servidor. Diferente do HTTP (request/response), ambos os lados podem enviar dados a qualquer momento sem esperar uma "pergunta". O protocolo começa com um <strong>HTTP Upgrade handshake</strong> é depois muda para o protocolo WebSocket (ws:// ou wss://).</p>
+
+<h4>O Handshake HTTP Upgrade</h4>
+
+<pre data-lang="http"><code><span class="cm">// 1. Cliente envia request HTTP com upgrade</span>
+<span class="fn">GET</span> /chat <span class="tp">HTTP/1.1</span>
+Host: server.example.com
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
+Sec-WebSocket-Version: <span class="num">13</span>
+
+<span class="cm">// 2. Servidor responde com 101 Switching Protocols</span>
+<span class="tp">HTTP/1.1</span> <span class="num">101</span> Switching Protocols
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+
+<span class="cm">// 3. A partir daqui, a conexão e full-duplex WebSocket</span></code></pre>
+
+<h4>Socket.IO vs WebSocket Nativo</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Caracteristica</th><th>WebSocket Nativo</th><th>Socket.IO</th></tr>
+<tr><td>Protocolo</td><td>WebSocket puro (RFC 6455)</td><td>Engine.IO + WebSocket (com fallback)</td></tr>
+<tr><td>Reconexão automática</td><td>Não</td><td>Sim, com backoff exponencial</td></tr>
+<tr><td>Rooms/Namespaces</td><td>Não</td><td>Sim, built-in</td></tr>
+<tr><td>Broadcast</td><td>Manual</td><td><code>io.to('room').emit()</code></td></tr>
+<tr><td>Fallback (HTTP polling)</td><td>Não</td><td>Sim, automático</td></tr>
+<tr><td>Overhead</td><td>Mínimo</td><td>~2KB extra por mensagem</td></tr>
+<tr><td>Quando usar</td><td>Alta performance, controle total</td><td>Apps web, prototipagem rápida</td></tr>
+</table>
+</div>
+
+<h4>NestJS WebSocket Gateway</h4>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> {
+  WebSocketGateway, WebSocketServer,
+  SubscribeMessage, OnGatewayConnection,
+  OnGatewayDisconnect, ConnectedSocket, MessageBody,
+} <span class="kw">from</span> <span class="str">'@nestjs/websockets'</span>;
+<span class="kw">import</span> { Server, Socket } <span class="kw">from</span> <span class="str">'socket.io'</span>;
+
+<span class="ann">@WebSocketGateway</span>({
+  cors: { origin: <span class="str">'*'</span> },
+  namespace: <span class="str">'/chat'</span>,
+})
+<span class="kw">export class</span> <span class="tp">ChatGateway</span> <span class="kw">implements</span> <span class="tp">OnGatewayConnection</span>, <span class="tp">OnGatewayDisconnect</span> {
+  <span class="ann">@WebSocketServer</span>()
+  server: <span class="tp">Server</span>;
+
+  <span class="cm">// Quando um cliente conecta</span>
+  <span class="fn">handleConnection</span>(client: <span class="tp">Socket</span>) {
+    console.<span class="fn">log</span>(<span class="str">`Client connected: ${client.id}`</span>);
+    client.<span class="fn">join</span>(<span class="str">'general'</span>); <span class="cm">// Adiciona ao room padrão</span>
+  }
+
+  <span class="cm">// Quando um cliente desconecta</span>
+  <span class="fn">handleDisconnect</span>(client: <span class="tp">Socket</span>) {
+    console.<span class="fn">log</span>(<span class="str">`Client disconnected: ${client.id}`</span>);
+  }
+
+  <span class="cm">// Escuta o evento 'sendMessage' do cliente</span>
+  <span class="ann">@SubscribeMessage</span>(<span class="str">'sendMessage'</span>)
+  <span class="fn">handleMessage</span>(
+    <span class="ann">@ConnectedSocket</span>() client: <span class="tp">Socket</span>,
+    <span class="ann">@MessageBody</span>() payload: { room: <span class="tp">string</span>; message: <span class="tp">string</span> },
+  ) {
+    <span class="cm">// Envia para todos no room EXCETO o remetente</span>
+    client.<span class="fn">to</span>(payload.room).<span class="fn">emit</span>(<span class="str">'newMessage'</span>, {
+      sender: client.id,
+      message: payload.message,
+      timestamp: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">toISOString</span>(),
+    });
+  }
+
+  <span class="cm">// Entrar em um room específico</span>
+  <span class="ann">@SubscribeMessage</span>(<span class="str">'joinRoom'</span>)
+  <span class="fn">handleJoinRoom</span>(
+    <span class="ann">@ConnectedSocket</span>() client: <span class="tp">Socket</span>,
+    <span class="ann">@MessageBody</span>() room: <span class="tp">string</span>,
+  ) {
+    client.<span class="fn">join</span>(room);
+    <span class="kw">this</span>.server.<span class="fn">to</span>(room).<span class="fn">emit</span>(<span class="str">'userJoined'</span>, {
+      userId: client.id,
+      room,
+    });
+  }
+}</code></pre>
+
+<!-- ═══ SSE ═══ -->
+<h3>SSE — Server-Sent Events</h3>
+
+<p>SSE é uma alternativa leve ao WebSocket quando você só precisa de comunicação <strong>unidirecional: servidor para cliente</strong>. Funciona sobre HTTP normal (não precisa de upgrade), reconecta automáticamente, e suporta event IDs para retomar a partir do último evento recebido. Perfeito para <strong>notificações, feeds de atividade, stock tickers</strong>.</p>
+
+<h4>Servidor SSE (NestJS)</h4>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { Controller, Sse } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+<span class="kw">import</span> { Observable, interval, map } <span class="kw">from</span> <span class="str">'rxjs'</span>;
+
+<span class="ann">@Controller</span>(<span class="str">'notifications'</span>)
+<span class="kw">export class</span> <span class="tp">NotificationsController</span> {
+  <span class="ann">@Sse</span>(<span class="str">'stream'</span>)
+  <span class="fn">stream</span>(): <span class="tp">Observable</span>&lt;<span class="tp">MessageEvent</span>&gt; {
+    <span class="cm">// Emite um evento a cada 5 segundos</span>
+    <span class="kw">return</span> <span class="fn">interval</span>(<span class="num">5000</span>).<span class="fn">pipe</span>(
+      <span class="fn">map</span>((num) => ({
+        data: JSON.<span class="fn">stringify</span>({
+          type: <span class="str">'notification'</span>,
+          message: <span class="str">`Updaté #${num}`</span>,
+          timestamp: <span class="kw">new</span> <span class="tp">Date</span>().<span class="fn">toISOString</span>(),
+        }),
+        id: <span class="tp">String</span>(num),
+        type: <span class="str">'notification'</span>,
+      })),
+    );
+  }
+}</code></pre>
+
+<h4>Cliente SSE (Browser)</h4>
+
+<pre data-lang="typescript"><code><span class="cm">// EventSource API — nativa do browser</span>
+<span class="kw">const</span> source = <span class="kw">new</span> <span class="tp">EventSource</span>(<span class="str">'/notifications/stream'</span>);
+
+<span class="cm">// Escuta eventos específicos por tipo</span>
+source.<span class="fn">addEventListener</span>(<span class="str">'notification'</span>, (event) => {
+  <span class="kw">const</span> data = JSON.<span class="fn">parse</span>(event.data);
+  console.<span class="fn">log</span>(<span class="str">'Nova notificação:'</span>, data.message);
+});
+
+<span class="cm">// Reconexão automática se a conexão cair</span>
+source.<span class="fn">addEventListener</span>(<span class="str">'error'</span>, (event) => {
+  console.<span class="fn">log</span>(<span class="str">'Conexao perdida, reconectando automáticamente...'</span>);
+});
+
+<span class="cm">// Fechar conexão manualmente</span>
+source.<span class="fn">close</span>();</code></pre>
+
+<div class="table-wrap">
+<table>
+<tr><th>Caracteristica</th><th>WebSocket</th><th>SSE</th></tr>
+<tr><td>Direção</td><td>Bidirecional</td><td>Servidor &rarr; Cliente apenas</td></tr>
+<tr><td>Protocolo</td><td>WebSocket (ws://)</td><td>HTTP padrão</td></tr>
+<tr><td>Reconexão</td><td>Manual</td><td>Automática (built-in)</td></tr>
+<tr><td>Formato</td><td>Binário ou texto</td><td>Texto apenas (UTF-8)</td></tr>
+<tr><td>Proxy/Firewall</td><td>Problemas frequentes</td><td>Funciona sem configuração</td></tr>
+<tr><td>Casó de uso</td><td>Chat, gaming, colaboracao</td><td>Notificações, feeds, logs</td></tr>
+</table>
+</div>
+
+<!-- ═══ tRPC ═══ -->
+<h3>tRPC — End-to-End Type Safety</h3>
+
+<p>tRPC elimina a necessidade de schema separado (REST OpenAPI, GraphQL SDL) quando frontend e backend são <strong>ambos TypeScript</strong>. Os tipos do backend são automáticamente inferidos no frontend — sem code generation, sem duplicação de tipos. Qualquer mudança na API e detectada pelo compilador TypeScript imediatamente.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// ── Backend (tRPC Router) ──</span>
+<span class="kw">import</span> { initTRPC } <span class="kw">from</span> <span class="str">'@trpc/server'</span>;
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="kw">const</span> t = <span class="fn">initTRPC</span>.<span class="fn">create</span>();
+
+<span class="kw">const</span> appRouter = t.router({
+  <span class="cm">// Query — leitura de dados</span>
+  <span class="fn">getUser</span>: t.procedure
+    .<span class="fn">input</span>(z.<span class="fn">object</span>({ id: z.<span class="fn">string</span>().<span class="fn">uuid</span>() }))
+    .<span class="fn">query</span>(<span class="kw">async</span> ({ input }) => {
+      <span class="kw">const</span> user = <span class="kw">await</span> db.users.<span class="fn">findUnique</span>({
+        where: { id: input.id }
+      });
+      <span class="kw">return</span> user; <span class="cm">// Tipo inferido automáticamente!</span>
+    }),
+
+  <span class="cm">// Mutation — escrita de dados</span>
+  <span class="fn">createUser</span>: t.procedure
+    .<span class="fn">input</span>(z.<span class="fn">object</span>({
+      name: z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">2</span>),
+      email: z.<span class="fn">string</span>().<span class="fn">email</span>(),
+    }))
+    .<span class="fn">mutation</span>(<span class="kw">async</span> ({ input }) => {
+      <span class="kw">return</span> db.users.<span class="fn">create</span>({ data: input });
+    }),
+});
+
+<span class="cm">// Exporta o tipo do router para o frontend</span>
+<span class="kw">export type</span> <span class="tp">AppRouter</span> = <span class="kw">typeof</span> appRouter;
+
+<span class="cm">// ── Frontend (React com tRPC Client) ──</span>
+<span class="kw">import</span> { createTRPCReact } <span class="kw">from</span> <span class="str">'@trpc/react-query'</span>;
+<span class="kw">import type</span> { <span class="tp">AppRouter</span> } <span class="kw">from</span> <span class="str">'../server/router'</span>;
+
+<span class="kw">const</span> trpc = createTRPCReact&lt;<span class="tp">AppRouter</span>&gt;();
+
+<span class="kw">function</span> <span class="fn">UserProfile</span>({ userId }: { userId: <span class="tp">string</span> }) {
+  <span class="cm">// Tipo de `data` e inferido automáticamente do backend!</span>
+  <span class="cm">// Autocompletar funciona: data.name, data.email, etc.</span>
+  <span class="kw">const</span> { data, isLoading } = trpc.getUser.<span class="fn">useQuery</span>({ id: userId });
+
+  <span class="kw">if</span> (isLoading) <span class="kw">return</span> &lt;p&gt;Carregando...&lt;/p&gt;;
+  <span class="kw">return</span> &lt;h1&gt;{data?.name}&lt;/h1&gt;; <span class="cm">// TypeScript sabe que `name` existe</span>
+}</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Quando usar tRPC:</strong> Projetos full-stack TypeScript (Next.js, Remix) onde frontend e backend compartilham o mesmo repositório. Não use se você precisa de uma API pública consumida por clientes não-TypeScript (mobile nativo, terceiros), ou se frontend e backend são repos separados sem monorepo.</div>
+</div>
+
+<!-- ═══ WEBHOOKS ═══ -->
+<h3>Webhooks — Event-Driven Callbacks</h3>
+
+<p>Webhooks invertem o modelo tradicional: ao inves do cliente fazer polling ("já tem novidade?"), o servidor <strong>envia um POST HTTP para uma URL configurada</strong> quando um evento ocorre. O Stripe, GitHub, Twilio — todos usam webhooks para notificar seus clientes de eventos.</p>
+
+<h4>Componentes de um Webhook Robusto</h4>
+
+<ul>
+<li><strong>Assinatura (Signature Verification):</strong> O servidor assina o payload com HMAC-SHA256. O receptor verifica a assinatura para garantir autenticidade</li>
+<li><strong>Retry com Exponential Backoff:</strong> Se o receptor retornar 5xx ou timeout, o emissor reenvia com delay crescente (1s, 2s, 4s, 8s...)</li>
+<li><strong>Idempotency Key:</strong> Cada evento tem um ID único. O receptor deve ignorar eventos já processados</li>
+<li><strong>Timeout:</strong> O emissor espera tipicamente 5-30s pela resposta. Processe rápido e retorne 200</li>
+</ul>
+
+<h4>Exemplo: Stripe Webhook Handler (TypeScript)</h4>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> Stripe <span class="kw">from</span> <span class="str">'stripe'</span>;
+<span class="kw">import</span> { Controller, Post, Headers, RawBody } <span class="kw">from</span> <span class="str">'@nestjs/common'</span>;
+
+<span class="ann">@Controller</span>(<span class="str">'webhooks'</span>)
+<span class="kw">export class</span> <span class="tp">WebhooksController</span> {
+  <span class="kw">private</span> stripe = <span class="kw">new</span> <span class="tp">Stripe</span>(process.env.STRIPE_SECRET_KEY);
+
+  <span class="ann">@Post</span>(<span class="str">'stripe'</span>)
+  <span class="kw">async</span> <span class="fn">handleStripeWebhook</span>(
+    <span class="ann">@RawBody</span>() rawBody: <span class="tp">Buffer</span>,
+    <span class="ann">@Headers</span>(<span class="str">'stripe-signature'</span>) signature: <span class="tp">string</span>,
+  ) {
+    <span class="kw">let</span> event: <span class="tp">Stripe.Event</span>;
+
+    <span class="cm">// 1. Verificar assinatura — CRITICO para segurança</span>
+    <span class="kw">try</span> {
+      event = <span class="kw">this</span>.stripe.webhooks.<span class="fn">constructEvent</span>(
+        rawBody,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET,
+      );
+    } <span class="kw">catch</span> (err) {
+      <span class="kw">throw new</span> <span class="tp">UnauthorizedException</span>(<span class="str">'Invalid signature'</span>);
+    }
+
+    <span class="cm">// 2. Processar evento por tipo</span>
+    <span class="kw">switch</span> (event.type) {
+      <span class="kw">case</span> <span class="str">'payment_intent.succeeded'</span>:
+        <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">handlePaymentSuccess</span>(
+          event.data.object <span class="kw">as</span> <span class="tp">Stripe.PaymentIntent</span>
+        );
+        <span class="kw">break</span>;
+
+      <span class="kw">case</span> <span class="str">'customer.subscription.deleted'</span>:
+        <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">handleSubscriptionCanceled</span>(
+          event.data.object <span class="kw">as</span> <span class="tp">Stripe.Subscription</span>
+        );
+        <span class="kw">break</span>;
+
+      <span class="kw">default</span>:
+        console.<span class="fn">log</span>(<span class="str">`Unhandled event type: ${event.type}`</span>);
+    }
+
+    <span class="cm">// 3. Retornar 200 RAPIDO — processe async se necessário</span>
+    <span class="kw">return</span> { received: <span class="kw">true</span> };
+  }
+
+  <span class="kw">privaté async</span> <span class="fn">handlePaymentSuccess</span>(payment: <span class="tp">Stripe.PaymentIntent</span>) {
+    <span class="cm">// Idempotency: verificar se já processamos este evento</span>
+    <span class="kw">const</span> exists = <span class="kw">await</span> <span class="kw">this</span>.eventsRepo.<span class="fn">findOne</span>({
+      where: { stripeEventId: payment.id }
+    });
+    <span class="kw">if</span> (exists) <span class="kw">return</span>; <span class="cm">// Ja processado — ignorar duplicata</span>
+
+    <span class="kw">await</span> <span class="kw">this</span>.ordersService.<span class="fn">markAsPaid</span>(payment.metadata.orderId);
+    <span class="kw">await</span> <span class="kw">this</span>.eventsRepo.<span class="fn">save</span>({ stripeEventId: payment.id });
+  }
+}</code></pre>
+
+<!-- ═══ COMPARISON TABLE ═══ -->
+<h3>Tabela Comparativa</h3>
+
+<div class="table-wrap">
+<table>
+<tr><th>Protocolo</th><th>Formato</th><th>Transporte</th><th>Melhor Para</th><th>Complexidade</th></tr>
+<tr><td><strong>REST</strong></td><td>JSON/XML</td><td>HTTP/1.1+</td><td>CRUD, APIs públicas, web apps</td><td>Baixa</td></tr>
+<tr><td><strong>GraphQL</strong></td><td>JSON</td><td>HTTP POST</td><td>Frontends complexos, mobile, BFF</td><td>Media-Alta</td></tr>
+<tr><td><strong>gRPC</strong></td><td>Protobuf (binário)</td><td>HTTP/2</td><td>Microsserviços, alta performance</td><td>Alta</td></tr>
+<tr><td><strong>WebSocket</strong></td><td>Texto/Binário</td><td>ws:// (TCP)</td><td>Chat, gaming, colaboracao real-time</td><td>Media</td></tr>
+<tr><td><strong>SSE</strong></td><td>Texto (UTF-8)</td><td>HTTP</td><td>Notificações, feeds, logs</td><td>Baixa</td></tr>
+<tr><td><strong>tRPC</strong></td><td>JSON</td><td>HTTP</td><td>Full-stack TypeScript monorepos</td><td>Baixa</td></tr>
+<tr><td><strong>Webhooks</strong></td><td>JSON</td><td>HTTP POST</td><td>Eventos async entre sistemas</td><td>Baixa-Media</td></tr>
+</table>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Editor Colaborativo de Documentos</h3>
+<p><strong>Cenário:</strong> Projetar a comunicação para um editor de documentos colaborativo em tempo real (tipo Google Docs). Múltiplos usuários editam simultaneamente, veem cursores dos outros, e recebem notificações.</p>
+
+<div class="diagram">
+<div class="diagram-box green">WebSocket<br><small>Edicoes em tempo real<br>Cursores dos usuários<br>Presença (online/offline)</small></div>
+<div class="diagram-arrow">+</div>
+<div class="diagram-box blue">REST<br><small>CRUD de documentos<br>Gerenciamento de users<br>Permissões e sharing</small></div>
+<div class="diagram-arrow">+</div>
+<div class="diagram-box purple">SSE<br><small>Notificações<br>Comentários<br>Convites para editar</small></div>
+</div>
+
+<p><strong>Decisões arquiteturais:</strong></p>
+<ul>
+<li><strong>WebSocket</strong> para edicoes em tempo real — é o único protocolo que suporta comunicação bidirecional de baixa latência. Cada keystroke é enviado ao servidor e distribuído aos outros editores. Operational Transform (OT) ou CRDT para resolução de conflitos</li>
+<li><strong>REST</strong> para operações CRUD — criar documento, listar documentos, gerenciar usuários, configurar permissões. Operações que não precisam de tempo real e são naturalmente request/response</li>
+<li><strong>SSE</strong> para notificações — unidirecional servidor para cliente. "Joao comentou no paragrafo 3", "Maria compartilhou um documento com você". Mais simples que WebSocket para notificações pois não precisa de canal bidirecional</li>
+<li><strong>Webhook</strong> (opcional) para integrações externas — quando o documento e publicado, notificar Slack. Quando um usuário e adicionado, sincronizar com CRM</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Arquitetura simplificada do editor colaborativo</span>
+
+<span class="cm">// 1. REST — CRUD de documentos</span>
+<span class="ann">@Controller</span>(<span class="str">'documents'</span>)
+<span class="kw">class</span> <span class="tp">DocumentsController</span> {
+  <span class="ann">@Post</span>()   <span class="fn">create</span>() { <span class="cm">/* ... */</span> }
+  <span class="ann">@Get</span>()    <span class="fn">list</span>()   { <span class="cm">/* ... */</span> }
+  <span class="ann">@Delete</span>() <span class="fn">remove</span>() { <span class="cm">/* ... */</span> }
+}
+
+<span class="cm">// 2. WebSocket — edicoes em tempo real</span>
+<span class="ann">@WebSocketGateway</span>({ namespace: <span class="str">'/editor'</span> })
+<span class="kw">class</span> <span class="tp">EditorGateway</span> {
+  <span class="ann">@SubscribeMessage</span>(<span class="str">'edit'</span>)
+  <span class="fn">handleEdit</span>(client: <span class="tp">Socket</span>, payload: <span class="tp">EditOperation</span>) {
+    <span class="cm">// Aplica OT/CRDT e broadcast para outros editores</span>
+    client.<span class="fn">to</span>(payload.docId).<span class="fn">emit</span>(<span class="str">'remoteEdit'</span>, payload);
+  }
+
+  <span class="ann">@SubscribeMessage</span>(<span class="str">'cursor'</span>)
+  <span class="fn">handleCursor</span>(client: <span class="tp">Socket</span>, payload: <span class="tp">CursorPosition</span>) {
+    client.<span class="fn">to</span>(payload.docId).<span class="fn">emit</span>(<span class="str">'remoteCursor'</span>, payload);
+  }
+}
+
+<span class="cm">// 3. SSE — notificações unidirecionais</span>
+<span class="ann">@Controller</span>(<span class="str">'notifications'</span>)
+<span class="kw">class</span> <span class="tp">NotificationsController</span> {
+  <span class="ann">@Sse</span>(<span class="str">'stream'</span>)
+  <span class="fn">stream</span>(): <span class="tp">Observable</span>&lt;<span class="tp">MessageEvent</span>&gt; {
+    <span class="kw">return</span> <span class="kw">this</span>.notificationsService.<span class="fn">getStream</span>();
+  }
+}</code></pre>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>GraphQL sem query complexity limits:</strong> Sem limitar profundidade e complexidade das queries, qualquer usuário pode enviar uma query que faz o servidor executar milhões de operações. É um vetor de ataque DoS trivial. SEMPRE configure <code>depthLimit</code> é <code>complexityLimit</code>.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>WebSocket sem heartbeat/reconnection:</strong> Conexões WebSocket morrem silenciosamente (proxy timeout, rede instável). Sem heartbeat (ping/pong a cada 30s) e lógica de reconexão com backoff exponencial, seus usuários ficam em um estado "conectado mas morto" — veem dados desatualizados sem saber.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>REST com verbos na URL:</strong> URLs como <code>POST /api/createUser</code> ou <code>GET /api/getUsers</code> violam REST. Os verbos HTTP (GET, POST, PUT, DELETE) já indicam a ação. O correto e <code>POST /api/users</code> é <code>GET /api/users</code>. URIs devem conter apenas substantivos (recursos).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Webhook sem verificação de assinatura:</strong> Se você não válida o header de assinatura (ex: <code>Stripe-Signature</code>), qualquer pessoa que descubra sua URL pode enviar payloads falsos. Sempre use HMAC-SHA256 para verificar que o payload veio do emissor legítimo.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>gRPC para APIs públicas de browser:</strong> Browsers não suportam gRPC nativamente (precisam de gRPC-Web como proxy). Se sua API e consumida por frontends web, use REST ou GraphQL. gRPC brilha em comunicação service-to-service.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Comece com REST. Adicione GraphQL quando o frontend precisar de flexibilidade nas queries. Use WebSocket/SSE quando precisar de tempo real. gRPC para microsserviços internos. tRPC se for monorepo TypeScript. Não comece com o protocolo mais complexo — evolua conforme a necessidade.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você está construindo um app de delivery. Quais protocolos usaria para: (a) CRUD de restaurantes, (b) tracking do entregador em tempo real, (c) notificações de status do pedido?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> (a) <strong>REST</strong> para CRUD de restaurantes — operações clássicas request/response que não precisam de tempo real. (b) <strong>WebSocket</strong> para tracking do entregador — atualizações de posição GPS a cada 2-3 segundos precisam de comunicação bidirecional de baixa latência. O entregador envia posição, o cliente visualiza no mapa. (c) <strong>SSE</strong> para notificações de status — unidirecional (servidor para cliente): "Pedido aceito", "Em preparo", "Saiu para entrega". Não precisa de bidirecionalidade, e SSE reconecta automáticamente.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Explique o problema N+1 do GraphQL é como o DataLoader resolve.</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Quando você faz uma query como <code>{ users { posts { title } } }</code> é recebe 20 usuários, o resolver de <code>posts</code> é chamado 20 vezes — cada vez executando <code>SELECT * FROM posts WHERE author_id = X</code>. Resultado: 1 query para users + 20 queries para posts = 21 queries (o "N+1"). O <strong>DataLoader</strong> agrupa todas as chamadas do mesmo tick do event loop em uma única query batch: <code>SELECT * FROM posts WHERE author_id IN (1,2,3,...,20)</code>. Resultado: apenas 2 queries, independente do número de usuários.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Qual a diferença entre PUT e PATCH? Quando usar cada um?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> <strong>PUT</strong> substitui o recursó INTEIRO — se você enviar <code>PUT /users/1 { name: "Ana" }</code>, todos os outros campos (email, phone, etc) serão apagados ou resetados ao default. PUT e idempotente: chamado N vezes, resultado é o mesmo. <strong>PATCH</strong> faz atualização PARCIAL — <code>PATCH /users/1 { name: "Ana" }</code> atualiza APENAS o nome, mantendo os outros campos intactos. Use PUT quando você tem o objeto completo e quer substituir. Use PATCH quando quer atualizar campos específicos (a maioria dos forms de edição usa PATCH).</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — REST, GraphQL, gRPC &amp; WebSocket</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="21-performance-otimizacao.html">&#8592; Performance &amp; Otimização</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="23-api-design-versionamento.html" class="primary">Próximo: API Design &amp; Versionamento &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 22: REST, GraphQL, gRPC & WebSocket
+// ══════════════════════════════════════════
+const SECTION_NUM = 22;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "No Richardson Maturity Model, qual nível descreve uma API que usa URIs de recursos + métodos HTTP corretos + status codes semânticos?",
+    options: [
+      "Level 0 — The Swamp of POX",
+      "Level 1 — Resources",
+      "Level 2 — HTTP Verbs",
+      "Level 3 — HATEOAS"
+    ],
+    correct: 2,
+    explanation: "Level 2 usa URIs de recursos, métodos HTTP corretos (GET, POST, PUT, DELETE) e status codes semânticos. E onde 95% das APIs REST se encontram."
+  },
+  {
+    question: "Qual método HTTP Não é idempotente?",
+    options: [
+      "GET",
+      "PUT",
+      "DELETE",
+      "POST"
+    ],
+    correct: 3,
+    explanation: "POST não é idempotente — cada chamada cria um novo recurso. GET, PUT e DELETE são idempotentes: chamados N vezes, o resultado no servidor é o mesmo que chamar uma vez."
+  },
+  {
+    question: "GraphQL resolve dois problemas principais do REST. Quais são?",
+    options: [
+      "Latência e autenticação",
+      "Over-fetching e under-fetching",
+      "Escalabilidade e caching",
+      "Tipagem e documentação"
+    ],
+    correct: 1,
+    explanation: "Over-fetching (receber campos desnecessários) e under-fetching (precisar de múltiplas requests para montar uma tela). GraphQL permite que o cliente especifique exatamente quais campos quer."
+  },
+  {
+    question: "O que o DataLoader resolve no contexto de GraphQL?",
+    options: [
+      "Validação de tipos no schema",
+      "Autenticação de queries",
+      "O problema N+1 de queries ao banco",
+      "Compressão de payloads"
+    ],
+    correct: 2,
+    explanation: "O DataLoader agrupa múltiplas chamadas individuais ao banco (N+1) em uma única query batch usando WHERE id IN (...), reduzindo drasticamente o número de queries."
+  },
+  {
+    question: "Qual formato de serialização o gRPC usa por padrão?",
+    options: [
+      "JSON",
+      "XML",
+      "MessagePack",
+      "Protocol Buffers (protobuf)"
+    ],
+    correct: 3,
+    explanation: "gRPC usa Protocol Buffers (protobuf), um formato binário 5-10x mais rápido que JSON para serializar/deserializar. E fortemente tipado e requer definição de schema (.proto)."
+  },
+  {
+    question: "Qual tipo de comunicação gRPC permite que tanto cliente quanto servidor enviem streams de dados simultaneamente?",
+    options: [
+      "Unary",
+      "Server Streaming",
+      "Client Streaming",
+      "Bidirectional Streaming"
+    ],
+    correct: 3,
+    explanation: "Bidirectional Streaming permite que ambos os lados enviem streams de dados simultaneamente, ideal para cenários como sincronização em tempo real."
+  },
+  {
+    question: "Qual protocolo é mais adequado para notificações unidirecionais (servidor para cliente) com reconexão automática?",
+    options: [
+      "WebSocket",
+      "gRPC",
+      "SSE (Server-Sent Events)",
+      "tRPC"
+    ],
+    correct: 2,
+    explanation: "SSE e unidirecional (servidor para cliente), funciona sobre HTTP padrão, e tem reconexão automática built-in. Perfeito para notificações onde o cliente não precisa enviar dados."
+  },
+  {
+    question: "Sobre tRPC, qual afirmacao está CORRETA?",
+    options: [
+      "Funciona com qualquer linguagem no frontend e backend",
+      "Requer definição de schema separado como GraphQL SDL",
+      "Infere tipos do backend automáticamente no frontend TypeScript",
+      "E mais performático que gRPC para comunicação entre serviços"
+    ],
+    correct: 2,
+    explanation: "tRPC infere os tipos do backend diretamente no frontend via TypeScript — sem schema separado, sem code generation. Funciona exclusivamente em projetos TypeScript full-stack."
+  },
+  {
+    question: "Qual é a prática ESSENCIAL ao implementar um webhook receiver?",
+    options: [
+      "Usar GET ao inves de POST para receber eventos",
+      "Processar o evento síncronamente antes de retornar 200",
+      "Verificar a assinatura (HMAC-SHA256) do payload recebido",
+      "Enviar response em formato XML"
+    ],
+    correct: 2,
+    explanation: "Verificar a assinatura e CRÍTICO para segurança. Sem isso, qualquer pessoa que descubra sua URL de webhook pode enviar payloads falsos. Use HMAC-SHA256 para validar que o payload veio do emissor legítimo."
+  },
+  {
+    question: "Para um sistema de chat em tempo real, qual protocolo é mais apropriado é por que?",
+    options: [
+      "REST — porque é simples e universal",
+      "GraphQL Subscriptions — porque resolve over-fetching",
+      "WebSocket — porque oferece comunicação bidirecional de baixa latência",
+      "SSE — porque tem reconexão automática"
+    ],
+    correct: 2,
+    explanation: "WebSocket é o ideal para chat porque oferece comunicação full-duplex (ambos os lados enviam a qualquer momento) com latência mínima. SSE e unidirecional. REST exigiria polling. GraphQL Subscriptions internamente usa WebSocket."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina protocolos de comunicação.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

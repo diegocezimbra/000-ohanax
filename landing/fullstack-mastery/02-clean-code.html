@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>02 — Clean Code | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="01-principios-solid.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>02</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="03-design-patterns-criacionais.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:3%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 02</span>
+<h2>Clean Code</h2>
+<div class="section-line"></div>
+
+<p>Clean Code é mais do que uma técnica — é uma <strong>disciplina profissional</strong>. Robert C. Martin (Uncle Bob) definiu em seu livro clássico de 2008 que código limpo e aquele que foi escrito por alguem que <strong>se importa</strong>. Não e sobre cleverness ou mínimalismo extremo. E sobre código que outros desenvolvedores (incluindo você daqui a 6 meses) conseguem ler, entender e modificar com confiança.</p>
+
+<p>A métrica mais importante de qualidade de código não é performance, não é número de linhas, não é cobertura de testes. E o <strong>WTF/minuto</strong> — quantas vezes alguem lendo seu código para e pensa "que diabos isso faz?". Clean Code minimiza essa métrica a zero.</p>
+
+<p>Uma verdade inconveniente: nós gastamos <strong>10x mais tempo lendo código do que escrevendo</strong>. Cada minuto investido em tornar o código mais legivel economiza 10 minutos de quem vai le-lo depois. Clean Code não é um luxo — é uma <strong>obrigacao economica</strong>.</p>
+
+<!-- ═══ REGRAS DE NOMES ═══ -->
+<h3>Regras de Nomes</h3>
+<p>Nomes são a ferramenta mais poderosa de comunicação no código. Um bom nome elimina a necessidade de comentários, torna o fluxo autoexplicativo e reduz drasticamente a carga cognitiva. As regras fundamentais:</p>
+
+<h4>1. Nomes Devem Revelar Intencao</h4>
+<p>O nome de uma variável, função ou classe deve responder três perguntas: <strong>por que existe?</strong>, <strong>o que faz?</strong> é <strong>como é usado?</strong>. Se o nome exige um comentário para explicar, ele não revela intencao.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Nomes que não revelam nada</span>
+<span class="kw">const</span> d = <span class="num">86400</span>;
+<span class="kw">const</span> list = users.<span class="fn">filter</span>(u => u.s === <span class="num">1</span>);
+<span class="kw">function</span> <span class="fn">proc</span>(a: <span class="tp">any</span>, b: <span class="tp">any</span>) { <span class="cm">/* ... */</span> }
+
+<span class="cm">// &#9989; Nomes que revelam intencao</span>
+<span class="kw">const</span> SECONDS_PER_DAY = <span class="num">86400</span>;
+<span class="kw">const</span> activeUsers = users.<span class="fn">filter</span>(user => user.status === Status.ACTIVE);
+<span class="kw">function</span> <span class="fn">processPayment</span>(order: <span class="tp">Order</span>, method: <span class="tp">PaymentMethod</span>) { <span class="cm">/* ... */</span> }</code></pre>
+
+<h4>2. Nomes Pronunciaveis e Pesquisaveis</h4>
+<p>Se você não consegue pronunciar um nome em voz alta durante uma code review, ele é ruim. Se você não consegue encontra-lo com <code>Ctrl+F</code>, ele é pior ainda. Evite abreviacoes cripticas e nomes de uma letra (exceto em loops triviais como <code>i</code>, <code>j</code>).</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Impossível pronunciar e pesquisar</span>
+<span class="kw">const</span> yyyymmdd = <span class="fn">formatDate</span>(createdAt);
+<span class="kw">const</span> genymdhms = <span class="kw">new</span> <span class="tp">Date</span>();
+<span class="kw">let</span> modRec: <span class="tp">ModRec</span>;
+<span class="kw">const</span> e = <span class="num">2.71828</span>;
+
+<span class="cm">// &#9989; Pronunciavel e pesquisavel</span>
+<span class="kw">const</span> formattedCreationDaté = <span class="fn">formatDate</span>(createdAt);
+<span class="kw">const</span> generationTimestamp = <span class="kw">new</span> <span class="tp">Date</span>();
+<span class="kw">let</span> modificationRecord: <span class="tp">ModificationRecord</span>;
+<span class="kw">const</span> EULER_NUMBER = <span class="num">2.71828</span>;</code></pre>
+
+<h4>3. Convencoes de Nomes por Contexto</h4>
+
+<div class="card">
+<div class="card-title">Guia Pratico de Nomenclatura</div>
+<ul>
+<li><strong>Classes/Interfaces</strong> — Substantivos: <code>UserRepository</code>, <code>PaymentProcessor</code>, <code>IEmailProvider</code></li>
+<li><strong>Funcoes/Métodos</strong> — Verbos: <code>createUser()</code>, <code>calculateTotal()</code>, <code>sendNotification()</code></li>
+<li><strong>Booleanos</strong> — Perguntas sim/não: <code>isActive</code>, <code>hasPermission</code>, <code>canDelete</code>, <code>shouldRetry</code></li>
+<li><strong>Constantes</strong> — UPPER_SNAKE_CASE: <code>MAX_RETRY_COUNT</code>, <code>API_BASE_URL</code></li>
+<li><strong>Enums</strong> — PascalCase singular: <code>OrderStatus.PENDING</code>, <code>UserRole.ADMIN</code></li>
+<li><strong>Generics</strong> — Letra significativa: <code>TEntity</code>, <code>TResponse</code> (não apenas <code>T</code> se houver mais de um)</li>
+</ul>
+</div>
+
+<h4>4. Evite Desinformação e Ruido</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Desinformação — nome sugere algo errado</span>
+<span class="kw">const</span> accountList = <span class="kw">new</span> <span class="tp">Map</span>&lt;<span class="tp">string</span>, <span class="tp">Account</span>&gt;(); <span class="cm">// Não e uma List!</span>
+<span class="kw">const</span> data = <span class="fn">fetchUsers</span>(); <span class="cm">// "data" não diz nada</span>
+<span class="kw">const</span> info = user.name; <span class="cm">// "info" e ruido</span>
+
+<span class="cm">// &#10060; Palavras-ruido que não adicionam significado</span>
+<span class="kw">class</span> <span class="tp">ProductData</span> { }  <span class="cm">// "Data" não diferencia de Product</span>
+<span class="kw">class</span> <span class="tp">ProductInfo</span> { }  <span class="cm">// "Info" também não</span>
+<span class="kw">function</span> <span class="fn">getProductData</span>() { } <span class="cm">// Qual a diferença de getProduct()?</span>
+
+<span class="cm">// &#9989; Precisó e sem ruido</span>
+<span class="kw">const</span> accountsByEmail = <span class="kw">new</span> <span class="tp">Map</span>&lt;<span class="tp">string</span>, <span class="tp">Account</span>&gt;();
+<span class="kw">const</span> users = <span class="fn">fetchUsers</span>();
+<span class="kw">const</span> userName = user.name;</code></pre>
+
+<!-- ═══ REGRAS DE FUNCOES ═══ -->
+<h3>Regras de Funcoes</h3>
+<p>Funcoes são os <strong>verbos</strong> da linguagem do seu código. Se nomes são a base da comunicação, funções são a base da <strong>organização</strong>. Robert C. Martin define regras claras para funções limpas:</p>
+
+<h4>1. Pequenas — E Depois Menores Ainda</h4>
+<p>Uma função deve ter no máximo <strong>20 linhas</strong>. Idealmente, entre 5 e 10. Se você precisa rolar a tela para ver a função inteira, ela é grande demais. Blocos dentro de <code>if</code>, <code>else</code>, <code>while</code> devem ter <strong>uma linha</strong> — geralmente uma chamada de função.</p>
+
+<h4>2. Faca Uma Unica Coisa</h4>
+<p>Uma função deve fazer <strong>uma coisa</strong>, faze-la bem e faze-la <strong>somente</strong>. Se você consegue extrair outra função dela com um nome que não sejá apenas uma reformulacao da implementação, ela esta fazendo mais de uma coisa.</p>
+
+<h4>3. Um Nivel de Abstracao por Funcao</h4>
+<p>Misturar níveis de abstração dentro de uma função e confuso. Não misture lógica de negócio de alto nível com detalhes de implementação de baixo nível na mesma função.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; ANTES — Funcao gigante fazendo tudo (3 níveis de abstração misturados)</span>
+<span class="kw">async function</span> <span class="fn">registerUser</span>(req: <span class="tp">Request</span>, res: <span class="tp">Response</span>) {
+  <span class="cm">// Nivel baixo: parsing de request</span>
+  <span class="kw">const</span> { email, password, name } = req.body;
+  <span class="kw">if</span> (!email || !email.<span class="fn">includes</span>(<span class="str">'@'</span>)) {
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">400</span>).<span class="fn">json</span>({ error: <span class="str">'Email inválido'</span> });
+  }
+  <span class="kw">if</span> (!password || password.length &lt; <span class="num">8</span>) {
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">400</span>).<span class="fn">json</span>({ error: <span class="str">'Senha muito curta'</span> });
+  }
+  <span class="cm">// Nivel medio: lógica de negócio</span>
+  <span class="kw">const</span> existing = <span class="kw">await</span> db.<span class="fn">query</span>(<span class="str">'SELECT id FROM users WHERE email = $1'</span>, [email]);
+  <span class="kw">if</span> (existing.rows.length > <span class="num">0</span>) {
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">409</span>).<span class="fn">json</span>({ error: <span class="str">'Email já cadastrado'</span> });
+  }
+  <span class="cm">// Nivel baixo: hashing</span>
+  <span class="kw">const</span> salt = <span class="kw">await</span> bcrypt.<span class="fn">genSalt</span>(<span class="num">12</span>);
+  <span class="kw">const</span> hashedPassword = <span class="kw">await</span> bcrypt.<span class="fn">hash</span>(password, salt);
+  <span class="cm">// Nivel baixo: SQL direto</span>
+  <span class="kw">const</span> result = <span class="kw">await</span> db.<span class="fn">query</span>(
+    <span class="str">'INSERT INTO users (email, password, name) VALUES ($1, $2, $3) RETURNING *'</span>,
+    [email, hashedPassword, name]
+  );
+  <span class="cm">// Nivel baixo: montagem de resposta + envio de email</span>
+  <span class="kw">const</span> user = result.rows[<span class="num">0</span>];
+  <span class="kw">const</span> token = jwt.<span class="fn">sign</span>({ id: user.id }, SECRET, { expiresIn: <span class="str">'7d'</span> });
+  <span class="kw">await</span> transporter.<span class="fn">sendMail</span>({
+    to: email, subject: <span class="str">'Bem-vindo!'</span>,
+    html: <span class="str">`&lt;h1&gt;Ola ${name}!&lt;/h1&gt;`</span>
+  });
+  <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">201</span>).<span class="fn">json</span>({ user, token });
+}</code></pre>
+
+<pre data-lang="typescript"><code><span class="cm">// &#9989; DEPOIS — Cada função faz uma única coisa, um nível de abstração</span>
+<span class="kw">class</span> <span class="tp">UserRegistrationService</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">private</span> válidator: <span class="tp">UserValidator</span>,
+    <span class="kw">private</span> repository: <span class="tp">UserRepository</span>,
+    <span class="kw">private</span> hasher: <span class="tp">IHashProvider</span>,
+    <span class="kw">private</span> notifier: <span class="tp">WelcomeNotifier</span>,
+    <span class="kw">private</span> tokenService: <span class="tp">TokenService</span>,
+  ) {}
+
+  <span class="kw">async</span> <span class="fn">register</span>(dto: <span class="tp">RegisterUserDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">AuthResponse</span>&gt; {
+    <span class="kw">this</span>.válidator.<span class="fn">válidate</span>(dto);
+    <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">ensureEmailNotTaken</span>(dto.email);
+    <span class="kw">const</span> user = <span class="kw">await</span> <span class="kw">this</span>.<span class="fn">createUser</span>(dto);
+    <span class="kw">const</span> token = <span class="kw">this</span>.tokenService.<span class="fn">generate</span>(user);
+    <span class="kw">await</span> <span class="kw">this</span>.notifier.<span class="fn">sendWelcome</span>(user);
+    <span class="kw">return</span> { user, token };
+  }
+
+  <span class="kw">privaté async</span> <span class="fn">ensureEmailNotTaken</span>(email: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">const</span> exists = <span class="kw">await</span> <span class="kw">this</span>.repository.<span class="fn">existsByEmail</span>(email);
+    <span class="kw">if</span> (exists) <span class="kw">throw new</span> <span class="tp">ConflictException</span>(<span class="str">'Email já cadastrado'</span>);
+  }
+
+  <span class="kw">privaté async</span> <span class="fn">createUser</span>(dto: <span class="tp">RegisterUserDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">User</span>&gt; {
+    <span class="kw">const</span> hashedPassword = <span class="kw">await</span> <span class="kw">this</span>.hasher.<span class="fn">hash</span>(dto.password);
+    <span class="kw">return</span> <span class="kw">this</span>.repository.<span class="fn">create</span>({
+      email: dto.email,
+      password: hashedPassword,
+      name: dto.name,
+    });
+  }
+}</code></pre>
+
+<h4>4. Poucos Parametros (Idealmente Zero a Dois)</h4>
+<p>O número ideal de parametros e <strong>zero</strong> (niladico). Depois, <strong>um</strong> (monadico). Dois (diadico) é aceitável. <strong>Tres ou mais</strong> (triadico+) exigem justificativa muito forte. Muitos parametros indicam que a função faz coisas demais ou que os parametros deveriam ser agrupados em um objeto.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Muitos parametros — difícil lembrar a ordem</span>
+<span class="kw">function</span> <span class="fn">createUser</span>(
+  name: <span class="tp">string</span>,
+  email: <span class="tp">string</span>,
+  password: <span class="tp">string</span>,
+  role: <span class="tp">string</span>,
+  department: <span class="tp">string</span>,
+  isActive: <span class="tp">boolean</span>,
+  sendWelcome: <span class="tp">boolean</span>,
+) { <span class="cm">/* ... */</span> }
+
+<span class="cm">// &#9989; Agrupar em objeto — ordem não importa, autocompletavel</span>
+<span class="kw">interface</span> <span class="tp">CreateUserDto</span> {
+  name: <span class="tp">string</span>;
+  email: <span class="tp">string</span>;
+  password: <span class="tp">string</span>;
+  role: <span class="tp">UserRole</span>;
+  department: <span class="tp">string</span>;
+}
+
+<span class="kw">function</span> <span class="fn">createUser</span>(dto: <span class="tp">CreateUserDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">User</span>&gt; { <span class="cm">/* ... */</span> }</code></pre>
+
+<h4>5. Sem Efeitos Colateráis (Side Effects)</h4>
+<p>Uma função que promete fazer X não deve secretamente fazer Y. Se <code>checkPassword()</code> também inicializa uma sessão, isso é um efeito colateral. O nome mente sobre o que a função realmente faz.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Efeito colateral escondido — nome diz "check" mas faz "initialize"</span>
+<span class="kw">class</span> <span class="tp">AuthService</span> {
+  <span class="fn">checkPassword</span>(user: <span class="tp">User</span>, password: <span class="tp">string</span>): <span class="tp">boolean</span> {
+    <span class="kw">const</span> isValid = bcrypt.<span class="fn">compareSync</span>(password, user.hashedPassword);
+    <span class="kw">if</span> (isValid) {
+      Session.<span class="fn">initialize</span>(user); <span class="cm">// EFEITO COLATERAL! Nome não indica isso</span>
+    }
+    <span class="kw">return</span> isValid;
+  }
+}
+
+<span class="cm">// &#9989; Sem efeitos colateráis — cada função faz apenas o que o nome diz</span>
+<span class="kw">class</span> <span class="tp">AuthService</span> {
+  <span class="fn">verifyPassword</span>(user: <span class="tp">User</span>, password: <span class="tp">string</span>): <span class="tp">boolean</span> {
+    <span class="kw">return</span> bcrypt.<span class="fn">compareSync</span>(password, user.hashedPassword);
+  }
+
+  <span class="fn">login</span>(user: <span class="tp">User</span>, password: <span class="tp">string</span>): <span class="tp">Session</span> {
+    <span class="kw">if</span> (!<span class="kw">this</span>.<span class="fn">verifyPassword</span>(user, password)) {
+      <span class="kw">throw new</span> <span class="tp">UnauthorizedException</span>();
+    }
+    <span class="kw">return</span> Session.<span class="fn">create</span>(user); <span class="cm">// Explicito — login cria sessão</span>
+  }
+}</code></pre>
+
+<h4>6. Command-Query Separation (CQS)</h4>
+<p>Uma função deve ser um <strong>comando</strong> (faz algo, retorna void) ou uma <strong>query</strong> (retorna algo, sem efeitos colateráis). Nunca ambos. Isso torna o código previsível e testável.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Viola CQS — muda estado E retorna valor</span>
+<span class="kw">function</span> <span class="fn">setAndGetPreviousValue</span>(key: <span class="tp">string</span>, value: <span class="tp">string</span>): <span class="tp">string</span> {
+  <span class="kw">const</span> previous = cache.<span class="fn">get</span>(key);
+  cache.<span class="fn">set</span>(key, value); <span class="cm">// Comando</span>
+  <span class="kw">return</span> previous;      <span class="cm">// Query</span>
+}
+
+<span class="cm">// &#9989; CQS respeitado — separar em duas funções</span>
+<span class="kw">function</span> <span class="fn">getValue</span>(key: <span class="tp">string</span>): <span class="tp">string</span> | <span class="kw">null</span> {  <span class="cm">// Query pura</span>
+  <span class="kw">return</span> cache.<span class="fn">get</span>(key);
+}
+
+<span class="kw">function</span> <span class="fn">setValue</span>(key: <span class="tp">string</span>, value: <span class="tp">string</span>): <span class="tp">void</span> {  <span class="cm">// Comando puro</span>
+  cache.<span class="fn">set</span>(key, value);
+}</code></pre>
+
+<!-- ═══ FORMATACAO E COMENTARIOS ═══ -->
+<h3>Regras de Formatacao e Comentarios</h3>
+
+<h4>Formatacao Vertical</h4>
+<p>Conceitos relacionados devem ficar <strong>próximos verticalmente</strong>. Funcoes que se chamam devem ficar perto uma da outra. Variavel local deve ser declarada <strong>perto de onde é usada</strong>. O leitor não deve ter que pular 500 linhas para entender um fluxo.</p>
+
+<h4>Formatacao Horizontal</h4>
+<p>Linhas devem ter no máximo <strong>80-120 caracteres</strong>. Usar indentacao consistente. Agrupar operadores lógicamente. Não alinhar declaracoes em colunas — isso cria frágilidade visual.</p>
+
+<h4>Comentarios: Quando Usar e Quando Não Usar</h4>
+
+<div class="card blue">
+<div class="card-title">Comentarios Bons (Necessarios)</div>
+<ul>
+<li><strong>TODOs</strong> com contexto: <code>// TODO(#1234): remover após migração da v2</code></li>
+<li><strong>Explicacao de "por que"</strong> (não "o que"): <code>// Usamos retry com backoff porque a API do banco tem raté limit de 100 req/s</code></li>
+<li><strong>Advertencias de consequência</strong>: <code>// IMPORTANTE: esta função e O(n^2) — não usar com listas > 10k items</code></li>
+<li><strong>Regex complexa</strong>: <code>// Match: YYYY-MM-DD com separador flexível</code></li>
+<li><strong>Decisoes de design</strong>: <code>// Escolhemos eventual consistency aqui porque strong consistency adicionaria 200ms de latência</code></li>
+</ul>
+</div>
+
+<div class="card orange">
+<div class="card-title">Comentarios Ruins (Code Smells)</div>
+<ul>
+<li><strong>Parafraseando o código</strong>: <code>// Incrementa i</code> antes de <code>i++</code></li>
+<li><strong>Comentarios de jornal</strong>: changelog no topo do arquivo — use Git para isso</li>
+<li><strong>Comentarios desatualizados</strong>: piores que nenhum comentário — mentem sobre o código</li>
+<li><strong>Código comentado</strong>: remova! O Git guarda o historico. Código morto e ruido</li>
+<li><strong>Marcadores de seção</strong>: <code>////////// GETTERS //////////</code> — indica que a classe e grande demais</li>
+<li><strong>Atribuicao de autoria</strong>: <code>// Adicionado por Joao em 12/03/2024</code> — use <code>git blame</code></li>
+</ul>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Comentario ruim — parafraseia o que o código já diz</span>
+<span class="cm">// Verifica se o usuário esta ativo</span>
+<span class="kw">if</span> (user.isActive) {
+  <span class="cm">// Envia notificação para o usuário</span>
+  <span class="fn">sendNotification</span>(user);
+}
+
+<span class="cm">// &#9989; Código que não precisa de comentário — o nome diz tudo</span>
+<span class="kw">if</span> (user.isActive) {
+  <span class="fn">sendNotification</span>(user);
+}
+
+<span class="cm">// &#9989; Comentario bom — explica o POR QUE, não o O QUE</span>
+<span class="cm">// Notificamos apenas usuários ativos porque inativos</span>
+<span class="cm">// tem configuração de "não perturbe" no contrato</span>
+<span class="kw">if</span> (user.isActive) {
+  <span class="fn">sendNotification</span>(user);
+}</code></pre>
+
+<!-- ═══ BOY SCOUT RULE ═══ -->
+<h3>Boy Scout Rule</h3>
+<p><strong>"Deixe o código mais limpo do que você encontrou."</strong> Não precisa refatorar o sistema inteiro. Quando tocar em um arquivo, melhore algo pequeno: renomeie uma variável, extraia uma função, remova um comentário obsoleto, adicione tipagem. Mudancas incrementais e consistentes transformam um codebase inteiro ao longo do tempo.</p>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática:</strong> Em cada PR, inclua pelo menós uma melhoria de limpeza além da feature. Renomear um método, remover código morto, melhorar uma mensagem de erro. Ao longo de 6 meses, o codebase se transforma.</div>
+</div>
+
+<!-- ═══ CODE SMELLS ═══ -->
+<h3>Code Smells</h3>
+<p>Code smells são <strong>sintomas</strong> de problemas mais profundos no design. Não são bugs — o código funciona. Mas indicam que algo precisa de atenção. Martin Fowler catálogou dezenas; estes são os mais comuns e prejudiciais:</p>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Code Smell</th><th>Sintoma</th><th>Solucao</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Long Method</strong></td><td>Funcao com mais de 20-30 linhas, vários níveis de indentacao</td><td>Extract Method — quebre em funções menores com nomes descritivos</td></tr>
+<tr><td><strong>God Class</strong></td><td>Classe com 500+ linhas, 10+ dependências, faz tudo</td><td>Extract Class — divida responsabilidades em classes coesas</td></tr>
+<tr><td><strong>Feature Envy</strong></td><td>Método acessa mais dados de OUTRA classe do que da propria</td><td>Move Method — mova o método para a classe cujos dados ele mais usa</td></tr>
+<tr><td><strong>Shotgun Surgery</strong></td><td>Uma mudança exige editar 10+ arquivos diferentes</td><td>Move Method/Field — agrupe lógica relacionada no mesmo módulo</td></tr>
+<tr><td><strong>Primitive Obsession</strong></td><td>Usar <code>string</code> para email, CPF, moeda em vez de tipos proprios</td><td>Value Object — crie tipos como <code>Email</code>, <code>Money</code>, <code>CPF</code></td></tr>
+<tr><td><strong>Dead Code</strong></td><td>Funcoes, variáveis, imports nunca usados</td><td>Delete — remova sem medo, Git guarda o historico</td></tr>
+<tr><td><strong>Data Clumps</strong></td><td>Mesmo grupo de parametros aparece em 3+ funções</td><td>Extract Class/Interface — agrupe em um objeto ou DTO</td></tr>
+<tr><td><strong>Middle Man</strong></td><td>Classe que apenas delega tudo para outra classe</td><td>Remove Middle Man — acesse diretamente ou use Facade com valor</td></tr>
+<tr><td><strong>Divergent Change</strong></td><td>Uma classe muda por razoes completamente diferentes</td><td>Extract Class — aplique SRP, separe as responsabilidades</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>Primitive Obsession — Exemplo Detalhado</h4>
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Primitive Obsession — string para tudo</span>
+<span class="kw">function</span> <span class="fn">createInvoice</span>(
+  customerEmail: <span class="tp">string</span>,    <span class="cm">// Pode ser "abc" — inválido!</span>
+  amount: <span class="tp">number</span>,            <span class="cm">// Pode ser negativo? Em que moeda?</span>
+  currency: <span class="tp">string</span>,          <span class="cm">// "brl"? "BRL"? "R$"?</span>
+  cpf: <span class="tp">string</span>,               <span class="cm">// "111.222.333-44" ou "11122233344"?</span>
+) { <span class="cm">/* ... */</span> }
+
+<span class="cm">// &#9989; Value Objects — validação embutida, impossível criar estado inválido</span>
+<span class="kw">class</span> <span class="tp">Email</span> {
+  <span class="kw">privaté constructor</span>(<span class="kw">public readonly</span> value: <span class="tp">string</span>) {}
+  <span class="kw">static</span> <span class="fn">create</span>(raw: <span class="tp">string</span>): <span class="tp">Email</span> {
+    <span class="kw">if</span> (!raw.<span class="fn">match</span>(<span class="str">/^[^\s@]+@[^\s@]+\.[^\s@]+$/</span>))
+      <span class="kw">throw new</span> <span class="tp">InvalidEmailError</span>(raw);
+    <span class="kw">return new</span> <span class="tp">Email</span>(raw.<span class="fn">toLowerCase</span>());
+  }
+}
+
+<span class="kw">class</span> <span class="tp">Money</span> {
+  <span class="kw">constructor</span>(
+    <span class="kw">public readonly</span> amount: <span class="tp">number</span>,
+    <span class="kw">public readonly</span> currency: <span class="tp">Currency</span>,
+  ) {
+    <span class="kw">if</span> (amount &lt; <span class="num">0</span>) <span class="kw">throw new</span> <span class="tp">NegativeAmountError</span>();
+  }
+  <span class="fn">add</span>(other: <span class="tp">Money</span>): <span class="tp">Money</span> {
+    <span class="kw">if</span> (<span class="kw">this</span>.currency !== other.currency)
+      <span class="kw">throw new</span> <span class="tp">CurrencyMismatchError</span>();
+    <span class="kw">return new</span> <span class="tp">Money</span>(<span class="kw">this</span>.amount + other.amount, <span class="kw">this</span>.currency);
+  }
+}
+
+<span class="kw">function</span> <span class="fn">createInvoice</span>(customer: <span class="tp">Email</span>, total: <span class="tp">Money</span>, cpf: <span class="tp">CPF</span>) { <span class="cm">/* ... */</span> }</code></pre>
+
+<!-- ═══ EXEMPLOS EM PYTHON ═══ -->
+<h3>Exemplos em Python</h3>
+<p>Clean Code se aplica a qualquer linguagem. Aqui esta um exemplo real de refactoring em Python:</p>
+
+<pre data-lang="python"><code><span class="cm"># &#10060; ANTES — função faz tudo, nomes ruins, sem estrutura</span>
+<span class="kw">def</span> <span class="fn">proc</span>(d):
+    r = []
+    <span class="kw">for</span> i <span class="kw">in</span> d:
+        <span class="kw">if</span> i[<span class="str">'t'</span>] == <span class="str">'a'</span> <span class="kw">and</span> i[<span class="str">'s'</span>] > <span class="num">0</span> <span class="kw">and</span> i[<span class="str">'dt'</span>] > datetime.now() - timedelta(days=<span class="num">30</span>):
+            v = i[<span class="str">'p'</span>] * i[<span class="str">'q'</span>]
+            <span class="kw">if</span> v > <span class="num">1000</span>:
+                v = v * <span class="num">0.9</span>  <span class="cm"># desconto</span>
+            i[<span class="str">'total'</span>] = v
+            r.append(i)
+    r.sort(key=<span class="kw">lambda</span> x: x[<span class="str">'total'</span>], reverse=<span class="kw">True</span>)
+    <span class="kw">return</span> r</code></pre>
+
+<pre data-lang="python"><code><span class="cm"># &#9989; DEPOIS — limpo, legivel, cada função com uma responsabilidade</span>
+<span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, timedelta
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="tp">List</span>
+
+BULK_DISCOUNT_THRESHOLD = <span class="num">1000</span>
+BULK_DISCOUNT_RATE = <span class="num">0.9</span>
+RECENT_ORDER_DAYS = <span class="num">30</span>
+
+<span class="ann">@dataclass</span>
+<span class="kw">class</span> <span class="tp">Order</span>:
+    order_type: <span class="tp">str</span>
+    stock: <span class="tp">int</span>
+    created_at: <span class="tp">datetime</span>
+    unit_price: <span class="tp">float</span>
+    quantity: <span class="tp">int</span>
+    total: <span class="tp">float</span> = <span class="num">0.0</span>
+
+    <span class="kw">def</span> <span class="fn">is_active_and_in_stock</span>(self) -> <span class="tp">bool</span>:
+        <span class="kw">return</span> self.order_type == <span class="str">"a"</span> <span class="kw">and</span> self.stock > <span class="num">0</span>
+
+    <span class="kw">def</span> <span class="fn">is_recent</span>(self) -> <span class="tp">bool</span>:
+        cutoff = datetime.now() - timedelta(days=RECENT_ORDER_DAYS)
+        <span class="kw">return</span> self.created_at > cutoff
+
+    <span class="kw">def</span> <span class="fn">calculate_total</span>(self) -> <span class="tp">float</span>:
+        subtotal = self.unit_price * self.quantity
+        <span class="kw">if</span> subtotal > BULK_DISCOUNT_THRESHOLD:
+            <span class="kw">return</span> subtotal * BULK_DISCOUNT_RATE
+        <span class="kw">return</span> subtotal
+
+
+<span class="kw">def</span> <span class="fn">get_eligible_recent_orders</span>(orders: <span class="tp">List</span>[<span class="tp">Order</span>]) -> <span class="tp">List</span>[<span class="tp">Order</span>]:
+    eligible = [
+        order <span class="kw">for</span> order <span class="kw">in</span> orders
+        <span class="kw">if</span> order.<span class="fn">is_active_and_in_stock</span>() <span class="kw">and</span> order.<span class="fn">is_recent</span>()
+    ]
+    <span class="kw">for</span> order <span class="kw">in</span> eligible:
+        order.total = order.<span class="fn">calculate_total</span>()
+    <span class="kw">return</span> sorted(eligible, key=<span class="kw">lambda</span> o: o.total, reverse=<span class="kw">True</span>)</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Mantendo um E-Commerce Limpo</h3>
+<p><strong>Cenário:</strong> Você lidera um e-commerce que cresceu de 5 para 50 desenvolvedores em 2 anos. O codebase tem 200k+ linhas. Como manter o código limpo em escala?</p>
+
+<p><strong>Estrategia: Separacao em Camadas Claras</strong></p>
+
+<div class="diagram">
+<div class="diagram-box green">Controllers<br><small>HTTP / GraphQL</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Use Cases<br><small>Logica de Negocio</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Domain Entities<br><small>Regras Puras</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box blue">Use Cases</div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Ports (Interfaces)<br><small>IOrderRepo, IPayment</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box cyan">Adapters<br><small>PostgreSQL, Stripe, SES</small></div>
+</div>
+
+<p><strong>Regras do projeto para Clean Code em escala:</strong></p>
+<ul>
+<li><strong>Feature folders</strong> — código organizado por domínio (<code>orders/</code>, <code>products/</code>, <code>payments/</code>), não por tipo técnico (<code>controllers/</code>, <code>services/</code>)</li>
+<li><strong>Barrel exports</strong> — cada feature exporta apenas sua API publica via <code>index.ts</code>. Imports internós entre features são proibidos</li>
+<li><strong>Limite de linhas</strong> — Arquivo: max 300 linhas. Funcao: max 20 linhas. Classe: max 200 linhas. Enforced via ESLint</li>
+<li><strong>Naming conventions</strong> — enforced via ESLint plugin: arquivos kebab-case, classes PascalCase, funções camelCase</li>
+<li><strong>No dead code</strong> — CI rejeita PRs com imports não usados, variáveis não usadas, funções não chamadas</li>
+<li><strong>Mandatory code review</strong> — todo PR precisa de 1 approval. Reviewer deve checar: nomes claros? Funcoes pequenas? Testes presentes?</li>
+</ul>
+
+<!-- ═══ ARMADILHAS COMUNS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Over-commenting:</strong> Comentarios em cada linha transformam o código em ruido. Se você precisa explicar O QUE cada linha faz, os nomes estão ruins. Comentarios devem explicar POR QUE, não O QUE. O único comentário bom e aquele que você conseguiu evitar tornando o código autoexplicativo.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Premature Abstraction:</strong> Você ve duas funções parecidas e imediatamente cria uma abstração genérica. Resultado: uma abstração frágil que não serve bem para nenhum dos dois casos. <strong>Rule of Three</strong> — espere a duplicação acontecer 3 vezes antes de abstrair. Duplicacao é mais barata que a abstração errada.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Boolean Parameters (Flag Arguments):</strong> Quando você ve <code>createUser(dto, true, false)</code> no call site, e impossível saber o que <code>true</code> é <code>false</code> significam sem ler a assinatura. Flag arguments indicam que a função faz mais de uma coisa. Solução: separe em funções distintas ou use um options object.</div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; Flag argument — o que significa true?</span>
+<span class="fn">sendEmail</span>(user, template, <span class="kw">true</span>, <span class="kw">false</span>);
+
+<span class="cm">// &#9989; Opcao 1: funções separadas</span>
+<span class="fn">sendEmailWithAttachment</span>(user, template);
+<span class="fn">sendPlainEmail</span>(user, template);
+
+<span class="cm">// &#9989; Opcao 2: options object</span>
+<span class="fn">sendEmail</span>(user, template, {
+  includeAttachment: <span class="kw">true</span>,
+  trackOpens: <span class="kw">false</span>,
+});</code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>PRs gigantes sem estrutura:</strong> Um PR com 80 arquivos modificados e impossível de revisar com qualidade. Quebre em PRs menores e atomicos: um PR para refactoring, outro para a feature, outro para testes. Cada PR deve ser compreensivel em 15 minutos. Se demora mais, e grande demais.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Código limpo não é código esperto. E código <strong>óbvio</strong>. Quando outro dev le seu código e pensa "faz sentido", você fez clean code. Quando ele pensa "uau, que inteligente" — você provavelmente fez código difícil de manter.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você encontra uma função chamada handle() com 80 linhas que faz validação, busca no banco, cálculo de preço, envio de email e logging. Como refatorar aplicando Clean Code?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Aplique Extract Method seguindo o princípio "funções fazem uma coisa". A função <code>handle()</code> vira uma orquestradora de 5-7 linhas:</p>
+<pre data-lang="typescript"><code><span class="kw">async</span> <span class="fn">handleOrder</span>(dto: <span class="tp">CreateOrderDto</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>&gt; {
+  <span class="kw">this</span>.válidator.<span class="fn">válidate</span>(dto);
+  <span class="kw">const</span> product = <span class="kw">await</span> <span class="kw">this</span>.catalog.<span class="fn">findOrFail</span>(dto.productId);
+  <span class="kw">const</span> price = <span class="kw">this</span>.pricing.<span class="fn">calculate</span>(product, dto.quantity);
+  <span class="kw">const</span> order = <span class="kw">await</span> <span class="kw">this</span>.repository.<span class="fn">create</span>({ product, price, ...dto });
+  <span class="kw">await</span> <span class="kw">this</span>.notifier.<span class="fn">sendConfirmation</span>(order);
+  <span class="kw">this</span>.logger.<span class="fn">info</span>(<span class="str">'Order created'</span>, { orderId: order.id });
+  <span class="kw">return</span> order;
+}</code></pre>
+<p>Cada serviço injetado (<code>válidator</code>, <code>catalog</code>, <code>pricing</code>, <code>repository</code>, <code>notifier</code>) contém a lógica específica. A função principal le como uma narrativa em linguagem natural.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Análise este código e identifique todos os code smells: uma classe UserManager com 600 linhas que gerencia usuários, envia emails, gera relatórios, faz cache de dados e conecta no banco diretamente.</div>
+<div class="qa-a">
+<p><strong>Code Smells identificados:</strong></p>
+<ul>
+<li><strong>God Class</strong> — 600 linhas com 5+ responsabilidades diferentes (SRP violado)</li>
+<li><strong>Divergent Change</strong> — mudar a lógica de email exige mexer na mesma classe que gerencia usuários</li>
+<li><strong>Shotgun Surgery</strong> — se o schema de email mudar, esta classe é mais N outras precisam mudar</li>
+<li><strong>Long Method</strong> (provavel) — com tantas responsabilidades, os métodos devem ser grandes</li>
+</ul>
+<p><strong>Refatoração:</strong> Extraia <code>UserRepository</code> (persistência), <code>UserNotificationService</code> (emails), <code>UserReportService</code> (relatórios), <code>UserCacheService</code> (cache). O <code>UserManager</code> vira uma facade leve que orquestra as chamadas.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Refatore os seguintes nomes de variáveis/funções para seguir Clean Code: d (dias), tp (tipo), chkPerm (função), usrMngSvc (serviço), flag (booleano), temp (temporário).</div>
+<div class="qa-a">
+<p><strong>Refatoração:</strong></p>
+<ul>
+<li><code>d</code> &rarr; <code>elapsedDays</code> ou <code>daysSinceCreation</code> (contexto importa)</li>
+<li><code>tp</code> &rarr; <code>accountType</code> ou <code>transactionType</code> (depende do domínio)</li>
+<li><code>chkPerm</code> &rarr; <code>hasPermission()</code> ou <code>canAccessResource()</code></li>
+<li><code>usrMngSvc</code> &rarr; <code>userManagementService</code> ou melhor: <code>userService</code></li>
+<li><code>flag</code> &rarr; <code>isEligibleForDiscount</code> ou <code>shouldRetryRequest</code> (booleanós devem ser perguntas)</li>
+<li><code>temp</code> &rarr; <code>formattedAddress</code> ou <code>intermediateResult</code> (descreva o proposito, não a duracao)</li>
+</ul>
+<p><strong>Princípio:</strong> O comprimento do nome deve ser proporcional ao escopo de uso. Variavel local de 3 linhas pode ser curta. Variavel de módulo inteiro deve ser descritiva.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Clean Code</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="01-principios-solid.html">&#8592; Anterior</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="03-design-patterns-criacionais.html" class="primary">Próximo: Design Patterns Criacionais &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 02: Clean Code
+// ══════════════════════════════════════════
+const SECTION_NUM = 2;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Segundo Robert C. Martin, qual é a principal caracteristica de clean code?",
+    options: [
+      "Código com o menor número de linhas possível",
+      "Código que foi escrito por alguem que se importa e é fácil de ler",
+      "Código com 100% de cobertura de testes",
+      "Código que usa os design patterns mais avançados"
+    ],
+    correct: 1,
+    explanation: "Clean Code, segundo Uncle Bob, e código escrito com cuidado, que é fácil de ler e entender. Não se trata de mínimalismo ou cobertura de testes, mas de legibilidade e clareza."
+  },
+  {
+    question: "Qual o problema com o nome de variável 'd' para representar dias?",
+    options: [
+      "E muito curto para o compilador processar",
+      "Não e pronunciavel, não é pesquisavel e não revela intencao",
+      "Variaveis de uma letra são proibidas pelo ESLint",
+      "O TypeScript não aceita nomes de uma letra"
+    ],
+    correct: 1,
+    explanation: "Nomes devem ser pronunciaveis, pesquisaveis e revelar intencao. 'd' viola as três regras. 'elapsedDays' ou 'daysSinceCreation' são alternativas que comúnicam o proposito."
+  },
+  {
+    question: "Quantos parametros uma função idealmente deve ter, segundo Clean Code?",
+    options: [
+      "Exatamente 3",
+      "No máximo 5",
+      "Zero (niladico), no máximo 2 (diadico)",
+      "Não importa, desde que tenha tipagem"
+    ],
+    correct: 2,
+    explanation: "O ideal e zero parametros. Um ou dois são aceitaveis. Tres ou mais indicam que a função faz coisas demais ou que os parametros deveriam ser agrupados em um objeto (DTO)."
+  },
+  {
+    question: "O que é Command-Query Separation (CQS)?",
+    options: [
+      "Separar comandos SQL de queries SQL em arquivos diferentes",
+      "Uma função deve ser um comando (alterá estado, retorna void) OU uma query (retorna valor, sem efeitos colateráis), nunca ambos",
+      "Separar o backend em microserviços de leitura e escrita",
+      "Usar CQRS (Command Query Responsibility Segregation) em todo projeto"
+    ],
+    correct: 1,
+    explanation: "CQS é um princípio onde cada função é um comando (faz algo, retorna void) ou uma query (retorna algo, sem efeitos colateráis). Misturar os dois torna o código imprevisível."
+  },
+  {
+    question: "Qual das opcoes abaixo é um exemplo de comentário BOM?",
+    options: [
+      "// Incrementa o contador em 1",
+      "// Adicionado por Maria em 15/01/2024",
+      "// Usamos retry com backoff exponencial porque a API externa tem raté limit de 50 req/s",
+      "// Loop que percorre todos os usuários"
+    ],
+    correct: 2,
+    explanation: "Comentarios bons explicam o POR QUE de uma decisão, não O QUE o código faz. Explicar o raté limit é uma informação de contexto que o código sozinho não transmite."
+  },
+  {
+    question: "O que é o code smell 'Primitive Obsession'?",
+    options: [
+      "Usar muitas variáveis primitivas em vez de arrays",
+      "Usar string, number para conceitos de domínio (email, CPF, dinheiro) em vez de Value Objects tipados",
+      "Preferir tipos primitivos ao inves de classes em linguagens orientadas a objetos",
+      "Não usar generics quando possível"
+    ],
+    correct: 1,
+    explanation: "Primitive Obsession é usar tipos primitivos (string, number) para conceitos ricos de domínio. Um Email não é uma string qualquer — tem regras de validação. Value Objects como Email, Money, CPF resolvem isso."
+  },
+  {
+    question: "O que a Boy Scout Rule preçoniza?",
+    options: [
+      "Reescrever todo código legado de uma vez",
+      "Deixar o código mais limpo do que você encontrou, fazendo melhorias incrementais",
+      "Nunca alterár código que esta funcionando",
+      "Escrever testes antes de qualquer refatoração"
+    ],
+    correct: 1,
+    explanation: "A Boy Scout Rule diz: 'deixe o acampamento mais limpo do que encontrou'. Aplicado a código: cada vez que tocar em um arquivo, melhore algo pequeno — renomeie uma variável, remova código morto, extraia uma função."
+  },
+  {
+    question: "Por que boolean parameters (flag arguments) são considerados um code smell?",
+    options: [
+      "Porque booleanós ocupam mais memória que outros tipos",
+      "Porque no call site e impossível saber o que true/false significam sem ler a assinatura, e indicam que a função faz mais de uma coisa",
+      "Porque o TypeScript não otimiza funções com booleanos",
+      "Porque booleanós não podem ser serializados em JSON"
+    ],
+    correct: 1,
+    explanation: "sendEmail(user, true, false) — o que true e false significam? Impossível saber. Flag arguments indicam que a função faz coisas diferentes dependendo da flag, violando 'faca uma coisa'."
+  },
+  {
+    question: "Qual a diferença entre um efeito colateral (side effect) é o comportamento principal de uma função?",
+    options: [
+      "Side effects são erros que acontecem em produção",
+      "Side effects são mudanças de estado ou acoes que o nome da função não revela",
+      "Side effects são funções que retornam null",
+      "Side effects são funções que fazem chamadas HTTP"
+    ],
+    correct: 1,
+    explanation: "Um side effect e qualquer acao que a função faz além do que seu nome promete. Se checkPassword() também inicializa uma sessão, a inicialização é um efeito colateral — o nome mentiu sobre o que a função faz."
+  },
+  {
+    question: "Qual estratégia é recomendada para manter clean code em um codebase com 50+ desenvolvedores?",
+    options: [
+      "Confiar que todos os devs seguirao as regras sem enforcement automático",
+      "Feature folders, limites de linhas via linter, barrel exports, code review obrigatório e CI rejeitando dead code",
+      "Documentar todas as regras em um PDF de 100 páginas",
+      "Usar apenas uma linguagem de programacao para todo o sistema"
+    ],
+    correct: 1,
+    explanation: "Clean code em escala requer enforcement automático: linters configurados, CI bloqueando violações, feature folders com boundaries claras, code review obrigatório. Regras que dependem apenas de disciplina humana falham em escala."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina os princípios de Clean Code.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

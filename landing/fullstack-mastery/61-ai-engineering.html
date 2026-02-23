@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>61 — AI Engineering Completa | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="60-gestao-produto-metricas.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>61</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="62-ia-aplicada-dev.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:92.4%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 61</span>
+<h2>AI Engineering Completa</h2>
+<div class="section-line"></div>
+
+<p>Nas seções anteriores (42 e 43), cobrimos LLMs, RAG, Prompt Engineering, AI Agents e MLOps conceitual. Agora vamos mergulhar na <strong>infraestrutura de AI Engineering</strong> — os sistemas, pipelines e otimizações que fazem modelos de ML funcionarem <strong>em produção com confiabilidade e performance</strong>. Este é o conhecimento que separa quem "brinca com notebooks" de quem <strong>entrega valor real com ML</strong>.</p>
+
+<p>AI Engineering é a disciplina de construir sistemas de software confiaves que incorporam modelos de machine learning. Não se trata de treinar o melhor modelo — se trata de <strong>colocar esse modelo em produção, monitorar sua performance, é garantir que ele continue funcionando quando os dados mudam</strong>.</p>
+
+<p>Vamos cobrir: training pipelines, feature stores, model registry, inference optimization, vector databases e ML monitoring.</p>
+
+<!-- ═══ TRAINING PIPELINES ═══ -->
+<h3>1. Training Pipelines</h3>
+
+<p>Um training pipeline é o <strong>fluxo automatizado end-to-end</strong> que leva dados brutos até um modelo treinado e avaliado, pronto para deploy. Sem pipeline, você tem notebooks manuais que ninguem consegue reproduzir.</p>
+
+<h4>Anatomia de um Pipeline ML</h4>
+
+<div class="diagram">
+<div class="diagram-box green">Data Ingestion</div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Feature Engineering</div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Training</div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Evaluation</div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box cyan">Registry</div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box red">Deployment</div>
+</div>
+
+<ul>
+<li><strong>Data Ingestion:</strong> Coleta dados de diversas fontes (S3, databases, APIs, streaming). Valida schema e qualidade</li>
+<li><strong>Feature Engineering:</strong> Transforma dados brutos em features uteis para o modelo. Normalizacao, encoding, feature crossing</li>
+<li><strong>Training:</strong> Treina o modelo com os dados processados. Pode ser distribuido (multi-GPU, multi-node)</li>
+<li><strong>Evaluation:</strong> Testa o modelo contra métricas pre-definidas (accuracy, F1, AUC-ROC). Compara com modelo em produção</li>
+<li><strong>Registry:</strong> Armazena o modelo versionado com metadata (dataset, hiperparametros, métricas)</li>
+<li><strong>Deployment:</strong> Publica o modelo se passou nós gates de qualidade. Canary ou blue/green</li>
+</ul>
+
+<h4>Experiment Tracking com MLflow</h4>
+<p>Sem experiment tracking, você perde o rastro de qual combinação de hiperparametros gerou qual resultado. <strong>MLflow</strong> é <strong>Weights & Biases</strong> resolvem isso.</p>
+
+<pre data-lang="python"><code><span class="kw">import</span> mlflow
+<span class="kw">import</span> mlflow.sklearn
+<span class="kw">from</span> sklearn.ensemble <span class="kw">import</span> RandomForestClassifier
+<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> accuracy_score, f1_score
+
+<span class="cm"># Configurar o experiment</span>
+mlflow.<span class="fn">set_experiment</span>(<span class="str">"recommendation-model-v2"</span>)
+
+<span class="kw">with</span> mlflow.<span class="fn">start_run</span>(run_name=<span class="str">"rf-100-trees"</span>):
+    <span class="cm"># Logar hiperparametros</span>
+    params = {
+        <span class="str">"n_estimators"</span>: <span class="num">100</span>,
+        <span class="str">"max_depth"</span>: <span class="num">15</span>,
+        <span class="str">"min_samples_split"</span>: <span class="num">5</span>,
+        <span class="str">"feature_set"</span>: <span class="str">"v3-with-embeddings"</span>
+    }
+    mlflow.<span class="fn">log_params</span>(params)
+
+    <span class="cm"># Treinar modelo</span>
+    model = <span class="fn">RandomForestClassifier</span>(**params)
+    model.<span class="fn">fit</span>(X_train, y_train)
+
+    <span class="cm"># Avaliar e logar métricas</span>
+    y_pred = model.<span class="fn">predict</span>(X_test)
+    metrics = {
+        <span class="str">"accuracy"</span>: <span class="fn">accuracy_score</span>(y_test, y_pred),
+        <span class="str">"f1_weighted"</span>: <span class="fn">f1_score</span>(y_test, y_pred, average=<span class="str">"weighted"</span>),
+    }
+    mlflow.<span class="fn">log_metrics</span>(metrics)
+
+    <span class="cm"># Registrar modelo com signature</span>
+    signature = mlflow.models.<span class="fn">infer_signature</span>(X_train, y_pred)
+    mlflow.sklearn.<span class="fn">log_model</span>(
+        model,
+        artifact_path=<span class="str">"model"</span>,
+        signature=signature,
+        registered_model_name=<span class="str">"rec-model-prod"</span>
+    )
+    <span class="fn">print</span>(<span class="str">f"Run ID: <span class="kw">{</span>mlflow.active_run().info.run_id<span class="kw">}</span>"</span>)</code></pre>
+
+<h4>Hyperparameter Tuning com Optuna</h4>
+<p><strong>Optuna</strong> usa algoritmos Bayesianós (TPE) para buscar hiperparametros de forma inteligente — muito mais eficiente que grid search.</p>
+
+<pre data-lang="python"><code><span class="kw">import</span> optuna
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> cross_val_score
+
+<span class="kw">def</span> <span class="fn">objective</span>(trial):
+    <span class="cm"># Optuna sugere valores inteligentemente (Bayesian)</span>
+    params = {
+        <span class="str">"n_estimators"</span>: trial.<span class="fn">suggest_int</span>(<span class="str">"n_estimators"</span>, <span class="num">50</span>, <span class="num">500</span>),
+        <span class="str">"max_depth"</span>: trial.<span class="fn">suggest_int</span>(<span class="str">"max_depth"</span>, <span class="num">3</span>, <span class="num">30</span>),
+        <span class="str">"min_samples_split"</span>: trial.<span class="fn">suggest_int</span>(<span class="str">"min_samples_split"</span>, <span class="num">2</span>, <span class="num">20</span>),
+        <span class="str">"learning_rate"</span>: trial.<span class="fn">suggest_float</span>(<span class="str">"learning_rate"</span>, <span class="num">1e-4</span>, <span class="num">1.0</span>, log=<span class="kw">True</span>),
+    }
+
+    model = <span class="fn">XGBClassifier</span>(**params)
+    score = <span class="fn">cross_val_score</span>(model, X_train, y_train, cv=<span class="num">5</span>, scoring=<span class="str">"f1_weighted"</span>)
+    <span class="kw">return</span> score.<span class="fn">mean</span>()
+
+<span class="cm"># Rodar 100 trials — Optuna prioriza regioes promissoras</span>
+study = optuna.<span class="fn">create_study</span>(direction=<span class="str">"maximize"</span>)
+study.<span class="fn">optimize</span>(objective, n_trials=<span class="num">100</span>)
+
+<span class="fn">print</span>(<span class="str">f"Melhor F1: <span class="kw">{</span>study.best_value<span class="kw">}</span>"</span>)
+<span class="fn">print</span>(<span class="str">f"Melhores params: <span class="kw">{</span>study.best_params<span class="kw">}</span>"</span>)</code></pre>
+
+<h4>Distributed Training</h4>
+<p>Quando o dataset ou modelo e grande demais para uma única GPU, você precisa de treino distribuido. Duas estratégias principais:</p>
+
+<ul>
+<li><strong>Data Parallelism:</strong> Cada GPU recebe uma copia do modelo é um subset dos dados. Gradientes são sincronizados via AllReduce. Funciona para a maioria dos casos</li>
+<li><strong>Model Parallelism:</strong> O modelo é dividido entre GPUs (camadas diferentes em GPUs diferentes). Necessario quando o modelo não cabe em uma única GPU (ex: LLMs com 70B+ parametros)</li>
+<li><strong>Pipeline Parallelism:</strong> Combina model parallelism com micro-batching para reduzir idle time das GPUs</li>
+</ul>
+
+<pre data-lang="python"><code><span class="cm"># Data Parallelism com PyTorch DDP (Distributed Data Parallel)</span>
+<span class="kw">import</span> torch
+<span class="kw">import</span> torch.distributed <span class="kw">as</span> dist
+<span class="kw">from</span> torch.nn.parallel <span class="kw">import</span> DistributedDataParallel <span class="kw">as</span> DDP
+
+<span class="kw">def</span> <span class="fn">setup_ddp</span>(rank, world_size):
+    dist.<span class="fn">init_process_group</span>(
+        backend=<span class="str">"nccl"</span>,   <span class="cm"># NCCL e otimizado para GPUs NVIDIA</span>
+        rank=rank,
+        world_size=world_size
+    )
+    torch.cuda.<span class="fn">set_device</span>(rank)
+
+<span class="kw">def</span> <span class="fn">train</span>(rank, world_size):
+    <span class="fn">setup_ddp</span>(rank, world_size)
+
+    model = <span class="fn">MyModel</span>().<span class="fn">to</span>(rank)
+    model = <span class="fn">DDP</span>(model, device_ids=[rank])  <span class="cm"># Wrap com DDP</span>
+
+    sampler = <span class="fn">DistributedSampler</span>(dataset, num_replicas=world_size, rank=rank)
+    loader = <span class="fn">DataLoader</span>(dataset, sampler=sampler, batch_size=<span class="num">32</span>)
+
+    <span class="kw">for</span> epoch <span class="kw">in</span> <span class="fn">range</span>(<span class="num">10</span>):
+        sampler.<span class="fn">set_epoch</span>(epoch)  <span class="cm"># Shuffle diferente por epoca</span>
+        <span class="kw">for</span> batch <span class="kw">in</span> loader:
+            loss = model(batch)
+            loss.<span class="fn">backward</span>()       <span class="cm"># DDP sincroniza gradientes automáticamente</span>
+            optimizer.<span class="fn">step</span>()</code></pre>
+
+<!-- ═══ FEATURE STORES ═══ -->
+<h3>2. Feature Stores</h3>
+
+<p>Um Feature Store é um <strong>repositório centralizado para features de ML</strong> — as variáveis transformadas que alimentam modelos. Sem ele, cada time reimplementa as mesmas transformacoes, com inconsistências entre treino e inferencia.</p>
+
+<h4>Por que usar um Feature Store?</h4>
+<ul>
+<li><strong>Consistência treino/inferencia:</strong> A mesma lógica de feature engineering é usada em ambos — evita training-serving skew</li>
+<li><strong>Reusó entre times:</strong> Time A cria feature "user_avg_purchase_30d", time B reútiliza sem reimplementar</li>
+<li><strong>Point-in-time correctness:</strong> Evita data leakage — features são computadas usando apenas dados disponíveis no momento da predição</li>
+<li><strong>Versionamento:</strong> Features são versionadas como código</li>
+</ul>
+
+<h4>Online vs Offline Store</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Caracteristica</th><th>Offline Store</th><th>Online Store</th></tr>
+<tr><td><strong>Latencia</strong></td><td>Segundos a minutos</td><td>&lt; 10ms</td></tr>
+<tr><td><strong>Uso</strong></td><td>Training, batch scoring</td><td>Real-time inference</td></tr>
+<tr><td><strong>Storage</strong></td><td>Data lake (S3, BigQuery)</td><td>Redis, DynamoDB</td></tr>
+<tr><td><strong>Volume</strong></td><td>Historico completo (TB+)</td><td>Último valor por entidade</td></tr>
+<tr><td><strong>Atualizacao</strong></td><td>Batch (hourly/daily)</td><td>Streaming (near real-time)</td></tr>
+</table>
+</div>
+
+<h4>Feast — Feature Store Open Source</h4>
+<pre data-lang="python"><code><span class="cm"># feature_store.yaml — configuração do Feast</span>
+<span class="cm"># Define online store (Redis) e offline store (S3/Redshift)</span>
+
+<span class="cm"># features/user_features.py — definição de features</span>
+<span class="kw">from</span> feast <span class="kw">import</span> Entity, FeatureView, Field, FileSource
+<span class="kw">from</span> feast.types <span class="kw">import</span> Float32, Int64
+<span class="kw">from</span> datetime <span class="kw">import</span> timedelta
+
+<span class="cm"># Entidade: a chave de lookup (ex: user_id)</span>
+user = <span class="fn">Entity</span>(
+    name=<span class="str">"user_id"</span>,
+    join_keys=[<span class="str">"user_id"</span>],
+    description=<span class="str">"ID único do usuário"</span>,
+)
+
+<span class="cm"># Fonte de dados offline</span>
+user_source = <span class="fn">FileSource</span>(
+    path=<span class="str">"s3://ml-data/user_features.parquet"</span>,
+    timestamp_field=<span class="str">"event_timestamp"</span>,
+)
+
+<span class="cm"># Feature View: grupo lógico de features</span>
+user_features = <span class="fn">FeatureView</span>(
+    name=<span class="str">"user_purchase_features"</span>,
+    entities=[user],
+    ttl=<span class="fn">timedelta</span>(days=<span class="num">1</span>),  <span class="cm"># Features expiram em 1 dia</span>
+    schema=[
+        <span class="fn">Field</span>(name=<span class="str">"avg_purchase_30d"</span>, dtype=Float32),
+        <span class="fn">Field</span>(name=<span class="str">"total_orders"</span>, dtype=Int64),
+        <span class="fn">Field</span>(name=<span class="str">"days_since_last_purchase"</span>, dtype=Int64),
+        <span class="fn">Field</span>(name=<span class="str">"favorite_category_id"</span>, dtype=Int64),
+    ],
+    source=user_source,
+)
+
+<span class="cm"># ── Usó em training (offline) ──</span>
+<span class="kw">from</span> feast <span class="kw">import</span> FeatureStore
+
+store = <span class="fn">FeatureStore</span>(repo_path=<span class="str">"."</span>)
+
+<span class="cm"># Busca features historicas com point-in-time join</span>
+training_df = store.<span class="fn">get_historical_features</span>(
+    entity_df=entity_df,  <span class="cm"># DataFrame com user_id + timestamp</span>
+    features=[
+        <span class="str">"user_purchase_features:avg_purchase_30d"</span>,
+        <span class="str">"user_purchase_features:total_orders"</span>,
+    ],
+).<span class="fn">to_df</span>()
+
+<span class="cm"># ── Usó em serving (online) ──</span>
+features = store.<span class="fn">get_online_features</span>(
+    features=[
+        <span class="str">"user_purchase_features:avg_purchase_30d"</span>,
+        <span class="str">"user_purchase_features:total_orders"</span>,
+    ],
+    entity_rows=[{<span class="str">"user_id"</span>: <span class="num">12345</span>}],
+).<span class="fn">to_dict</span>()  <span class="cm"># Retorno em &lt; 10ms</span></code></pre>
+
+<h4>Point-in-Time Correctness</h4>
+<p>O problema mais crítico que um feature store resolve: <strong>data leakage temporal</strong>.</p>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Sem point-in-time join:</strong> Você treina um modelo de fraude usando features calculadas com dados do FUTURO relativo ao evento. O modelo parece incrivel no treino (99% accuracy) mas falha em produção. Exemplo: para predizer se compra do dia 15 e fraude, você usa "total_chargebacks" que inclui dados do dia 20.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Com point-in-time join (Feast):</strong> Para cada evento no timestamp T, o feature store busca apenas features disponíveis até o momento T-1. Zero vazamento temporal. Isso e automático quando você usa <code>get_historical_features()</code> com timestamps corretos.</div>
+</div>
+
+<!-- ═══ MODEL REGISTRY & VERSIONING ═══ -->
+<h3>3. Model Registry & Versioning</h3>
+
+<p>Um Model Registry é o <strong>repositório central de modelos treinados</strong> — equivalente ao Docker Registry para containers, mas para modelos ML. Cada modelo tem versão, metadata, métricas e lineage completo.</p>
+
+<h4>MLflow Model Registry</h4>
+<pre data-lang="python"><code><span class="kw">from</span> mlflow.tracking <span class="kw">import</span> MlflowClient
+
+client = <span class="fn">MlflowClient</span>()
+
+<span class="cm"># Registrar novo modelo (ou nova versão)</span>
+result = client.<span class="fn">create_model_version</span>(
+    name=<span class="str">"recommendation-model"</span>,
+    source=<span class="str">"runs:/abc123/model"</span>,  <span class="cm"># Referencia ao run de treino</span>
+    run_id=<span class="str">"abc123"</span>,
+    description=<span class="str">"RF com features v3, F1=0.87"</span>
+)
+
+<span class="cm"># Transicionar para staging (para testes)</span>
+client.<span class="fn">transition_model_version_stage</span>(
+    name=<span class="str">"recommendation-model"</span>,
+    version=result.version,
+    stage=<span class="str">"Staging"</span>
+)
+
+<span class="cm"># Apos validação, promover para produção</span>
+client.<span class="fn">transition_model_version_stage</span>(
+    name=<span class="str">"recommendation-model"</span>,
+    version=result.version,
+    stage=<span class="str">"Production"</span>,
+    archive_existing_versions=<span class="kw">True</span>  <span class="cm"># Arquiva versão anterior</span>
+)
+
+<span class="cm"># Em serving: carregar modelo de produção</span>
+<span class="kw">import</span> mlflow.pyfunc
+model = mlflow.pyfunc.<span class="fn">load_model</span>(
+    model_uri=<span class="str">"models:/recommendation-model/Production"</span>
+)
+predictions = model.<span class="fn">predict</span>(input_data)</code></pre>
+
+<h4>Model Lineage</h4>
+<p>Lineage é a rastreabilidade completa de um modelo: <strong>quais dados, features, hiperparametros e código</strong> geraram aquele modelo específico. Essencial para reproducibilidade e auditoria.</p>
+
+<ul>
+<li><strong>Data lineage:</strong> Qual dataset, qual versão, qual periodo temporal</li>
+<li><strong>Feature lineage:</strong> Quais features, como foram computadas (feature store version)</li>
+<li><strong>Code lineage:</strong> Qual commit do repositório, qual branch</li>
+<li><strong>Training lineage:</strong> Hiperparametros, métricas, duracao, hardware usado</li>
+</ul>
+
+<h4>A/B Testing de Modelos</h4>
+<p>Antes de substituir um modelo em produção, você roda ambos simultaneamente e compara resultados reais:</p>
+
+<div class="diagram">
+<div class="diagram-box green">Request<br><small>100% tráfego</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Router / Load Balancer</div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Model A (90%)<br><small>Produção atual</small></div>
+</div>
+<div class="diagram" style="margin-top:4px">
+<div class="diagram-box orange" style="margin-left:260px">Model B (10%)<br><small>Challenger</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box cyan">Métricas Comparativas</div>
+</div>
+
+<ul>
+<li><strong>Shadow Mode:</strong> O modelo novo recebe as mesmas requests que o modelo em produção, mas suas predicoes NAO são usadas. Apenas logadas para comparação. Zero risco</li>
+<li><strong>Canary (A/B):</strong> 5-10% do tráfego vai para o novo modelo. Predicoes são usadas. Risco controlado</li>
+<li><strong>Multi-Armed Bandit:</strong> Alocacao dinâmica de tráfego baseada em performance observada. Converge mais rápido que A/B fixo</li>
+</ul>
+
+<!-- ═══ INFERENCE OPTIMIZATION ═══ -->
+<h3>4. Inference Optimization</h3>
+
+<p>O modelo treinado precisa rodar em produção com <strong>latência baixa e custo aceitável</strong>. Um modelo de 70B parametros em FP32 ocupa 280GB de VRAM — impráticavel sem otimização. As técnicas abaixo reduzem tamanho e latência dramaticamente.</p>
+
+<h4>Quantization</h4>
+<p>Reduz a precisão numerica dos pesos do modelo. Menós bits = menós memória = inferencia mais rápida.</p>
+
+<div class="table-wrap">
+<table>
+<tr><th>Tecnica</th><th>Precisao</th><th>Reducao de Tamanho</th><th>Impacto na Qualidade</th></tr>
+<tr><td><strong>FP32 (baseline)</strong></td><td>32 bits</td><td>-</td><td>Referencia</td></tr>
+<tr><td><strong>FP16 / BF16</strong></td><td>16 bits</td><td>2x menor</td><td>Mínimo (quase zero)</td></tr>
+<tr><td><strong>INT8</strong></td><td>8 bits</td><td>4x menor</td><td>1-2% perda tipica</td></tr>
+<tr><td><strong>INT4 (GPTQ/AWQ)</strong></td><td>4 bits</td><td>8x menor</td><td>2-5% perda tipica</td></tr>
+<tr><td><strong>GGUF (llama.cpp)</strong></td><td>2-8 bits</td><td>4-16x menor</td><td>Variavel por camada</td></tr>
+</table>
+</div>
+
+<ul>
+<li><strong>GPTQ:</strong> Quantizacao post-training para LLMs. Usa calibration dataset para minimizar erro de quantizacao. Rapido em GPUs</li>
+<li><strong>AWQ (Activation-Aware Quantization):</strong> Preserva canais mais "importantes" com maior precisão. Qualidade superior ao GPTQ com mesmo tamanho</li>
+<li><strong>GGUF:</strong> Formato para CPU inference (llama.cpp). Permite quantizacao mista — camadas criticas em 8-bit, demais em 4-bit</li>
+</ul>
+
+<pre data-lang="python"><code><span class="cm"># Quantizacao INT4 com AutoGPTQ</span>
+<span class="kw">from</span> auto_gptq <span class="kw">import</span> AutoGPTQForCausalLM, BaseQuantizeConfig
+
+<span class="cm"># Configuração de quantizacao</span>
+quantize_config = <span class="fn">BaseQuantizeConfig</span>(
+    bits=<span class="num">4</span>,              <span class="cm"># INT4</span>
+    group_size=<span class="num">128</span>,      <span class="cm"># Granularidade da quantizacao</span>
+    desc_act=<span class="kw">True</span>,       <span class="cm"># Activation ordering para melhor qualidade</span>
+)
+
+<span class="cm"># Carregar modelo original e quantizar</span>
+model = AutoGPTQForCausalLM.<span class="fn">from_pretrained</span>(
+    <span class="str">"meta-llama/Llama-2-7b-hf"</span>,
+    quantize_config=quantize_config
+)
+
+<span class="cm"># Calibracao com subset de dados (128 samples tipicamente)</span>
+model.<span class="fn">quantize</span>(calibration_dataset)
+
+<span class="cm"># Salvar modelo quantizado — 7B em INT4 ~ 3.5GB (vs 14GB em FP16)</span>
+model.<span class="fn">save_quantized</span>(<span class="str">"./llama-2-7b-gptq-4bit"</span>)</code></pre>
+
+<h4>Pruning e Distillation</h4>
+<ul>
+<li><strong>Pruning:</strong> Remove pesos (conexões) com menor importancia. Structured pruning remove neurons/attention heads inteiros — mais amigavel para hardware. Unstructured pruning zera pesos individuais — melhor compressão mas precisa de hardware com suporte a sparse</li>
+<li><strong>Knowledge Distillation:</strong> Treina um modelo menor (student) para imitar um modelo maior (teacher). O student aprende as "soft labels" (probabilidades) do teacher, não apenas as hard labels. Exemplo: DistilBERT tem 40% menós parametros que BERT com 97% da performance</li>
+</ul>
+
+<h4>ONNX Runtime — Formato Agnostico</h4>
+<p><strong>ONNX</strong> (Open Neural Network Exchange) é um formato padrão para representar modelos ML. Permite treinar em PyTorch e servir com otimizações de hardware específicas.</p>
+
+<pre data-lang="python"><code><span class="cm"># Exportar modelo PyTorch para ONNX</span>
+<span class="kw">import</span> torch.onnx
+
+torch.onnx.<span class="fn">export</span>(
+    model,
+    dummy_input,
+    <span class="str">"model.onnx"</span>,
+    input_names=[<span class="str">"input"</span>],
+    output_names=[<span class="str">"output"</span>],
+    dynamic_axes={<span class="str">"input"</span>: {<span class="num">0</span>: <span class="str">"batch_size"</span>}}
+)
+
+<span class="cm"># Servir com ONNX Runtime (3-5x mais rápido que PyTorch nativo)</span>
+<span class="kw">import</span> onnxruntime <span class="kw">as</span> ort
+
+session = ort.<span class="fn">InferenceSession</span>(
+    <span class="str">"model.onnx"</span>,
+    providers=[<span class="str">"CUDAExecutionProvider"</span>, <span class="str">"CPUExecutionProvider"</span>]
+)
+result = session.<span class="fn">run</span>(<span class="kw">None</span>, {<span class="str">"input"</span>: input_array})</code></pre>
+
+<h4>vLLM — Serving de LLMs em Produção</h4>
+<p><strong>vLLM</strong> é o estado da arte para servir LLMs com alta performance. Usa PagedAttention para gerenciar memória de KV-cache eficientemente.</p>
+
+<pre data-lang="python"><code><span class="cm"># Servir LLM com vLLM — API compatível com OpenAI</span>
+<span class="cm"># $ pip install vllm</span>
+<span class="cm"># $ python -m vllm.entrypoints.openai.api_server \</span>
+<span class="cm">#     --model meta-llama/Llama-2-7b-chat-hf \</span>
+<span class="cm">#     --quantization awq \</span>
+<span class="cm">#     --max-model-len 4096 \</span>
+<span class="cm">#     --tensor-parallel-size 2  # 2 GPUs</span>
+
+<span class="cm"># Usó programatico</span>
+<span class="kw">from</span> vllm <span class="kw">import</span> LLM, SamplingParams
+
+llm = <span class="fn">LLM</span>(
+    model=<span class="str">"meta-llama/Llama-2-7b-chat-hf"</span>,
+    quantization=<span class="str">"awq"</span>,
+    tensor_parallel_size=<span class="num">2</span>,
+)
+
+params = <span class="fn">SamplingParams</span>(
+    temperature=<span class="num">0.7</span>,
+    max_tokens=<span class="num">512</span>,
+    top_p=<span class="num">0.9</span>,
+)
+
+<span class="cm"># Continuous batching: requests são agrupados automáticamente</span>
+outputs = llm.<span class="fn">generate</span>(
+    [<span class="str">"Explique quantum computing para uma crianca de 10 anos"</span>],
+    params
+)</code></pre>
+
+<h4>Batching Strategies</h4>
+<ul>
+<li><strong>Static Batching:</strong> Acumula N requests e processa juntos. Simples mas ineficiente — o request mais rápido espera o mais lento</li>
+<li><strong>Dynamic Batching (Triton):</strong> Agrupa requests que chegam dentro de uma janela de tempo. Troca entre latência e throughput</li>
+<li><strong>Continuous Batching (vLLM):</strong> Para LLMs: insere novos requests no batch assim que um termina, sem esperar todos finalizarem. Throughput 2-10x maior que static batching</li>
+</ul>
+
+<!-- ═══ VECTOR DATABASES ═══ -->
+<h3>5. Vector Databases</h3>
+
+<p>Vector databases armazenam e buscam <strong>embeddings</strong> — representacoes numericas densas de textos, imagens ou qualquer dado. São a infraestrutura fundamental para RAG (seção 42), busca semântica e sistemas de recomendação.</p>
+
+<h4>Comparacao de Vector Databases</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Database</th><th>Tipo</th><th>Indexacao</th><th>Melhor Para</th></tr>
+<tr><td><strong>Pinecone</strong></td><td>Managed SaaS</td><td>Proprietario</td><td>Prototipacao rápida, sem infra para gerenciar</td></tr>
+<tr><td><strong>Weaviate</strong></td><td>Open-source</td><td>HNSW</td><td>Hybrid search (vector + keyword), GraphQL API</td></tr>
+<tr><td><strong>Qdrant</strong></td><td>Open-source</td><td>HNSW + filtros</td><td>Filtering avançado, multi-tenancy, Rust performance</td></tr>
+<tr><td><strong>Milvus</strong></td><td>Open-source</td><td>IVF, HNSW, DiskANN</td><td>Escala massiva (bilhoes de vetores)</td></tr>
+<tr><td><strong>pgvector</strong></td><td>Extensao PostgreSQL</td><td>IVFFlat, HNSW</td><td>Quando já usa Postgres é o volume e moderado</td></tr>
+<tr><td><strong>ChromaDB</strong></td><td>Open-source</td><td>HNSW</td><td>Desenvolvimento local, prototipacao</td></tr>
+</table>
+</div>
+
+<h4>Algoritmos de Indexacao</h4>
+<ul>
+<li><strong>HNSW (Hierarchical Navigable Small World):</strong> Grafo multi-camada. Busca começa nas camadas superiores (sparse) e desce para camadas inferiores (dense). O(log N) tempo de busca. Mais rápido mas consome mais memória</li>
+<li><strong>IVF (Inverted File Index):</strong> Divide o espaço vetorial em clusters (Voronoi cells). Na busca, só examina os K clusters mais próximos. Menós memória que HNSW mas mais lento</li>
+<li><strong>DiskANN:</strong> Indexacao em disco — permite bilhoes de vetores sem tudo na RAM. Latencia um pouco maior mas custo muito menor</li>
+</ul>
+
+<h4>Exemplo com Qdrant</h4>
+<pre data-lang="python"><code><span class="kw">from</span> qdrant_client <span class="kw">import</span> QdrantClient, models
+<span class="kw">from</span> sentence_transformers <span class="kw">import</span> SentenceTransformer
+
+<span class="cm"># Inicializar cliente e modelo de embeddings</span>
+client = <span class="fn">QdrantClient</span>(url=<span class="str">"http://localhost:6333"</span>)
+encoder = <span class="fn">SentenceTransformer</span>(<span class="str">"all-MiniLM-L6-v2"</span>)  <span class="cm"># 384 dims</span>
+
+<span class="cm"># Criar collection com HNSW index</span>
+client.<span class="fn">create_collection</span>(
+    collection_name=<span class="str">"products"</span>,
+    vectors_config=models.<span class="fn">VectorParams</span>(
+        size=<span class="num">384</span>,
+        distance=models.Distance.COSINE,
+    ),
+    hnsw_config=models.<span class="fn">HnswConfigDiff</span>(
+        m=<span class="num">16</span>,              <span class="cm"># Conexoes por no (mais = melhor recall, mais RAM)</span>
+        ef_construct=<span class="num">100</span>,  <span class="cm"># Qualidade na construção do índice</span>
+    ),
+)
+
+<span class="cm"># Indexar documentos</span>
+docs = [
+    {<span class="str">"id"</span>: <span class="num">1</span>, <span class="str">"text"</span>: <span class="str">"Notebook Dell 16GB RAM"</span>, <span class="str">"category"</span>: <span class="str">"electronics"</span>, <span class="str">"price"</span>: <span class="num">4500</span>},
+    {<span class="str">"id"</span>: <span class="num">2</span>, <span class="str">"text"</span>: <span class="str">"MacBook Pro M3 32GB"</span>, <span class="str">"category"</span>: <span class="str">"electronics"</span>, <span class="str">"price"</span>: <span class="num">12000</span>},
+    {<span class="str">"id"</span>: <span class="num">3</span>, <span class="str">"text"</span>: <span class="str">"Mouse sem fio ergonomico"</span>, <span class="str">"category"</span>: <span class="str">"accessories"</span>, <span class="str">"price"</span>: <span class="num">150</span>},
+]
+
+client.<span class="fn">upsert</span>(
+    collection_name=<span class="str">"products"</span>,
+    points=[
+        models.<span class="fn">PointStruct</span>(
+            id=doc[<span class="str">"id"</span>],
+            vector=encoder.<span class="fn">encode</span>(doc[<span class="str">"text"</span>]).<span class="fn">tolist</span>(),
+            payload={<span class="str">"category"</span>: doc[<span class="str">"category"</span>], <span class="str">"price"</span>: doc[<span class="str">"price"</span>]},
+        )
+        <span class="kw">for</span> doc <span class="kw">in</span> docs
+    ],
+)
+
+<span class="cm"># Busca semântica com filtro</span>
+query_vector = encoder.<span class="fn">encode</span>(<span class="str">"computador portatil potente"</span>)
+
+results = client.<span class="fn">search</span>(
+    collection_name=<span class="str">"products"</span>,
+    query_vector=query_vector.<span class="fn">tolist</span>(),
+    query_filter=models.<span class="fn">Filter</span>(
+        must=[
+            models.<span class="fn">FieldCondition</span>(
+                key=<span class="str">"category"</span>,
+                match=models.<span class="fn">MatchValue</span>(value=<span class="str">"electronics"</span>),
+            ),
+            models.<span class="fn">FieldCondition</span>(
+                key=<span class="str">"price"</span>,
+                range=models.<span class="fn">Range</span>(lte=<span class="num">10000</span>),
+            ),
+        ]
+    ),
+    limit=<span class="num">5</span>,
+)
+<span class="cm"># Retorna "Notebook Dell 16GB RAM" — semânticamente similar e dentro do filtro</span></code></pre>
+
+<h4>Hybrid Search (Vector + Keyword)</h4>
+<p>Busca puramente vetorial pode falhar em termos exatos (ex: códigos de produto, nomes proprios). <strong>Hybrid search</strong> combina busca semântica com busca por keyword (BM25) para o melhor dos dois mundos.</p>
+
+<pre data-lang="python"><code><span class="cm"># Hybrid search com Weaviate</span>
+<span class="kw">import</span> weaviate
+
+client = weaviate.<span class="fn">Client</span>(<span class="str">"http://localhost:8080"</span>)
+
+<span class="cm"># Busca hibrida: alpha controla pesó entre vector e keyword</span>
+result = (
+    client.query
+    .<span class="fn">get</span>(<span class="str">"Product"</span>, [<span class="str">"name"</span>, <span class="str">"description"</span>, <span class="str">"price"</span>])
+    .<span class="fn">with_hybrid</span>(
+        query=<span class="str">"notebook Dell XPS 15"</span>,
+        alpha=<span class="num">0.75</span>,  <span class="cm"># 0.75 = 75% vector + 25% keyword</span>
+    )
+    .<span class="fn">with_limit</span>(<span class="num">10</span>)
+    .<span class="fn">do</span>()
+)
+<span class="cm"># "Dell XPS 15" e encontrado por keyword exato</span>
+<span class="cm"># "Computador portatil de alta performance" e encontrado por semântica</span></code></pre>
+
+<!-- ═══ ML MONITORING ═══ -->
+<h3>6. ML Monitoring</h3>
+
+<p>Modelos ML <strong>degradam silenciosamente</strong>. Diferente de software tradicional onde erros geram exceptions, um modelo pode continuar retornando predicoes — só que cada vez piores. ML monitoring detecta essa degradação antes que cause impacto no negócio.</p>
+
+<h4>Tipos de Drift</h4>
+<ul>
+<li><strong>Data Drift (Feature Drift):</strong> A distribuição dos dados de entrada muda. Exemplo: modelo treinado com dados pre-pandemia recebe dados pos-pandemia com comportamento totalmente diferente</li>
+<li><strong>Concept Drift:</strong> A relacao entre features e target muda. Exemplo: o que define "fraude" evolui conforme fraudadores se adaptam. O modelo esta certo sobre os dados mas os dados significam algo diferente agora</li>
+<li><strong>Prediction Drift:</strong> A distribuição das predicoes muda. Mesmo se não temos ground truth imediato, se o modelo começa a predizer classes diferentes do habitual, algo mudou</li>
+</ul>
+
+<div class="table-wrap">
+<table>
+<tr><th>Tipo de Drift</th><th>O que Muda</th><th>Como Detectar</th><th>Exemplo</th></tr>
+<tr><td><strong>Data Drift</strong></td><td>Distribuicao dos inputs</td><td>KS test, PSI, Jensen-Shannon</td><td>Idade media dos usuários mudou de 35 para 22</td></tr>
+<tr><td><strong>Concept Drift</strong></td><td>Relacao input &#8594; output</td><td>Performance decay, A/B test</td><td>Reviews positivos passaram a usar gírias novas</td></tr>
+<tr><td><strong>Prediction Drift</strong></td><td>Distribuicao dos outputs</td><td>Chi-squared, histograma</td><td>Modelo passou a recomendar 80% da mesma categoria</td></tr>
+</table>
+</div>
+
+<h4>Métricas de Monitoramento</h4>
+
+<pre data-lang="python"><code><span class="cm"># Detectar data drift com Evidently (open-source)</span>
+<span class="kw">from</span> evidently.report <span class="kw">import</span> Report
+<span class="kw">from</span> evidently.metric_preset <span class="kw">import</span> DataDriftPreset, TargetDriftPreset
+
+<span class="cm"># reference = dados de treino, current = dados recentes de produção</span>
+report = <span class="fn">Report</span>(metrics=[
+    <span class="fn">DataDriftPreset</span>(),      <span class="cm"># Analisa drift em todas as features</span>
+    <span class="fn">TargetDriftPreset</span>(),    <span class="cm"># Analisa drift na variável target</span>
+])
+
+report.<span class="fn">run</span>(
+    reference_data=training_df,
+    current_data=production_df,
+)
+
+<span class="cm"># Verificar se houve drift significativo</span>
+result = report.<span class="fn">as_dict</span>()
+drift_detected = result[<span class="str">"metrics"</span>][<span class="num">0</span>][<span class="str">"result"</span>][<span class="str">"dataset_drift"</span>]
+
+<span class="kw">if</span> drift_detected:
+    <span class="cm"># Alertar time e agendar retraining</span>
+    <span class="fn">send_alert</span>(<span class="str">"Data drift detectado! Features afetadas: ..."</span>)
+    <span class="fn">trigger_retraining_pipeline</span>()</code></pre>
+
+<h4>Shadow Mode para Validação Continua</h4>
+<p>Shadow mode é a técnica mais segura para validar modelos novos em produção:</p>
+
+<ol>
+<li>O modelo em produção (champion) serve todas as requests normalmente</li>
+<li>O modelo novo (challenger) recebe as mesmas requests em paralelo</li>
+<li>As predicoes do challenger são <strong>logadas mas nunca usadas</strong></li>
+<li>Apos 1-2 semanas, compare métricas entre champion e challenger</li>
+<li>Se challenger é melhor, promova via canary gradual</li>
+</ol>
+
+<h4>Alerting e Retraining Triggers</h4>
+<div class="card">
+<div class="card-title">Retraining Triggers Recomendados</div>
+<ul>
+<li><strong>Performance decay:</strong> Accuracy/F1 caiu mais de 5% vs baseline → trigger retraining automático</li>
+<li><strong>Data drift significativo:</strong> PSI (Population Stability Index) > 0.25 em features criticas → alerta + investigacao</li>
+<li><strong>Volume anomaly:</strong> Volume de requests mudou mais de 3 desvios-padrão → investigar se dados mudaram</li>
+<li><strong>Scheduled:</strong> Retraining semanal/mensal como baseline, independente de drift detectado</li>
+<li><strong>Feedback loop:</strong> Quando labels reais ficam disponíveis (ex: usuário confirmou se recomendação foi útil)</li>
+</ul>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Pipeline ML para Sistema de Recomendacao</h3>
+
+<p><strong>Cenário:</strong> Projete o pipeline ML completo para um e-commerce que recomenda produtos. O sistema recebe 10K requests/segundo, precisa de latência P99 &lt; 50ms, e o catálogo tem 5 milhões de produtos.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Event Stream<br><small>Clicks, compras, views</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box blue">Feature Store<br><small>Feast + Redis</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box purple">Training Pipeline<br><small>Daily retrain</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box orange">Model Registry<br><small>MLflow</small></div>
+</div>
+<div class="diagram" style="margin-top:4px">
+<div class="diagram-box cyan">Vector DB (Qdrant)<br><small>5M product embeddings</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box green">Serving Layer<br><small>ONNX Runtime + cache</small></div>
+<div class="diagram-arrow">&#8594;</div>
+<div class="diagram-box red">Monitoring<br><small>Evidently + Grafana</small></div>
+</div>
+
+<p><strong>Arquitetura detalhada:</strong></p>
+<ol>
+<li><strong>Data Ingestion:</strong> Kafka recebe eventos de usuário (clicks, compras, tempo na página) em real-time. Flink processa e atualiza features no feature store</li>
+<li><strong>Feature Store (Feast):</strong> Online store (Redis) para serving com P99 &lt; 5ms. Offline store (S3/Parquet) para training. Features: historico de compras, categorias preferidas, embedding do usuário</li>
+<li><strong>Training Pipeline:</strong> Roda diariamente. Treina modelo two-tower (user embedding + product embedding) com PyTorch. Optuna para hyperparameter tuning. MLflow para experiment tracking</li>
+<li><strong>Model Registry (MLflow):</strong> Modelo aprovado vai para staging → shadow mode por 3 dias → produção se métricas melhorarem. Versionamento completo com lineage</li>
+<li><strong>Vector DB (Qdrant):</strong> Armazena 5M product embeddings (dimensão 256). HNSW index. Busca ANN retorna top-100 candidatos em &lt; 10ms</li>
+<li><strong>Serving:</strong> Two-stage: (1) Qdrant faz recall de 100 candidatos por similaridade vetorial, (2) modelo de ranking ONNX-optimized reordena os 100 para top-10. Total &lt; 50ms</li>
+<li><strong>Caching:</strong> Redis cache de recomendações para usuários frequentes. TTL de 15 minutos. Hit raté esperado: 60%+</li>
+<li><strong>Monitoring:</strong> Evidently monitora data drift diariamente. Grafana dashboards mostram CTR, conversion rate, latência. Alerta se CTR cai mais de 10% vs semana anterior</li>
+</ol>
+
+<p><strong>Trade-offs aceitos:</strong></p>
+<ul>
+<li><strong>Freshness vs Latencia:</strong> Features de usuário atualizadas a cada 15 minutos (near real-time), não instantaneamente. Aceitavel para recomendações</li>
+<li><strong>Recall vs Precisao:</strong> ANN (appróximate) retorna 95% dos top-100 reais. O 5% perdido e compensado pelo modelo de ranking na segunda etapa</li>
+<li><strong>Custo vs Performance:</strong> Modelo quantizado em INT8 (4x menor) com 1.5% perda de NDCG. Economia de 3x em GPU compute</li>
+</ul>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Training-Serving Skew:</strong> Usar lógica diferente de feature engineering no treino (Python/Pandas) e no serving (Java/SQL). O modelo foi treinado com features normalizadas de um jeito e recebe features normalizadas de outro em produção. Feature stores eliminam esse problema.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Ignorar data leakage temporal:</strong> No treino, usar features que incluem informação do futuro relativo ao evento de predição. Modelo parece perfeito no teste offline mas falha em produção. Sempre use point-in-time joins.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Deploy de modelo sem shadow mode:</strong> Substituir o modelo de produção diretamente pelo novo. Se o novo modelo tem um bug sútil (ex: retorna sempre a mesma categoria), você só descobre quando o KPI de negócio cai — dias depois. Shadow mode ou canary sempre.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Quantizar sem medir impacto:</strong> Aplicar INT4 e assumir que "funciona". Sempre compare métricas de qualidade (accuracy, BLEU, NDCG) antes e depois da quantizacao no seu dataset específico. A perda varia dramaticamente entre domínios.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Vector DB sem filtros pre-query:</strong> Fazer busca vetorial em 5M documentos e depois filtrar. Muito mais eficiente e filtrar ANTES (pre-filtering) e buscar vetores só no subconjunto relevante. Qdrant e Weaviaté suportam isso nativamente.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro para ML em produção:</strong> Invista 20% do tempo no modelo e 80% na infraestrutura ao redor (pipeline, feature store, monitoring, serving). O melhor modelo do mundo e inútil se não funciona de forma confiável em produção com monitoramento adequado.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Praticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem um modelo de detecção de fraude que estava com 95% de precision. Apos 3 meses, a precision caiu para 78%. Quais tipos de drift você investigaria e em que ordem?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Investigar em ordem: (1) <strong>Data drift</strong> primeiro — verificar com PSI/KS-test se a distribuição das features mudou (ex: valor medio de transações aumentou, novos tipos de cartao). Isso é o mais comum é fácil de detectar. (2) <strong>Concept drift</strong> — se os dados parecem iguais mas o modelo piorou, a relacao entre features e fraude mudou. Fraudadores se adaptaram e desenvolveram novos padrões. Precisa de retraining com dados recentes. (3) <strong>Prediction drift</strong> — verificar se o modelo esta classificando muito diferente (ex: threshold muito alto causando mais falsos negativos). Solução: retraining com dados dos últimos 3 meses, feature engineering de novos padrões de fraude, e implementar monitoring continuo com alertas de PSI > 0.2.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Seu LLM de 13B parametros tem latência P99 de 8 segundos para gerar 256 tokens. O SLA exige P99 &lt; 3 segundos. Quais otimizações você aplicaria e em que ordem?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> Ordem de impacto/esforco: (1) <strong>Quantizacao AWQ/GPTQ para INT4</strong> — redução de ~4x no usó de memória, permite batch maior e inferencia 2-3x mais rápida. Baixo esforco, alto impacto. (2) <strong>vLLM com continuous batching</strong> — substitui serving naive por PagedAttention + continuous batching. Throughput 3-5x maior sem aumento de latência por request. (3) <strong>KV-cache optimization</strong> — pre-computar o system prompt (prompt caching) para não reprocessar a cada request. Economiza 30-50% do compute se o prompt e longo. (4) Se ainda insuficiente: <strong>speculative decoding</strong> com draft model menor, ou <strong>tensor parallelism</strong> em 2+ GPUs. (5) Último recurso: usar modelo menor (7B) com fine-tuning específico para o domínio — pode ser mais rápido E melhor que 13B genérico.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Projete a arquitetura de feature store para um app de delivery que precisa de features de usuário (historico de pedidos), features de restaurante (rating, tempo de preparo) e features contextuais (horario, clima, localizacao). Quais features ficam no online store vs offline store?</div>
+<div class="qa-a">
+<p><strong>Resposta:</strong> <strong>Online Store (Redis, &lt; 10ms):</strong> Features que mudam frequentemente e são necessárias em real-time: (a) Usuario: último pedido (timestamp), pedidos nós últimos 7 dias, categorias preferidas, endereço atual. (b) Restaurante: rating medio (atualizado hourly), tempo de preparo estimado atual, status aberto/fechado. (c) Contextuais: horario atual (computado no serving), clima atual (API externa cacheado 15min), localizacao do usuário. <strong>Offline Store (S3/Parquet):</strong> Features historicas para treino: (a) Historico completo de pedidos (12 meses), (b) Aggregacoes: ticket medio por dia da semana, taxa de cancelamento por restaurante por mes, sazonalidade. (c) Features derivadas: embedding do usuário (recalculado diariamente no batch pipeline). <strong>Pipeline:</strong> Kafka ingere eventos de pedido → Flink computa features de streaming (online) → Spark batch diario computa aggregacoes (offline) → Feast materializa online store a cada 15 minutos.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — AI Engineering Completa</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="60-gestao-produto-metricas.html">&#8592; Anterior: Gestão de Produto & Métricas</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="62-ia-aplicada-dev.html" class="primary">Próximo: IA Aplicada ao Desenvolvimento &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 61: AI Engineering Completa
+// ══════════════════════════════════════════
+const SECTION_NUM = 61;
+const STORAGE_KEY = 'fsm_quiz_61';
+
+const QUIZ_DATA = [
+  {
+    question: "Qual o principal problema que um Feature Store resolve?",
+    options: [
+      "Armazenar modelos treinados com versionamento",
+      "Garantir consistência entre feature engineering no treino e no serving (training-serving skew)",
+      "Acelerar o treinamento distribuido em multiplas GPUs",
+      "Monitorar data drift automáticamente"
+    ],
+    correct: 1,
+    explanation: "O problema central que um feature store resolve é o training-serving skew — garantir que as mesmas transformacoes de features usadas no treino sejam aplicadas identicamente no serving. Alem disso, resolve point-in-time correctness e reusó entre times."
+  },
+  {
+    question: "O que é point-in-time correctness em feature stores e por que é crítico?",
+    options: [
+      "Garantir que features sejam computadas em tempo real",
+      "Evitar data leakage temporal — usar apenas dados disponíveis no momento da predição, não dados futuros",
+      "Sincronizar relogios entre servidores de treino",
+      "Manter features atualizadas a cada segundo"
+    ],
+    correct: 1,
+    explanation: "Point-in-time correctness garante que, para um evento no tempo T, apenas dados disponíveis até T-1 são usados como features. Sem isso, você tem data leakage temporal — o modelo 've o futuro' durante o treino e parece excelente, mas falha em produção."
+  },
+  {
+    question: "Qual a diferença entre GPTQ e AWQ para quantizacao de LLMs?",
+    options: [
+      "GPTQ funciona em CPU e AWQ só em GPU",
+      "GPTQ quantiza para INT8 e AWQ para INT4",
+      "AWQ preserva canais de ativacao mais importantes com maior precisão, resultando em melhor qualidade que GPTQ com mesmo tamanho",
+      "Não ha diferença significativa — são implementações identicas"
+    ],
+    correct: 2,
+    explanation: "AWQ (Activation-Aware Quantization) identifica quais canais de ativacao são mais importantes para o output e preserva esses com maior precisão. Isso resulta em qualidade superior ao GPTQ com o mesmo número de bits, pois GPTQ trata todos os pesos igualmente."
+  },
+  {
+    question: "O que é continuous batching no vLLM e por que é superior a static batching?",
+    options: [
+      "Continuous batching processa requests um por vez para menor latência",
+      "Continuous batching insere novos requests no batch assim que um finaliza, sem esperar todos terminarem, resultando em 2-10x mais throughput",
+      "Continuous batching divide o modelo entre GPUs automáticamente",
+      "Continuous batching usa CPU e GPU simultaneamente"
+    ],
+    correct: 1,
+    explanation: "Em static batching, o batch inteiro espera o request mais lento terminar (desperdicando GPU). Continuous batching do vLLM insere novos requests no batch assim que um termina, mantendo a GPU sempre ocupada. Resultado: 2-10x mais throughput com mesma hardware."
+  },
+  {
+    question: "Qual a diferença entre data drift e concept drift?",
+    options: [
+      "Data drift afeta dados numericos; concept drift afeta dados categoricos",
+      "Data drift é quando a distribuição dos inputs muda; concept drift é quando a relacao entre inputs e outputs muda",
+      "Data drift e detectavel; concept drift não",
+      "Data drift ocorre lentamente; concept drift ocorre instantaneamente"
+    ],
+    correct: 1,
+    explanation: "Data drift: a distribuição dos inputs (features) muda (ex: idade media dos usuários mudou). Concept drift: a relacao input→output muda (ex: o que define fraude evolui porque fraudadores se adaptam). Data drift e detectavel sem labels; concept drift requer labels para confirmar."
+  },
+  {
+    question: "No algoritmo HNSW para busca vetorial, qual o trade-off do parametro 'm' (conexões por no)?",
+    options: [
+      "Mais 'm' = busca mais rápida mas menor recall",
+      "Mais 'm' = melhor recall mas mais consumo de memória e construção mais lenta",
+      "O parametro 'm' não afeta performance, apenas o tamanho do índice",
+      "Mais 'm' = melhor para buscas exatas, pior para buscas apróximadas"
+    ],
+    correct: 1,
+    explanation: "Em HNSW, 'm' controla o número de conexões por no no grafo. Mais conexões = mais caminhos para encontrar vizinhos = melhor recall. Porem, mais conexões = mais memória (grafo maior) e construção mais lenta. Valores tipicos: m=16 para usó geral, m=32-48 para recall máximo."
+  },
+  {
+    question: "O que é shadow mode no contexto de deployment de modelos ML?",
+    options: [
+      "Rodar o modelo apenas em horarios de baixo tráfego",
+      "O modelo novo recebe requests reais mas suas predicoes são apenas logadas, nunca usadas — zero risco para usuários",
+      "Treinar o modelo com dados anonimizados",
+      "Rodar o modelo em servidores separados da produção"
+    ],
+    correct: 1,
+    explanation: "Shadow mode roda o modelo challenger em paralelo ao modelo de produção (champion). O challenger recebe as mesmas requests e gera predicoes, mas essas predicoes são apenas logadas para análise — o usuário sempre recebe a resposta do champion. Isso permite avaliar o novo modelo com dados reais sem risco."
+  },
+  {
+    question: "Em um pipeline ML para recomendações com 5M produtos e P99 < 50ms, qual abordagem de serving é mais adequada?",
+    options: [
+      "Um único modelo que ranqueia todos os 5M produtos em cada request",
+      "Two-stage: recall via ANN (top-100 candidatos do vector DB) seguido de ranking com modelo otimizado",
+      "Pre-computar recomendações para todos os usuários em batch",
+      "Usar LLM para gerar recomendações textuais"
+    ],
+    correct: 1,
+    explanation: "Two-stage é o padrão da industria: (1) Recall rápido via ANN no vector DB retorna ~100 candidatos em <10ms, (2) Modelo de ranking leve (ONNX) reordena os 100 candidatos em <30ms. Ranquear 5M em tempo real e impossível em 50ms. Batch puro não personaliza em real-time."
+  },
+  {
+    question: "Qual métrica indica que é hora de retreinar um modelo em produção?",
+    options: [
+      "O número de requests aumentou",
+      "O PSI (Population Stability Index) de features criticas ultrapassou 0.25 ou a métrica de negócio (ex: CTR) caiu mais de 5% vs baseline",
+      "O modelo esta em produção ha mais de 30 dias",
+      "A latência de inferencia aumentou"
+    ],
+    correct: 1,
+    explanation: "PSI > 0.25 indica drift significativo nas features (dados mudaram). Queda de 5%+ na métrica de negócio indica que o modelo esta performando pior. Ambos são triggers objetivos para retraining. Tempo sozinho (30 dias) não é suficiente — o modelo pode estar perfeitamente bem."
+  },
+  {
+    question: "No MLflow Model Registry, qual é o fluxo correto de lifecycle de um modelo?",
+    options: [
+      "Development → Production → Archived",
+      "None → Staging → Production → Archived",
+      "Training → Testing → Deployment",
+      "Draft → Review → Published → Deprecated"
+    ],
+    correct: 1,
+    explanation: "O fluxo no MLflow Model Registry e: None (recem-registrado) → Staging (testes e validação, shadow mode) → Production (servindo tráfego real) → Archived (descontinuado mas preservado). A transição de Staging para Production só acontece após validação de métricas."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina AI Engineering.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

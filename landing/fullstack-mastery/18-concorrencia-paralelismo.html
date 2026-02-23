@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>18 — Concorrência & Paralelismo | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="17-mensageria-kafka-rabbit-sqs.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>18</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="19-escalabilidade-load-balancing.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:27.3%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">Seção 18</span>
+<h2>Concorrência & Paralelismo</h2>
+<div class="section-line"></div>
+
+<p>Concorrência e paralelismo são dois dos conceitos mais confundidos — é mais críticos — em engenharia de software. Domina-los é a diferença entre um sistema que processa 10 requisições por segundo é um que processa 10.000. Mas mais importante: é a diferença entre um sistema que funciona corretamente sob carga é um que corrompe dados silenciosamente.</p>
+
+<p>Esta seção vai além da teoria. Vamos explorar os <strong>modelos de concorrência</strong> usados em produção (threads, event loop, actors, CSP, reactive), os <strong>problemas clássicos</strong> (race conditions, deadlocks), é como aplicar <strong>controle de concorrência em bancos de dados</strong> — tudo com código real.</p>
+
+<!-- ═══ CONCURRENCY VS PARALLELISM ═══ -->
+<h3>Concorrência vs Paralelismo</h3>
+
+<p>A confusão e tão comum que vale a pena ser cirúrgico na definição:</p>
+
+<ul>
+<li><strong>Concorrência</strong> = <strong>estrutura</strong>. E sobre <em>lidar com</em> muitas coisas ao mesmo tempo. Seu programa e organizado para gerenciar múltiplas tarefas, mesmo que execute uma por vez. Analogia: um garçom atendendo 5 mesas — ele não cozinha 5 pratos simultaneamente, mas gerência 5 pedidos intercalando atenção.</li>
+<li><strong>Paralelismo</strong> = <strong>execução</strong>. E sobre <em>fazer</em> muitas coisas ao mesmo tempo. Requer múltiplos processadores/cores. Analogia: 5 cozinheiros preparando 5 pratos ao mesmo tempo — execução verdadeiramente simultânea.</li>
+</ul>
+
+<p><strong>Rob Pike (criador de Go) resumiu:</strong> "Concurrency is about dealing with lots of things at once. Parallelism is about doing lots of things at once." Concorrência é um conceito de <strong>design</strong>. Paralelismo é um conceito de <strong>execução</strong>.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Concorrência<br><small>1 CPU, tarefas intercaladas</small></div>
+<div class="diagram-arrow">vs</div>
+<div class="diagram-box blue">Paralelismo<br><small>N CPUs, tarefas simultâneas</small></div>
+</div>
+
+<div class="card">
+<div class="card-title">Relação entre os conceitos</div>
+<ul>
+<li><strong>Concorrente + Paralelo:</strong> Node.js cluster com 4 workers — cada worker tem seu event loop (concorrente) e rodam em paralelo em 4 cores</li>
+<li><strong>Concorrente + Não-paralelo:</strong> Node.js single-thread — gerência milhares de conexões I/O concorrentemente, mas executa JS em 1 core</li>
+<li><strong>Paralelo + Não-concorrente:</strong> GPU renderizando pixels — milhares de cores executam a MESMA operação em dados diferentes (SIMD)</li>
+<li><strong>Nem concorrente, nem paralelo:</strong> Script sequêncial simples — faz uma coisa, termina, faz outra</li>
+</ul>
+</div>
+
+<!-- ═══ CONCURRENCY MODELS ═══ -->
+<h3>Modelos de Concorrência</h3>
+
+<p>Existem diversas abordagens para lidar com concorrência. Cada uma tem trade-offs diferentes e se encaixa melhor em certos contextos. Um engenheiro full-stack precisa conhecer todas.</p>
+
+<!-- THREADS + LOCKS -->
+<h4>1. Threads + Locks (Java, C++, Python)</h4>
+
+<p>O modelo mais antigo é mais perigoso. Múltiplas threads compartilham memória e usam <strong>locks</strong> para coordenar acesso. Primitivas de sincronização:</p>
+
+<ul>
+<li><strong>Mutex (Mutual Exclusion):</strong> Apenas uma thread pode segurar o lock por vez. Simples, mas pode causar deadlock</li>
+<li><strong>Semaphore:</strong> Permite N threads simultâneas (ex: limitar a 5 conexões ao DB). Mutex é um semaforo de capacidade 1</li>
+<li><strong>Read-Write Lock:</strong> Múltiplos leitores simultâneos OU um escritor exclusivo. Ótimo para dados lidos frequentemente</li>
+</ul>
+
+<p>Em Node.js/TypeScript, threads compartilhadas não são o padrão, mas <code>Worker Threads</code> permitem paralelismo real para CPU-bound tasks:</p>
+
+<pre data-lang="typescript"><code><span class="cm">// main.ts — disparando trabalho CPU-bound em Worker Threads</span>
+<span class="kw">import</span> { Worker } <span class="kw">from</span> <span class="str">'worker_threads'</span>;
+
+<span class="kw">function</span> <span class="fn">runInWorker</span>(data: <span class="tp">number</span>[]): <span class="tp">Promise</span>&lt;<span class="tp">number</span>&gt; {
+  <span class="kw">return new</span> <span class="tp">Promise</span>((resolve, reject) => {
+    <span class="kw">const</span> worker = <span class="kw">new</span> <span class="fn">Worker</span>(<span class="str">'./heavy-computation.js'</span>, {
+      workerData: data,
+    });
+    worker.<span class="fn">on</span>(<span class="str">'message'</span>, resolve);
+    worker.<span class="fn">on</span>(<span class="str">'error'</span>, reject);
+  });
+}
+
+<span class="cm">// Paralelismo REAL — cada worker roda em um core diferente</span>
+<span class="kw">async function</span> <span class="fn">processInParallel</span>(chunks: <span class="tp">number</span>[][]) {
+  <span class="kw">const</span> results = <span class="kw">await</span> Promise.<span class="fn">all</span>(
+    chunks.<span class="fn">map</span>(chunk => <span class="fn">runInWorker</span>(chunk))
+  );
+  <span class="kw">return</span> results.<span class="fn">reduce</span>((sum, r) => sum + r, <span class="num">0</span>);
+}
+
+<span class="cm">// heavy-computation.js (Worker)</span>
+<span class="cm">// const { workerData, parentPort } = require('worker_threads');</span>
+<span class="cm">// const result = workerData.reduce((acc, n) => acc + Math.sqrt(n), 0);</span>
+<span class="cm">// parentPort.postMessage(result);</span></code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Worker Threads vs Cluster:</strong> Worker Threads compartilham processo (podem usar SharedArrayBuffer). Cluster cria processos separados (isolamento total). Use Worker Threads para CPU-bound, Cluster para escalar I/O-bound.</div>
+</div>
+
+<!-- EVENT LOOP -->
+<h4>2. Event Loop (Node.js, Browser)</h4>
+
+<p>O modelo que fez Node.js possível. Uma única thread executa JavaScript, mas operações I/O (disco, rede, DB) são delegadas ao sistema operacional via <strong>libuv</strong>. Quando a operação completa, um callback e enfileirado.</p>
+
+<p><strong>Como funciona passó a passo:</strong></p>
+<ol>
+<li><strong>Call Stack:</strong> Executa funções JavaScript síncronamente, uma por vez</li>
+<li><strong>Web APIs / libuv:</strong> Operações async (setTimeout, fetch, fs.readFile) são delegadas para o OS/thread pool</li>
+<li><strong>Callback Queue (Task Queue):</strong> Callbacks de operações completadas são enfileirados aqui</li>
+<li><strong>Microtask Queue:</strong> Promises resolvidas, queueMicrotask, MutationObserver — tem <strong>prioridade</strong> sobre a callback queue</li>
+<li><strong>Event Loop:</strong> Verifica se o call stack está vazio. Se sim, esvazia TODA a microtask queue primeiro, depois pega o próximo callback da task queue</li>
+</ol>
+
+<div class="diagram">
+<div class="diagram-box green">Call Stack<br><small>Execução JS</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Web APIs / libuv<br><small>I/O async, timers</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Callback Queue<br><small>setTimeout, I/O</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Event Loop<br><small>Stack vazio? Dequeue!</small></div>
+</div>
+
+<div class="diagram">
+<div class="diagram-box cyan">Microtask Queue<br><small>Promises, queueMicrotask</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Event Loop<br><small>Prioridade sobre callbacks</small></div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// Ordem de execução — teste clássico de entrevista</span>
+console.<span class="fn">log</span>(<span class="str">'1 - síncrono'</span>);
+
+<span class="fn">setTimeout</span>(() => {
+  console.<span class="fn">log</span>(<span class="str">'2 - setTimeout (macro task)'</span>);
+}, <span class="num">0</span>);
+
+Promise.<span class="fn">resolve</span>().<span class="fn">then</span>(() => {
+  console.<span class="fn">log</span>(<span class="str">'3 - Promise.then (microtask)'</span>);
+});
+
+<span class="fn">queueMicrotask</span>(() => {
+  console.<span class="fn">log</span>(<span class="str">'4 - queueMicrotask (microtask)'</span>);
+});
+
+console.<span class="fn">log</span>(<span class="str">'5 - síncrono'</span>);
+
+<span class="cm">// Saida: 1, 5, 3, 4, 2</span>
+<span class="cm">// Sincronós primeiro, depois microtasks, depois macrotasks</span></code></pre>
+
+<!-- ASYNC/AWAIT -->
+<h4>3. Async/Await: Paralelo vs Sequencial</h4>
+
+<p>Um dos erros mais comuns em código async e executar operações independentes de forma sequêncial quando poderiam ser paralelas. A diferença de performance pode ser <strong>dramatica</strong>:</p>
+
+<pre data-lang="typescript"><code><span class="cm">// Simula chamadas de API que levam 1 segundo cada</span>
+<span class="kw">async function</span> <span class="fn">fetchUser</span>(id: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">User</span>&gt; {
+  <span class="kw">await</span> <span class="fn">delay</span>(<span class="num">1000</span>);
+  <span class="kw">return</span> { id, name: <span class="str">'User '</span> + id };
+}
+
+<span class="kw">async function</span> <span class="fn">fetchOrders</span>(userId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Order</span>[]&gt; {
+  <span class="kw">await</span> <span class="fn">delay</span>(<span class="num">1000</span>);
+  <span class="kw">return</span> [{ id: <span class="str">'o1'</span>, userId }];
+}
+
+<span class="kw">async function</span> <span class="fn">fetchNotifications</span>(userId: <span class="tp">string</span>): <span class="tp">Promise</span>&lt;<span class="tp">Notification</span>[]&gt; {
+  <span class="kw">await</span> <span class="fn">delay</span>(<span class="num">1000</span>);
+  <span class="kw">return</span> [{ id: <span class="str">'n1'</span>, message: <span class="str">'Hello'</span> }];
+}
+
+<span class="cm">// &#10060; SEQUENCIAL — 3 segundos total (1 + 1 + 1)</span>
+<span class="kw">async function</span> <span class="fn">loadDashboardSlow</span>(userId: <span class="tp">string</span>) {
+  <span class="kw">const</span> user = <span class="kw">await</span> <span class="fn">fetchUser</span>(userId);           <span class="cm">// 1s</span>
+  <span class="kw">const</span> orders = <span class="kw">await</span> <span class="fn">fetchOrders</span>(userId);       <span class="cm">// 1s (espera user terminar)</span>
+  <span class="kw">const</span> notifs = <span class="kw">await</span> <span class="fn">fetchNotifications</span>(userId); <span class="cm">// 1s (espera orders terminar)</span>
+  <span class="kw">return</span> { user, orders, notifs };
+}
+
+<span class="cm">// &#9989; PARALELO — 1 segundo total (todas ao mesmo tempo)</span>
+<span class="kw">async function</span> <span class="fn">loadDashboardFast</span>(userId: <span class="tp">string</span>) {
+  <span class="kw">const</span> [user, orders, notifs] = <span class="kw">await</span> Promise.<span class="fn">all</span>([
+    <span class="fn">fetchUser</span>(userId),
+    <span class="fn">fetchOrders</span>(userId),
+    <span class="fn">fetchNotifications</span>(userId),
+  ]);
+  <span class="kw">return</span> { user, orders, notifs };
+}
+
+<span class="cm">// &#9989; PARALELO COM RESILIENCIA — não falha se uma falhar</span>
+<span class="kw">async function</span> <span class="fn">loadDashboardResilient</span>(userId: <span class="tp">string</span>) {
+  <span class="kw">const</span> results = <span class="kw">await</span> Promise.<span class="fn">allSettled</span>([
+    <span class="fn">fetchUser</span>(userId),
+    <span class="fn">fetchOrders</span>(userId),
+    <span class="fn">fetchNotifications</span>(userId),
+  ]);
+
+  <span class="kw">return</span> {
+    user: results[<span class="num">0</span>].status === <span class="str">'fulfilled'</span> ? results[<span class="num">0</span>].value : <span class="kw">null</span>,
+    orders: results[<span class="num">1</span>].status === <span class="str">'fulfilled'</span> ? results[<span class="num">1</span>].value : [],
+    notifs: results[<span class="num">2</span>].status === <span class="str">'fulfilled'</span> ? results[<span class="num">2</span>].value : [],
+  };
+}</code></pre>
+
+<div class="card blue">
+<div class="card-title">Promise.all vs Promise.allSettled vs Promise.race</div>
+<ul>
+<li><strong>Promise.all:</strong> Espera TODAS. Falha Rápido se qualquer uma rejeitar. Use quando todas são obrigatórias</li>
+<li><strong>Promise.allSettled:</strong> Espera TODAS. Nunca rejeita — retorna status de cada uma. Use quando algumas são opcionais</li>
+<li><strong>Promise.race:</strong> Retorna a PRIMEIRA a resolver (ou rejeitar). Use para timeouts ou fallback de providers</li>
+<li><strong>Promise.any:</strong> Retorna a PRIMEIRA a resolver com sucessó (ignora rejeicoes). Use para tentar múltiplos providers</li>
+</ul>
+</div>
+
+<!-- ACTOR MODEL -->
+<h4>4. Actor Model (Erlang/Elixir, Akka)</h4>
+
+<p>No Actor Model, a unidade de computação é o <strong>actor</strong> — um processo leve e isolado que:</p>
+<ul>
+<li>Tem seu próprio estado privado (não compartilha memória)</li>
+<li>Comúnica-se APENAS via envio de mensagens (mailbox)</li>
+<li>Processa uma mensagem por vez (sem locks necessários)</li>
+<li>Pode criar novos actors e supervisionar filhos</li>
+</ul>
+
+<p>A genialidade: sem memória compartilhada, não existem race conditions. Erlang/Elixir usam isso para construir sistemas altamente resilientes (WhatsApp, Discord).</p>
+
+<pre data-lang="elixir"><code><span class="cm"># Elixir — Actor (GenServer) que gerencia um contador</span>
+<span class="kw">defmodule</span> <span class="tp">Counter</span> <span class="kw">do</span>
+  <span class="kw">use</span> <span class="tp">GenServer</span>
+
+  <span class="cm"># Estado inicial</span>
+  <span class="kw">def</span> <span class="fn">init</span>(initial_value), <span class="kw">do</span>: {<span class="str">:ok</span>, initial_value}
+
+  <span class="cm"># Mensagem síncrona — cliente espera resposta</span>
+  <span class="kw">def</span> <span class="fn">handle_call</span>(<span class="str">:get</span>, _from, state) <span class="kw">do</span>
+    {<span class="str">:reply</span>, state, state}
+  <span class="kw">end</span>
+
+  <span class="cm"># Mensagem assíncrona — fire and forget</span>
+  <span class="kw">def</span> <span class="fn">handle_cast</span>(<span class="str">:increment</span>, state) <span class="kw">do</span>
+    {<span class="str">:noreply</span>, state + <span class="num">1</span>}
+  <span class="kw">end</span>
+<span class="kw">end</span>
+
+<span class="cm"># Usó — sem locks, sem race conditions</span>
+{<span class="str">:ok</span>, pid} = <span class="tp">GenServer</span>.<span class="fn">start_link</span>(<span class="tp">Counter</span>, <span class="num">0</span>)
+<span class="tp">GenServer</span>.<span class="fn">cast</span>(pid, <span class="str">:increment</span>)  <span class="cm"># async</span>
+<span class="tp">GenServer</span>.<span class="fn">cast</span>(pid, <span class="str">:increment</span>)  <span class="cm"># async</span>
+<span class="tp">GenServer</span>.<span class="fn">call</span>(pid, <span class="str">:get</span>)        <span class="cm"># => 2 (sempre correto)</span></code></pre>
+
+<!-- CSP — GO -->
+<h4>5. CSP — Commúnicating Sequential Processes (Go)</h4>
+
+<p>Go usa <strong>goroutines</strong> (threads leves gerenciadas pelo runtime, não pelo OS) e <strong>channels</strong> (filas tipadas para comunicação). O mantra: <em>"Don't commúnicaté by sharing memory; share memory by commúnicating."</em></p>
+
+<pre data-lang="go"><code><span class="cm">// Go — goroutines + channels para processar jobs em paralelo</span>
+<span class="kw">func</span> <span class="fn">worker</span>(id <span class="tp">int</span>, jobs <span class="op">&lt;-</span><span class="kw">chan</span> <span class="tp">int</span>, results <span class="kw">chan</span><span class="op">&lt;-</span> <span class="tp">int</span>) {
+    <span class="kw">for</span> job <span class="op">:=</span> <span class="kw">range</span> jobs {
+        fmt.<span class="fn">Printf</span>(<span class="str">"Worker %d processando job %d\n"</span>, id, job)
+        time.<span class="fn">Sleep</span>(time.Second) <span class="cm">// simula trabalho</span>
+        results <span class="op">&lt;-</span> job * <span class="num">2</span>      <span class="cm">// envia resultado pelo channel</span>
+    }
+}
+
+<span class="kw">func</span> <span class="fn">main</span>() {
+    jobs <span class="op">:=</span> <span class="fn">make</span>(<span class="kw">chan</span> <span class="tp">int</span>, <span class="num">100</span>)
+    results <span class="op">:=</span> <span class="fn">make</span>(<span class="kw">chan</span> <span class="tp">int</span>, <span class="num">100</span>)
+
+    <span class="cm">// Cria 3 workers (goroutines) — execução paralela</span>
+    <span class="kw">for</span> w <span class="op">:=</span> <span class="num">1</span>; w <span class="op">&lt;=</span> <span class="num">3</span>; w++ {
+        <span class="kw">go</span> <span class="fn">worker</span>(w, jobs, results)
+    }
+
+    <span class="cm">// Envia 9 jobs pelo channel</span>
+    <span class="kw">for</span> j <span class="op">:=</span> <span class="num">1</span>; j <span class="op">&lt;=</span> <span class="num">9</span>; j++ {
+        jobs <span class="op">&lt;-</span> j
+    }
+    <span class="fn">close</span>(jobs)
+
+    <span class="cm">// Coleta 9 resultados</span>
+    <span class="kw">for</span> r <span class="op">:=</span> <span class="num">1</span>; r <span class="op">&lt;=</span> <span class="num">9</span>; r++ {
+        fmt.<span class="fn">Println</span>(<span class="str">"Resultado:"</span>, <span class="op">&lt;-</span>results)
+    }
+}</code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Goroutines são extremamente leves:</strong> ~2KB de stack inicial (vs ~1MB de uma OS thread). Você pode criar milhões de goroutines sem problema. O Go scheduler multiplexa goroutines em OS threads (M:N scheduling).</div>
+</div>
+
+<!-- REACTIVE STREAMS -->
+<h4>6. Reactive Streams (RxJS)</h4>
+
+<p>Streams reativos modelam dados como <strong>fluxos asíncronos</strong> que podem ser compostos, filtrados e transformados. RxJS é a implementação mais usada em frontend e Node.js. O conceito-chave e <strong>backpressure</strong> — o consumidor controla a velocidade de consumo.</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { fromEvent, interval, merge } <span class="kw">from</span> <span class="str">'rxjs'</span>;
+<span class="kw">import</span> {
+  debounceTime, distinctUntilChanged, switchMap,
+  map, filter, takeUntil, bufferTime
+} <span class="kw">from</span> <span class="str">'rxjs/operators'</span>;
+
+<span class="cm">// Exemplo real: Search autocomplete com debounce</span>
+<span class="kw">const</span> search$ = <span class="fn">fromEvent</span>(searchInput, <span class="str">'input'</span>).<span class="fn">pipe</span>(
+  <span class="fn">map</span>(e => (e.target <span class="kw">as</span> <span class="tp">HTMLInputElement</span>).value),
+  <span class="fn">filter</span>(term => term.length >= <span class="num">3</span>),
+  <span class="fn">debounceTime</span>(<span class="num">300</span>),            <span class="cm">// espera 300ms de silencio</span>
+  <span class="fn">distinctUntilChanged</span>(),        <span class="cm">// ignora se o valor não mudou</span>
+  <span class="fn">switchMap</span>(term =>              <span class="cm">// cancela request anterior</span>
+    <span class="fn">fetch</span>(<span class="str">`/api/search?q=${term}`</span>)
+      .<span class="fn">then</span>(r => r.<span class="fn">json</span>())
+  ),
+);
+
+search$.<span class="fn">subscribe</span>(results => {
+  <span class="fn">renderResults</span>(results);
+});
+
+<span class="cm">// Backpressure — agrupa eventos em lotes de 500ms</span>
+<span class="kw">const</span> clicks$ = <span class="fn">fromEvent</span>(document, <span class="str">'click'</span>).<span class="fn">pipe</span>(
+  <span class="fn">bufferTime</span>(<span class="num">500</span>),               <span class="cm">// coleta clicks por 500ms</span>
+  <span class="fn">filter</span>(batch => batch.length > <span class="num">0</span>),
+  <span class="fn">map</span>(batch => ({ count: batch.length, timestamp: Date.<span class="fn">now</span>() })),
+);
+
+clicks$.<span class="fn">subscribe</span>(batch => {
+  <span class="fn">sendAnalytics</span>(batch);          <span class="cm">// envia 1 request por lote, não 1 por click</span>
+});</code></pre>
+
+<div class="table-wrap">
+<table>
+<tr><th>Modelo</th><th>Linguagens</th><th>Melhor Para</th><th>Cuidado Com</th></tr>
+<tr><td><strong>Threads + Locks</strong></td><td>Java, C++, Python</td><td>CPU-bound, controle fino</td><td>Deadlocks, race conditions</td></tr>
+<tr><td><strong>Event Loop</strong></td><td>Node.js, Browser</td><td>I/O-bound, alta concorrência</td><td>Blocking the loop</td></tr>
+<tr><td><strong>Async/Await</strong></td><td>JS/TS, Python, Rust</td><td>Composição de I/O async</td><td>Sequential await trap</td></tr>
+<tr><td><strong>Actor Model</strong></td><td>Erlang, Elixir, Akka</td><td>Sistemas distribuídos, fault-tolerance</td><td>Mailbox overflow</td></tr>
+<tr><td><strong>CSP</strong></td><td>Go, Clojure</td><td>Pipelines de dados, worker pools</td><td>Goroutine leaks</td></tr>
+<tr><td><strong>Reactive</strong></td><td>RxJS, Reactor, RxJava</td><td>Streams de eventos, UI reativa</td><td>Complexidade de operadores</td></tr>
+</table>
+</div>
+
+<!-- ═══ CLASSIC PROBLEMS ═══ -->
+<h3>Problemas Clássicos de Concorrência</h3>
+
+<h4>Race Condition</h4>
+<p>Ocorre quando o resultado depende da <strong>ordem de execução</strong> de operações concorrentes sobre dados compartilhados. É o bug mais perigosó porque é <strong>não-deterministico</strong> — pode funcionar em testes e falhar em produção.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; RACE CONDITION — Contador compartilhado sem proteção</span>
+<span class="kw">let</span> balance = <span class="num">1000</span>;
+
+<span class="kw">async function</span> <span class="fn">withdraw</span>(amount: <span class="tp">number</span>) {
+  <span class="kw">const</span> current = balance;              <span class="cm">// Le: 1000</span>
+  <span class="kw">await</span> <span class="fn">delay</span>(<span class="num">100</span>);                     <span class="cm">// Simula latência (DB, rede)</span>
+  balance = current - amount;            <span class="cm">// Escreve: 1000 - 500 = 500</span>
+}
+
+<span class="cm">// Duas chamadas "simultaneas" — ambas leem balance = 1000</span>
+<span class="kw">await</span> Promise.<span class="fn">all</span>([
+  <span class="fn">withdraw</span>(<span class="num">500</span>),   <span class="cm">// Le 1000, escreve 500</span>
+  <span class="fn">withdraw</span>(<span class="num">300</span>),   <span class="cm">// Le 1000, escreve 700</span>
+]);
+
+<span class="cm">// balance = 700 (deveria ser 200!)</span>
+<span class="cm">// Um dos withdrawals foi "perdido" — classic lost update</span>
+
+<span class="cm">// &#9989; FIX — Mutex para serializar acesso</span>
+<span class="kw">class</span> <span class="tp">Mutex</span> {
+  <span class="kw">private</span> locked = <span class="kw">false</span>;
+  <span class="kw">private</span> queue: (() => <span class="tp">void</span>)[] = [];
+
+  <span class="kw">async</span> <span class="fn">acquire</span>(): <span class="tp">Promise</span>&lt;<span class="tp">void</span>&gt; {
+    <span class="kw">if</span> (!<span class="kw">this</span>.locked) {
+      <span class="kw">this</span>.locked = <span class="kw">true</span>;
+      <span class="kw">return</span>;
+    }
+    <span class="kw">return new</span> <span class="tp">Promise</span>(resolve => <span class="kw">this</span>.queue.<span class="fn">push</span>(resolve));
+  }
+
+  <span class="fn">release</span>() {
+    <span class="kw">const</span> next = <span class="kw">this</span>.queue.<span class="fn">shift</span>();
+    <span class="kw">if</span> (next) next();
+    <span class="kw">else</span> <span class="kw">this</span>.locked = <span class="kw">false</span>;
+  }
+}
+
+<span class="kw">const</span> mutex = <span class="kw">new</span> <span class="tp">Mutex</span>();
+
+<span class="kw">async function</span> <span class="fn">withdrawSafe</span>(amount: <span class="tp">number</span>) {
+  <span class="kw">await</span> mutex.<span class="fn">acquire</span>();
+  <span class="kw">try</span> {
+    <span class="kw">const</span> current = balance;
+    <span class="kw">await</span> <span class="fn">delay</span>(<span class="num">100</span>);
+    balance = current - amount;
+  } <span class="kw">finally</span> {
+    mutex.<span class="fn">release</span>();
+  }
+}</code></pre>
+
+<h4>Deadlock</h4>
+<p>Duas ou mais threads ficam esperando eternamente por recursos que a outra segura. Para um deadlock ocorrer, as <strong>4 condições de Coffman</strong> devem ser verdadeiras simultaneamente:</p>
+
+<ol>
+<li><strong>Mutual Exclusion:</strong> O recursó só pode ser usado por um processo de cada vez</li>
+<li><strong>Hold and Wait:</strong> Processó segura um recursó enquanto espera outro</li>
+<li><strong>No Preemption:</strong> Recursó só e liberado voluntariamente pelo processo que o segura</li>
+<li><strong>Circular Wait:</strong> Existe um ciclo de processos esperando uns pelos outros</li>
+</ol>
+
+<p><strong>Prevenção:</strong> Quebre qualquer uma das 4 condições. A mais prática e quebrar <strong>Circular Wait</strong> — sempre adquira locks na mesma ordem global. Ou use timeout ao tentar adquirir locks.</p>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; DEADLOCK — Ordem inconsistente de aquisicao de locks</span>
+<span class="cm">// Thread A: lock(contaA) → lock(contaB)</span>
+<span class="cm">// Thread B: lock(contaB) → lock(contaA)  ← circular wait!</span>
+
+<span class="cm">// &#9989; PREVENCAO — Sempre adquira locks na mesma ordem (por ID)</span>
+<span class="kw">async function</span> <span class="fn">transfer</span>(from: <span class="tp">Account</span>, to: <span class="tp">Account</span>, amount: <span class="tp">number</span>) {
+  <span class="cm">// Ordena por ID — garante mesma ordem independente dos parametros</span>
+  <span class="kw">const</span> [first, second] = from.id < to.id
+    ? [from, to]
+    : [to, from];
+
+  <span class="kw">await</span> first.mutex.<span class="fn">acquire</span>();
+  <span class="kw">await</span> second.mutex.<span class="fn">acquire</span>();
+
+  <span class="kw">try</span> {
+    from.balance -= amount;
+    to.balance += amount;
+  } <span class="kw">finally</span> {
+    second.mutex.<span class="fn">release</span>();
+    first.mutex.<span class="fn">release</span>();
+  }
+}</code></pre>
+
+<h4>Starvation e Livelock</h4>
+<ul>
+<li><strong>Starvation:</strong> Um processo nunca consegue acesso ao recursó porque outros processos de maior prioridade sempre passam na frente. Solução: filas justas (FIFO), aging (aumentar prioridade com o tempo)</li>
+<li><strong>Livelock:</strong> Processos reagem continuamente um ao outro mas nunca progridem — como duas pessoas tentando passar uma pela outra num corredor. Diferente de deadlock: as threads estão ativas, mas não avançam. Solução: adicionar aleatoriedade (random backoff)</li>
+</ul>
+
+<div class="card orange">
+<div class="card-title">Resumo dos problemas</div>
+<ul>
+<li><strong>Race Condition:</strong> Resultado depende da ordem de execução (não-deterministico)</li>
+<li><strong>Deadlock:</strong> Threads paradas esperando mutuamente (travamento total)</li>
+<li><strong>Starvation:</strong> Thread nunca consegue executar (injustica no escalonamento)</li>
+<li><strong>Livelock:</strong> Threads ativas mas sem progressó (corredor infinito)</li>
+</ul>
+</div>
+
+<!-- ═══ DATABASE CONCURRENCY CONTROL ═══ -->
+<h3>Controle de Concorrência em Banco de Dados</h3>
+
+<p>No mundo real, concorrência não é só sobre threads — e sobre <strong>múltiplas transações acessando os mesmos dados</strong>. Bancos de dados relacionais oferecem mecanismos sofisticados para lidar com isso.</p>
+
+<h4>Optimistic Locking (Bloqueio Otimista)</h4>
+
+<p>Presume que conflitos são <strong>raros</strong>. Não trava o registro na leitura — apenas verifica na hora de escrever se alguém modificou o dado desde a última leitura. Usa uma coluna de <strong>versão</strong> (ou timestamp).</p>
+
+<pre data-lang="typescript"><code><span class="cm">// TypeORM — @VersionColumn para Optimistic Locking</span>
+<span class="kw">import</span> { Entity, Column, VersionColumn, PrimaryGeneratedColumn } <span class="kw">from</span> <span class="str">'typeorm'</span>;
+
+<span class="ann">@Entity</span>()
+<span class="kw">class</span> <span class="tp">Product</span> {
+  <span class="ann">@PrimaryGeneratedColumn</span>(<span class="str">'uuid'</span>)
+  id: <span class="tp">string</span>;
+
+  <span class="ann">@Column</span>()
+  name: <span class="tp">string</span>;
+
+  <span class="ann">@Column</span>()
+  stock: <span class="tp">number</span>;
+
+  <span class="ann">@VersionColumn</span>()
+  version: <span class="tp">number</span>;   <span class="cm">// Incrementa automáticamente a cada save</span>
+}
+
+<span class="cm">// Fluxo: Le com versão 3, tenta salvar com versão 3</span>
+<span class="cm">// Se alguem salvou antes (versão agora e 4), TypeORM lanca</span>
+<span class="cm">// OptimisticLockVersionMismatchError</span>
+
+<span class="kw">async function</span> <span class="fn">decrementStock</span>(productId: <span class="tp">string</span>, qty: <span class="tp">number</span>) {
+  <span class="kw">const</span> product = <span class="kw">await</span> repo.<span class="fn">findOneBy</span>({ id: productId });
+
+  product.stock -= qty;
+
+  <span class="kw">try</span> {
+    <span class="kw">await</span> repo.<span class="fn">save</span>(product);  <span class="cm">// UPDATE ... WHERE id = ? AND version = 3</span>
+  } <span class="kw">catch</span> (e) {
+    <span class="kw">if</span> (e <span class="kw">instanceof</span> <span class="tp">OptimisticLockVersionMismatchError</span>) {
+      <span class="cm">// Conflito! Outro processo atualizou o produto</span>
+      <span class="cm">// Estrategia: retry com dados frescos</span>
+      <span class="kw">return</span> <span class="fn">decrementStock</span>(productId, qty); <span class="cm">// retry</span>
+    }
+    <span class="kw">throw</span> e;
+  }
+}</code></pre>
+
+<h4>Pessimistic Locking (Bloqueio Pessimista)</h4>
+
+<p>Presume que conflitos são <strong>frequentes</strong>. Trava o registro na leitura, impedindo outros de modificar até a transação terminar. Usa <code>SELECT ... FOR UPDATE</code>.</p>
+
+<pre data-lang="sql"><code><span class="cm">-- Pessimistic Locking — SELECT FOR UPDATE trava a linha</span>
+<span class="kw">BEGIN</span>;
+
+<span class="cm">-- Trava a linha do produto — ninguem mais pode atualizar até COMMIT</span>
+<span class="kw">SELECT</span> stock <span class="kw">FROM</span> products
+<span class="kw">WHERE</span> id = <span class="str">'prod-123'</span>
+<span class="kw">FOR UPDATE</span>;
+
+<span class="cm">-- Atualiza com segurança — sabemos que ninguem alterou entre SELECT e UPDATE</span>
+<span class="kw">UPDATE</span> products
+<span class="kw">SET</span> stock = stock - <span class="num">1</span>
+<span class="kw">WHERE</span> id = <span class="str">'prod-123'</span>
+  <span class="kw">AND</span> stock > <span class="num">0</span>;
+
+<span class="kw">COMMIT</span>;
+
+<span class="cm">-- Variacoes:</span>
+<span class="cm">-- FOR UPDATE NOWAIT    — erro imediato se lock não disponível</span>
+<span class="cm">-- FOR UPDATE SKIP LOCKED — ignora linhas locked (ótimo para job queues)</span></code></pre>
+
+<h4>MVCC — Multi-Version Concurrency Control</h4>
+
+<p>Usado por <strong>PostgreSQL, MySQL InnoDB, Oracle</strong>. Cada transação ve um <strong>snapshot</strong> consistente dos dados no momento em que começou. Leitores nunca bloqueiam escritores e escritores nunca bloqueiam leitores.</p>
+
+<div class="card">
+<div class="card-title">Como MVCC funciona no PostgreSQL</div>
+<ul>
+<li>Cada linha tem campos ocultos: <code>xmin</code> (transação que criou) e <code>xmax</code> (transação que deletou/atualizou)</li>
+<li>UPDATE não modifica a linha — cria uma <strong>nova versão</strong> é marca a antiga como expirada</li>
+<li>Cada transação tem um <strong>snapshot</strong>: lista de transações ativas no momento do início</li>
+<li>Ao ler, PostgreSQL verifica se a versão da linha e <strong>visível</strong> para o snapshot da transação</li>
+<li><strong>VACUUM</strong> limpa versões antigas que nenhuma transação precisa mais</li>
+</ul>
+</div>
+
+<div class="table-wrap">
+<table>
+<tr><th>Estratégia</th><th>Quando Usar</th><th>Vantagem</th><th>Desvantagem</th></tr>
+<tr><td><strong>Optimistic</strong></td><td>Baixa contenção, muitas leituras</td><td>Sem locks, alta throughput</td><td>Retries em alta contenção</td></tr>
+<tr><td><strong>Pessimistic</strong></td><td>Alta contenção, dados críticos</td><td>Garantia de exclusividade</td><td>Reduz throughput, risco de deadlock</td></tr>
+<tr><td><strong>MVCC</strong></td><td>Usó geral (padrão em PostgreSQL)</td><td>Leitores nunca bloqueiam</td><td>Storage extra, VACUUM necessário</td></tr>
+</table>
+</div>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Sistema de Reserva de Ingressos</h3>
+
+<p><strong>Cenário:</strong> Projete um sistema de venda de ingressos que previna double-booking. 10.000 usuários tentando comprar os últimos 100 ingressos simultaneamente. Como garantir que nenhum ingressó sejá vendido duas vezes?</p>
+
+<div class="diagram">
+<div class="diagram-box green">Client Request<br><small>POST /book</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">API Server<br><small>Válida + tenta reservar</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Lock Layer<br><small>Pessimistic / Redis</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Database<br><small>Persiste reserva</small></div>
+</div>
+
+<h4>Abordagem 1: Optimistic Locking</h4>
+<pre data-lang="typescript"><code><span class="cm">// Optimistic — tenta, se conflito, retry</span>
+<span class="kw">async function</span> <span class="fn">bookTicket</span>(eventId: <span class="tp">string</span>, userId: <span class="tp">string</span>) {
+  <span class="kw">const</span> MAX_RETRIES = <span class="num">3</span>;
+
+  <span class="kw">for</span> (<span class="kw">let</span> attempt = <span class="num">0</span>; attempt < MAX_RETRIES; attempt++) {
+    <span class="kw">const</span> event = <span class="kw">await</span> repo.<span class="fn">findOneBy</span>({ id: eventId });
+
+    <span class="kw">if</span> (event.availableTickets <= <span class="num">0</span>) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Sold out'</span>);
+    }
+
+    event.availableTickets -= <span class="num">1</span>;
+
+    <span class="kw">try</span> {
+      <span class="kw">await</span> repo.<span class="fn">save</span>(event); <span class="cm">// version check</span>
+      <span class="kw">await</span> ticketRepo.<span class="fn">save</span>({ eventId, userId });
+      <span class="kw">return</span> { success: <span class="kw">true</span> };
+    } <span class="kw">catch</span> (e) {
+      <span class="kw">if</span> (attempt === MAX_RETRIES - <span class="num">1</span>) <span class="kw">throw</span> e;
+      <span class="cm">// retry com backoff</span>
+      <span class="kw">await</span> <span class="fn">delay</span>(Math.<span class="fn">random</span>() * <span class="num">100</span>);
+    }
+  }
+}</code></pre>
+
+<h4>Abordagem 2: Pessimistic Locking (DB)</h4>
+<pre data-lang="typescript"><code><span class="cm">// Pessimistic — trava a linha no banco</span>
+<span class="kw">async function</span> <span class="fn">bookTicket</span>(eventId: <span class="tp">string</span>, userId: <span class="tp">string</span>) {
+  <span class="kw">return await</span> dataSource.<span class="fn">transaction</span>(<span class="kw">async</span> (manager) => {
+    <span class="kw">const</span> event = <span class="kw">await</span> manager
+      .<span class="fn">createQueryBuilder</span>(<span class="tp">Event</span>, <span class="str">'e'</span>)
+      .<span class="fn">setLock</span>(<span class="str">'pessimistic_write'</span>)
+      .<span class="fn">where</span>(<span class="str">'e.id = :id'</span>, { id: eventId })
+      .<span class="fn">getOne</span>();
+
+    <span class="kw">if</span> (event.availableTickets <= <span class="num">0</span>) {
+      <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Sold out'</span>);
+    }
+
+    event.availableTickets -= <span class="num">1</span>;
+    <span class="kw">await</span> manager.<span class="fn">save</span>(event);
+    <span class="kw">await</span> manager.<span class="fn">save</span>(
+      ticketRepo.<span class="fn">create</span>({ eventId, userId })
+    );
+  });
+}</code></pre>
+
+<h4>Abordagem 3: Distributed Lock (Redis SETNX)</h4>
+<pre data-lang="typescript"><code><span class="cm">// Redis SETNX — lock distribuido com TTL</span>
+<span class="kw">async function</span> <span class="fn">bookTicket</span>(eventId: <span class="tp">string</span>, userId: <span class="tp">string</span>) {
+  <span class="kw">const</span> lockKey = <span class="str">`lock:event:${eventId}`</span>;
+  <span class="kw">const</span> lockValue = <span class="fn">randomUUID</span>();
+  <span class="kw">const</span> TTL_SECONDS = <span class="num">5</span>;
+
+  <span class="cm">// SETNX — Set If Not Exists + TTL (atomico)</span>
+  <span class="kw">const</span> acquired = <span class="kw">await</span> redis.<span class="fn">set</span>(lockKey, lockValue, <span class="str">'EX'</span>, TTL_SECONDS, <span class="str">'NX'</span>);
+
+  <span class="kw">if</span> (!acquired) {
+    <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Outro processo esta reservando. Tente novamente.'</span>);
+  }
+
+  <span class="kw">try</span> {
+    <span class="cm">// Critico: verificar estoque + reservar</span>
+    <span class="kw">const</span> event = <span class="kw">await</span> repo.<span class="fn">findOneBy</span>({ id: eventId });
+    <span class="kw">if</span> (event.availableTickets <= <span class="num">0</span>) <span class="kw">throw new</span> <span class="tp">Error</span>(<span class="str">'Sold out'</span>);
+
+    event.availableTickets -= <span class="num">1</span>;
+    <span class="kw">await</span> repo.<span class="fn">save</span>(event);
+    <span class="kw">await</span> ticketRepo.<span class="fn">save</span>({ eventId, userId });
+  } <span class="kw">finally</span> {
+    <span class="cm">// So libera se O NOSSO lock ainda esta ativo (evita liberar lock de outro)</span>
+    <span class="kw">const</span> script = <span class="str">`
+      if redis.call("get", KEYS[1]) == ARGV[1] then
+        return redis.call("del", KEYS[1])
+      else
+        return 0
+      end
+    `</span>;
+    <span class="kw">await</span> redis.<span class="fn">eval</span>(script, <span class="num">1</span>, lockKey, lockValue);
+  }
+}</code></pre>
+
+<div class="card purple">
+<div class="card-title">Trade-offs entre abordagens</div>
+<ul>
+<li><strong>Optimistic Locking:</strong> Simples, sem infra extra, mas retries podem causar starvation em alta contenção. Melhor para: até ~100 req/s no mesmo recurso</li>
+<li><strong>Pessimistic Locking:</strong> Garantia forte, mas reduz throughput e risco de deadlock se múltiplas tabelas envolvidas. Melhor para: operações críticas com alta contenção</li>
+<li><strong>Redis SETNX:</strong> Escala horizontalmente, funciona entre múltiplos servidores. Mas adiciona infra (Redis), complexidade de TTL, e não é 100% seguro sem Redlock. Melhor para: sistemas distribuídos multi-instance</li>
+</ul>
+</div>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Blocking the Event Loop em Node.js:</strong> Operações CPU-bound (JSON.parse de 100MB, crypto, loops gigantes) travam o event loop e TODAS as requisições param. Use Worker Threads para computação pesada ou divida em chunks com <code>setImmediate()</code>.</div>
+</div>
+
+<pre data-lang="typescript"><code><span class="cm">// &#10060; BLOQUEIA o event loop — ninguem mais e atendido</span>
+app.<span class="fn">get</span>(<span class="str">'/heavy'</span>, (req, res) => {
+  <span class="kw">const</span> result = <span class="fn">fibonacciSync</span>(<span class="num">45</span>); <span class="cm">// ~7 segundos bloqueando TUDO</span>
+  res.<span class="fn">json</span>({ result });
+});
+
+<span class="cm">// &#9989; Delega para Worker Thread</span>
+app.<span class="fn">get</span>(<span class="str">'/heavy'</span>, <span class="kw">async</span> (req, res) => {
+  <span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">runInWorker</span>(<span class="str">'fibonacci'</span>, <span class="num">45</span>);
+  res.<span class="fn">json</span>({ result });
+});</code></pre>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Não usar Promise.all para operações independentes:</strong> Cada <code>await</code> sequêncial adiciona latência. Se 3 chamadas de API levam 1s cada, sequêncial = 3s, paralelo = 1s. Sempre pergunte: "essas operações dependem uma da outra?" Se não, use <code>Promise.all</code>.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Distributed locks sem TTL:</strong> Se o processo que segura o lock crashar, o lock fica orfao para sempre. SEMPRE defina um TTL (Time To Live). Mas cuidado: se a operação leva mais tempo que o TTL, outro processo pode entrar. Solução: use um watch dog que renova o TTL periodicamente (como Redisson no Java faz).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Goroutine/Promise leaks:</strong> Lancou goroutines ou Promises que nunca terminam? Memória cresce infinitamente. Sempre defina um mecanismo de cancelamento (context.WithTimeout em Go, AbortController em JS). Monitore o número de goroutines/promises ativas em produção.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Em 90% dos casos em Node.js/TypeScript, você não precisa de locks ou threads. O event loop + async/await + Promise.all resolvem. Só adicione complexidade (Worker Threads, Redis locks, pessimistic locking) quando tiver <strong>evidência</strong> de que precisa — não por antecipacao.</div>
+</div>
+
+<!-- ═══ EXERCICIOS PRATICOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem um endpoint NestJS que recebe um upload de CSV com 1 milhão de linhas e precisa processar cada linha (validação + insert no DB). Fazendo tudo síncrono, o request dura 5 minutos é o client recebe timeout. Como resolver?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Aceite o request imediatamente (retorne 202 Accepted com um jobId). Processe o CSV em background usando uma <strong>fila</strong> (Bull/BullMQ com Redis). O worker da fila le o CSV em chunks usando streams (não carrega 1M linhas em memória), válida e faz bulk insert no DB. O client pode consultar o status via <code>GET /jobs/:jobId</code>. Para paralelizar, use múltiplos workers da fila ou divida o CSV em chunks e lance múltiplos jobs. O conceito-chave e: <strong>separar a aceitacao do request do processamento</strong> (producer-consumer pattern).</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Dois usuários editam o mesmo documento simultaneamente. Usuário A salva primeiro, depois Usuário B salva e sobrescreve as alteráções de A sem saber. Como prevenir esse "lost update"?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Use <strong>Optimistic Locking</strong> com versão. Quando o usuário abre o documento, a versão atual (ex: v5) é enviada junto. Quando ele salva, o frontend envia a versão que ele leu. O backend faz <code>UPDATE docs SET content = ?, version = version + 1 WHERE id = ? AND version = 5</code>. Se a versão não baté (alguém salvou antes, agora e v6), retorna 409 Conflict. O frontend mostra ao usuário as mudanças do outro e pede que faca merge manualmente. Google Docs resolve isso com OT (Operational Transformation) ou CRDTs para merge automático — mas para a maioria dos sistemas, optimistic locking com detecção de conflito é suficiente.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Seu app Node.js processa webhooks de pagamento. Cada webhook chama 3 APIs externas sequêncialmente (anti-fraude, gateway, notificação). Latência total: 3s por webhook. Com 100 webhooks/segundo, o sistema não aguenta. Como escalar?</div>
+<div class="qa-a">
+<p><strong>Solução em 3 níveis:</strong> (1) <strong>Paralelizar chamadas independentes</strong> — se anti-fraude e gateway são independentes, use <code>Promise.all</code> para executar em paralelo (3s vira 1s). (2) <strong>Desacoplar com fila</strong> — aceite o webhook com 200 OK imediatamente e publique na fila. Workers processam assíncronamente. Isso absorve picos. (3) <strong>Escalar horizontalmente</strong> — rode múltiplas instâncias da app (PM2 cluster mode ou Kubernetes réplicas). Cada instância tem seu event loop, multiplica a capacidade. A combinação das 3 abordagens transforma 100 webhooks/s em algo trivial.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Concorrência & Paralelismo</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de múltipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="17-mensageria-kafka-rabbit-sqs.html">&#8592; Mensageria: Kafka, RabbitMQ, SQS</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="19-escalabilidade-load-balancing.html" class="primary">Próximo: Escalabilidade & Load Balancing &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 18: Concorrência & Paralelismo
+// ══════════════════════════════════════════
+const SECTION_NUM = 18;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual a diferença fundamental entre concorrência e paralelismo?",
+    options: [
+      "Concorrência é mais rápida que paralelismo",
+      "Concorrência e sobre estrutura (lidar com muitas coisas); paralelismo e sobre execução (fazer muitas coisas ao mesmo tempo)",
+      "Paralelismo funciona apenas com threads; concorrência funciona apenas com async/await",
+      "Concorrência requer múltiplos cores; paralelismo requer apenas um core"
+    ],
+    correct: 1,
+    explanation: "Concorrência é um conceito de design/estrutura — lidar com muitas tarefas. Paralelismo é um conceito de execução — executar muitas tarefas simultaneamente em múltiplos cores. Você pode ter concorrência sem paralelismo (Node.js single-thread)."
+  },
+  {
+    question: "No event loop do Node.js, qual fila tem prioridade — a Microtask Queue (Promises) ou a Callback Queue (setTimeout)?",
+    options: [
+      "Callback Queue tem prioridade porque setTimeout foi registrado primeiro",
+      "Ambas tem a mesma prioridade e são processadas em FIFO",
+      "Microtask Queue tem prioridade — é totalmente esvaziada antes de processar a próxima macrotask",
+      "Depende da versão do Node.js"
+    ],
+    correct: 2,
+    explanation: "A Microtask Queue (Promises, queueMicrotask) SEMPRE e esvaziada completamente antes do event loop pegar o próximo callback da macrotask queue (setTimeout, I/O). Por isso console.log em Promise.then executa antes de setTimeout(..., 0)."
+  },
+  {
+    question: "Qual o problema do código: const a = await fetchA(); const b = await fetchB(); const c = await fetchC(); — se as 3 funções são independentes?",
+    options: [
+      "Nenhum problema — async/await automáticamente paraleliza chamadas independentes",
+      "As chamadas são executadas sequêncialmente, somando a latência de todas, quando poderiam ser paralelas com Promise.all",
+      "Vai causar race condition porque as 3 funções acessam dados compartilhados",
+      "O event loop não suporta 3 awaits seguidos"
+    ],
+    correct: 1,
+    explanation: "Cada await espera a Promise anterior resolver antes de iniciar a próxima. Se cada uma leva 1s, total = 3s. Com Promise.all([fetchA(), fetchB(), fetchC()]) o total seria ~1s pois executam em paralelo. Erro muito comum em código async."
+  },
+  {
+    question: "Quais são as 4 condições de Coffman necessárias para um deadlock?",
+    options: [
+      "Race condition, starvation, livelock e overflow",
+      "Mutual exclusion, hold and wait, no preemption e circular wait",
+      "Thread pool, semaphore, mutex e spinlock",
+      "Read lock, write lock, shared lock e exclusive lock"
+    ],
+    correct: 1,
+    explanation: "As 4 condições de Coffman são: (1) Mutual Exclusion, (2) Hold and Wait, (3) No Preemption, (4) Circular Wait. Para prevenir deadlock, basta quebrar qualquer uma. A mais prática e quebrar circular wait ordenando a aquisição de locks."
+  },
+  {
+    question: "Optimistic Locking com @VersionColumn no TypeORM funciona como?",
+    options: [
+      "Trava a linha com SELECT FOR UPDATE ao ler o registro",
+      "Verifica na hora do save se a versão no banco ainda é a mesma que foi lida; se não, lanca erro",
+      "Usa Redis SETNX para criar um lock distribuído antes de cada operação",
+      "Adiciona um timestamp automático e compara com o relogio do servidor"
+    ],
+    correct: 1,
+    explanation: "Optimistic Locking com @VersionColumn funciona assim: ao fazer save(), TypeORM gera UPDATE ... WHERE id = ? AND version = N. Se a versão mudou (outro processo atualizou), 0 rows são afetadas e TypeORM lanca OptimisticLockVersionMismatchError."
+  },
+  {
+    question: "Qual modelo de concorrência o Erlang/Elixir útiliza, é por que ele elimina race conditions?",
+    options: [
+      "Threads + Locks — com um garbage collector especial que detecta deadlocks",
+      "Event Loop — como Node.js, com uma única thread",
+      "Actor Model — processos isolados sem memória compartilhada, comunicação apenas via mensagens",
+      "CSP — goroutines com channels tipados"
+    ],
+    correct: 2,
+    explanation: "Erlang/Elixir usam o Actor Model. Cada actor (processo) tem estado privado e se comúnica APENAS via envio de mensagens. Sem memória compartilhada, race conditions simplesmente não existem. WhatsApp e Discord usam este modelo."
+  },
+  {
+    question: "O que é MVCC (Multi-Version Concurrency Control) e qual sua principal vantagem?",
+    options: [
+      "É um tipo de lock pessimista que usa filas de espera. Vantagem: previne deadlocks",
+      "É um protocolo de rede para sincronizar bancos distribuídos. Vantagem: latência zero",
+      "É um mecanismo onde cada transação ve um snapshot dos dados, criando novas versões ao atualizar. Vantagem: leitores nunca bloqueiam escritores",
+      "É um algoritmo de consensó como Raft. Vantagem: tolerância a partições de rede"
+    ],
+    correct: 2,
+    explanation: "MVCC cria versões dos dados (PostgreSQL usa xmin/xmax). Cada transação ve um snapshot consistente. UPDATE cria nova versão em vez de modificar in-place. Principal vantagem: leitores e escritores nunca se bloqueiam mutuamente."
+  },
+  {
+    question: "Qual o risco principal de usar distributed locks (Redis SETNX) SEM TTL?",
+    options: [
+      "O Redis não suporta SETNX sem TTL e retorna erro",
+      "Se o processo que segura o lock crashar, o lock fica orfao para sempre, bloqueando todos os outros",
+      "O lock será automáticamente liberado pelo garbage collector do Redis",
+      "Sem TTL o lock não funciona — é obrigatório para SETNX"
+    ],
+    correct: 1,
+    explanation: "Sem TTL, se o processo morre enquanto segura o lock, nenhum outro processo consegue adquirir o lock. Ele fica orfao para sempre. SEMPRE defina um TTL. E use delete condicional (Lua script) para evitar deletar o lock de outro processo."
+  },
+  {
+    question: "Em Node.js, o que acontece se você executar JSON.parse() em um arquivo de 500MB no thread principal?",
+    options: [
+      "Node.js automáticamente delega para uma Worker Thread",
+      "O event loop fica bloqueado — TODAS as requisições param até o parse terminar",
+      "Node.js retorna um erro de memória antes de tentar parsear",
+      "O V8 engine otimiza e parseia em chunks automáticamente"
+    ],
+    correct: 1,
+    explanation: "JSON.parse() e síncrono e roda no thread principal. Em um arquivo de 500MB, pode levar segundos — durante os quais o event loop está completamente travado. Nenhuma outra requisição é processada. Use streams (JSONStream) ou Worker Threads."
+  },
+  {
+    question: "Para um sistema de venda de ingressos com 10.000 req/s no mesmo evento, qual abordagem de concorrência é mais adequada?",
+    options: [
+      "Optimistic Locking — baixa contenção faz retries serem raros",
+      "Nenhum controle — o banco de dados garante consistência automáticamente",
+      "Pessimistic Locking (SELECT FOR UPDATE) ou Redis Distributed Lock — alta contenção exige controle forte",
+      "Promise.all para processar todos os requests em paralelo"
+    ],
+    correct: 2,
+    explanation: "Com 10.000 req/s no MESMO recurso, a contenção e altissima. Optimistic locking causaria cascade de retries (retry storm). Pessimistic locking (SELECT FOR UPDATE SKIP LOCKED) ou Redis locks são mais adequados pois serializam o acesso de forma controlada."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina concorrência e paralelismo.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

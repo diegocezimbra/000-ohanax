@@ -125,11 +125,15 @@ export async function publishToYouTube(publicationId) {
   );
   invalidateSettingsCache(pub.project_id);
 
-  // Download the video file
+  // Download the video file (reject if > 500MB to avoid OOM in small containers)
   const { rows: videos } = await pool.query(
     'SELECT * FROM yt_final_videos WHERE id = $1', [pub.video_id],
   );
-  const videoBuffer = await downloadFile(videos[0].s3_key);
+  const video = videos[0];
+  if (video.file_size_mb && video.file_size_mb > 500) {
+    throw new Error(`Video too large (${Math.round(video.file_size_mb)} MB). Max 500 MB for upload. Reassemble with lower quality.`);
+  }
+  const videoBuffer = await downloadFile(video.s3_key);
 
   // Parse tags
   let tags;

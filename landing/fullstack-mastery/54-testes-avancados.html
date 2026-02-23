@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>54 — Testes Avancados | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="53-seguranca-avancada-pqc.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>54</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="55-engenharia-dados.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:81.8%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 54</span>
+<h2>Testes Avancados — Estrategias de Alto Nivel</h2>
+<div class="section-line"></div>
+
+<p>Na seção 39, cobrimos os fundamentos de testes especializados — o que são Contract Testing, Mutation Testing e Property-Based Testing. Agora vamos além: <strong>como aplicar essas técnicas em escala</strong>, resolver problemas reais de manutenção de testes, e integrar técnicas avançadas no CI/CD de produção. O foco aqui não é "o que e" — e <strong>como fazer funcionar bem em projetos reais</strong>.</p>
+
+<p>Testes avançados não são sobre ter mais testes. São sobre ter <strong>testes que encontram bugs que os outros não encontram</strong>. Um suite de 5.000 testes unitários pode ter 98% de cobertura e ainda perder bugs críticos que um único property test ou mutation test detectaria. A maturidade de uma equipe se mede pela <strong>diversidade e eficacia</strong> da estratégia de testes, não pelo volume.</p>
+
+<!-- ═══ PROPERTY-BASED TESTING AVANCADO ═══ -->
+<h3>Property-Based Testing — Tecnicas Avancadas</h3>
+
+<p>A seção 39 introduziu o conceito de testar propriedades com fast-check. Agora vamos para <strong>model-based testing</strong>, <strong>stateful testing</strong>, e <strong>custom arbitraries compostos</strong> — técnicas que encontram bugs em máquinas de estado, fluxos de usuário e lógica de negócios complexa.</p>
+
+<h4>Model-Based Testing: Testando Maquinas de Estado</h4>
+<p>A ideia é simples mas poderosa: você cria um <strong>modelo simplificado</strong> do sistema (um Map, um array, uma variável) e executa comandos aleatórios contra o modelo E o sistema real simultaneamente. Se em algum momento o estado do modelo diverge do sistema, encontramos um bug.</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> fc <span class="kw">from</span> <span class="str">'fast-check'</span>;
+<span class="kw">import</span> { ShoppingCart } <span class="kw">from</span> <span class="str">'./shopping-cart'</span>;
+
+<span class="cm">// Model-Based Test: ShoppingCart vs Map simples</span>
+<span class="kw">type</span> <span class="tp">Model</span> = Map&lt;<span class="tp">string</span>, <span class="tp">number</span>&gt;;
+
+<span class="kw">class</span> <span class="tp">AddItemCommand</span> <span class="kw">implements</span> fc.Command&lt;<span class="tp">Model</span>, <span class="tp">ShoppingCart</span>&gt; {
+  <span class="kw">constructor</span>(<span class="kw">readonly</span> id: <span class="tp">string</span>, <span class="kw">readonly</span> qty: <span class="tp">number</span>) {}
+
+  <span class="fn">check</span>() { <span class="kw">return true</span>; } <span class="cm">// Sempre pode adicionar</span>
+
+  <span class="fn">run</span>(model: <span class="tp">Model</span>, cart: <span class="tp">ShoppingCart</span>) {
+    <span class="cm">// Executa no modelo</span>
+    <span class="kw">const</span> current = model.<span class="fn">get</span>(<span class="kw">this</span>.id) ?? <span class="num">0</span>;
+    model.<span class="fn">set</span>(<span class="kw">this</span>.id, current + <span class="kw">this</span>.qty);
+
+    <span class="cm">// Executa no sistema real</span>
+    cart.<span class="fn">addItem</span>(<span class="kw">this</span>.id, <span class="kw">this</span>.qty);
+
+    <span class="cm">// Verifica que ambos concordam</span>
+    <span class="fn">expect</span>(cart.<span class="fn">getQuantity</span>(<span class="kw">this</span>.id)).<span class="fn">toBe</span>(model.<span class="fn">get</span>(<span class="kw">this</span>.id));
+  }
+
+  <span class="fn">toString</span>() { <span class="kw">return</span> <span class="str">`add(${this.id}, ${this.qty})`</span>; }
+}
+
+<span class="kw">class</span> <span class="tp">RemoveItemCommand</span> <span class="kw">implements</span> fc.Command&lt;<span class="tp">Model</span>, <span class="tp">ShoppingCart</span>&gt; {
+  <span class="kw">constructor</span>(<span class="kw">readonly</span> id: <span class="tp">string</span>) {}
+
+  <span class="fn">check</span>(model: <span class="tp">Model</span>) {
+    <span class="kw">return</span> model.<span class="fn">has</span>(<span class="kw">this</span>.id); <span class="cm">// So remove se existe</span>
+  }
+
+  <span class="fn">run</span>(model: <span class="tp">Model</span>, cart: <span class="tp">ShoppingCart</span>) {
+    model.<span class="fn">delete</span>(<span class="kw">this</span>.id);
+    cart.<span class="fn">removeItem</span>(<span class="kw">this</span>.id);
+    <span class="fn">expect</span>(cart.<span class="fn">getQuantity</span>(<span class="kw">this</span>.id)).<span class="fn">toBe</span>(<span class="num">0</span>);
+  }
+
+  <span class="fn">toString</span>() { <span class="kw">return</span> <span class="str">`remove(${this.id})`</span>; }
+}
+
+<span class="fn">test</span>(<span class="str">'ShoppingCart respeita invariantes para qualquer sequência de acoes'</span>, () => {
+  <span class="kw">const</span> itemIds = [<span class="str">'sku-001'</span>, <span class="str">'sku-002'</span>, <span class="str">'sku-003'</span>];
+  <span class="kw">const</span> commands = [
+    ...itemIds.<span class="fn">map</span>(id =>
+      fc.<span class="fn">tuple</span>(fc.<span class="fn">constant</span>(id), fc.<span class="fn">integer</span>({ min: <span class="num">1</span>, max: <span class="num">20</span> }))
+        .<span class="fn">map</span>(([id, qty]) => <span class="kw">new</span> <span class="tp">AddItemCommand</span>(id, qty))
+    ),
+    ...itemIds.<span class="fn">map</span>(id =>
+      fc.<span class="fn">constant</span>(<span class="kw">new</span> <span class="tp">RemoveItemCommand</span>(id))
+    ),
+  ];
+
+  fc.<span class="fn">assert</span>(
+    fc.<span class="fn">property</span>(
+      fc.<span class="fn">commands</span>(commands, { maxCommands: <span class="num">50</span> }),
+      (cmds) => {
+        <span class="kw">const</span> setup = () => ({
+          model: <span class="kw">new</span> Map() <span class="kw">as</span> <span class="tp">Model</span>,
+          real: <span class="kw">new</span> <span class="tp">ShoppingCart</span>(),
+        });
+        fc.<span class="fn">modelRun</span>(setup, cmds);
+      }
+    ),
+    { numRuns: <span class="num">200</span> }
+  );
+});</code></pre>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Quando usar model-based testing:</strong> Sempre que seu sistema tem estado mutável com multiplas operações (carrinhos de compra, filas, caches, ORMs, máquinas de estado). O modelo simplificado atua como um "oraculo" — se o sistema diverge do modelo, é um bug no sistema (não no modelo, porque o modelo e trivial).</div>
+</div>
+
+<h4>Shrinking Inteligente: Por Que fast-check > Testes Aleatorios</h4>
+<p>Quando fast-check encontra uma falha com um input de 500 elementos, ele automáticamente <strong>reduz (shrink)</strong> o input até encontrar o menor caso que reproduz o bug. Isso transforma um "falhou com array de 500 items" em "falhou com <code>[0, -1]</code>" — muito mais fácil de debugar. O shrinking é o diferencial entre property-based testing é simplesmente gerar inputs aleatórios.</p>
+
+<ul>
+<li><strong>fast-check (JS/TS)</strong> — O mais maduro para o ecossistema JavaScript. Suporta commands, async properties, replay de seeds</li>
+<li><strong>Hypothesis (Python)</strong> — O padrão ouro. Health checks automáticos, database de exemplos, shrinking de nível superior</li>
+<li><strong>QuickCheck (Haskell)</strong> — O original (1999). Inspirou todos os outros frameworks de PBT</li>
+<li><strong>jqwik (Java)</strong> — Integrado ao JUnit 5, suporta stateful testing nativo</li>
+</ul>
+
+<!-- ═══ SNAPSHOT TESTING ═══ -->
+<h3>Snapshot Testing — Usó Estrategico</h3>
+
+<p>Snapshot testing é uma faca de dois gumes. Usado corretamente, captura regressoes automáticamente. Usado incorretamente, cria <strong>snapshot rot</strong> — centenas de arquivos .snap que ninguem le, todo mundo atualiza cegamente com <code>--updateSnapshot</code>, é que não protegem contra nada.</p>
+
+<h4>Inline Snapshots vs File Snapshots</h4>
+<ul>
+<li><strong>File snapshots</strong> (<code>.snap</code>) — Gerados em arquivo separado. Problema: ninguem le nós code reviews. Facil de aprovar diffs sem entender</li>
+<li><strong>Inline snapshots</strong> — Armazenados no proprio arquivo de teste. Visiveis no diff do PR. <strong>Fortemente preferidos</strong> para outputs pequenos</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// FILE snapshot (evitar para outputs pequenos)</span>
+<span class="fn">it</span>(<span class="str">'renderiza breadcrumb'</span>, () => {
+  <span class="kw">const</span> result = <span class="fn">render</span>(&lt;<span class="tp">Breadcrumb</span> items={[<span class="str">'Home'</span>, <span class="str">'Products'</span>]} /&gt;);
+  <span class="fn">expect</span>(result).<span class="fn">toMatchSnapshot</span>(); <span class="cm">// Vai para .snap externo</span>
+});
+
+<span class="cm">// INLINE snapshot (preferido — visível no code review)</span>
+<span class="fn">it</span>(<span class="str">'renderiza breadcrumb'</span>, () => {
+  <span class="kw">const</span> result = <span class="fn">render</span>(&lt;<span class="tp">Breadcrumb</span> items={[<span class="str">'Home'</span>, <span class="str">'Products'</span>]} /&gt;);
+  <span class="fn">expect</span>(result.container.innerHTML).<span class="fn">toMatchInlineSnapshot</span>(<span class="str">`
+    "&lt;nav&gt;&lt;a href=\\"/\\"&gt;Home&lt;/a&gt; &gt; &lt;span&gt;Products&lt;/span&gt;&lt;/nav&gt;"
+  `</span>);
+});</code></pre>
+
+<h4>Armadilhas do Snapshot Testing</h4>
+
+<div class="card orange">
+<div class="card-title">Snapshot Rot — O Inimigo Silencioso</div>
+<ul>
+<li><strong>Noisy diffs:</strong> Snapshots de componentes grandes geram diffs enormes. Ninguem le 200 linhas de HTML diff — todo mundo faz <code>-u</code> cegamente</li>
+<li><strong>False positives:</strong> Timestamps, IDs aleatórios, datas — qualquer valor dinâmico quebra snapshots sem ser bug real</li>
+<li><strong>False sense of security:</strong> "100 snapshots passando" não significa que o UI esta correto — significa que não mudou desde o último <code>-u</code></li>
+<li><strong>Lock-in de implementação:</strong> Snapshots de estrutura interna (class names, DOM completo) quebram em refactors legit que não mudam comportamento</li>
+</ul>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra prática para snapshots:</strong> Use inline snapshots para outputs pequenós e deterministas (JSON de API, mensagens de erro formatadas, CSS-in-JS output). Evite para componentes React inteiros — prefira testing-library queries. Se você precisa de <code>--updateSnapshot</code> mais de 1x por semana, seus snapshots não estão protegendo nada.</div>
+</div>
+
+<h4>Quando Snapshots Brilham</h4>
+<ul>
+<li><strong>Serializacao de API:</strong> Snapshot da resposta JSON garante que nenhum campo mude sem querer (breaking change para consumers)</li>
+<li><strong>Mensagens de erro:</strong> Snapshot de mensagens de validação garante formatacao consistente</li>
+<li><strong>Compiladores/Transpilers:</strong> Input -> output determinista. Jest usa snapshots internamente para testar o proprio Jest</li>
+<li><strong>Codegen:</strong> Snapshot do código gerado (GraphQL codegen, OpenAPI, Prisma) detecta mudanças inesperadas</li>
+</ul>
+
+<!-- ═══ VISUAL REGRESSION TESTING ═══ -->
+<h3>Visual Regression Testing — Estrategia em Escala</h3>
+
+<p>A seção 39 mostrou como fazer screenshots com Playwright. Agora o desafio real: <strong>como gerenciar visual testing em um projeto com 200+ componentes, 5 breakpoints, light/dark mode, e 3 browsers</strong>. Isso gera milhares de screenshots — é a gestão disso é o que separa uma POC de uma estratégia de produção.</p>
+
+<h4>Pixel Diffing vs Structural Comparison</h4>
+
+<div class="table-wrap">
+<table>
+<tr><th>Aspecto</th><th>Pixel Diffing</th><th>Structural (DOM) Comparison</th></tr>
+<tr><td><strong>Como funciona</strong></td><td>Compara imagem pixel-a-pixel</td><td>Compara estrutura DOM/layout properties</td></tr>
+<tr><td><strong>Ferramentas</strong></td><td>Playwright, Percy, Chromatic, BackstopJS</td><td>Applitools Eyes (AI-based), Storybook a11y addon</td></tr>
+<tr><td><strong>Sensibilidade</strong></td><td>Muito alta — anti-aliasing, font rendering variam entre OS</td><td>Media — ignora diferenças cosmeticas</td></tr>
+<tr><td><strong>Falsos positivos</strong></td><td>Frequentes (sub-pixel rendering, animacoes)</td><td>Raros</td></tr>
+<tr><td><strong>Custo</strong></td><td>Baixo (Playwright gratis) a medio (Percy pago)</td><td>Alto (Applitools e pago)</td></tr>
+<tr><td><strong>Melhor para</strong></td><td>Design systems, landing pages, emails</td><td>Apps dinâmicos com conteúdo variável</td></tr>
+</table>
+</div>
+
+<!-- Diagram: Visual Testing Pipeline -->
+<div class="diagram">
+<div class="diagram-box green">Storybook<br><small>Componentes isolados</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Chromatic CI<br><small>Screenshot por story</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Visual Diff<br><small>Detecta mudanças</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Review Humano<br><small>Aprova / Rejeita</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">Merge<br><small>Baseline atualizada</small></div>
+</div>
+
+<h4>Playwright: Visual Testing Avancado com Masking e Multi-Viewport</h4>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { test, expect } <span class="kw">from</span> <span class="str">'@playwright/test'</span>;
+
+<span class="cm">// Configuração centralizada de viewports</span>
+<span class="kw">const</span> viewports = [
+  { name: <span class="str">'mobile'</span>,  width: <span class="num">375</span>,  height: <span class="num">812</span> },
+  { name: <span class="str">'tablet'</span>,  width: <span class="num">768</span>,  height: <span class="num">1024</span> },
+  { name: <span class="str">'desktop'</span>, width: <span class="num">1440</span>, height: <span class="num">900</span> },
+];
+
+<span class="kw">for</span> (<span class="kw">const</span> vp <span class="kw">of</span> viewports) {
+  test.<span class="fn">describe</span>(<span class="str">`Visual: ${vp.name}`</span>, () => {
+    test.<span class="fn">use</span>({ viewport: { width: vp.width, height: vp.height } });
+
+    <span class="fn">test</span>(<span class="str">`dashboard layout [${vp.name}]`</span>, <span class="kw">async</span> ({ page }) => {
+      <span class="kw">await</span> page.<span class="fn">goto</span>(<span class="str">'/dashboard'</span>);
+      <span class="kw">await</span> page.<span class="fn">waitForLoadState</span>(<span class="str">'networkidle'</span>);
+
+      <span class="cm">// Mascara areas dinâmicas para evitar falsos positivos</span>
+      <span class="kw">await</span> <span class="fn">expect</span>(page).<span class="fn">toHaveScreenshot</span>(
+        <span class="str">`dashboard-${vp.name}.png`</span>,
+        {
+          mask: [
+            page.<span class="fn">locator</span>(<span class="str">'[data-testid="current-date"]'</span>),
+            page.<span class="fn">locator</span>(<span class="str">'[data-testid="live-counter"]'</span>),
+            page.<span class="fn">locator</span>(<span class="str">'[data-testid="avatar"]'</span>),
+          ],
+          animations: <span class="str">'disabled'</span>,
+          maxDiffPixelRatio: <span class="num">0.01</span>, <span class="cm">// 1% tolerância</span>
+        }
+      );
+    });
+  });
+}</code></pre>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Screenshot management em CI:</strong> Screenshots geradas em Linux (CI) diferem de macOS (local) por causa de font rendering. Sempre gere baselines no CI, nunca localmente. Use Docker para garantir ambiente identico. Playwright recomenda rodar <code>npx playwright test --update-snapshots</code> dentro do mesmo ambiente Docker do CI.</div>
+</div>
+
+<!-- ═══ CONTRACT TESTING DEEP DIVE ═══ -->
+<h3>Contract Testing — Workflows Avancados</h3>
+
+<p>Na seção 39, vimos o fluxo básico Consumer -> Pact File -> Provider Verification. Agora vamos para o mundo real: <strong>can-i-deploy</strong>, <strong>Pact Broker webhooks</strong>, <strong>pending pacts</strong>, e alternativas como <strong>Spring Cloud Contract</strong> é <strong>MSW para contract mocking</strong>.</p>
+
+<h4>can-i-deploy: O Safety Net Real</h4>
+<p>O maior valor do Pact não é gerar pact files — é o comando <code>can-i-deploy</code> que integra no CI/CD e <strong>bloqueia deploys incompativeis automáticamente</strong>.</p>
+
+<pre data-lang="bash"><code><span class="cm"># No pipeline CI do Provider (UserService)</span>
+<span class="cm"># Antes de fazer deploy, verifica se a nova versão</span>
+<span class="cm"># e compatível com TODOS os consumers em produção</span>
+
+pact-broker can-i-deploy \
+  --pacticipant UserService \
+  --version $(git rev-parse HEAD) \
+  --to-environment production
+
+<span class="cm"># Retorna exit code 0 se compatível, 1 se incompatível</span>
+<span class="cm"># Integra com GitHub Actions, GitLab CI, Jenkins, etc.</span>
+
+<span class="cm"># Output exemplo quando BLOQUEIA:</span>
+<span class="cm"># WARN: Cannot deploy UserService v3.2.1 to production</span>
+<span class="cm"># Reason: OrderService (production) has a failing</span>
+<span class="cm"># verification for interáction "get user by id"</span></code></pre>
+
+<h4>Pending Pacts e WIP (Work in Progress)</h4>
+<ul>
+<li><strong>Pending pacts:</strong> Consumer publica um pact novo antes do Provider implementar. Sem pending pacts, o build do Provider quebraria. Com pending pacts, o pact não verificado não falha o build — apenas loga um aviso. Quando o Provider implementa e verifica, o pact deixa de ser "pending"</li>
+<li><strong>WIP pacts:</strong> Pacts de branches de feature (não-main) são tratados como "work in progress". O Provider os verifica, mas falhas não bloqueiam o build do Provider</li>
+</ul>
+
+<h4>MSW (Mock Service Worker) como Contract Layer</h4>
+<p>Para equipes que acham Pact pesado demais, MSW pode servir como uma camada leve de contract testing. A ideia: os handlers do MSW são o "contrato" — se o frontend funciona com esses mocks, e o backend implementa esses mesmos endpoints, o sistema funciona.</p>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { http, HttpResponse } <span class="kw">from</span> <span class="str">'msw'</span>;
+<span class="kw">import</span> { setupServer } <span class="kw">from</span> <span class="str">'msw/node'</span>;
+
+<span class="cm">// handlers.ts — A "fonte de verdade" do contrato</span>
+<span class="kw">export const</span> handlers = [
+  http.<span class="fn">get</span>(<span class="str">'/api/users/:id'</span>, ({ params }) => {
+    <span class="kw">return</span> HttpResponse.<span class="fn">json</span>({
+      id: params.id,
+      name: <span class="str">'Alice'</span>,
+      email: <span class="str">'alice@example.com'</span>,
+      role: <span class="str">'admin'</span>,
+      createdAt: <span class="str">'2025-01-15T10:00:00Z'</span>,
+    });
+  }),
+
+  http.<span class="fn">post</span>(<span class="str">'/api/users'</span>, <span class="kw">async</span> ({ request }) => {
+    <span class="kw">const</span> body = <span class="kw">await</span> request.<span class="fn">json</span>();
+    <span class="kw">return</span> HttpResponse.<span class="fn">json</span>(
+      { id: <span class="str">'new-id'</span>, ...body },
+      { status: <span class="num">201</span> }
+    );
+  }),
+];
+
+<span class="cm">// Usado no frontend para testes</span>
+<span class="kw">const</span> server = <span class="fn">setupServer</span>(...handlers);
+
+<span class="cm">// E TAMBEM exportado para o backend verificar:</span>
+<span class="cm">// O backend importa os handlers e executa requests</span>
+<span class="cm">// contra sua API real, comparando com os mocks</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>Spring Cloud Contract:</strong> Para equipes Java/Kotlin, Spring Cloud Contract inverte o fluxo — o Provider define o contrato (em Groovy DSL ou YAML) e gera stubs para os consumers automáticamente. Diferente do CDC do Pact (consumer-driven), SCC e provider-driven. A escolha depende de quem tem mais controle sobre a API: se consumers ditam, use Pact. Se o provider dita, use SCC.</div>
+</div>
+
+<!-- ═══ TESTCONTAINERS AVANCADO ═══ -->
+<h3>Testcontainers — Multi-Service Testing</h3>
+
+<p>Na seção 39, vimos como subir um PostgreSQL no Docker para testes. Agora vamos para cenários reais: <strong>múltiplos containers em paralelo</strong> (Postgres + Redis + Kafka), <strong>containers customizados com seed data</strong>, <strong>network compartilhada</strong> entre containers, e <strong>otimização de performance</strong> dos testes.</p>
+
+<h4>Multi-Container Setup: Postgres + Redis + Kafka</h4>
+
+<pre data-lang="typescript"><code><span class="kw">import</span> { PostgreSqlContainer } <span class="kw">from</span> <span class="str">'@testcontainers/postgresql'</span>;
+<span class="kw">import</span> { RedisContainer } <span class="kw">from</span> <span class="str">'@testcontainers/redis'</span>;
+<span class="kw">import</span> { KafkaContainer } <span class="kw">from</span> <span class="str">'@testcontainers/kafka'</span>;
+<span class="kw">import</span> { Network } <span class="kw">from</span> <span class="str">'testcontainers'</span>;
+
+<span class="fn">describe</span>(<span class="str">'OrderService Integration (Full Stack)'</span>, () => {
+  <span class="kw">let</span> network: Network;
+  <span class="kw">let</span> pgContainer, redisContainer, kafkaContainer;
+
+  <span class="fn">beforeAll</span>(<span class="kw">async</span> () => {
+    <span class="cm">// Rede compartilhada entre containers</span>
+    network = <span class="kw">await new</span> <span class="tp">Network</span>().<span class="fn">start</span>();
+
+    <span class="cm">// Sobe tudo em paralelo — 3x mais rápido</span>
+    [pgContainer, redisContainer, kafkaContainer] = <span class="kw">await</span> Promise.<span class="fn">all</span>([
+      <span class="kw">new</span> <span class="tp">PostgreSqlContainer</span>(<span class="str">'postgres:16-alpine'</span>)
+        .<span class="fn">withNetwork</span>(network)
+        .<span class="fn">withNetworkAliases</span>(<span class="str">'postgres'</span>)
+        .<span class="fn">withCopyFilesToContainer</span>([{
+          source: <span class="str">'./test/fixtures/seed.sql'</span>,
+          target: <span class="str">'/docker-entrypoint-initdb.d/seed.sql'</span>,
+        }])
+        .<span class="fn">start</span>(),
+
+      <span class="kw">new</span> <span class="tp">RedisContainer</span>(<span class="str">'redis:7-alpine'</span>)
+        .<span class="fn">withNetwork</span>(network)
+        .<span class="fn">withNetworkAliases</span>(<span class="str">'redis'</span>)
+        .<span class="fn">start</span>(),
+
+      <span class="kw">new</span> <span class="tp">KafkaContainer</span>(<span class="str">'confluentinc/cp-kafka:7.5.0'</span>)
+        .<span class="fn">withNetwork</span>(network)
+        .<span class="fn">withNetworkAliases</span>(<span class="str">'kafka'</span>)
+        .<span class="fn">start</span>(),
+    ]);
+  }, <span class="num">120000</span>); <span class="cm">// 2 min timeout para pull de imagens</span>
+
+  <span class="fn">afterAll</span>(<span class="kw">async</span> () => {
+    <span class="kw">await</span> Promise.<span class="fn">all</span>([
+      pgContainer.<span class="fn">stop</span>(),
+      redisContainer.<span class="fn">stop</span>(),
+      kafkaContainer.<span class="fn">stop</span>(),
+    ]);
+    <span class="kw">await</span> network.<span class="fn">stop</span>();
+  });
+
+  <span class="fn">it</span>(<span class="str">'processa pedido end-to-end: DB + Cache + Event'</span>, <span class="kw">async</span> () => {
+    <span class="kw">const</span> app = <span class="kw">await</span> <span class="fn">createApp</span>({
+      dbUrl: pgContainer.<span class="fn">getConnectionUri</span>(),
+      redisUrl: <span class="str">`redis://${redisContainer.getHost()}:${redisContainer.getPort()}`</span>,
+      kafkaBroker: <span class="str">`${kafkaContainer.getHost()}:${kafkaContainer.getMappedPort(9093)}`</span>,
+    });
+
+    <span class="cm">// Cria pedido (grava no Postgres)</span>
+    <span class="kw">const</span> order = <span class="kw">await</span> app.orderService.<span class="fn">create</span>({
+      userId: <span class="str">'user-1'</span>,
+      items: [{ sku: <span class="str">'PROD-001'</span>, qty: <span class="num">2</span> }],
+    });
+
+    <span class="cm">// Verifica cache (Redis)</span>
+    <span class="kw">const</span> cached = <span class="kw">await</span> app.cacheService.<span class="fn">get</span>(<span class="str">`order:${order.id}`</span>);
+    <span class="fn">expect</span>(cached).<span class="fn">toBeDefined</span>();
+
+    <span class="cm">// Verifica evento publicado (Kafka)</span>
+    <span class="kw">const</span> events = <span class="kw">await</span> app.kafkaConsumer.<span class="fn">consume</span>(<span class="str">'orders.created'</span>);
+    <span class="fn">expect</span>(events[<span class="num">0</span>].value.orderId).<span class="fn">toBe</span>(order.id);
+  });
+});</code></pre>
+
+<!-- Diagram: Testcontainers Architecture -->
+<div class="diagram">
+<div class="diagram-box green">Jest Test Runner<br><small>Orquestra tudo</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box blue">Testcontainers API<br><small>Gerencia Docker</small></div>
+<div class="diagram-arrow">&darr;</div>
+<div class="diagram-box purple">PostgreSQL<br><small>:5432 (mapeado)</small></div>
+<div class="diagram-box orange">Redis<br><small>:6379 (mapeado)</small></div>
+<div class="diagram-box cyan">Kafka<br><small>:9093 (mapeado)</small></div>
+</div>
+
+<h4>Otimização de Performance</h4>
+<ul>
+<li><strong>Reuse containers:</strong> Use <code>withReuse()</code> para manter containers entre execucoes de teste localmente (não no CI). Economiza 10-30s de startup por run</li>
+<li><strong>Imagens Alpine:</strong> Prefira <code>postgres:16-alpine</code> (~80MB) sobre <code>postgres:16</code> (~400MB). Pull mais rápido no CI</li>
+<li><strong>Parallel test suites:</strong> Cada suite cria seus proprios containers em portas aleatórias. Não ha conflito entre suites paralelas</li>
+<li><strong>Seed via SQL files:</strong> Use <code>withCopyFilesToContainer</code> para copiar scripts de seed ao inves de inserir via ORM (10x mais rápido)</li>
+<li><strong>Singleton pattern:</strong> Para testes que não modificam dados, compartilhe o container entre testes com um singleton global no <code>jest.setup.ts</code></li>
+</ul>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>CI/CD com Testcontainers:</strong> Requer Docker-in-Docker (DinD) ou Docker socket mount. GitHub Actions suporta nativamente (o runner tem Docker). GitLab CI precisa de <code>services: [docker:dind]</code>. AWS CodeBuild precisa do modo privilegiado. Verifique compatibilidade antes de adotar.</div>
+</div>
+
+<!-- ═══ MUTATION TESTING AVANCADO ═══ -->
+<h3>Mutation Testing — Alem do Basico</h3>
+
+<p>A seção 39 apresentou Stryker é o conceito de mutation score. Agora vamos para as decisões dificeis: <strong>quando mutation testing vale o custo computacional</strong>, <strong>como interpretar mutantes sobreviventes sem ficar louco</strong>, e <strong>estratégias de adoção incremental</strong>.</p>
+
+<h4>O Custo Real do Mutation Testing</h4>
+<p>Mutation testing e computacionalmente caro. Para um projeto com 500 arquivos e 2000 testes, Stryker pode gerar <strong>5000+ mutantes</strong>. Cada mutante precisa rodar a suite de testes completa. Mesmo com otimizações (mutation switching, incremental), isso pode levar <strong>30-60 minutos</strong> no CI.</p>
+
+<div class="card blue">
+<div class="card-title">Estrategia de Adocao Incremental</div>
+<ul>
+<li><strong>Fase 1 — Targeted:</strong> Rode mutation testing apenas em módulos críticos (pagamentos, autenticação, cálculos financeiros). Configure <code>mutate: ["src/payments/**/*.ts"]</code></li>
+<li><strong>Fase 2 — Changed files:</strong> No CI, rode mutacoes apenas em arquivos modificados no PR: <code>mutate: $(git diff --name-only main...HEAD)</code></li>
+<li><strong>Fase 3 — Full (nightly):</strong> Rode a suite completa em um job noturno/semanal. Alerte se o mutation score cair abaixo do threshold</li>
+<li><strong>Nunca:</strong> Rode mutation testing em CADA push — o custo de CI não justifica para a maioria dos projetos</li>
+</ul>
+</div>
+
+<h4>Analisando Mutantes Sobreviventes</h4>
+<p>Nem todo mutante sobrevivente é um problema. Classifique-os:</p>
+
+<ul>
+<li><strong>Equivalent mutants:</strong> A mutacao não muda o comportamento. Exemplo: <code>x >= 0</code> mutado para <code>x > -1</code> — semânticamente identico para inteiros. Estes são falsos positivos; ignore-os</li>
+<li><strong>Trivial survivors:</strong> Logging, toString(), debug strings — não vale testar. Use <code>// Stryker disable next-line</code> para excluir</li>
+<li><strong>Real gaps:</strong> O mutante sobreviveu porque o teste não verifica um comportamento importante. Estes são os que importam — adicione testes</li>
+</ul>
+
+<pre data-lang="typescript"><code><span class="cm">// Exemplo: mutante sobrevivente revela gap real</span>
+<span class="kw">function</span> <span class="fn">applyDiscount</span>(price: <span class="tp">number</span>, coupon: <span class="tp">Coupon</span>): <span class="tp">number</span> {
+  <span class="kw">if</span> (coupon.isExpired()) <span class="kw">return</span> price; <span class="cm">// Stryker muda para: return 0</span>
+  <span class="kw">return</span> price * (<span class="num">1</span> - coupon.discount);
+}
+
+<span class="cm">// Teste existente: só testa cupom válido</span>
+<span class="fn">it</span>(<span class="str">'aplica desconto com cupom válido'</span>, () => {
+  <span class="fn">expect</span>(<span class="fn">applyDiscount</span>(<span class="num">100</span>, validCoupon)).<span class="fn">toBe</span>(<span class="num">80</span>);
+});
+
+<span class="cm">// Stryker muda "return price" para "return 0" no branch de expirado</span>
+<span class="cm">// O teste CONTINUA passando porque NUNCA testa cupom expirado!</span>
+
+<span class="cm">// Teste que mata o mutante:</span>
+<span class="fn">it</span>(<span class="str">'retorna preço cheio com cupom expirado'</span>, () => {
+  <span class="fn">expect</span>(<span class="fn">applyDiscount</span>(<span class="num">100</span>, expiredCoupon)).<span class="fn">toBe</span>(<span class="num">100</span>); <span class="cm">// Mata o mutante!</span>
+});</code></pre>
+
+<h4>Ferramentas por Ecossistema</h4>
+<div class="table-wrap">
+<table>
+<tr><th>Ecossistema</th><th>Ferramenta</th><th>Diferencial</th><th>Performance</th></tr>
+<tr><td><strong>JS/TS</strong></td><td>Stryker</td><td>Suporta Jest, Vitest, Mocha. TypeScript checker elimina mutantes inválidos</td><td>Medio (mutation switching)</td></tr>
+<tr><td><strong>Java</strong></td><td>pitest</td><td>Integrado ao Maven/Gradle. Incremental (só remuta mudanças). O mais rápido</td><td>Rapido (bytecode manipulation)</td></tr>
+<tr><td><strong>Python</strong></td><td>mutmut</td><td>Simples de usar. Bom para projetos menores</td><td>Lento (sem paralelizacao nativa)</td></tr>
+<tr><td><strong>Rust</strong></td><td>cargo-mutants</td><td>Type-guided mutations. Muito precisó por causa do type system forte</td><td>Rapido (compilador elimina mutantes inválidos)</td></tr>
+<tr><td><strong>.NET</strong></td><td>Stryker.NET</td><td>Mesma familia do Stryker JS. Suporta xUnit, NUnit, MSTest</td><td>Medio</td></tr>
+</table>
+</div>
+
+<!-- ═══ SNAPSHOT TESTING DEEP DIVE ═══ -->
+<h3>Estrategia Integrada: Combinando Tecnicas</h3>
+
+<p>Nenhuma técnica de teste isolada é suficiente. O poder real vem da <strong>combinação estrategica</strong>. Aqui esta como as técnicas avançadas se complementam:</p>
+
+<div class="card">
+<div class="card-title">Piramide de Testes Avancados</div>
+<ul>
+<li><strong>Base (execução rápida, alto volume):</strong> Property-based tests + unit tests com mutation testing válidando eficacia</li>
+<li><strong>Meio (execução media, volume medio):</strong> Contract tests (Pact/MSW) + snapshot tests para APIs + Testcontainers para integração real</li>
+<li><strong>Topo (execução lenta, baixo volume):</strong> Visual regression (Chromatic/Playwright) + E2E com screenshots cross-browser</li>
+</ul>
+</div>
+
+<div class="diagram">
+<div class="diagram-box red">Visual Regression<br><small>Lento, poucos</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box orange">Contract + Testcontainers<br><small>Medio, moderados</small></div>
+<div class="diagram-arrow">&larr;</div>
+<div class="diagram-box green">Property + Mutation<br><small>Rapido, muitos</small></div>
+</div>
+
+<h4>Decisao: Qual Tecnica Usar para Cada Cenário</h4>
+<ul>
+<li><strong>Logica de negócios complexa</strong> (cálculos, regras, válidacoes): Property-based testing + mutation testing</li>
+<li><strong>Comúnicação entre serviços</strong> (APIs, mensageria): Contract testing (Pact para CDC, SCC para provider-driven)</li>
+<li><strong>Interácao com infraestrutura</strong> (DB queries, cache, filas): Testcontainers</li>
+<li><strong>UI/Componentes visuais</strong> (design system, layouts): Visual regression (Chromatic para Storybook, Playwright para pages)</li>
+<li><strong>Outputs deterministas</strong> (API responses, error messages, codegen): Snapshot testing (inline)</li>
+</ul>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Cada técnica responde uma pergunta diferente. Unit tests perguntam "funciona?". Property tests perguntam "funciona para QUALQUER input?". Mutation tests perguntam "meus testes realmente detectam bugs?". Contract tests perguntam "meus serviços concordam?". Visual tests perguntam "parece certo?". Uma estratégia madura responde TODAS essas perguntas.</div>
+</div>
+
+<!-- ═══ Q&A ═══ -->
+<h3>Perguntas e Respostas</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Qual a diferença entre rodar testes aleatórios (fuzzing) e property-based testing com fast-check?</div>
+<div class="qa-a">
+<p><strong>Fuzzing</strong> gera inputs completamente aleatórios e espera crashes/exceptions. Não verifica corretude — só encontra falhas catastroficas. <strong>Property-based testing</strong> gera inputs aleatórios TIPADOS (respeitando o domínio) e verifica PROPRIEDADES específicas. Alem disso, PBT tem <strong>shrinking</strong> — quando encontra uma falha, reduz o input ao mínimo reproduzivel. Fuzzing com AFL/libFuzzer não faz shrinking automático. Use fuzzing para segurança (buffer overflows, parsing bugs) e PBT para corretude lógica.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Meu time acha mutation testing lento demais para CI. Como convencer o time a adotar?</div>
+<div class="qa-a">
+<p>Não rode mutation testing em cada push — isso e overkill. Comece com: (1) Rode apenas nós módulos mais críticos (<code>mutate: ["src/payments/**"]</code>). (2) Use o modo incremental do Stryker (só muta arquivos alterádos). (3) Agende a suite completa como job noturno/semanal. (4) Mostre resultados concretos: "nossos testes tinham 92% de coverage mas 58% de mutation score — encontramos 15 gaps reais na primeira rodada". O argumento de que coverage mente e mutation testing prova é muito persuasivo quando você mostra dados reais do projeto.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Como gerenciar visual regression testing em um projeto com dark mode, 3 breakpoints e 2 idiomas?</div>
+<div class="qa-a">
+<p>Isso gera uma explosao combinatoria: 2 temas x 3 viewports x 2 idiomas = 12 variantes por componente. Para 100 componentes = 1200 screenshots. <strong>Estrategia:</strong> (1) Use Storybook com Chromatic — cada story pode ter decorators de tema/locale/viewport. (2) Não teste TODAS as combinacoes — teste tema+viewport para os 20 componentes críticos, e só desktop+light para o resto. (3) Use Chromatic TurboSnap para pular screenshots de componentes que não mudaram no commit. (4) Para idiomas, teste separadamente com snapshots de texto (inline snapshots dos strings) ao inves de screenshots visuais.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Testcontainers ou banco em memória (SQLite/H2) para testes de integração?</div>
+<div class="qa-a">
+<p><strong>Testcontainers sempre que possível.</strong> SQLite não suporta JSONB, CTEs recursivas, window functions, triggers, e tem comportamento diferente de Postgres em type coercion, Unicode collation e transações. Um teste que passa com SQLite pode falhar em Postgres real. O custo adicional de Testcontainers e ~10-15 segundos de startup (que pode ser amortizado com container reuse). O custo de um bug que passa nós testes porque SQLite se comporta diferente de Postgres é muito maior. A única exceção legit: projetos que REALMENTE usam SQLite em produção (apps mobile, embedded).</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — Testes Avancados</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="53-seguranca-avancada-pqc.html">&#8592; Anterior: Segurança Avancada & PQC</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="55-engenharia-dados.html" class="primary">Próximo: Engenharia de Dados &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 54: Testes Avancados
+// ══════════════════════════════════════════
+const SECTION_NUM = 54;
+const STORAGE_KEY = 'fsm_quiz_54';
+
+const QUIZ_DATA = [
+  {
+    question: "No model-based testing com fast-check, qual é o papel do 'modelo'?",
+    options: [
+      "Substituir o sistema real nós testes de produção",
+      "Servir como oraculo simplificado para comparar com o sistema real durante execução de comandos aleatórios",
+      "Gerar documentação automática do sistema",
+      "Otimizar a performance dos testes removendo redundancias"
+    ],
+    correct: 1,
+    explanation: "O modelo é uma implementação simplificada (ex: um Map) que serve como 'oraculo'. Comandos aleatórios são executados contra o modelo E o sistema real. Se os estados divergem, encontramos um bug no sistema real — o modelo e tao simples que é trivialmente correto."
+  },
+  {
+    question: "Qual o principal diferencial do shrinking em property-based testing comparado a testes aleatórios simples?",
+    options: [
+      "Gera mais inputs por segundo que testes aleatórios",
+      "Automaticamente reduz um input que causou falha ao menor caso reproduzivel",
+      "Impede que o mesmo input sejá testado duas vezes",
+      "Comprime os resultados dos testes para economizar disco"
+    ],
+    correct: 1,
+    explanation: "Quando fast-check encontra uma falha com um array de 500 elementos, o shrinking automáticamente reduz até encontrar o menor input que reproduz o bug (ex: [0, -1]). Isso transforma falhas dificeis de debugar em casos mínimos reproduziveis."
+  },
+  {
+    question: "Qual é o problema principal do 'snapshot rot'?",
+    options: [
+      "Snapshots ocupam muito espaço em disco",
+      "Snapshots ficam desatualizados e são atualizados cegamente com --updateSnapshot, perdendo valor protetor",
+      "Snapshots não funcionam com TypeScript",
+      "Snapshots tornam o CI mais lento que outros tipos de teste"
+    ],
+    correct: 1,
+    explanation: "Snapshot rot ocorre quando snapshots grandes geram diffs que ninguem le. A equipe passa a rodar --updateSnapshot automáticamente sem verificar se a mudança e intencional. Nesse ponto, os snapshots não protegem contra regressoes — são apenas ruido."
+  },
+  {
+    question: "No fluxo do Pact, o que o comando 'can-i-deploy' verifica?",
+    options: [
+      "Se o código compila sem erros de tipo",
+      "Se a nova versão do serviço e compatível com todos os contracts dos consumers em produção",
+      "Se o Docker image foi construido corretamente",
+      "Se os testes unitários passam com cobertura mínima"
+    ],
+    correct: 1,
+    explanation: "can-i-deploy consulta o Pact Broker para verificar se a nova versão do provider e compatível com os contratos de TODOS os consumers que estão atualmente em produção. Retorna exit code 1 se incompatível, bloqueando o deploy automáticamente no CI/CD."
+  },
+  {
+    question: "Qual a vantagem principal de usar Testcontainers ao inves de SQLite para testes de integração com PostgreSQL?",
+    options: [
+      "Testcontainers é mais rápido que SQLite em todas as situações",
+      "Testcontainers reproduz o comportamento real do Postgres, incluindo JSONB, window functions e constraints que SQLite não suporta",
+      "SQLite não suporta transações, enquanto Testcontainers suporta",
+      "Testcontainers não precisa de Docker instalado"
+    ],
+    correct: 1,
+    explanation: "SQLite tem comportamento diferente de PostgreSQL em JSONB, CTEs recursivas, type coercion, Unicode collation e muitas outras features. Um teste que passa com SQLite pode falhar em Postgres real. Testcontainers roda o Postgres real, eliminando essa classe de falsos positivos."
+  },
+  {
+    question: "No mutation testing, o que significa um 'equivalent mutant'?",
+    options: [
+      "Um mutante que foi morto por dois testes diferentes",
+      "Uma mutacao que não alterá o comportamento observável do código, sendo semânticamente equivalente ao original",
+      "Um mutante que aparece em dois arquivos diferentes",
+      "Uma mutacao que o compilador otimiza automáticamente"
+    ],
+    correct: 1,
+    explanation: "Equivalent mutants são mutacoes que não mudam o comportamento. Exemplo: mudar 'x >= 0' para 'x > -1' é equivalente para inteiros. Nenhum teste pode matar esse mutante porque o código se comporta identicamente. São falsos positivos no mutation score."
+  },
+  {
+    question: "Qual abordagem é recomendada para visual regression testing em CI quando screenshots diferem entre macOS e Linux?",
+    options: [
+      "Sempre gerar baselines no macOS porque tem melhor renderizacao",
+      "Usar tolerância de 50% para ignorar todas as diferenças",
+      "Gerar baselines no mesmo ambiente do CI (Linux/Docker) para garantir consistência",
+      "Desabilitar visual testing no CI e rodar apenas localmente"
+    ],
+    correct: 2,
+    explanation: "Font rendering difere entre OS (anti-aliasing, hinting). Se baselines são geradas em macOS mas o CI roda em Linux, havera falsos positivos constantes. A solução e gerar e atualizar baselines no mesmo ambiente Docker usado pelo CI."
+  },
+  {
+    question: "No contexto de Spring Cloud Contract vs Pact, qual é a diferença principal de abordagem?",
+    options: [
+      "Spring Cloud Contract e para Java e Pact e para JavaScript apenas",
+      "Pact e consumer-driven (consumer define o contrato), Spring Cloud Contract e provider-driven (provider define e gera stubs)",
+      "Spring Cloud Contract usa XML enquanto Pact usa JSON",
+      "Pact só funciona com REST e Spring Cloud Contract suporta gRPC"
+    ],
+    correct: 1,
+    explanation: "Pact segue Consumer-Driven Contracts (CDC) — o consumer define suas expectativas é o provider as verifica. Spring Cloud Contract inverte: o provider define o contrato (em Groovy/YAML) e gera stubs para os consumers. A escolha depende de quem controla a API."
+  },
+  {
+    question: "Qual estratégia de adoção é recomendada para mutation testing em projetos grandes?",
+    options: [
+      "Rodar mutation testing em todos os arquivos em cada push desde o dia 1",
+      "Comecar com módulos críticos, evoluir para arquivos alterádos no PR, e rodar suite completa como job noturno",
+      "Rodar apenas uma vez por ano como parte de auditoria de qualidade",
+      "Substituir todos os testes unitários por mutation testing"
+    ],
+    correct: 1,
+    explanation: "Adocao incremental: (1) Rode em módulos críticos primeiro (payments, auth). (2) No CI, mute apenas arquivos do PR. (3) Suite completa como job noturno/semanal. Rodar em cada push e computacionalmente inviavel para projetos grandes."
+  },
+  {
+    question: "Qual técnica de teste avançado é mais adequada para validar que dois microserviços não vao quebrar em produção após um deploy independente?",
+    options: [
+      "Visual regression testing com Playwright",
+      "Property-based testing com fast-check",
+      "Contract testing com Pact e can-i-deploy no CI/CD",
+      "Mutation testing com Stryker"
+    ],
+    correct: 2,
+    explanation: "Contract testing com Pact resolve exatamente esse problema. O consumer define o contrato, o provider o verifica. can-i-deploy bloqueia deploys incompativeis automáticamente. As outras técnicas testam aspectos importantes, mas não a compatibilidade entre serviços."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Testes Avancados.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>

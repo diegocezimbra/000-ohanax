@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>26 — IaC - Terraform, Pulumi, CDK | Full-Stack Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#0c0e12;--bg2:#12151b;--bg3:#181c24;--bg4:#1e2330;
+--text:#d4d8e0;--text2:#8b92a0;--text3:#5c6370;
+--accent:#3dd68c;--accent2:#2bb87a;--accent-dim:rgba(61,214,140,.08);
+--orange:#e8915a;--blue:#5b9cf5;--purple:#b07aee;--red:#e05c6c;--yellow:#e2c55a;--cyan:#56b6c2;
+--code-bg:#0d1017;--code-border:#1a1f2a;
+--card:#151921;--card-border:#1e2430;
+--radius:12px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent);color:var(--bg)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ── TOP NAV ── */
+.topnav{position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg2);border-bottom:1px solid var(--card-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;backdrop-filter:blur(12px)}
+.topnav a{color:var(--text2);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .2s}
+.topnav a:hover{color:var(--accent)}
+.topnav .nav-center{font-size:.75rem;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.topnav .nav-center span{color:var(--accent)}
+.topnav .nav-home{color:var(--text3);text-decoration:none;font-size:.82rem;font-weight:500;padding:4px 12px;border:1px solid var(--card-border);border-radius:var(--radius-sm);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.topnav .nav-home:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.topnav .nav-right{display:flex;align-items:center;gap:12px}
+
+/* ── PROGRESS BAR ── */
+.progress-bar{position:fixed;top:56px;left:0;right:0;height:3px;background:var(--bg4);z-index:99}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s;border-radius:0 2px 2px 0}
+
+/* ── MAIN ── */
+.main{margin-top:64px;min-height:100vh}
+.content{max-width:900px;margin:0 auto;padding:48px 32px 120px}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:64px;scroll-margin-top:80px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--accent);letter-spacing:2px;margin-bottom:8px;display:block}
+.section h2{font-size:1.8rem;font-weight:700;letter-spacing:-.01em;margin-bottom:8px;line-height:1.3}
+.section-line{width:48px;height:3px;background:var(--accent);border-radius:2px;margin-bottom:28px}
+.section h3{font-size:1.15rem;font-weight:600;color:var(--text);margin:32px 0 12px;padding-left:14px;border-left:3px solid var(--accent)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--orange);margin:24px 0 8px}
+.section p{color:var(--text2);margin-bottom:14px;font-size:.95rem}
+.section p strong{color:var(--text);font-weight:600}
+.section ul,.section ol{color:var(--text2);margin:8px 0 16px 20px;font-size:.9rem}
+.section li{margin-bottom:6px;line-height:1.6}
+.section li strong{color:var(--text);font-weight:600}
+.section li code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.8rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+
+/* ── CODE BLOCKS ── */
+pre{background:var(--code-bg);border:1px solid var(--code-border);border-radius:var(--radius);padding:20px 24px;overflow-x:auto;margin:16px 0 20px;position:relative}
+pre::before{content:attr(data-lang);position:absolute;top:8px;right:12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;background:var(--bg4);padding:2px 8px;border-radius:4px}
+code{font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;color:#c5cdd8}
+p code,.inline-code{background:var(--bg4);padding:2px 7px;border-radius:4px;font-size:.82rem;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.kw{color:#c678dd}.fn{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}
+.num{color:#d19a66}.ann{color:#e5c07b}.tp{color:#e06c75}.op{color:#56b6c2}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:50%}
+.card.blue .card-title{color:var(--blue)}.card.blue .card-title::before{background:var(--blue)}
+.card.purple .card-title{color:var(--purple)}.card.purple .card-title::before{background:var(--purple)}
+.card.orange .card-title{color:var(--orange)}.card.orange .card-title::before{background:var(--orange)}
+
+/* ── DIAGRAMS ── */
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0;padding:24px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--card-border)}
+.diagram-box{padding:12px 20px;border-radius:var(--radius-sm);font-size:.8rem;font-weight:600;text-align:center;min-width:120px}
+.diagram-box.green{background:rgba(61,214,140,.12);border:1px solid rgba(61,214,140,.3);color:var(--accent)}
+.diagram-box.blue{background:rgba(91,156,245,.12);border:1px solid rgba(91,156,245,.3);color:var(--blue)}
+.diagram-box.purple{background:rgba(176,122,238,.12);border:1px solid rgba(176,122,238,.3);color:var(--purple)}
+.diagram-box.orange{background:rgba(232,145,90,.12);border:1px solid rgba(232,145,90,.3);color:var(--orange)}
+.diagram-box.red{background:rgba(224,92,108,.12);border:1px solid rgba(224,92,108,.3);color:var(--red)}
+.diagram-box.cyan{background:rgba(86,182,194,.12);border:1px solid rgba(86,182,194,.3);color:var(--cyan)}
+.diagram-arrow{color:var(--text3);font-size:1.2rem}
+
+/* ── TIPS ── */
+.tip{display:flex;gap:14px;padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.88rem;line-height:1.6}
+.tip.good{background:rgba(61,214,140,.06);border:1px solid rgba(61,214,140,.15);color:var(--accent)}
+.tip.warn{background:rgba(226,197,90,.06);border:1px solid rgba(226,197,90,.15);color:var(--yellow)}
+.tip.info{background:rgba(91,156,245,.06);border:1px solid rgba(91,156,245,.15);color:var(--blue)}
+.tip.bad{background:rgba(224,92,108,.06);border:1px solid rgba(224,92,108,.15);color:var(--red)}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+
+/* ── Q&A ── */
+.qa{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin:12px 0;overflow:hidden}
+.qa-q{padding:16px 20px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:.9rem;transition:background .15s}
+.qa-q:hover{background:var(--accent-dim)}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:.65rem;background:var(--accent);color:var(--bg);padding:3px 7px;border-radius:4px;font-weight:700}
+.qa-a{padding:0 20px 16px 20px;color:var(--text2);font-size:.88rem;display:none}
+.qa.open .qa-a{display:block}
+.qa.open .qa-q{border-bottom:1px solid var(--card-border)}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;border-radius:var(--radius);border:1px solid var(--card-border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--bg4);color:var(--accent);font-weight:600;text-transform:uppercase;font-size:.7rem;letter-spacing:1px;padding:12px 16px;text-align:left}
+td{padding:10px 16px;border-top:1px solid var(--card-border);color:var(--text2)}
+tr:hover td{background:var(--accent-dim)}
+
+/* ── TAGS ── */
+.tag-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.tag{display:inline-block;padding:4px 12px;background:var(--bg3);border:1px solid var(--card-border);border-radius:16px;font-size:.72rem;color:var(--text2);font-weight:500;transition:all .2s}
+
+/* ── QUIZ ── */
+.quiz-section{margin-top:64px;padding-top:32px;border-top:2px solid var(--card-border)}
+.quiz-section h3{border-left-color:var(--purple)}
+.quiz-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:24px;margin:16px 0}
+.quiz-question{font-weight:600;color:var(--text);margin-bottom:16px;font-size:.92rem;display:flex;gap:10px}
+.quiz-question .q-num{font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:.8rem;min-width:28px}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;font-size:.88rem;color:var(--text2)}
+.quiz-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.quiz-option.selected{border-color:var(--accent);background:var(--accent-dim);color:var(--text)}
+.quiz-option.correct{border-color:var(--accent);background:rgba(61,214,140,.15);color:var(--accent)}
+.quiz-option.wrong{border-color:var(--red);background:rgba(224,92,108,.1);color:var(--red)}
+.quiz-option input[type="radio"]{accent-color:var(--accent)}
+.quiz-explanation{display:none;padding:12px 16px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:8px;font-size:.82rem;color:var(--text2);border-left:3px solid var(--accent)}
+.quiz-explanation.visible{display:block}
+.quiz-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 28px;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary:hover{background:var(--accent2)}
+.btn-secondary{background:var(--bg3);color:var(--text2);border:1px solid var(--card-border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.quiz-result{display:none;padding:24px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);margin-top:24px;text-align:center}
+.quiz-result.visible{display:block}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--accent);margin:8px 0}
+.quiz-score.low{color:var(--red)}
+.quiz-score.mid{color:var(--yellow)}
+
+/* ── WIZARD NAV ── */
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:64px;padding:32px 0;border-top:1px solid var(--card-border)}
+.wizard-nav a{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.wizard-nav a.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.wizard-nav a.primary:hover{background:var(--accent2)}
+.wizard-nav .wizard-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--bg3);border:1px solid var(--card-border);border-radius:var(--radius-sm);color:var(--text2);text-decoration:none;font-size:.88rem;font-weight:500;transition:all .2s}
+.wizard-nav .wizard-home:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+.content{padding:32px 16px 80px}
+.topnav{padding:0 12px}
+.section h2{font-size:1.4rem}
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{animation:fadeUp .5s ease both}
+</style>
+</head>
+<body>
+
+<!-- ── TOP NAVIGATION ── -->
+<nav class="topnav">
+<a href="25-containers-kubernetes.html">&#8592; Anterior</a>
+<div class="nav-center">Seção <span>26</span> / 66</div>
+<div class="nav-right"><a href="../fullstack-mastery.html" class="nav-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="27-serverless-edge-computing.html">Próximo &#8594;</a></div>
+</nav>
+<div class="progress-bar"><div class="progress-bar-fill" style="width:39.4%"></div></div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="main">
+<div class="content">
+
+<div class="section">
+<span class="section-num">SEÇÃO 26</span>
+<h2>IaC — Terraform, Pulumi, CDK</h2>
+<div class="section-line"></div>
+
+<p>Infrastructure as Code (IaC) é a prática de gerenciar e provisionar infraestrutura através de <strong>arquivos de configuração versionados</strong> ao invés de processos manuais. Assim como você não faria deploy de código sem Git, você não deveria criar servidores clicando em consoles. IaC traz os mesmos princípios de engenharia de software — <strong>versionamento, code review, testes, CI/CD</strong> — para a infraestrutura.</p>
+
+<p>Antes de IaC, o processo era: abrir o console AWS, clicar em "Creaté Instance", escolher configurações manualmente, repetir em cada ambiente. O resultado? Ambientes que divergem silenciosamente, incapacidade de reproduzir produção, e aquele servidor que "ninguém sabe quem criou nem por que".</p>
+
+<!-- ═══ CONCEITOS FUNDAMENTAIS ═══ -->
+<h3>Conceitos Fundamentais de IaC</h3>
+
+<h4>Por que IaC?</h4>
+<ul>
+<li><strong>Reprodutibilidade</strong> — o mesmo código gera a mesma infraestrutura em qualquer ambiente (dev, staging, prod)</li>
+<li><strong>Versionamento</strong> — cada mudança de infra é um commit no Git, com histórico, diff e rollback</li>
+<li><strong>Colaboração</strong> — code review de infraestrutura, PRs para mudanças, aprovações em equipe</li>
+<li><strong>Automação</strong> — CI/CD pipelines que aplicam mudanças automáticamente após merge</li>
+<li><strong>Documentação viva</strong> — o código E a documentação da infraestrutura atual</li>
+<li><strong>Velocidade</strong> — criar um ambiente completo em minutos, não em dias</li>
+</ul>
+
+<h4>Declarativo vs Imperativo</h4>
+<p>Existem duas abordagens fundamentais para definir infraestrutura:</p>
+
+<div class="card">
+<div class="card-title">Declarativo vs Imperativo</div>
+<ul>
+<li><strong>Declarativo</strong> — você descreve o <strong>estado desejado</strong> ("quero 3 servidores com 4GB RAM") é a ferramenta descobre como chegar lá. Exemplos: Terraform, CloudFormation, Pulumi (parcialmente)</li>
+<li><strong>Imperativo</strong> — você descreve os <strong>passos exatos</strong> ("crie servidor A, depois configure rede B, depois instale pacote C"). Exemplos: Ansible, scripts Bash, AWS CLI</li>
+</ul>
+<p style="margin-top:12px"><strong>Na prática:</strong> ferramentas declarativas são preferidas para provisionamento de infraestrutura porque são <strong>idempotentes</strong> — rodar o mesmo código 10 vezes produz o mesmo resultado. Ferramentas imperativas são melhores para configuração de servidores (instalar pacotes, copiar arquivos).</p>
+</div>
+
+<h4>Idempotência</h4>
+<p><strong>Idempotência</strong> significa que aplicar a mesma operação múltiplas vezes produz o mesmo resultado. Se você definir "quero 3 instâncias EC2" e já existem 3, a ferramenta não cria mais 3 — ela detecta que o estado desejado já foi alcançado e não faz nada. Isso é crítico para <strong>segurança operacional</strong>: rodar o pipeline de infra acidentalmente duas vezes não duplica seus recursos.</p>
+
+<h4>Staté Management (Gerenciamento de Estado)</h4>
+<p>Ferramentas declarativas como Terraform precisam saber o que já existe para calcular o que precisa mudar. Isso é feito através de um <strong>arquivo de estado (state file)</strong> que mapeia o código para os recursos reais na cloud. O state file é a "fonte da verdade" que permite a ferramenta fazer o diff entre o estado atual é o desejado.</p>
+
+<h4>Drift Detection (Detecção de Desvio)</h4>
+<p><strong>Drift</strong> acontece quando alguém modifica a infraestrutura manualmente (pelo console, CLI) é o estado real diverge do código. Ferramentas de IaC podem detectar drift e mostrar exatamente o que mudou. A solução e aplicar o código novamente para "reconciliar" o estado — ou atualizar o código para refletir a mudança intencional.</p>
+
+<div class="diagram">
+<div class="diagram-box green">Código IaC<br><small>(estado desejado)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Staté File<br><small>(estado conhecido)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Cloud Provider<br><small>(estado real)</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Diff / Plan<br><small>(o que mudar)</small></div>
+</div>
+
+<!-- ═══ TERRAFORM ═══ -->
+<h3>Terraform — Deep Dive</h3>
+
+<p>Terraform, criado pela HashiCorp, é a ferramenta de IaC mais popular do mercado. Usa a linguagem <strong>HCL (HashiCorp Configuration Language)</strong>, e <strong>cloud-agnostic</strong> — funciona com AWS, GCP, Azure, Kubernetes, e centenas de providers. O workflow é simples: <code>terraform plan</code> mostra o que vai mudar, <code>terraform apply</code> executa.</p>
+
+<h4>Conceitos Fundamentais</h4>
+<ul>
+<li><strong>Providers</strong> — plugins que conectam Terraform ao cloud provider (aws, google, azurerm, kubernetes)</li>
+<li><strong>Resources</strong> — os recursos reais a serem criados (aws_instance, aws_s3_bucket, google_compute_instance)</li>
+<li><strong>Data Sources</strong> — consultas read-only a recursos existentes (buscar AMI mais recente, VPC existente)</li>
+<li><strong>Variables</strong> — parametros de entrada (var.region, var.instance_type)</li>
+<li><strong>Outputs</strong> — valores exportados após apply (IP do servidor, URL do load balancer)</li>
+<li><strong>Modules</strong> — pacotes reútilizáveis de recursos (módulo VPC, módulo ECS, módulo RDS)</li>
+<li><strong>State</strong> — arquivo que mapeia código para recursos reais</li>
+<li><strong>Workspaces</strong> — ambientes isolados com states separados (dev, staging, prod)</li>
+</ul>
+
+<h4>Exemplo Completo: VPC + Subnet + EC2 + RDS</h4>
+<pre data-lang="hcl"><code><span class="cm"># ── Provider Configuration ──</span>
+<span class="kw">terraform</span> {
+  <span class="fn">required_providers</span> {
+    <span class="fn">aws</span> = {
+      source  = <span class="str">"hashicorp/aws"</span>
+      version = <span class="str">"~&gt; 5.0"</span>
+    }
+  }
+
+  <span class="cm"># Remote state com S3 + DynamoDB lock</span>
+  <span class="fn">backend</span> <span class="str">"s3"</span> {
+    bucket         = <span class="str">"myapp-terraform-state"</span>
+    key            = <span class="str">"prod/infrastructure.tfstate"</span>
+    region         = <span class="str">"us-east-1"</span>
+    dynamodb_table = <span class="str">"terraform-locks"</span>
+    encrypt        = <span class="num">true</span>
+  }
+}
+
+<span class="kw">provider</span> <span class="str">"aws"</span> {
+  region = <span class="fn">var</span>.aws_region
+}
+
+<span class="cm"># ── Variables ──</span>
+<span class="kw">variable</span> <span class="str">"aws_region"</span> {
+  type    = <span class="tp">string</span>
+  default = <span class="str">"us-east-1"</span>
+}
+
+<span class="kw">variable</span> <span class="str">"environment"</span> {
+  type    = <span class="tp">string</span>
+  default = <span class="str">"prod"</span>
+}
+
+<span class="kw">variable</span> <span class="str">"db_password"</span> {
+  type      = <span class="tp">string</span>
+  sensitive = <span class="num">true</span>  <span class="cm"># Nunca aparece em logs/plan</span>
+}
+
+<span class="cm"># ── VPC ──</span>
+<span class="kw">resource</span> <span class="str">"aws_vpc"</span> <span class="str">"main"</span> {
+  cidr_block           = <span class="str">"10.0.0.0/16"</span>
+  enable_dns_hostnames = <span class="num">true</span>
+  enable_dns_support   = <span class="num">true</span>
+
+  tags = {
+    Name        = <span class="str">"${var.environment}-vpc"</span>
+    Environment = <span class="fn">var</span>.environment
+    ManagedBy   = <span class="str">"terraform"</span>
+  }
+}
+
+<span class="cm"># ── Subnets (Public + Private) ──</span>
+<span class="kw">resource</span> <span class="str">"aws_subnet"</span> <span class="str">"public_a"</span> {
+  vpc_id                  = <span class="fn">aws_vpc</span>.main.id
+  cidr_block              = <span class="str">"10.0.1.0/24"</span>
+  availability_zone       = <span class="str">"${var.aws_region}a"</span>
+  map_public_ip_on_launch = <span class="num">true</span>
+
+  tags = { Name = <span class="str">"${var.environment}-public-a"</span> }
+}
+
+<span class="kw">resource</span> <span class="str">"aws_subnet"</span> <span class="str">"private_a"</span> {
+  vpc_id            = <span class="fn">aws_vpc</span>.main.id
+  cidr_block        = <span class="str">"10.0.10.0/24"</span>
+  availability_zone = <span class="str">"${var.aws_region}a"</span>
+
+  tags = { Name = <span class="str">"${var.environment}-private-a"</span> }
+}
+
+<span class="kw">resource</span> <span class="str">"aws_subnet"</span> <span class="str">"private_b"</span> {
+  vpc_id            = <span class="fn">aws_vpc</span>.main.id
+  cidr_block        = <span class="str">"10.0.11.0/24"</span>
+  availability_zone = <span class="str">"${var.aws_region}b"</span>
+
+  tags = { Name = <span class="str">"${var.environment}-private-b"</span> }
+}
+
+<span class="cm"># ── Internet Gateway + Route Table ──</span>
+<span class="kw">resource</span> <span class="str">"aws_internet_gateway"</span> <span class="str">"igw"</span> {
+  vpc_id = <span class="fn">aws_vpc</span>.main.id
+}
+
+<span class="kw">resource</span> <span class="str">"aws_route_table"</span> <span class="str">"public"</span> {
+  vpc_id = <span class="fn">aws_vpc</span>.main.id
+
+  route {
+    cidr_block = <span class="str">"0.0.0.0/0"</span>
+    gateway_id = <span class="fn">aws_internet_gateway</span>.igw.id
+  }
+}
+
+<span class="kw">resource</span> <span class="str">"aws_route_table_association"</span> <span class="str">"public_a"</span> {
+  subnet_id      = <span class="fn">aws_subnet</span>.public_a.id
+  route_table_id = <span class="fn">aws_route_table</span>.public.id
+}
+
+<span class="cm"># ── Security Groups ──</span>
+<span class="kw">resource</span> <span class="str">"aws_security_group"</span> <span class="str">"app"</span> {
+  name_prefix = <span class="str">"${var.environment}-app-"</span>
+  vpc_id      = <span class="fn">aws_vpc</span>.main.id
+
+  ingress {
+    from_port   = <span class="num">80</span>
+    to_port     = <span class="num">80</span>
+    protocol    = <span class="str">"tcp"</span>
+    cidr_blocks = [<span class="str">"0.0.0.0/0"</span>]
+  }
+
+  ingress {
+    from_port   = <span class="num">443</span>
+    to_port     = <span class="num">443</span>
+    protocol    = <span class="str">"tcp"</span>
+    cidr_blocks = [<span class="str">"0.0.0.0/0"</span>]
+  }
+
+  egress {
+    from_port   = <span class="num">0</span>
+    to_port     = <span class="num">0</span>
+    protocol    = <span class="str">"-1"</span>
+    cidr_blocks = [<span class="str">"0.0.0.0/0"</span>]
+  }
+}
+
+<span class="kw">resource</span> <span class="str">"aws_security_group"</span> <span class="str">"db"</span> {
+  name_prefix = <span class="str">"${var.environment}-db-"</span>
+  vpc_id      = <span class="fn">aws_vpc</span>.main.id
+
+  ingress {
+    from_port       = <span class="num">5432</span>
+    to_port         = <span class="num">5432</span>
+    protocol        = <span class="str">"tcp"</span>
+    security_groups = [<span class="fn">aws_security_group</span>.app.id]
+  }
+}
+
+<span class="cm"># ── Data Source: AMI mais recente ──</span>
+<span class="kw">data</span> <span class="str">"aws_ami"</span> <span class="str">"amazon_linux"</span> {
+  most_recent = <span class="num">true</span>
+  owners      = [<span class="str">"amazon"</span>]
+
+  filter {
+    name   = <span class="str">"name"</span>
+    values = [<span class="str">"al2023-ami-*-x86_64"</span>]
+  }
+}
+
+<span class="cm"># ── EC2 Instance ──</span>
+<span class="kw">resource</span> <span class="str">"aws_instance"</span> <span class="str">"app"</span> {
+  ami                    = <span class="fn">data</span>.aws_ami.amazon_linux.id
+  instance_type          = <span class="str">"t3.medium"</span>
+  subnet_id              = <span class="fn">aws_subnet</span>.public_a.id
+  vpc_security_group_ids = [<span class="fn">aws_security_group</span>.app.id]
+
+  user_data = <span class="op">&lt;&lt;-EOF</span>
+    #!/bin/bash
+    yum updaté -y
+    yum install -y docker
+    systemctl start docker
+    systemctl enable docker
+  <span class="op">EOF</span>
+
+  tags = {
+    Name        = <span class="str">"${var.environment}-app-server"</span>
+    Environment = <span class="fn">var</span>.environment
+  }
+}
+
+<span class="cm"># ── RDS PostgreSQL ──</span>
+<span class="kw">resource</span> <span class="str">"aws_db_subnet_group"</span> <span class="str">"main"</span> {
+  name       = <span class="str">"${var.environment}-db-subnet"</span>
+  subnet_ids = [
+    <span class="fn">aws_subnet</span>.private_a.id,
+    <span class="fn">aws_subnet</span>.private_b.id,
+  ]
+}
+
+<span class="kw">resource</span> <span class="str">"aws_db_instance"</span> <span class="str">"postgres"</span> {
+  identifier             = <span class="str">"${var.environment}-postgres"</span>
+  engine                 = <span class="str">"postgres"</span>
+  engine_version         = <span class="str">"16.1"</span>
+  instance_class         = <span class="str">"db.t3.medium"</span>
+  allocated_storage      = <span class="num">50</span>
+  max_allocated_storage  = <span class="num">200</span>
+  db_name                = <span class="str">"myapp"</span>
+  username               = <span class="str">"admin"</span>
+  password               = <span class="fn">var</span>.db_password
+  db_subnet_group_name   = <span class="fn">aws_db_subnet_group</span>.main.name
+  vpc_security_group_ids = [<span class="fn">aws_security_group</span>.db.id]
+  skip_final_snapshot    = <span class="num">false</span>
+  multi_az               = <span class="num">true</span>
+  storage_encrypted      = <span class="num">true</span>
+  backup_retention_period = <span class="num">7</span>
+
+  tags = {
+    Name        = <span class="str">"${var.environment}-postgres"</span>
+    Environment = <span class="fn">var</span>.environment
+  }
+}
+
+<span class="cm"># ── Outputs ──</span>
+<span class="kw">output</span> <span class="str">"app_public_ip"</span> {
+  value = <span class="fn">aws_instance</span>.app.public_ip
+}
+
+<span class="kw">output</span> <span class="str">"rds_endpoint"</span> {
+  value = <span class="fn">aws_db_instance</span>.postgres.endpoint
+}
+
+<span class="kw">output</span> <span class="str">"vpc_id"</span> {
+  value = <span class="fn">aws_vpc</span>.main.id
+}</code></pre>
+
+<h4>Workflow: Plan &rarr; Apply</h4>
+<pre data-lang="bash"><code><span class="cm"># Inicializar — baixa providers e configura backend</span>
+$ terraform init
+
+<span class="cm"># Planejar — mostra o que vai criar/alterár/destruir</span>
+$ terraform plan -var="db_password=S3cureP@ss!"
+<span class="cm"># + aws_vpc.main will be created</span>
+<span class="cm"># + aws_subnet.public_a will be created</span>
+<span class="cm"># + aws_instance.app will be created</span>
+<span class="cm"># + aws_db_instance.postgres will be created</span>
+<span class="cm"># Plan: 10 to add, 0 to change, 0 to destroy.</span>
+
+<span class="cm"># Aplicar — executa as mudanças</span>
+$ terraform apply -var="db_password=S3cureP@ss!" -auto-approve
+
+<span class="cm"># Destruir tudo (cuidado em prod!)</span>
+$ terraform destroy</code></pre>
+
+<h4>State: Local vs Remote</h4>
+
+<div class="card blue">
+<div class="card-title">Staté Management</div>
+<p>O <strong>state file</strong> (<code>terraform.tfstate</code>) contém o mapeamento completo entre seu código e os recursos reais. E um JSON com IDs, ARNs, IPs, e <strong>pode conter secrets</strong>.</p>
+<ul>
+<li><strong>Local state</strong> — arquivo no disco. Ok para desenvolvimento solo, mas perigosó para equipes (sem lock, sem backup, risco de perda)</li>
+<li><strong>Remote state (S3 + DynamoDB)</strong> — state centralizado em S3 com criptografia. DynamoDB fornece <strong>locking</strong> para evitar que dois devs apliquem mudanças simultaneamente. E o padrão para produção</li>
+<li><strong>Terraform Cloud</strong> — state gerenciado pela HashiCorp com UI, RBAC, e audit log</li>
+</ul>
+</div>
+
+<h4>Workspaces para Ambientes</h4>
+<pre data-lang="bash"><code><span class="cm"># Criar workspaces para cada ambiente</span>
+$ terraform workspace new dev
+$ terraform workspace new staging
+$ terraform workspace new prod
+
+<span class="cm"># Trocar de workspace</span>
+$ terraform workspace select prod
+
+<span class="cm"># Usar workspace no código</span>
+<span class="cm"># terraform.workspace retorna "dev", "staging", ou "prod"</span>
+
+<span class="cm"># No HCL:</span>
+<span class="cm"># instance_type = terraform.workspace == "prod" ? "t3.large" : "t3.micro"</span></code></pre>
+
+<h4>Modules — Reútilização</h4>
+<pre data-lang="hcl"><code><span class="cm"># ── Estrutura de projeto modular ──</span>
+<span class="cm"># infrastructure/</span>
+<span class="cm">#   modules/</span>
+<span class="cm">#     vpc/           main.tf, variables.tf, outputs.tf</span>
+<span class="cm">#     ecs/           main.tf, variables.tf, outputs.tf</span>
+<span class="cm">#     rds/           main.tf, variables.tf, outputs.tf</span>
+<span class="cm">#   environments/</span>
+<span class="cm">#     prod/          main.tf  (usa os modules)</span>
+<span class="cm">#     staging/       main.tf  (usa os modules)</span>
+
+<span class="cm"># environments/prod/main.tf</span>
+<span class="kw">module</span> <span class="str">"vpc"</span> {
+  source      = <span class="str">"../../modules/vpc"</span>
+  environment = <span class="str">"prod"</span>
+  cidr_block  = <span class="str">"10.0.0.0/16"</span>
+}
+
+<span class="kw">module</span> <span class="str">"ecs"</span> {
+  source      = <span class="str">"../../modules/ecs"</span>
+  environment = <span class="str">"prod"</span>
+  vpc_id      = <span class="fn">module</span>.vpc.vpc_id
+  subnet_ids  = <span class="fn">module</span>.vpc.private_subnet_ids
+}
+
+<span class="kw">module</span> <span class="str">"rds"</span> {
+  source      = <span class="str">"../../modules/rds"</span>
+  environment = <span class="str">"prod"</span>
+  vpc_id      = <span class="fn">module</span>.vpc.vpc_id
+  subnet_ids  = <span class="fn">module</span>.vpc.private_subnet_ids
+  db_password = <span class="fn">var</span>.db_password
+}</code></pre>
+
+<!-- ═══ PULUMI ═══ -->
+<h3>Pulumi — IaC em Linguagens Reais</h3>
+
+<p>Pulumi permite definir infraestrutura usando <strong>linguagens de programação reais</strong> — TypeScript, Python, Go, C#, Java. Em vez de aprender HCL, você usa a linguagem que já conhece, com autocomplete, type checking, loops, condicionais, e todo o ecossistema (npm, pip, etc.).</p>
+
+<h4>Terraform vs Pulumi</h4>
+<div class="card">
+<div class="card-title">Principais Diferenças</div>
+<ul>
+<li><strong>Linguagem</strong> — Terraform usa HCL (DSL própria); Pulumi usa TypeScript, Python, Go, etc.</li>
+<li><strong>State</strong> — Terraform usa tfstate local/S3; Pulumi usa Pulumi Cloud (gratuito para individuos) ou self-hosted backends</li>
+<li><strong>Lógica</strong> — HCL tem expressões limitadas; Pulumi tem a linguagem inteira (for loops, map, filter, classes)</li>
+<li><strong>Testing</strong> — Pulumi permite unit tests nativos com Jest/pytest; Terraform usa terratest (Go)</li>
+<li><strong>Ecossistema</strong> — Terraform tem mais providers e community modules; Pulumi está crescendo</li>
+</ul>
+</div>
+
+<h4>Exemplo: S3 Bucket + Lambda (TypeScript)</h4>
+<pre data-lang="typescript"><code><span class="cm">// Pulumi — infraestrutura em TypeScript</span>
+<span class="kw">import</span> * <span class="kw">as</span> pulumi <span class="kw">from</span> <span class="str">"@pulumi/pulumi"</span>;
+<span class="kw">import</span> * <span class="kw">as</span> aws <span class="kw">from</span> <span class="str">"@pulumi/aws"</span>;
+
+<span class="cm">// Configuração por stack (equivalente a workspaces)</span>
+<span class="kw">const</span> config = <span class="kw">new</span> pulumi.<span class="tp">Config</span>();
+<span class="kw">const</span> environment = config.<span class="fn">require</span>(<span class="str">"environment"</span>);
+
+<span class="cm">// S3 Bucket para uploads</span>
+<span class="kw">const</span> uploadBucket = <span class="kw">new</span> aws.s3.<span class="tp">Bucket</span>(<span class="str">"uploads"</span>, {
+  bucket: <span class="str">`myapp-</span>${environment}<span class="str">-uploads`</span>,
+  versioning: { enabled: <span class="num">true</span> },
+  serverSideEncryptionConfiguration: {
+    rule: {
+      applyServerSideEncryptionByDefault: {
+        sseAlgorithm: <span class="str">"AES256"</span>,
+      },
+    },
+  },
+  tags: {
+    Environment: environment,
+    ManagedBy: <span class="str">"pulumi"</span>,
+  },
+});
+
+<span class="cm">// IAM Role para Lambda</span>
+<span class="kw">const</span> lambdaRole = <span class="kw">new</span> aws.iam.<span class="tp">Role</span>(<span class="str">"lambda-role"</span>, {
+  assumeRolePolicy: JSON.<span class="fn">stringify</span>({
+    Version: <span class="str">"2012-10-17"</span>,
+    Statement: [{
+      Action: <span class="str">"sts:AssumeRole"</span>,
+      Effect: <span class="str">"Allow"</span>,
+      Principal: { Service: <span class="str">"lambda.amazonaws.com"</span> },
+    }],
+  }),
+});
+
+<span class="cm">// Attach policies</span>
+<span class="kw">new</span> aws.iam.<span class="tp">RolePolicyAttachment</span>(<span class="str">"lambda-basic"</span>, {
+  role: lambdaRole.name,
+  policyArn: aws.iam.<span class="tp">ManagedPolicy</span>.AWSLambdaBasicExecutionRole,
+});
+
+<span class="cm">// Lambda Function — processar uploads do S3</span>
+<span class="kw">const</span> processor = <span class="kw">new</span> aws.lambda.<span class="tp">Function</span>(<span class="str">"image-processor"</span>, {
+  runtime: aws.lambda.<span class="tp">Runtime</span>.NodeJS20dX,
+  handler: <span class="str">"index.handler"</span>,
+  role: lambdaRole.arn,
+  code: <span class="kw">new</span> pulumi.asset.<span class="tp">AssetArchive</span>({
+    <span class="str">"index.js"</span>: <span class="kw">new</span> pulumi.asset.<span class="tp">StringAsset</span>(<span class="str">`
+      exports.handler = async (event) => {
+        const records = event.Records || [];
+        for (const record of records) {
+          console.log('Processing:', record.s3.object.key);
+          // Image processing logic here
+        }
+        return { statusCode: 200 };
+      };
+    `</span>),
+  }),
+  environment: {
+    variables: {
+      BUCKET_NAME: uploadBucket.bucket,
+      ENVIRONMENT: environment,
+    },
+  },
+  timeout: <span class="num">30</span>,
+  memorySize: <span class="num">256</span>,
+});
+
+<span class="cm">// S3 Event Notification — trigger Lambda on upload</span>
+uploadBucket.<span class="fn">onObjectCreated</span>(<span class="str">"on-upload"</span>, processor);
+
+<span class="cm">// Exports (equivalente a outputs)</span>
+<span class="kw">export</span> <span class="kw">const</span> bucketName = uploadBucket.bucket;
+<span class="kw">export</span> <span class="kw">const</span> lambdaArn = processor.arn;</code></pre>
+
+<pre data-lang="bash"><code><span class="cm"># Workflow Pulumi</span>
+$ pulumi stack init dev          <span class="cm"># Criar stack (equivalente a workspace)</span>
+$ pulumi config set environment dev
+$ pulumi preview                 <span class="cm"># Equivalente a terraform plan</span>
+$ pulumi up                      <span class="cm"># Equivalente a terraform apply</span>
+$ pulumi destroy                 <span class="cm"># Equivalente a terraform destroy</span></code></pre>
+
+<!-- ═══ AWS CDK ═══ -->
+<h3>AWS CDK — Cloud Development Kit</h3>
+
+<p>O AWS CDK permite definir infraestrutura AWS usando TypeScript (ou Python, Java, Go, C#) e sintetiza para <strong>CloudFormation templates</strong>. A diferença chave do Pulumi: CDK gera CloudFormation YAML que é executado pelo serviço CloudFormation da AWS — não interáge diretamente com APIs como Pulumi faz.</p>
+
+<h4>Constructs: L1, L2, L3</h4>
+<ul>
+<li><strong>L1 (Cfn*)</strong> — mapeamento 1:1 com CloudFormation. Ex: <code>CfnBucket</code>. Máximo controle, verboso</li>
+<li><strong>L2 (Default)</strong> — abstrações com defaults inteligentes. Ex: <code>Bucket</code>. Cria bucket + policy + encryption com poucas linhas</li>
+<li><strong>L3 (Patterns)</strong> — soluções completas. Ex: <code>LambdaRestApi</code>. Cria API Gateway + Lambda + IAM em uma linha</li>
+</ul>
+
+<h4>Exemplo: API Gateway + Lambda + DynamoDB</h4>
+<pre data-lang="typescript"><code><span class="cm">// AWS CDK — TypeScript</span>
+<span class="kw">import</span> * <span class="kw">as</span> cdk <span class="kw">from</span> <span class="str">"aws-cdk-lib"</span>;
+<span class="kw">import</span> * <span class="kw">as</span> lambda <span class="kw">from</span> <span class="str">"aws-cdk-lib/aws-lambda"</span>;
+<span class="kw">import</span> * <span class="kw">as</span> dynamodb <span class="kw">from</span> <span class="str">"aws-cdk-lib/aws-dynamodb"</span>;
+<span class="kw">import</span> * <span class="kw">as</span> apigw <span class="kw">from</span> <span class="str">"aws-cdk-lib/aws-apigateway"</span>;
+<span class="kw">import</span> { <span class="tp">Construct</span> } <span class="kw">from</span> <span class="str">"constructs"</span>;
+
+<span class="kw">export class</span> <span class="tp">ApiStack</span> <span class="kw">extends</span> cdk.<span class="tp">Stack</span> {
+  <span class="kw">constructor</span>(scope: <span class="tp">Construct</span>, id: <span class="tp">string</span>, props?: cdk.<span class="tp">StackProps</span>) {
+    <span class="kw">super</span>(scope, id, props);
+
+    <span class="cm">// DynamoDB Table — L2 construct com defaults inteligentes</span>
+    <span class="kw">const</span> table = <span class="kw">new</span> dynamodb.<span class="tp">Table</span>(<span class="kw">this</span>, <span class="str">"ItemsTable"</span>, {
+      tableName: <span class="str">"items"</span>,
+      partitionKey: {
+        name: <span class="str">"id"</span>,
+        type: dynamodb.<span class="tp">AttributeType</span>.STRING,
+      },
+      billingMode: dynamodb.<span class="tp">BillingMode</span>.PAY_PER_REQUEST,
+      removalPolicy: cdk.<span class="tp">RemovalPolicy</span>.RETAIN,
+      pointInTimeRecovery: <span class="num">true</span>,
+    });
+
+    <span class="cm">// Lambda Function — L2 construct</span>
+    <span class="kw">const</span> handler = <span class="kw">new</span> lambda.<span class="tp">Function</span>(<span class="kw">this</span>, <span class="str">"ItemsHandler"</span>, {
+      runtime: lambda.<span class="tp">Runtime</span>.NODEJS_20_X,
+      handler: <span class="str">"index.handler"</span>,
+      code: lambda.<span class="tp">Code</span>.<span class="fn">fromAsset</span>(<span class="str">"lambda"</span>),
+      environment: {
+        TABLE_NAME: table.tableName,
+      },
+      timeout: cdk.<span class="tp">Duration</span>.<span class="fn">seconds</span>(<span class="num">30</span>),
+      memorySize: <span class="num">256</span>,
+      tracing: lambda.<span class="tp">Tracing</span>.ACTIVE,
+    });
+
+    <span class="cm">// CDK cuida das permissões automáticamente!</span>
+    table.<span class="fn">grantReadWriteData</span>(handler);
+
+    <span class="cm">// API Gateway — L3 construct (pattern)</span>
+    <span class="kw">const</span> api = <span class="kw">new</span> apigw.<span class="tp">LambdaRestApi</span>(<span class="kw">this</span>, <span class="str">"ItemsApi"</span>, {
+      handler: handler,
+      proxy: <span class="num">false</span>,
+      deployOptions: {
+        stageName: <span class="str">"prod"</span>,
+        throttlingRateLimit: <span class="num">100</span>,
+        throttlingBurstLimit: <span class="num">50</span>,
+      },
+    });
+
+    <span class="cm">// Definir rotas manualmente</span>
+    <span class="kw">const</span> items = api.root.<span class="fn">addResource</span>(<span class="str">"items"</span>);
+    items.<span class="fn">addMethod</span>(<span class="str">"GET"</span>);    <span class="cm">// GET /items</span>
+    items.<span class="fn">addMethod</span>(<span class="str">"POST"</span>);   <span class="cm">// POST /items</span>
+
+    <span class="kw">const</span> item = items.<span class="fn">addResource</span>(<span class="str">"{id}"</span>);
+    item.<span class="fn">addMethod</span>(<span class="str">"GET"</span>);     <span class="cm">// GET /items/{id}</span>
+    item.<span class="fn">addMethod</span>(<span class="str">"PUT"</span>);     <span class="cm">// PUT /items/{id}</span>
+    item.<span class="fn">addMethod</span>(<span class="str">"DELETE"</span>);  <span class="cm">// DELETE /items/{id}</span>
+
+    <span class="cm">// Outputs</span>
+    <span class="kw">new</span> cdk.<span class="tp">CfnOutput</span>(<span class="kw">this</span>, <span class="str">"ApiUrl"</span>, {
+      value: api.url!,
+      description: <span class="str">"API Gateway URL"</span>,
+    });
+  }
+}</code></pre>
+
+<pre data-lang="bash"><code><span class="cm"># Workflow CDK</span>
+$ cdk init app --language=typescript  <span class="cm"># Criar projeto</span>
+$ cdk synth                           <span class="cm"># Gerar CloudFormation template</span>
+$ cdk diff                            <span class="cm"># Equivalente a terraform plan</span>
+$ cdk deploy                          <span class="cm"># Deploy via CloudFormation</span>
+$ cdk destroy                         <span class="cm"># Remover stack</span></code></pre>
+
+<div class="tip info">
+<span class="tip-icon">i</span>
+<div><strong>CDK vs Pulumi:</strong> CDK gera CloudFormation como intermediário (o state é gerenciado pelo serviço CloudFormation). Pulumi interáge diretamente com as APIs dos cloud providers. Na prática, CDK é melhor quando você já está investido no ecossistema AWS. Pulumi é melhor para multi-cloud.</div>
+</div>
+
+<!-- ═══ CLOUDFORMATION ═══ -->
+<h3>CloudFormation — O Nativo da AWS</h3>
+
+<p>CloudFormation é o serviço de IaC nativo da AWS. Templates em YAML (ou JSON) descrevem os recursos, e a AWS gerência o provisionamento, o estado, e o rollback automático em caso de falha. É o "backend" que o CDK usa por baixo dos panos.</p>
+
+<h4>Exemplo: S3 + Lambda + SNS</h4>
+<pre data-lang="yaml"><code><span class="cm"># cloudformation-template.yml</span>
+<span class="fn">AWSTemplateFormatVersion</span>: <span class="str">"2010-09-09"</span>
+<span class="fn">Description</span>: <span class="str">"S3 upload processor with SNS notification"</span>
+
+<span class="fn">Parameters</span>:
+  <span class="fn">Environment</span>:
+    <span class="fn">Type</span>: <span class="tp">String</span>
+    <span class="fn">Default</span>: <span class="str">"prod"</span>
+    <span class="fn">AllowedValues</span>: [<span class="str">"dev"</span>, <span class="str">"staging"</span>, <span class="str">"prod"</span>]
+
+<span class="fn">Resources</span>:
+  <span class="fn">UploadBucket</span>:
+    <span class="fn">Type</span>: <span class="tp">AWS::S3::Bucket</span>
+    <span class="fn">Properties</span>:
+      <span class="fn">BucketName</span>: !Sub <span class="str">"myapp-${Environment}-uploads"</span>
+      <span class="fn">VersioningConfiguration</span>:
+        <span class="fn">Status</span>: <span class="str">"Enabled"</span>
+      <span class="fn">BucketEncryption</span>:
+        <span class="fn">ServerSideEncryptionConfiguration</span>:
+          - <span class="fn">ServerSideEncryptionByDefault</span>:
+              <span class="fn">SSEAlgorithm</span>: <span class="str">"AES256"</span>
+
+  <span class="fn">NotificationTopic</span>:
+    <span class="fn">Type</span>: <span class="tp">AWS::SNS::Topic</span>
+    <span class="fn">Properties</span>:
+      <span class="fn">TopicName</span>: !Sub <span class="str">"${Environment}-upload-notifications"</span>
+
+<span class="fn">Outputs</span>:
+  <span class="fn">BucketArn</span>:
+    <span class="fn">Value</span>: !GetAtt UploadBucket.Arn
+  <span class="fn">TopicArn</span>:
+    <span class="fn">Value</span>: !Ref NotificationTopic</code></pre>
+
+<p><strong>Drift Detection:</strong> CloudFormation tem drift detection nativo — <code>aws cloudformation detect-stack-drift --stack-name mystack</code> compara o estado real com o templaté e reporta diferenças. <strong>Nested Stacks</strong> permitem compor templates maiores a partir de sub-templates, similar a modules no Terraform.</p>
+
+<!-- ═══ ANSIBLE ═══ -->
+<h3>Ansible — Configuration Management + IaC</h3>
+
+<p>Ansible é uma ferramenta de <strong>configuration management</strong> que também faz IaC. A diferença fundamental: enquanto Terraform provisiona infraestrutura (cria VMs, redes, bancos), Ansible <strong>configura</strong> o que está dentro dessas VMs (instala pacotes, copia arquivos, gerência serviços). Na prática, muitas equipes usam <strong>Terraform + Ansible</strong> juntos.</p>
+
+<h4>Conceitos</h4>
+<ul>
+<li><strong>Playbooks</strong> — arquivos YAML que descrevem as tarefas a executar</li>
+<li><strong>Roles</strong> — pacotes reútilizáveis de tasks, handlers, templates e variables</li>
+<li><strong>Inventory</strong> — lista de servidores (hosts) a gerenciar</li>
+<li><strong>Agentless</strong> — não precisa instalar nada nós servidores, usa SSH</li>
+<li><strong>Idempotente</strong> — tasks verificam o estado antes de agir (ex: "instale nginx" não reinstala se já existe)</li>
+</ul>
+
+<h4>Exemplo: Playbook de Setup de Servidor</h4>
+<pre data-lang="yaml"><code><span class="cm"># playbook.yml — Configurar servidor web</span>
+---
+- <span class="fn">name</span>: <span class="str">Setup web server</span>
+  <span class="fn">hosts</span>: <span class="str">webservers</span>
+  <span class="fn">become</span>: <span class="num">true</span>
+
+  <span class="fn">vars</span>:
+    <span class="fn">app_port</span>: <span class="num">3000</span>
+    <span class="fn">node_version</span>: <span class="str">"20"</span>
+
+  <span class="fn">tasks</span>:
+    - <span class="fn">name</span>: <span class="str">Updaté system packages</span>
+      <span class="fn">apt</span>:
+        <span class="fn">update_cache</span>: <span class="num">true</span>
+        <span class="fn">upgrade</span>: <span class="str">dist</span>
+
+    - <span class="fn">name</span>: <span class="str">Install required packages</span>
+      <span class="fn">apt</span>:
+        <span class="fn">name</span>:
+          - <span class="str">nginx</span>
+          - <span class="str">certbot</span>
+          - <span class="str">python3-certbot-nginx</span>
+          - <span class="str">git</span>
+          - <span class="str">curl</span>
+        <span class="fn">state</span>: <span class="str">present</span>
+
+    - <span class="fn">name</span>: <span class="str">Install Node.js via nvm</span>
+      <span class="fn">shell</span>: |
+        curl -fsSL https://deb.nodesource.com/setup_{{ node_version }}.x | bash -
+        apt-get install -y nodejs
+      <span class="fn">args</span>:
+        <span class="fn">creates</span>: <span class="str">/usr/bin/node</span>
+
+    - <span class="fn">name</span>: <span class="str">Copy Nginx config</span>
+      <span class="fn">template</span>:
+        <span class="fn">src</span>: <span class="str">nginx.conf.j2</span>
+        <span class="fn">dest</span>: <span class="str">/etc/nginx/sites-available/myapp</span>
+      <span class="fn">notify</span>: <span class="str">Restart Nginx</span>
+
+    - <span class="fn">name</span>: <span class="str">Enable Nginx site</span>
+      <span class="fn">file</span>:
+        <span class="fn">src</span>: <span class="str">/etc/nginx/sites-available/myapp</span>
+        <span class="fn">dest</span>: <span class="str">/etc/nginx/sites-enabled/myapp</span>
+        <span class="fn">state</span>: <span class="str">link</span>
+
+    - <span class="fn">name</span>: <span class="str">Deploy application</span>
+      <span class="fn">git</span>:
+        <span class="fn">repo</span>: <span class="str">https://github.com/myorg/myapp.git</span>
+        <span class="fn">dest</span>: <span class="str">/opt/myapp</span>
+        <span class="fn">version</span>: <span class="str">main</span>
+      <span class="fn">notify</span>: <span class="str">Restart App</span>
+
+  <span class="fn">handlers</span>:
+    - <span class="fn">name</span>: <span class="str">Restart Nginx</span>
+      <span class="fn">service</span>:
+        <span class="fn">name</span>: <span class="str">nginx</span>
+        <span class="fn">state</span>: <span class="str">restarted</span>
+
+    - <span class="fn">name</span>: <span class="str">Restart App</span>
+      <span class="fn">systemd</span>:
+        <span class="fn">name</span>: <span class="str">myapp</span>
+        <span class="fn">state</span>: <span class="str">restarted</span></code></pre>
+
+<pre data-lang="ini"><code><span class="cm"># inventory.ini</span>
+[webservers]
+<span class="str">web1.myapp.com</span> <span class="fn">ansible_user</span>=ubuntu
+<span class="str">web2.myapp.com</span> <span class="fn">ansible_user</span>=ubuntu
+
+[databases]
+<span class="str">db1.myapp.com</span> <span class="fn">ansible_user</span>=ubuntu</code></pre>
+
+<pre data-lang="bash"><code><span class="cm"># Executar playbook</span>
+$ ansible-playbook -i inventory.ini playbook.yml</code></pre>
+
+<!-- ═══ CROSSPLANE ═══ -->
+<h3>Crossplane — IaC Kubernetes-Native</h3>
+
+<p>Crossplane é um projeto open-source que transforma o Kubernetes em um <strong>plano de controle universal</strong> para infraestrutura. Em vez de usar Terraform CLI, você define recursos cloud como <strong>Custom Resource Definitions (CRDs)</strong> do Kubernetes e aplica com <code>kubectl</code>.</p>
+
+<pre data-lang="yaml"><code><span class="cm"># Crossplane — criar RDS via Kubernetes CRD</span>
+<span class="fn">apiVersion</span>: <span class="str">database.aws.crossplane.io/v1beta1</span>
+<span class="fn">kind</span>: <span class="tp">RDSInstance</span>
+<span class="fn">metadata</span>:
+  <span class="fn">name</span>: <span class="str">prod-postgres</span>
+<span class="fn">spec</span>:
+  <span class="fn">forProvider</span>:
+    <span class="fn">region</span>: <span class="str">us-east-1</span>
+    <span class="fn">dbInstanceClass</span>: <span class="str">db.t3.medium</span>
+    <span class="fn">engine</span>: <span class="str">postgres</span>
+    <span class="fn">engineVersion</span>: <span class="str">"16"</span>
+    <span class="fn">masterUsername</span>: <span class="str">admin</span>
+    <span class="fn">allocatedStorage</span>: <span class="num">50</span>
+  <span class="fn">writeConnectionSecretToRef</span>:
+    <span class="fn">name</span>: <span class="str">db-credentials</span>
+    <span class="fn">namespace</span>: <span class="str">default</span></code></pre>
+
+<p><strong>Vantagem:</strong> equipes que já usam Kubernetes podem gerenciar infraestrutura com as mesmas ferramentas (kubectl, ArgoCD, GitOps). <strong>Desvantagem:</strong> requer um cluster Kubernetes rodando, curva de aprendizado mais alta, ecossistema menor que Terraform.</p>
+
+<!-- ═══ COMPARISON TABLE ═══ -->
+<h3>Tabela Comparativa</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Criterio</th>
+<th>Terraform</th>
+<th>Pulumi</th>
+<th>AWS CDK</th>
+<th>CloudFormation</th>
+<th>Ansible</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Linguagem</strong></td>
+<td>HCL (DSL)</td>
+<td>TS, Python, Go, C#</td>
+<td>TS, Python, Go, Java</td>
+<td>YAML/JSON</td>
+<td>YAML</td>
+</tr>
+<tr>
+<td><strong>Abordagem</strong></td>
+<td>Declarativo</td>
+<td>Declarativo + Imperativo</td>
+<td>Declarativo (gera CFn)</td>
+<td>Declarativo</td>
+<td>Imperativo (idempotente)</td>
+</tr>
+<tr>
+<td><strong>Cloud Support</strong></td>
+<td>Multi-cloud (AWS, GCP, Azure, +300 providers)</td>
+<td>Multi-cloud</td>
+<td>AWS only</td>
+<td>AWS only</td>
+<td>Multi-cloud + on-premise</td>
+</tr>
+<tr>
+<td><strong>State</strong></td>
+<td>Local / S3 / Terraform Cloud</td>
+<td>Pulumi Cloud / S3</td>
+<td>CloudFormation (AWS)</td>
+<td>CloudFormation (AWS)</td>
+<td>Stateless</td>
+</tr>
+<tr>
+<td><strong>Forte em</strong></td>
+<td>Provisionamento cloud</td>
+<td>Devs que preferem código real</td>
+<td>Equipes full-AWS</td>
+<td>Infra AWS nativa</td>
+<td>Config management</td>
+</tr>
+<tr>
+<td><strong>Learning Curve</strong></td>
+<td>Media (HCL é simples)</td>
+<td>Baixa (se sabe a linguagem)</td>
+<td>Media</td>
+<td>Alta (verboso)</td>
+<td>Baixa</td>
+</tr>
+<tr>
+<td><strong>Testing</strong></td>
+<td>Terratest (Go)</td>
+<td>Jest, pytest (nativo)</td>
+<td>CDK assertions</td>
+<td>cfn-lint, taskcat</td>
+<td>Molecule</td>
+</tr>
+<tr>
+<td><strong>Comunidade</strong></td>
+<td>Muito grande</td>
+<td>Crescente</td>
+<td>Grande (AWS)</td>
+<td>Grande (AWS)</td>
+<td>Muito grande</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Recomendação pragmatica:</strong> Para a maioria dos projetos, <strong>Terraform</strong> é a escolha padrão — maior comunidade, multi-cloud, documentação abundante. Se você é 100% AWS e prefere TypeScript, <strong>CDK</strong> é excelente. Se você quer evitar DSLs e prefere código real, <strong>Pulumi</strong>. Para configuração de servidores, combine com <strong>Ansible</strong>.</div>
+</div>
+
+<!-- ═══ BEST PRACTICES ═══ -->
+<h3>IaC Best Practices</h3>
+
+<div class="card">
+<div class="card-title">Práticas Essenciais</div>
+<ul>
+<li><strong>Modules para reútilização</strong> — nunca copie/cole blocos de infra. Crie modules (Terraform) ou constructs (CDK) parametrizados. Um module VPC, um module ECS, um module RDS — compostos nós ambientes</li>
+<li><strong>Remote state com locking</strong> — NUNCA use state local em equipes. S3 + DynamoDB (Terraform), Pulumi Cloud, ou CloudFormation gerenciado. Lock previne corrupção por acesso concorrente</li>
+<li><strong>Secrets management</strong> — NUNCA armazene senhas no state ou no código. Use AWS Secrets Manager, HashiCorp Vault, ou variáveis de ambiente CI/CD. Terraform <code>sensitive = true</code> ajuda, mas o state ainda pode conter o valor</li>
+<li><strong>CI/CD para infraestrutura</strong> — use ferramentas como <strong>Atlantis</strong> (auto plan/apply em PRs do Terraform), <strong>Spacelift</strong>, ou GitHub Actions. Nunca aplique mudanças de infra direto do laptop</li>
+<li><strong>Tagging strategy</strong> — toda resource deve ter tags: Environment, Team, CostCenter, ManagedBy=terraform. Isso habilita cost allocation e auditoria</li>
+<li><strong>Cost estimation</strong> — use <strong>Infracost</strong> para estimar custos antes de aplicar. Integra com PRs e mostra "este PR vai aumentar o custo mensal em $150"</li>
+<li><strong>Small, focused changes</strong> — PRs de infra devem ser pequenós e focados. "Adicionar RDS" é um PR. "Mudar VPC + RDS + ECS + monitoring" e uma bomba-relogio</li>
+<li><strong>Drift detection regular</strong> — rode <code>terraform plan</code> periodicamente em CI para detectar mudanças manuais</li>
+</ul>
+</div>
+
+<h4>Atlantis — CI/CD para Terraform</h4>
+<pre data-lang="yaml"><code><span class="cm"># atlantis.yaml — configuração do Atlantis</span>
+<span class="fn">version</span>: <span class="num">3</span>
+<span class="fn">projects</span>:
+  - <span class="fn">name</span>: <span class="str">production</span>
+    <span class="fn">dir</span>: <span class="str">environments/prod</span>
+    <span class="fn">workspace</span>: <span class="str">prod</span>
+    <span class="fn">autoplan</span>:
+      <span class="fn">enabled</span>: <span class="num">true</span>
+      <span class="fn">when_modified</span>:
+        - <span class="str">"**/*.tf"</span>
+        - <span class="str">"../../modules/**/*.tf"</span>
+    <span class="fn">apply_requirements</span>:
+      - <span class="str">approved</span>       <span class="cm"># Requer aprovação no PR</span>
+      - <span class="str">mergeable</span>      <span class="cm"># PR deve ser mergeável</span>
+  - <span class="fn">name</span>: <span class="str">staging</span>
+    <span class="fn">dir</span>: <span class="str">environments/staging</span>
+    <span class="fn">workspace</span>: <span class="str">staging</span>
+    <span class="fn">autoplan</span>:
+      <span class="fn">enabled</span>: <span class="num">true</span></code></pre>
+
+<div class="diagram">
+<div class="diagram-box green">Dev abre PR<br><small>com mudança .tf</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">Atlantis roda<br><small>terraform plan</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">Plan como<br><small>comentário no PR</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">Code Review<br><small>+ Aprovação</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box cyan">atlantis apply<br><small>(merge executa)</small></div>
+</div>
+
+<h4>Infracost — Estimativa de Custo</h4>
+<pre data-lang="bash"><code><span class="cm"># Instalar e rodar Infracost</span>
+$ infracost breakdown --path=environments/prod
+
+<span class="cm"># Saída:</span>
+<span class="cm"># Project: environments/prod</span>
+<span class="cm"># Name                        Monthly Qty  Unit    Monthly Cost</span>
+<span class="cm"># aws_instance.app</span>
+<span class="cm">#   ├─ Instance usage (t3.medium)    730  hours        $30.37</span>
+<span class="cm">#   └─ root_block_device (gp3)        30  GB            $2.40</span>
+<span class="cm"># aws_db_instance.postgres</span>
+<span class="cm">#   ├─ Database instance (db.t3.medium) 730 hours     $49.06</span>
+<span class="cm">#   └─ Storage (gp2, 50 GB)           50  GB            $5.75</span>
+<span class="cm"># OVERALL TOTAL:                                      $87.58</span>
+
+<span class="cm"># Integrar com PR para mostrar diff de custo</span>
+$ infracost diff --path=environments/prod --compare-to=infracost-base.json</code></pre>
+
+<!-- ═══ MINI SYSTEM DESIGN ═══ -->
+<h3>Mini System Design: Production Environment com Terraform</h3>
+
+<p><strong>Cenário:</strong> Você precisa configurar um ambiente de produção completo para uma aplicação web usando Terraform. A aplicação roda em containers (ECS), usa PostgreSQL (RDS), cache (Redis/ElastiCache), e precisa de ambientes dev/staging/prod isolados.</p>
+
+<div class="diagram">
+<div class="diagram-box green">modules/vpc<br><small>VPC + Subnets + NAT</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box blue">modules/ecs<br><small>Cluster + Service + ALB</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box purple">modules/rds<br><small>PostgreSQL Multi-AZ</small></div>
+<div class="diagram-arrow">&rarr;</div>
+<div class="diagram-box orange">modules/redis<br><small>ElastiCache Cluster</small></div>
+</div>
+
+<h4>Estrutura do Projeto</h4>
+<pre data-lang="bash"><code><span class="cm"># Estrutura modular recomendada</span>
+infrastructure/
+├── modules/
+│   ├── vpc/
+│   │   ├── main.tf         <span class="cm"># VPC, subnets, NAT, IGW, route tables</span>
+│   │   ├── variables.tf    <span class="cm"># cidr_block, environment, azs</span>
+│   │   └── outputs.tf      <span class="cm"># vpc_id, public_subnet_ids, private_subnet_ids</span>
+│   ├── ecs/
+│   │   ├── main.tf         <span class="cm"># ECS Cluster, Service, Task Definition, ALB</span>
+│   │   ├── variables.tf    <span class="cm"># image_uri, cpu, memory, desired_count</span>
+│   │   └── outputs.tf      <span class="cm"># service_url, cluster_arn</span>
+│   ├── rds/
+│   │   ├── main.tf         <span class="cm"># RDS instance, subnet group, security group</span>
+│   │   ├── variables.tf    <span class="cm"># engine, instance_class, db_password</span>
+│   │   └── outputs.tf      <span class="cm"># endpoint, port</span>
+│   └── redis/
+│       ├── main.tf         <span class="cm"># ElastiCache cluster, subnet group</span>
+│       ├── variables.tf    <span class="cm"># node_type, num_cache_nodes</span>
+│       └── outputs.tf      <span class="cm"># endpoint</span>
+├── environments/
+│   ├── dev/
+│   │   ├── main.tf         <span class="cm"># module calls com parametros dev</span>
+│   │   ├── terraform.tfvars
+│   │   └── backend.tf      <span class="cm"># S3 backend com key dev/</span>
+│   ├── staging/
+│   │   └── ...
+│   └── prod/
+│       ├── main.tf         <span class="cm"># module calls com parametros prod</span>
+│       ├── terraform.tfvars
+│       └── backend.tf      <span class="cm"># S3 backend com key prod/</span>
+└── atlantis.yaml           <span class="cm"># CI/CD config</span></code></pre>
+
+<h4>Environment Composition</h4>
+<pre data-lang="hcl"><code><span class="cm"># environments/prod/main.tf</span>
+<span class="kw">module</span> <span class="str">"vpc"</span> {
+  source      = <span class="str">"../../modules/vpc"</span>
+  environment = <span class="str">"prod"</span>
+  cidr_block  = <span class="str">"10.0.0.0/16"</span>
+  azs         = [<span class="str">"us-east-1a"</span>, <span class="str">"us-east-1b"</span>, <span class="str">"us-east-1c"</span>]
+}
+
+<span class="kw">module</span> <span class="str">"ecs"</span> {
+  source         = <span class="str">"../../modules/ecs"</span>
+  environment    = <span class="str">"prod"</span>
+  vpc_id         = <span class="fn">module</span>.vpc.vpc_id
+  public_subnets = <span class="fn">module</span>.vpc.public_subnet_ids
+  private_subnets = <span class="fn">module</span>.vpc.private_subnet_ids
+  image_uri      = <span class="str">"123456789.dkr.ecr.us-east-1.amazonaws.com/myapp:latest"</span>
+  cpu            = <span class="num">512</span>
+  memory         = <span class="num">1024</span>
+  desired_count  = <span class="num">3</span>    <span class="cm"># Prod tem 3 tasks, dev tem 1</span>
+}
+
+<span class="kw">module</span> <span class="str">"rds"</span> {
+  source          = <span class="str">"../../modules/rds"</span>
+  environment     = <span class="str">"prod"</span>
+  vpc_id          = <span class="fn">module</span>.vpc.vpc_id
+  subnet_ids      = <span class="fn">module</span>.vpc.private_subnet_ids
+  instance_class  = <span class="str">"db.r6g.large"</span>   <span class="cm"># Prod usa instance maior</span>
+  multi_az        = <span class="num">true</span>              <span class="cm"># Prod tem Multi-AZ</span>
+  db_password     = <span class="fn">var</span>.db_password
+}
+
+<span class="kw">module</span> <span class="str">"redis"</span> {
+  source          = <span class="str">"../../modules/redis"</span>
+  environment     = <span class="str">"prod"</span>
+  vpc_id          = <span class="fn">module</span>.vpc.vpc_id
+  subnet_ids      = <span class="fn">module</span>.vpc.private_subnet_ids
+  node_type       = <span class="str">"cache.r6g.large"</span>
+  num_cache_nodes = <span class="num">2</span>
+}</code></pre>
+
+<p><strong>CI/CD com Atlantis:</strong> Atlantis monitora PRs. Quando alguém abre um PR tocando <code>environments/prod/*.tf</code>, Atlantis roda <code>terraform plan</code> automáticamente e posta o resultado como comentário no PR. Após aprovação e merge, roda <code>terraform apply</code>. Zero acesso manual ao state ou CLI.</p>
+
+<!-- ═══ ARMADILHAS ═══ -->
+<h3>Armadilhas Comuns</h3>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Mudanças manuais causando drift:</strong> Alguém edita um security group pelo console AWS "só para testar". Próximo <code>terraform apply</code> reverte a mudança ou pior — falha com conflito. Regra: <strong>NUNCA</strong> modifique infraestrutura manualmente quando usa IaC. Todo cambio deve passar pelo código.</div>
+</div>
+
+<div class="tip bad">
+<span class="tip-icon">&#10060;</span>
+<div><strong>Secrets no state file:</strong> O state do Terraform contém valores sensivos em texto plano (senhas de banco, tokens). Se o state está em S3 sem criptografia ou em um repositório Git, seus secrets estão expostos. Solução: <strong>S3 com server-side encryption + bucket policy restritiva + DynamoDB lock</strong>. Melhor ainda: use Vault ou Secrets Manager e referencie por data source.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Configurações Terraform monoliticas:</strong> Um único <code>main.tf</code> com 2000 linhas gerenciando VPC + ECS + RDS + S3 + IAM + CloudFront + Route53. O plan demora 5 minutos, qualquer mudança e arriscada. Solução: <strong>modules + ambientes separados</strong>. Cada module tem seu state, seus outputs, e pode ser aplicado independentemente.</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Não fazer lock do state:</strong> Dois desenvolvedores rodam <code>terraform apply</code> simultaneamente. Um sobrescreve o state do outro, recursos ficam orfaos (existem na cloud mas não no state), é o caos se instala. <strong>Sempre use remote backend com locking</strong> (DynamoDB para S3, ou Terraform Cloud).</div>
+</div>
+
+<div class="tip warn">
+<span class="tip-icon">&#9888;</span>
+<div><strong>Não versionar providers:</strong> Sem version constraints nós providers, <code>terraform init</code> baixa a versão mais recente. Um provider updaté pode mudar comportamento e quebrar sua infra. Sempre use <code>version = "~&gt; 5.0"</code> para limitar major version.</div>
+</div>
+
+<div class="tip good">
+<span class="tip-icon">&#10022;</span>
+<div><strong>Regra de ouro:</strong> Traté infraestrutura como código — code review, testes, CI/CD, versionamento, small commits. Se você não faria deploy de uma aplicação sem testes e revisão, não faca deploy de infraestrutura sem os mesmos cuidados.</div>
+</div>
+
+<!-- ═══ EXERCICIOS ═══ -->
+<h3>Exercícios Práticos</h3>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 1: Você tem um arquivo Terraform monolitico com 1500 linhas gerenciando VPC, ECS, RDS, e S3. O plan demora 4 minutos e qualquer mudança e arriscada. Como você refatoraria?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Dividir em <strong>modules</strong>: crie <code>modules/vpc</code>, <code>modules/ecs</code>, <code>modules/rds</code>, <code>modules/s3</code>, cada um com <code>main.tf</code>, <code>variables.tf</code>, <code>outputs.tf</code>. Cada module recebe parametros via variables e expõe valores via outputs. No diretório do ambiente (<code>environments/prod/main.tf</code>), componha os modules passando outputs de um como input de outro (<code>vpc_id = module.vpc.vpc_id</code>). Para reduzir o blast radius, considere <strong>state separation</strong> — cada module com seu próprio state file, conectados via <code>terraform_remote_state</code> data sources.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 2: Sua equipe usa Terraform mas alguém frequentemente edita recursos pelo console AWS, causando drift. Como resolver organizacionalmente e técnicamente?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> Tecnicamente: (1) Rode <code>terraform plan</code> periodicamente via CI (cron job diário) e envie alertas quando detectar drift. (2) Configure <strong>AWS SCPs (Service Control Policies)</strong> que bloqueiam edicao manual de recursos com tag <code>ManagedBy=terraform</code>. (3) Use <strong>Atlantis</strong> para que todo cambio passe por PR. Organizacionalmente: (1) Documente a politica "zero mudanças manuais". (2) Treine a equipe no workflow IaC. (3) Facilite o processo — se mudar infra pelo código é muito trabalhoso, as pessoas vão contornar pelo console.</p>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q" onclick="this.parentElement.classList.toggle('open')">Exercício 3: Você precisa escolher entre Terraform, Pulumi, e CDK para um novo projeto. O time usa TypeScript, a empresa e multi-cloud (AWS + GCP), e você quer CI/CD automatizado. Qual ferramenta escolher e por que?</div>
+<div class="qa-a">
+<p><strong>Solução:</strong> <strong>Terraform</strong> é a melhor escolha nesse cenário. Motivos: (1) <strong>Multi-cloud nativo</strong> — Terraform tem providers de primeira classe para AWS e GCP, gerenciados com a mesma ferramenta e linguagem. (2) <strong>CI/CD maduro</strong> — Atlantis, Spacelift, Terraform Cloud tem integração completa. (3) <strong>Maior comunidade</strong> — mais modules prontos, mais documentação, mais fácil contratar. O time precisara aprender HCL, mas é simples. Pulumi seria segunda opção (suporta multi-cloud com TypeScript), mas tem ecossistema menor. CDK e descartado por ser AWS-only.</p>
+</div>
+</div>
+
+</div><!-- /section -->
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="quiz-section">
+<h3>Quiz — IaC: Terraform, Pulumi, CDK</h3>
+<p style="color:var(--text2);margin-bottom:24px;font-size:.9rem">Teste seus conhecimentos. 10 perguntas de multipla escolha. Sua pontuação será salva localmente.</p>
+
+<div id="quiz-container"></div>
+
+<div class="quiz-actions">
+<button class="btn btn-primary" id="btn-submit" onclick="submitQuiz()">Verificar Respostas</button>
+<button class="btn btn-secondary" id="btn-retry" onclick="resetQuiz()" style="display:none">Refazer Quiz</button>
+</div>
+
+<div class="quiz-result" id="quiz-result">
+<p style="color:var(--text3);font-size:.8rem;text-transform:uppercase;letter-spacing:1px">Sua Pontuação</p>
+<div class="quiz-score" id="quiz-score">0/10</div>
+<p style="color:var(--text2);font-size:.88rem" id="quiz-message"></p>
+</div>
+</div>
+
+<!-- ═══════════════════ WIZARD NAV ═══════════════════ -->
+<div class="wizard-nav">
+<a href="25-containers-kubernetes.html">&#8592; Containers &amp; Kubernetes</a>
+<a href="../fullstack-mastery.html" class="wizard-home" title="Voltar ao Dashboard">&#8962; Home</a>
+<a href="27-serverless-edge-computing.html" class="primary">Próximo: Serverless &amp; Edge &#8594;</a>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════
+// QUIZ DATA — Seção 26: IaC - Terraform, Pulumi, CDK
+// ══════════════════════════════════════════
+const SECTION_NUM = 26;
+const STORAGE_KEY = 'fsm_quiz_' + SECTION_NUM;
+
+const QUIZ_DATA = [
+  {
+    question: "Qual é a principal vantagem da abordagem declarativa em IaC sobre a imperativa?",
+    options: [
+      "E mais rápida de executar",
+      "Você descreve o estado desejado é a ferramenta calcula como chegar lá, garantindo idempotência",
+      "Não requer aprender nenhuma linguagem",
+      "Funciona apenas com cloud providers"
+    ],
+    correct: 1,
+    explanation: "Na abordagem declarativa, você define O QUE quer (estado desejado) é a ferramenta descobre COMO chegar lá. Isso garante idempotência — rodar o mesmo código várias vezes produz o mesmo resultado, sem duplicar recursos."
+  },
+  {
+    question: "No Terraform, qual é a função do DynamoDB quando usado junto com o backend S3?",
+    options: [
+      "Armazenar backup do state file",
+      "Fornecer locking para evitar que dois desenvolvedores apliquem mudanças simultaneamente",
+      "Armazenar os outputs do Terraform",
+      "Monitorar drift de infraestrutura"
+    ],
+    correct: 1,
+    explanation: "DynamoDB fornece state locking. Quando um dev roda terraform apply, um lock é criado na tabela DynamoDB. Se outro dev tentar apply ao mesmo tempo, recebe um erro de lock. Isso evita corrupção do state por acesso concorrente."
+  },
+  {
+    question: "Qual comando do Terraform mostra as mudanças que serão feitas SEM realmente aplica-las?",
+    options: [
+      "terraform diff",
+      "terraform preview",
+      "terraform plan",
+      "terraform válidate"
+    ],
+    correct: 2,
+    explanation: "terraform plan mostra o execution plan — quais recursos serão criados, alterádos ou destruidos — sem fazer nenhuma mudança real. E equivalente a um 'dry run' e deve ser revisado antes de terraform apply."
+  },
+  {
+    question: "Qual é a diferença principal entre Pulumi e Terraform?",
+    options: [
+      "Pulumi e cloud-agnostic e Terraform não",
+      "Pulumi usa linguagens de programação reais (TypeScript, Python, Go) em vez de uma DSL própria",
+      "Pulumi não precisa de state management",
+      "Pulumi é gratuito e Terraform e pago"
+    ],
+    correct: 1,
+    explanation: "Pulumi permite definir infraestrutura usando linguagens reais como TypeScript, Python e Go, com todo o poder da linguagem (loops, condicionais, classes, testes). Terraform usa HCL, uma DSL própria. Ambos são cloud-agnostic e usam state."
+  },
+  {
+    question: "No AWS CDK, qual é a diferença entre constructs L1, L2 e L3?",
+    options: [
+      "L1 = mais abstrato, L3 = mais baixo nível",
+      "L1 = mapeamento 1:1 com CloudFormation, L2 = abstrações com defaults, L3 = patterns/soluções completas",
+      "L1 = TypeScript, L2 = Python, L3 = Go",
+      "L1 = free tier, L2 = standard, L3 = enterprise"
+    ],
+    correct: 1,
+    explanation: "L1 (CfnBucket) é o mapeamento direto para CloudFormation — verboso, máximo controle. L2 (Bucket) tem defaults inteligentes e métodos úteis como grantReadWriteData(). L3 (LambdaRestApi) são patterns que criam múltiplos recursos com uma única linha."
+  },
+  {
+    question: "O que é 'drift' no contexto de IaC?",
+    options: [
+      "Quando o código Terraform tem erros de sintaxe",
+      "Quando o estado real da infraestrutura diverge do que está definido no código",
+      "Quando dois branches do Git tem configurações diferentes",
+      "Quando o state file fica muito grande"
+    ],
+    correct: 1,
+    explanation: "Drift acontece quando alguém modifica a infraestrutura manualmente (pelo console, CLI) é o estado real diverge do código IaC. Ferramentas de IaC podem detectar drift e reconciliar o estado aplicando o código novamente."
+  },
+  {
+    question: "Qual ferramenta é mais adequada para configuration management (instalar pacotes, configurar serviços) em servidores já existentes?",
+    options: [
+      "Terraform",
+      "CloudFormation",
+      "Ansible",
+      "AWS CDK"
+    ],
+    correct: 2,
+    explanation: "Ansible e especializado em configuration management — configurar o que está DENTRO dos servidores (instalar pacotes, copiar arquivos, gerenciar serviços). Terraform/CloudFormation/CDK são para provisionar a infraestrutura (criar os servidores, redes, bancos). Na prática, muitas equipes usam Terraform + Ansible juntos."
+  },
+  {
+    question: "Por que é perigosó armazenar o Terraform state file em um repositório Git?",
+    options: [
+      "O arquivo é muito grande para Git",
+      "Git não suporta arquivos JSON",
+      "O state contém valores sensíveis (senhas, tokens) em texto plano",
+      "O state muda a cada plan e causa conflitos de merge"
+    ],
+    correct: 2,
+    explanation: "O state file contém TODOS os valores dos recursos, incluindo senhas de banco, tokens de API, e outros secrets em texto plano. Armazenar em Git expõe esses valores a todos com acesso ao repositório. A solução é usar remote backend (S3 com encryption) e nunca commitar o tfstate."
+  },
+  {
+    question: "O que o Atlantis faz no workflow de IaC?",
+    options: [
+      "Gerência o state file do Terraform",
+      "Executa terraform plan automáticamente em PRs e terraform apply após merge/aprovação",
+      "Converte código CDK para Terraform",
+      "Monitora custos de infraestrutura"
+    ],
+    correct: 1,
+    explanation: "Atlantis é uma ferramenta de CI/CD específica para Terraform. Quando um PR e aberto tocando arquivos .tf, Atlantis roda terraform plan automáticamente e posta o resultado como comentário no PR. Após aprovação e merge, executa terraform apply. Elimina a necessidade de rodar Terraform manualmente."
+  },
+  {
+    question: "Qual é a principal limitação do AWS CDK comparado ao Terraform e Pulumi?",
+    options: [
+      "Não suporta TypeScript",
+      "Não tem state management",
+      "Funciona apenas com AWS — não é multi-cloud",
+      "Não permite criar modules reútilizáveis"
+    ],
+    correct: 2,
+    explanation: "O AWS CDK gera CloudFormation templates e depende do serviço CloudFormation da AWS. Isso o limita a AWS. Terraform e Pulumi são multi-cloud — funcionam com AWS, GCP, Azure, Kubernetes, e centenas de outros providers com a mesma ferramenta."
+  }
+];
+
+// ══════════════════════════════════════════
+// QUIZ ENGINE
+// ══════════════════════════════════════════
+let submitted = false;
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  let html = '';
+
+  QUIZ_DATA.forEach((q, i) => {
+    html += '<div class="quiz-card" id="q' + i + '">';
+    html += '<div class="quiz-question"><span class="q-num">' + (i + 1) + '.</span><span>' + q.question + '</span></div>';
+    html += '<div class="quiz-options">';
+    q.options.forEach((opt, j) => {
+      html += '<label class="quiz-option" id="q' + i + 'o' + j + '" onclick="selectOption(' + i + ',' + j + ')">';
+      html += '<input type="radio" name="q' + i + '" value="' + j + '"> ' + opt;
+      html += '</label>';
+    });
+    html += '</div>';
+    html += '<div class="quiz-explanation" id="q' + i + 'exp">' + q.explanation + '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+}
+
+function selectOption(qIdx, oIdx) {
+  if (submitted) return;
+  const options = document.querySelectorAll('#q' + qIdx + ' .quiz-option');
+  options.forEach(o => o.classList.remove('selected'));
+  document.getElementById('q' + qIdx + 'o' + oIdx).classList.add('selected');
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+
+  let score = 0;
+
+  QUIZ_DATA.forEach((q, i) => {
+    const selected = document.querySelector('input[name="q' + i + '"]:checked');
+    const selectedIdx = selected ? parseInt(selected.value) : -1;
+
+    // Show explanation
+    document.getElementById('q' + i + 'exp').classList.add('visible');
+
+    // Mark correct/wrong
+    if (selectedIdx === q.correct) {
+      score++;
+      document.getElementById('q' + i + 'o' + selectedIdx).classList.add('correct');
+    } else {
+      if (selectedIdx >= 0) {
+        document.getElementById('q' + i + 'o' + selectedIdx).classList.add('wrong');
+      }
+      document.getElementById('q' + i + 'o' + q.correct).classList.add('correct');
+    }
+  });
+
+  // Show result
+  const result = document.getElementById('quiz-result');
+  const scoreEl = document.getElementById('quiz-score');
+  const msgEl = document.getElementById('quiz-message');
+  result.classList.add('visible');
+  scoreEl.textContent = score + '/10';
+
+  if (score >= 8) {
+    scoreEl.className = 'quiz-score';
+    msgEl.textContent = 'Excelente! Você domina Infrastructure as Code.';
+  } else if (score >= 5) {
+    scoreEl.className = 'quiz-score mid';
+    msgEl.textContent = 'Bom, mas revise os conceitos que errou.';
+  } else {
+    scoreEl.className = 'quiz-score low';
+    msgEl.textContent = 'Recomendado: releia a seção e tente novamente.';
+  }
+
+  // Save to localStorage
+  const data = { score: score, total: 10, completedAt: new Date().toISOString() };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  // Toggle buttons
+  document.getElementById('btn-submit').style.display = 'none';
+  document.getElementById('btn-retry').style.display = 'inline-flex';
+}
+
+function resetQuiz() {
+  submitted = false;
+  document.getElementById('quiz-result').classList.remove('visible');
+  document.getElementById('btn-submit').style.display = 'inline-flex';
+  document.getElementById('btn-retry').style.display = 'none';
+  renderQuiz();
+}
+
+// Check for previous score
+function loadPreviousScore() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      const tip = document.createElement('div');
+      tip.className = 'tip info';
+      tip.innerHTML = '<span class="tip-icon">i</span><div>Você já fez este quiz antes e tirou <strong>' + data.score + '/10</strong>. Pode refazer para melhorar sua nota.</div>';
+      document.querySelector('.quiz-section').insertBefore(tip, document.getElementById('quiz-container'));
+    } catch(e) {}
+  }
+}
+
+// Init
+renderQuiz();
+loadPreviousScore();
+</script>
+</body>
+</html>
