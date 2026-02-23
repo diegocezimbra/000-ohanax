@@ -1,24 +1,79 @@
 // =============================================================================
-// PUBLISHING PAGE - Lista e calendario de publicacoes
+// PUBLISHING PAGE - Publication queue list & calendar
 // =============================================================================
 
-const STATUS_BADGES = {
-    pending_review: { label: 'Pendente', badge: 'info' },
-    approved: { label: 'Aprovado', badge: 'success' },
-    published: { label: 'Publicado', badge: 'success' },
-    rejected: { label: 'Rejeitado', badge: 'danger' },
-    failed: { label: 'Falhou', badge: 'danger' },
+// --- i18n ---
+const I18N = {
+    en: {
+        status: { pending_review: 'Pending', approved: 'Approved', published: 'Published', rejected: 'Rejected', failed: 'Failed' },
+        months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+        days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        noTitle: 'Untitled',
+        approve: 'Approve',
+        reject: 'Reject',
+        retry: 'Retry',
+        approved: 'Publication approved!',
+        rejected: 'Publication rejected.',
+        retryScheduled: 'Retry scheduled!',
+        loadError: 'Error loading publications: ',
+        calendarError: 'Error loading calendar: ',
+        detailError: 'Error loading details: ',
+        details: 'Details',
+        scheduled: 'Scheduled:',
+        duration: 'Duration:',
+        description: 'Description:',
+        tags: 'Tags:',
+        watchOnYT: 'Watch on YouTube',
+        rejectedViaModal: 'Rejected via modal',
+    },
+    'pt-BR': {
+        status: { pending_review: 'Pendente', approved: 'Aprovado', published: 'Publicado', rejected: 'Rejeitado', failed: 'Falhou' },
+        months: ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+        days: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'],
+        noTitle: 'Sem titulo',
+        approve: 'Aprovar',
+        reject: 'Rejeitar',
+        retry: 'Tentar Novamente',
+        approved: 'Publicacao aprovada!',
+        rejected: 'Publicacao rejeitada.',
+        retryScheduled: 'Reenvio agendado!',
+        loadError: 'Erro ao carregar publicacoes: ',
+        calendarError: 'Erro ao carregar calendario: ',
+        detailError: 'Erro ao carregar detalhes: ',
+        details: 'Detalhes',
+        scheduled: 'Agendado:',
+        duration: 'Duracao:',
+        description: 'Descricao:',
+        tags: 'Tags:',
+        watchOnYT: 'Ver no YouTube',
+        rejectedViaModal: 'Rejected via modal',
+    },
 };
 
-const MONTH_NAMES = [
-    'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-];
+const STATUS_BADGE_MAP = {
+    pending_review: 'info',
+    approved: 'success',
+    published: 'success',
+    rejected: 'danger',
+    failed: 'danger',
+};
 
 let _projectId = null;
 let _currentView = 'list';
 let _calYear = new Date().getFullYear();
 let _calMonth = new Date().getMonth();
+
+function _lang() {
+    const project = window.ytState?.getState()?.currentProject;
+    const lang = project?.language || 'en';
+    return I18N[lang] || I18N.en;
+}
+
+function _locale() {
+    const project = window.ytState?.getState()?.currentProject;
+    const lang = project?.language || 'en';
+    return lang === 'pt-BR' ? 'pt-BR' : 'en-US';
+}
 
 function escapeHtml(str) {
     if (!str) return '';
@@ -29,8 +84,9 @@ function escapeHtml(str) {
 
 function formatDate(d) {
     if (!d) return '--';
+    const locale = _locale();
     const dt = new Date(d);
-    return dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return dt.toLocaleDateString(locale) + ' ' + dt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
 }
 
 export async function loadPublishing(params) {
@@ -87,6 +143,7 @@ async function fetchList() {
     const tbody = document.getElementById('pub-table-body');
     const emptyEl = document.getElementById('pub-list-empty');
     const tableCard = document.getElementById('pub-table-card');
+    const t = _lang();
 
     try {
         const res = await window.ytApi.publishing.list(_projectId, { status: status || undefined });
@@ -100,17 +157,18 @@ async function fetchList() {
 
         emptyEl.style.display = 'none';
         tableCard.style.display = '';
-        tbody.innerHTML = items.map((item) => renderRow(item)).join('');
-        bindRowActions();
+        tbody.innerHTML = items.map((item) => renderRow(item, t)).join('');
+        bindRowActions(t);
     } catch (err) {
-        window.ytToast('Erro ao carregar publicacoes: ' + err.message, 'error');
+        window.ytToast(t.loadError + err.message, 'error');
     }
 }
 
-function renderRow(item) {
-    const st = STATUS_BADGES[item.status] || STATUS_BADGES.pending_review;
+function renderRow(item, t) {
+    const badgeClass = STATUS_BADGE_MAP[item.status] || 'info';
+    const statusLabel = t.status[item.status] || t.status.pending_review;
     const thumb = item.thumbnailUrl || '';
-    const title = escapeHtml(item.youtube_title || item.topic_title || item.title || 'Sem titulo');
+    const title = escapeHtml(item.youtube_title || item.topic_title || item.title || t.noTitle);
     const scheduled = formatDate(item.scheduledFor || item.scheduled_for);
 
     return `
@@ -122,23 +180,23 @@ function renderRow(item) {
             }
         </td>
         <td style="font-weight: 500;">${title}</td>
-        <td><span class="yt-badge yt-badge-${st.badge}">${st.label}</span></td>
+        <td><span class="yt-badge yt-badge-${badgeClass}">${statusLabel}</span></td>
         <td style="font-size: 0.875rem;">${scheduled}</td>
         <td>
             <div style="display: flex; gap: 4px;">
                 ${item.status === 'pending_review' ? `
-                    <button class="yt-btn yt-btn-sm yt-btn-primary pub-approve" data-id="${escapeHtml(item.id)}">Aprovar</button>
-                    <button class="yt-btn yt-btn-sm yt-btn-danger pub-reject" data-id="${escapeHtml(item.id)}">Rejeitar</button>
+                    <button class="yt-btn yt-btn-sm yt-btn-primary pub-approve" data-id="${escapeHtml(item.id)}">${t.approve}</button>
+                    <button class="yt-btn yt-btn-sm yt-btn-danger pub-reject" data-id="${escapeHtml(item.id)}">${t.reject}</button>
                 ` : ''}
                 ${item.status === 'failed' ? `
-                    <button class="yt-btn yt-btn-sm pub-retry" data-id="${escapeHtml(item.id)}">Tentar Novamente</button>
+                    <button class="yt-btn yt-btn-sm pub-retry" data-id="${escapeHtml(item.id)}">${t.retry}</button>
                 ` : ''}
             </div>
         </td>
     </tr>`;
 }
 
-function bindRowActions() {
+function bindRowActions(t) {
     // Row click -> detail modal
     document.querySelectorAll('.pub-row').forEach((row) => {
         row.addEventListener('click', (e) => {
@@ -152,10 +210,10 @@ function bindRowActions() {
             e.stopPropagation();
             try {
                 await window.ytApi.publishing.approve(_projectId, btn.dataset.id);
-                window.ytToast('Publicacao aprovada!', 'success');
+                window.ytToast(t.approved, 'success');
                 fetchList();
             } catch (err) {
-                window.ytToast('Erro: ' + err.message, 'error');
+                window.ytToast('Error: ' + err.message, 'error');
             }
         });
     });
@@ -164,11 +222,11 @@ function bindRowActions() {
         btn.addEventListener('click', async (e) => {
             e.stopPropagation();
             try {
-                await window.ytApi.publishing.reject(_projectId, btn.dataset.id, { reason: 'Rejeitado manualmente' });
-                window.ytToast('Publicacao rejeitada.', 'info');
+                await window.ytApi.publishing.reject(_projectId, btn.dataset.id, { reason: t.rejectedViaModal });
+                window.ytToast(t.rejected, 'info');
                 fetchList();
             } catch (err) {
-                window.ytToast('Erro: ' + err.message, 'error');
+                window.ytToast('Error: ' + err.message, 'error');
             }
         });
     });
@@ -178,10 +236,10 @@ function bindRowActions() {
             e.stopPropagation();
             try {
                 await window.ytApi.publishing.retry(_projectId, btn.dataset.id);
-                window.ytToast('Reenvio agendado!', 'success');
+                window.ytToast(t.retryScheduled, 'success');
                 fetchList();
             } catch (err) {
-                window.ytToast('Erro: ' + err.message, 'error');
+                window.ytToast('Error: ' + err.message, 'error');
             }
         });
     });
@@ -191,6 +249,7 @@ async function openDetail(pubId) {
     const modal = document.getElementById('pub-detail-modal');
     const body = document.getElementById('pub-modal-body');
     const footer = document.getElementById('pub-modal-footer');
+    const t = _lang();
 
     body.innerHTML = '<div class="yt-spinner" style="margin: 24px auto;"></div>';
     footer.innerHTML = '';
@@ -199,8 +258,9 @@ async function openDetail(pubId) {
 
     try {
         const item = await window.ytApi.publishing.get(_projectId, pubId);
-        const st = STATUS_BADGES[item.status] || STATUS_BADGES.pending_review;
-        const title = item.youtube_title || item.topic_title || item.title || 'Detalhes';
+        const badgeClass = STATUS_BADGE_MAP[item.status] || 'info';
+        const statusLabel = t.status[item.status] || t.status.pending_review;
+        const title = item.youtube_title || item.topic_title || item.title || t.details;
         document.getElementById('pub-modal-title').textContent = title;
 
         const desc = item.youtube_description || item.description || '--';
@@ -229,41 +289,42 @@ async function openDetail(pubId) {
             ${videoHtml}
             <div style="display:flex;flex-direction:column;gap:12px;font-size:0.875rem;">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                    <div><strong>Status:</strong> <span class="yt-badge yt-badge-${st.badge}">${st.label}</span></div>
-                    <div><strong>Agendado:</strong> ${formatDate(item.scheduled_for || item.scheduledFor)}</div>
-                    <div><strong>Duracao:</strong> ${duration}</div>
-                    ${item.youtube_url ? `<div><strong>YouTube:</strong> <a href="${escapeHtml(item.youtube_url)}" target="_blank" style="color:var(--color-primary);">Ver no YouTube</a></div>` : ''}
+                    <div><strong>Status:</strong> <span class="yt-badge yt-badge-${badgeClass}">${statusLabel}</span></div>
+                    <div><strong>${t.scheduled}</strong> ${formatDate(item.scheduled_for || item.scheduledFor)}</div>
+                    <div><strong>${t.duration}</strong> ${duration}</div>
+                    ${item.youtube_url ? `<div><strong>YouTube:</strong> <a href="${escapeHtml(item.youtube_url)}" target="_blank" style="color:var(--color-primary);">${t.watchOnYT}</a></div>` : ''}
                 </div>
-                <div><strong>Descricao:</strong><p style="white-space:pre-wrap;color:var(--text-secondary);margin:4px 0 0;max-height:200px;overflow-y:auto;font-size:0.8125rem;">${escapeHtml(desc)}</p></div>
-                <div><strong>Tags:</strong><p style="color:var(--text-secondary);margin:4px 0 0;font-size:0.8125rem;">${escapeHtml(tagsStr) || '--'}</p></div>
+                <div><strong>${t.description}</strong><p style="white-space:pre-wrap;color:var(--text-secondary);margin:4px 0 0;max-height:200px;overflow-y:auto;font-size:0.8125rem;">${escapeHtml(desc)}</p></div>
+                <div><strong>${t.tags}</strong><p style="color:var(--text-secondary);margin:4px 0 0;font-size:0.8125rem;">${escapeHtml(tagsStr) || '--'}</p></div>
             </div>`;
 
         if (item.status === 'pending_review') {
             footer.innerHTML = `
-                <button class="yt-btn yt-btn-primary" id="pub-modal-approve">Aprovar</button>
-                <button class="yt-btn yt-btn-danger" id="pub-modal-reject">Rejeitar</button>`;
+                <button class="yt-btn yt-btn-primary" id="pub-modal-approve">${t.approve}</button>
+                <button class="yt-btn yt-btn-danger" id="pub-modal-reject">${t.reject}</button>`;
             document.getElementById('pub-modal-approve').onclick = async () => {
                 await window.ytApi.publishing.approve(_projectId, pubId);
-                window.ytToast('Aprovado!', 'success');
+                window.ytToast(t.approved, 'success');
                 modal.style.display = 'none';
                 fetchList();
             };
             document.getElementById('pub-modal-reject').onclick = async () => {
-                await window.ytApi.publishing.reject(_projectId, pubId, { reason: 'Rejeitado via modal' });
-                window.ytToast('Rejeitado.', 'info');
+                await window.ytApi.publishing.reject(_projectId, pubId, { reason: t.rejectedViaModal });
+                window.ytToast(t.rejected, 'info');
                 modal.style.display = 'none';
                 fetchList();
             };
         }
     } catch (err) {
-        body.innerHTML = `<p style="color: var(--color-danger);">Erro ao carregar detalhes: ${escapeHtml(err.message)}</p>`;
+        body.innerHTML = `<p style="color: var(--color-danger);">${t.detailError}${escapeHtml(err.message)}</p>`;
     }
 }
 
 async function fetchCalendar() {
     const grid = document.getElementById('pub-cal-grid');
-    const title = document.getElementById('pub-cal-title');
-    title.textContent = `${MONTH_NAMES[_calMonth]} ${_calYear}`;
+    const titleEl = document.getElementById('pub-cal-title');
+    const t = _lang();
+    titleEl.textContent = `${t.months[_calMonth]} ${_calYear}`;
 
     const monthStr = `${_calYear}-${String(_calMonth + 1).padStart(2, '0')}`;
     let items = [];
@@ -271,7 +332,7 @@ async function fetchCalendar() {
         const res = await window.ytApi.publishing.calendar(_projectId, monthStr);
         items = Array.isArray(res) ? res : res.data || res.publications || [];
     } catch (err) {
-        window.ytToast('Erro ao carregar calendario: ' + err.message, 'error');
+        window.ytToast(t.calendarError + err.message, 'error');
     }
 
     // Build day map
@@ -285,9 +346,8 @@ async function fetchCalendar() {
 
     const firstDay = new Date(_calYear, _calMonth, 1).getDay();
     const daysInMonth = new Date(_calYear, _calMonth + 1, 0).getDate();
-    const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 
-    let html = dayNames.map((d) =>
+    let html = t.days.map((d) =>
         `<div style="text-align: center; font-size: 0.75rem; font-weight: 600; color: var(--text-tertiary); padding: 4px;">${d}</div>`
     ).join('');
 
@@ -298,8 +358,8 @@ async function fetchCalendar() {
     for (let day = 1; day <= daysInMonth; day++) {
         const pubs = dayMap[day] || [];
         const dots = pubs.map((p) => {
-            const st = STATUS_BADGES[p.status] || STATUS_BADGES.pending_review;
-            return `<span class="yt-badge yt-badge-${st.badge}" style="font-size: 0.625rem; padding: 0 4px;">${escapeHtml((p.title || '').slice(0, 12))}</span>`;
+            const badgeClass = STATUS_BADGE_MAP[p.status] || 'info';
+            return `<span class="yt-badge yt-badge-${badgeClass}" style="font-size: 0.625rem; padding: 0 4px;">${escapeHtml((p.title || '').slice(0, 12))}</span>`;
         }).join('');
 
         html += `

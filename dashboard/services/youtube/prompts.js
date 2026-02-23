@@ -20,47 +20,93 @@
 // ============================================================
 
 const STYLE_DESCRIPTORS = {
-  educational: {
-    voice: 'professor apaixonado explicando para alunos curiosos',
-    pacing: 'Construa conceitos em camadas, do simples ao complexo. Use analogias do cotidiano para ancorar ideias abstratas.',
-    structure: 'Cada segmento deve ensinar algo concreto. O espectador deve sentir que ficou mais inteligente a cada minuto.',
-    openingTechnique: 'Abra com um paradoxo ou misconception popular que sera desmentida ao longo do video.',
+  'pt-BR': {
+    educational: {
+      voice: 'professor apaixonado explicando para alunos curiosos',
+      pacing: 'Construa conceitos em camadas, do simples ao complexo. Use analogias do cotidiano para ancorar ideias abstratas.',
+      structure: 'Cada segmento deve ensinar algo concreto. O espectador deve sentir que ficou mais inteligente a cada minuto.',
+      openingTechnique: 'Abra com um paradoxo ou misconception popular que sera desmentida ao longo do video.',
+    },
+    documentary: {
+      voice: 'documentarista investigativo revelando uma historia que o mundo precisa conhecer',
+      pacing: 'Construa a narrativa como um documentario da Netflix — camadas de revelacao, entrevistas implicitas, evidencias empilhadas.',
+      structure: 'Alterne entre macro (contexto historico/social) e micro (experiencia individual de pessoas reais). Cada fato deve servir a narrativa, nao o contrario.',
+      openingTechnique: 'Abra com um momento cinematografico: coloque o espectador no meio de uma cena dramatica antes de explicar como chegamos ali.',
+    },
+    dramatic: {
+      voice: 'contador de historias cinematografico que faz cada momento pulsar com tensao e emocao',
+      pacing: 'Ritmo de montanha-russa emocional: construa tensao, entregue revelacao, respire, construa de novo mais intenso.',
+      structure: 'Arco dramatico completo com protagonista, antagonista, conflito, climax e resolucao. Cada cena deve ter stakes claros.',
+      openingTechnique: 'COLD OPEN obrigatorio: comece no momento mais dramatico da historia inteira, depois volte no tempo com "72 horas antes..."',
+    },
+    tutorial: {
+      voice: 'mentor experiente que simplifica o complexo com empatia e exemplos praticos',
+      pacing: 'Passo a passo claro com demonstracoes visuais. Antecipe duvidas do espectador e responda antes que ele pause o video.',
+      structure: 'Problema → Por que importa → Solucao passo a passo → Resultado → Proximos passos. Cada etapa com exemplo concreto.',
+      openingTechnique: 'Mostre o resultado final primeiro (o "antes e depois"), depois ensine como chegar la.',
+    },
+    entertainment: {
+      voice: 'showman carismatico que transforma qualquer assunto em espetaculo irresistivel',
+      pacing: 'Energia alta constante. Humor, surpresas, referencias da cultura pop. Nunca mais que 30 segundos sem um momento "wow".',
+      structure: 'Entretenimento primeiro, informacao como bonus. Rankings, desafios, comparacoes absurdas, reacoes genuinas.',
+      openingTechnique: 'Abra com a coisa mais absurda, chocante ou engraçada do video inteiro. Se o espectador nao reagir em 5 segundos, voce falhou.',
+    },
   },
-  documentary: {
-    voice: 'documentarista investigativo revelando uma historia que o mundo precisa conhecer',
-    pacing: 'Construa a narrativa como um documentario da Netflix — camadas de revelacao, entrevistas implicitas, evidencias empilhadas.',
-    structure: 'Alterne entre macro (contexto historico/social) e micro (experiencia individual de pessoas reais). Cada fato deve servir a narrativa, nao o contrario.',
-    openingTechnique: 'Abra com um momento cinematografico: coloque o espectador no meio de uma cena dramatica antes de explicar como chegamos ali.',
-  },
-  dramatic: {
-    voice: 'contador de historias cinematografico que faz cada momento pulsar com tensao e emocao',
-    pacing: 'Ritmo de montanha-russa emocional: construa tensao, entregue revelacao, respire, construa de novo mais intenso.',
-    structure: 'Arco dramatico completo com protagonista, antagonista, conflito, climax e resolucao. Cada cena deve ter stakes claros.',
-    openingTechnique: 'COLD OPEN obrigatorio: comece no momento mais dramatico da historia inteira, depois volte no tempo com "72 horas antes..."',
-  },
-  tutorial: {
-    voice: 'mentor experiente que simplifica o complexo com empatia e exemplos praticos',
-    pacing: 'Passo a passo claro com demonstracoes visuais. Antecipe duvidas do espectador e responda antes que ele pause o video.',
-    structure: 'Problema → Por que importa → Solucao passo a passo → Resultado → Proximos passos. Cada etapa com exemplo concreto.',
-    openingTechnique: 'Mostre o resultado final primeiro (o "antes e depois"), depois ensine como chegar la.',
-  },
-  entertainment: {
-    voice: 'showman carismatico que transforma qualquer assunto em espetaculo irresistivel',
-    pacing: 'Energia alta constante. Humor, surpresas, referencias da cultura pop. Nunca mais que 30 segundos sem um momento "wow".',
-    structure: 'Entretenimento primeiro, informacao como bonus. Rankings, desafios, comparacoes absurdas, reacoes genuinas.',
-    openingTechnique: 'Abra com a coisa mais absurda, chocante ou engraçada do video inteiro. Se o espectador nao reagir em 5 segundos, voce falhou.',
+  en: {
+    educational: {
+      voice: 'passionate professor explaining to curious students',
+      pacing: 'Build concepts in layers, from simple to complex. Use everyday analogies to anchor abstract ideas.',
+      structure: 'Each segment must teach something concrete. The viewer should feel smarter with every minute.',
+      openingTechnique: 'Open with a paradox or popular misconception that will be debunked throughout the video.',
+    },
+    documentary: {
+      voice: 'investigative documentarian revealing a story the world needs to know',
+      pacing: 'Build the narrative like a Netflix documentary — layers of revelation, implied interviews, stacked evidence.',
+      structure: 'Alternate between macro (historical/social context) and micro (individual experience of real people). Every fact must serve the narrative, not the other way around.',
+      openingTechnique: 'Open with a cinematic moment: place the viewer in the middle of a dramatic scene before explaining how we got there.',
+    },
+    dramatic: {
+      voice: 'cinematic storyteller who makes every moment pulse with tension and emotion',
+      pacing: 'Emotional roller-coaster pacing: build tension, deliver revelation, breathe, build again even more intense.',
+      structure: 'Complete dramatic arc with protagonist, antagonist, conflict, climax, and resolution. Every scene must have clear stakes.',
+      openingTechnique: 'Mandatory COLD OPEN: start at the most dramatic moment of the entire story, then jump back in time with "72 hours earlier..."',
+    },
+    tutorial: {
+      voice: 'experienced mentor who simplifies the complex with empathy and practical examples',
+      pacing: 'Clear step-by-step with visual demonstrations. Anticipate viewer questions and answer them before they pause the video.',
+      structure: 'Problem → Why it matters → Step-by-step solution → Result → Next steps. Each step with a concrete example.',
+      openingTechnique: 'Show the end result first (the "before and after"), then teach how to get there.',
+    },
+    entertainment: {
+      voice: 'charismatic showman who transforms any subject into an irresistible spectacle',
+      pacing: 'Constant high energy. Humor, surprises, pop culture references. Never more than 30 seconds without a "wow" moment.',
+      structure: 'Entertainment first, information as a bonus. Rankings, challenges, absurd comparisons, genuine reactions.',
+      openingTechnique: 'Open with the most absurd, shocking, or hilarious thing in the entire video. If the viewer doesn\'t react in 5 seconds, you\'ve failed.',
+    },
   },
 };
 
 const TONE_DESCRIPTORS = {
-  conversational: 'Tom de conversa entre amigos. Use "voce", "a gente", girias naturais. Como se estivesse no bar explicando algo fascinante para um amigo.',
-  formal: 'Tom profissional e autoritativo, mas nunca robotico. Linguagem precisa, dados rigorosos, credibilidade maxima. Inspire confianca como um especialista respeitado.',
-  dramatic: 'Tom intenso e cinematografico. Frases curtas de impacto. Pausas dramaticas. Construa tensao como um thriller. Cada palavra deve ter peso.',
-  humorous: 'Tom leve com humor inteligente. Piadas contextuais, ironias sutis, analogias absurdas que grudam na memoria. Entretenha enquanto informa.',
-  inspirational: 'Tom motivacional e empoderador. Fale como se acreditasse profundamente no potencial do espectador. Historias de superacao, licoes de vida, chamadas a acao.',
-  documentary: 'Tom de narrador de documentario premium. Objetivo mas envolvente. Deixe os fatos falarem, mas guie a interpretacao com entonacao estrategica.',
-  suspense: 'Tom misterioso e tenso. Reveale informacoes em conta-gotas. Crie atmosfera de "algo esta errado". Use perguntas retoricas que criam ansiedade positiva.',
-  epic: 'Tom grandioso e majestoso. Escala epica. Palavras que evocam magnitude: colossal, extraordinario, sem precedentes. Como narrar a queda de um imperio.',
+  'pt-BR': {
+    conversational: 'Tom de conversa entre amigos. Use "voce", "a gente", girias naturais. Como se estivesse no bar explicando algo fascinante para um amigo.',
+    formal: 'Tom profissional e autoritativo, mas nunca robotico. Linguagem precisa, dados rigorosos, credibilidade maxima. Inspire confianca como um especialista respeitado.',
+    dramatic: 'Tom intenso e cinematografico. Frases curtas de impacto. Pausas dramaticas. Construa tensao como um thriller. Cada palavra deve ter peso.',
+    humorous: 'Tom leve com humor inteligente. Piadas contextuais, ironias sutis, analogias absurdas que grudam na memoria. Entretenha enquanto informa.',
+    inspirational: 'Tom motivacional e empoderador. Fale como se acreditasse profundamente no potencial do espectador. Historias de superacao, licoes de vida, chamadas a acao.',
+    documentary: 'Tom de narrador de documentario premium. Objetivo mas envolvente. Deixe os fatos falarem, mas guie a interpretacao com entonacao estrategica.',
+    suspense: 'Tom misterioso e tenso. Reveale informacoes em conta-gotas. Crie atmosfera de "algo esta errado". Use perguntas retoricas que criam ansiedade positiva.',
+    epic: 'Tom grandioso e majestoso. Escala epica. Palavras que evocam magnitude: colossal, extraordinario, sem precedentes. Como narrar a queda de um imperio.',
+  },
+  en: {
+    conversational: 'Friendly conversational tone. Use "you", "we", natural slang. Like explaining something fascinating to a friend at a bar.',
+    formal: 'Professional and authoritative tone, but never robotic. Precise language, rigorous data, maximum credibility. Inspire trust like a respected expert.',
+    dramatic: 'Intense cinematic tone. Short impactful sentences. Dramatic pauses. Build tension like a thriller. Every word must carry weight.',
+    humorous: 'Light tone with intelligent humor. Contextual jokes, subtle irony, absurd analogies that stick in memory. Entertain while informing.',
+    inspirational: 'Motivational and empowering tone. Speak as if you deeply believe in the viewer\'s potential. Stories of overcoming, life lessons, calls to action.',
+    documentary: 'Premium documentary narrator tone. Objective yet engaging. Let the facts speak, but guide interpretation with strategic intonation.',
+    suspense: 'Mysterious and tense tone. Release information in drips. Create an atmosphere of "something is wrong". Use rhetorical questions that create positive anxiety.',
+    epic: 'Grand and majestic tone. Epic scale. Words that evoke magnitude: colossal, extraordinary, unprecedented. Like narrating the fall of an empire.',
+  },
 };
 
 // ============================================================
@@ -68,53 +114,105 @@ const TONE_DESCRIPTORS = {
 // ============================================================
 
 const TRIGGER_INSTRUCTIONS = {
-  patriotismo: {
-    instruction: 'PATRIOTISMO: Conecte a narrativa com orgulho nacional/cultural. Mostre como o tema impacta a identidade do povo. Use frases como "nosso pais", "nossa historia".',
-    technique: 'Insira momentos onde o espectador sinta orgulho de sua origem ou cultura.',
+  'pt-BR': {
+    patriotismo: {
+      instruction: 'PATRIOTISMO: Conecte a narrativa com orgulho nacional/cultural. Mostre como o tema impacta a identidade do povo. Use frases como "nosso pais", "nossa historia".',
+      technique: 'Insira momentos onde o espectador sinta orgulho de sua origem ou cultura.',
+    },
+    underdog: {
+      instruction: 'UNDERDOG: Posicione o protagonista como subestimado. Mostre a arrogancia de quem duvidou. O espectador deve torcer desesperadamente pelo azarao.',
+      technique: 'Crie contraste entre a expectativa de fracasso e o resultado surpreendente.',
+    },
+    vinganca: {
+      instruction: 'VINGANCA/JUSTICA POETICA: Construa a injustica primeiro (o espectador precisa sentir raiva). Depois entregue a vinganca ou justica de forma satisfatoria e inesperada.',
+      technique: 'A resolucao deve ser proporcional a injustica — quanto maior o crime, mais doce a vinganca.',
+    },
+    curiosidade: {
+      instruction: 'CURIOSIDADE: Plante perguntas nao respondidas a cada 60-90 segundos. Use knowledge gaps: revele parte da informacao e segure a parte crucial para depois.',
+      technique: 'Frases-gatilho: "Mas o que ninguem sabia era...", "E aqui a historia fica bizarra...", "Existe um detalhe que muda tudo..."',
+    },
+    raiva_justa: {
+      instruction: 'RAIVA JUSTA: Apresente uma situacao clara de injustica, corrupcao ou abuso de poder. O espectador deve sentir indignacao visceral e querer que alguem pague.',
+      technique: 'Mostre as vitimas primeiro (humanize), depois revele o responsavel e a magnitude do dano.',
+    },
+    surpresa: {
+      instruction: 'SURPRESA/CHOQUE: Prepare revelacoes que virem a perspectiva do espectador em 180 graus. O que ele achava que sabia esta completamente errado.',
+      technique: 'Setup-Payoff: construa uma narrativa que parece ir numa direcao, depois revele que a realidade e completamente diferente.',
+    },
+    identificacao: {
+      instruction: 'IDENTIFICACAO PESSOAL: O espectador deve se ver no protagonista. Use cenarios, problemas e emocoes universais que qualquer pessoa ja viveu.',
+      technique: 'Descreva sensacoes fisicas e emocionais especificas: "aquele frio na barriga", "o coracao disparando", "a sensacao de que tudo vai dar errado".',
+    },
+    urgencia: {
+      instruction: 'URGENCIA/FOMO: Crie a sensacao de que o espectador PRECISA saber disso agora. Deadlines, countdowns, janelas de oportunidade fechando.',
+      technique: 'Frases-gatilho: "Enquanto voce assiste isso...", "Em poucos meses isso vai mudar tudo...", "A maioria das pessoas so vai descobrir quando for tarde demais..."',
+    },
+    esperanca: {
+      instruction: 'ESPERANCA: Mostre que ha luz no fim do tunel. Mesmo nos momentos mais sombrios da narrativa, plante sementes de que algo bom esta por vir.',
+      technique: 'Contraste escuridao com momentos de humanidade, generosidade ou descoberta que restauram a fe.',
+    },
+    indignacao: {
+      instruction: 'INDIGNACAO: Exponha algo que esta errado no mundo e que PRECISA ser falado. O espectador deve sentir que finalmente alguem teve coragem de dizer a verdade.',
+      technique: 'Use dados concretos que chocam. "Enquanto X acontecia, Y lucrava bilhoes." Mostre a hipocrisia com evidencias.',
+    },
+    nostalgia: {
+      instruction: 'NOSTALGIA: Conecte o tema com memorias afetivas. Epocas, lugares, sensacoes que o espectador viveu ou gostaria de ter vivido.',
+      technique: 'Descricoes sensoriais de epocas passadas: sons, cheiros, cores, objetos que ativam memoria emocional.',
+    },
+    empoderamento: {
+      instruction: 'EMPODERAMENTO: O espectador deve terminar o video sentindo que PODE fazer algo. Conhecimento e poder — mostre como essa informacao transforma a vida dele.',
+      technique: 'Termine segmentos com "e agora que voce sabe disso..." ou "com essa informacao, voce nunca mais vai..."',
+    },
   },
-  underdog: {
-    instruction: 'UNDERDOG: Posicione o protagonista como subestimado. Mostre a arrogancia de quem duvidou. O espectador deve torcer desesperadamente pelo azarao.',
-    technique: 'Crie contraste entre a expectativa de fracasso e o resultado surpreendente.',
-  },
-  vinganca: {
-    instruction: 'VINGANCA/JUSTICA POETICA: Construa a injustica primeiro (o espectador precisa sentir raiva). Depois entregue a vinganca ou justica de forma satisfatoria e inesperada.',
-    technique: 'A resolucao deve ser proporcional a injustica — quanto maior o crime, mais doce a vinganca.',
-  },
-  curiosidade: {
-    instruction: 'CURIOSIDADE: Plante perguntas nao respondidas a cada 60-90 segundos. Use knowledge gaps: revele parte da informacao e segure a parte crucial para depois.',
-    technique: 'Frases-gatilho: "Mas o que ninguem sabia era...", "E aqui a historia fica bizarra...", "Existe um detalhe que muda tudo..."',
-  },
-  raiva_justa: {
-    instruction: 'RAIVA JUSTA: Apresente uma situacao clara de injustica, corrupcao ou abuso de poder. O espectador deve sentir indignacao visceral e querer que alguem pague.',
-    technique: 'Mostre as vitimas primeiro (humanize), depois revele o responsavel e a magnitude do dano.',
-  },
-  surpresa: {
-    instruction: 'SURPRESA/CHOQUE: Prepare revelacoes que virem a perspectiva do espectador em 180 graus. O que ele achava que sabia esta completamente errado.',
-    technique: 'Setup-Payoff: construa uma narrativa que parece ir numa direcao, depois revele que a realidade e completamente diferente.',
-  },
-  identificacao: {
-    instruction: 'IDENTIFICACAO PESSOAL: O espectador deve se ver no protagonista. Use cenarios, problemas e emocoes universais que qualquer pessoa ja viveu.',
-    technique: 'Descreva sensacoes fisicas e emocionais especificas: "aquele frio na barriga", "o coracao disparando", "a sensacao de que tudo vai dar errado".',
-  },
-  urgencia: {
-    instruction: 'URGENCIA/FOMO: Crie a sensacao de que o espectador PRECISA saber disso agora. Deadlines, countdowns, janelas de oportunidade fechando.',
-    technique: 'Frases-gatilho: "Enquanto voce assiste isso...", "Em poucos meses isso vai mudar tudo...", "A maioria das pessoas so vai descobrir quando for tarde demais..."',
-  },
-  esperanca: {
-    instruction: 'ESPERANCA: Mostre que ha luz no fim do tunel. Mesmo nos momentos mais sombrios da narrativa, plante sementes de que algo bom esta por vir.',
-    technique: 'Contraste escuridao com momentos de humanidade, generosidade ou descoberta que restauram a fe.',
-  },
-  indignacao: {
-    instruction: 'INDIGNACAO: Exponha algo que esta errado no mundo e que PRECISA ser falado. O espectador deve sentir que finalmente alguem teve coragem de dizer a verdade.',
-    technique: 'Use dados concretos que chocam. "Enquanto X acontecia, Y lucrava bilhoes." Mostre a hipocrisia com evidencias.',
-  },
-  nostalgia: {
-    instruction: 'NOSTALGIA: Conecte o tema com memorias afetivas. Epocas, lugares, sensacoes que o espectador viveu ou gostaria de ter vivido.',
-    technique: 'Descricoes sensoriais de epocas passadas: sons, cheiros, cores, objetos que ativam memoria emocional.',
-  },
-  empoderamento: {
-    instruction: 'EMPODERAMENTO: O espectador deve terminar o video sentindo que PODE fazer algo. Conhecimento e poder — mostre como essa informacao transforma a vida dele.',
-    technique: 'Termine segmentos com "e agora que voce sabe disso..." ou "com essa informacao, voce nunca mais vai..."',
+  en: {
+    patriotismo: {
+      instruction: 'PATRIOTISM: Connect the narrative with national/cultural pride. Show how the topic impacts people\'s identity. Use phrases like "our country", "our history".',
+      technique: 'Insert moments where the viewer feels pride in their origin or culture.',
+    },
+    underdog: {
+      instruction: 'UNDERDOG: Position the protagonist as underestimated. Show the arrogance of doubters. The viewer must desperately root for the underdog.',
+      technique: 'Create contrast between the expectation of failure and the surprising result.',
+    },
+    vinganca: {
+      instruction: 'REVENGE/POETIC JUSTICE: Build the injustice first (the viewer needs to feel anger). Then deliver revenge or justice in a satisfying and unexpected way.',
+      technique: 'The resolution must be proportional to the injustice — the bigger the crime, the sweeter the revenge.',
+    },
+    curiosidade: {
+      instruction: 'CURIOSITY: Plant unanswered questions every 60-90 seconds. Use knowledge gaps: reveal part of the information and hold the crucial part for later.',
+      technique: 'Trigger phrases: "But what nobody knew was...", "And here the story gets bizarre...", "There\'s one detail that changes everything..."',
+    },
+    raiva_justa: {
+      instruction: 'RIGHTEOUS ANGER: Present a clear situation of injustice, corruption, or abuse of power. The viewer must feel visceral outrage and want someone to pay.',
+      technique: 'Show the victims first (humanize), then reveal who\'s responsible and the magnitude of the damage.',
+    },
+    surpresa: {
+      instruction: 'SURPRISE/SHOCK: Prepare revelations that flip the viewer\'s perspective 180 degrees. What they thought they knew is completely wrong.',
+      technique: 'Setup-Payoff: build a narrative that seems to go one direction, then reveal reality is completely different.',
+    },
+    identificacao: {
+      instruction: 'PERSONAL IDENTIFICATION: The viewer must see themselves in the protagonist. Use universal scenarios, problems, and emotions everyone has experienced.',
+      technique: 'Describe specific physical and emotional sensations: "that pit in your stomach", "your heart racing", "the feeling that everything is about to go wrong".',
+    },
+    urgencia: {
+      instruction: 'URGENCY/FOMO: Create the feeling that the viewer NEEDS to know this now. Deadlines, countdowns, closing windows of opportunity.',
+      technique: 'Trigger phrases: "While you\'re watching this...", "In a few months this will change everything...", "Most people won\'t find out until it\'s too late..."',
+    },
+    esperanca: {
+      instruction: 'HOPE: Show there\'s light at the end of the tunnel. Even in the darkest moments, plant seeds that something good is coming.',
+      technique: 'Contrast darkness with moments of humanity, generosity, or discovery that restore faith.',
+    },
+    indignacao: {
+      instruction: 'OUTRAGE: Expose something wrong with the world that NEEDS to be spoken about. The viewer must feel someone finally had the courage to tell the truth.',
+      technique: 'Use concrete shocking data. "While X was happening, Y was profiting billions." Show hypocrisy with evidence.',
+    },
+    nostalgia: {
+      instruction: 'NOSTALGIA: Connect the topic with affective memories. Eras, places, sensations the viewer lived or wished they had lived.',
+      technique: 'Sensory descriptions of past eras: sounds, smells, colors, objects that activate emotional memory.',
+    },
+    empoderamento: {
+      instruction: 'EMPOWERMENT: The viewer must finish the video feeling they CAN do something. Knowledge is power — show how this information transforms their life.',
+      technique: 'End segments with "and now that you know this..." or "with this information, you\'ll never again..."',
+    },
   },
 };
 
@@ -132,98 +230,101 @@ const TRIGGER_INSTRUCTIONS = {
  */
 export function buildTopicPrompt(sourceContent, researchContext, settings, contentAngles) {
   const style = settings.storytelling_style || 'dramatic';
-  const styleDesc = STYLE_DESCRIPTORS[style] || STYLE_DESCRIPTORS.dramatic;
-  const targetLength = settings.target_video_length || '30-45 minutos';
-  const language = settings.language || 'pt-BR';
+  const language = settings.language || 'en';
+  const styleDesc = getStyleDesc(language, style);
+  const toneDesc = getToneDesc(language, settings.narration_tone || 'dramatic');
+  const targetLength = settings.target_video_length || '30-45 minutes';
   const titleTemplate = settings.title_template || '';
   const triggers = parseTriggers(settings.emotional_triggers);
-  const triggersBlock = buildTriggersBlock(triggers);
+  const triggersBlock = buildTriggersBlock(triggers, language);
+  const isPt = language === 'pt-BR';
 
   const anglesDescription = contentAngles
     .map((a, i) => `${i + 1}. "${a.label}" (${a.id}): ${a.description}`)
     .join('\n');
 
-  const system = `Voce e um estrategista de conteudo ELITE para YouTube, especialista em crescimento explosivo de canais.
-Voce entende profundamente o algoritmo do YouTube 2025: Watch Time, Session Time, CTR e Audience Retention sao as metricas que importam.
+  const system = `You are an ELITE YouTube content strategist, specialist in explosive channel growth.
+You deeply understand YouTube's 2025 algorithm: Watch Time, Session Time, CTR, and Audience Retention are the metrics that matter.
 
-PERFIL DO CANAL:
-- Estilo narrativo: ${style} — ${styleDesc.voice}
-- Tom de narracao: ${TONE_DESCRIPTORS[settings.narration_tone] || TONE_DESCRIPTORS.dramatic}
-- Duracao alvo: ${targetLength}
-- Idioma: ${language === 'pt-BR' ? 'Portugues do Brasil (pt-BR)' : language}
+CHANNEL PROFILE:
+- Storytelling style: ${style} — ${styleDesc.voice}
+- Narration tone: ${toneDesc}
+- Target duration: ${targetLength}
+- Language: ${langLabel(language)}
 
-## ABORDAGEM: SERIES PRIMEIRO (YouTube 2025)
+CRITICAL: ALL output (titles, descriptions, keyPoints, hookIdea, everything) MUST be written in ${langLabel(language)}. Do NOT mix languages.
 
-O algoritmo prioriza SERIES e PLAYLISTS porque aumentam Session Time. Organize os topicos em 2-3 SERIES tematicas de 3-5 videos.
-Cada serie DEVE ter progressao narrativa — o espectador precisa sentir que PRECISA assistir o proximo.
+## APPROACH: SERIES FIRST (YouTube 2025)
 
-Estrategias de series que funcionam:
-- Cronologica: "A Ascensao e Queda de [X]" (Parte 1, 2, 3)
-- Tematica: "Segredos de [Nicho]" (episodios independentes mas conectados)
-- Investigativa: "O Caso [X]" (revelacoes progressivas)
-- Ranking: "[N] Maiores [X] da Historia" (cada video aprofunda um item)
+The algorithm prioritizes SERIES and PLAYLISTS because they increase Session Time. Organize topics into 2-3 thematic SERIES of 3-5 videos.
+Each series MUST have narrative progression — the viewer needs to feel they MUST watch the next one.
 
-## ANGULOS ESTRATEGICOS OBRIGATORIOS
+Series strategies that work:
+- Chronological: "The Rise and Fall of [X]" (Part 1, 2, 3)
+- Thematic: "Secrets of [Niche]" (independent but connected episodes)
+- Investigative: "The [X] Case" (progressive revelations)
+- Ranking: "[N] Greatest [X] in History" (each video deepens one item)
 
-Cada topico DEVE usar um destes angulos comprovados de alto CTR:
+## MANDATORY STRATEGIC ANGLES
+
+Each topic MUST use one of these proven high-CTR angles:
 ${anglesDescription}
 
-## SISTEMA DE TITULOS OTIMIZADOS
+## OPTIMIZED TITLE SYSTEM
 
-${titleTemplate ? `TEMPLATE DE TITULO CONFIGURADO PELO USUARIO (use como base, adapte criativamente):
+${titleTemplate ? `USER-CONFIGURED TITLE TEMPLATE (use as base, adapt creatively):
 "${titleTemplate}"
 
-Adapte este template para cada topico mantendo a estrutura mas variando as palavras.` : ''}
+Adapt this template for each topic keeping the structure but varying the words.` : ''}
 
-REGRAS INVIOLAVEIS para titulos:
-1. Maximo 60 caracteres (trunca no mobile apos isso)
-2. Keyword principal nos PRIMEIROS 40 caracteres (peso SEO do YouTube)
-3. EXATAMENTE UMA palavra de poder emocional por titulo: CHOCANTE, REVELADO, SECRETO, PROIBIDO, INCRIVEL, VERDADE, MISTERIOSO, PERIGOSO, URGENTE, IMPOSSIVEL
-4. Crie CURIOSITY GAP: o titulo deve criar uma pergunta na mente do espectador que so o video responde
-5. ZERO clickbait falso — o conteudo DEVE entregar o que o titulo promete (YouTube penaliza com reducao de impressoes)
-6. Formatos de CTR comprovado (8%+ CTR medio):
-   - "A Verdade [adjetivo] Sobre [tema] que [consequencia]"
+INVIOLABLE RULES for titles:
+1. Maximum 60 characters (truncates on mobile after that)
+2. Primary keyword in the FIRST 40 characters (YouTube SEO weight)
+3. EXACTLY ONE emotional power word per title${isPt ? ': CHOCANTE, REVELADO, SECRETO, PROIBIDO, INCRIVEL, VERDADE, MISTERIOSO, PERIGOSO, URGENTE, IMPOSSIVEL' : ': SHOCKING, REVEALED, SECRET, FORBIDDEN, INCREDIBLE, TRUTH, MYSTERIOUS, DANGEROUS, URGENT, IMPOSSIBLE'}
+4. Create CURIOSITY GAP: the title must create a question in the viewer's mind that only the video answers
+5. ZERO fake clickbait — the content MUST deliver what the title promises
+6. Proven CTR formats (8%+ average CTR):
+   ${isPt ? `- "A Verdade [adjetivo] Sobre [tema] que [consequencia]"
    - "[Entidade] Escondeu [revelacao] por [periodo]"
-   - "Por Que [evento contraintuitivo] [verbo dramatico]"
-   - "[Numero] [adjetivo] [substantivo] que [acao surpreendente]"
-   - "O Que [entidade] Nao Quer que Voce Saiba Sobre [tema]"
+   - "Por Que [evento contraintuitivo] [verbo dramatico]"` : `- "The [adjective] Truth About [topic] that [consequence]"
+   - "[Entity] Hid [revelation] for [period]"
+   - "Why [counterintuitive event] [dramatic verb]"`}
 
-## GATILHOS PSICOLOGICOS OBRIGATORIOS
+## MANDATORY PSYCHOLOGICAL TRIGGERS
 
-${triggersBlock ? `O usuario configurou estes gatilhos psicologicos para o canal. TODOS os topicos devem incorporar pelo menos 2 destes:
+${triggersBlock ? `The user configured these psychological triggers for the channel. ALL topics must incorporate at least 2 of these:
 
 ${triggersBlock}
 
-Na geracao de cada topico, indique quais gatilhos foram aplicados no campo "appliedTriggers".` : 'Aplique gatilhos de curiosidade, surpresa e urgencia naturalmente em cada topico.'}
+For each topic, indicate which triggers were applied in the "appliedTriggers" field.` : 'Apply curiosity, surprise, and urgency triggers naturally in each topic.'}
 
-## CONTEUDO EVERGREEN (PRIORIDADE MAXIMA)
+## EVERGREEN CONTENT (MAXIMUM PRIORITY)
 
-Priorize topicos pesquisaveis o ano inteiro. Historia, ciencia, misterios e biografias nao expiram.
-Teste mental: "Alguem pesquisaria isso daqui a 2 anos?" Se nao, descarte.
-Excecao: topicos sazonais ou de trending APENAS se tiverem angulo evergreen (ex: "Por que [evento anual] e mais perigoso do que voce pensa").
+Prioritize topics searchable year-round. History, science, mysteries, and biographies don't expire.
+Mental test: "Would someone search for this in 2 years?" If not, discard.
 
-## FORMATO DE SAIDA
+## OUTPUT FORMAT
 
-Para cada topico, retorne:
-- title: Titulo otimizado (max 60 chars, ${language})
-- angle: ID do angulo estrategico usado
-- angleDescription: Como o angulo foi aplicado especificamente
-- targetAudience: Publico-alvo especifico e detalhado
-- estimatedDuration: Duracao alvo (${targetLength})
-- richnessScore: 1-10 (quanta profundidade de conteudo esta disponivel na fonte)
-- keyPoints: Array de 5-8 pontos principais de discussao (cada um com substancia suficiente para 2-3 minutos de video)
-- seriesName: Nome da serie
-- seriesOrder: Posicao na serie (1, 2, 3...)
-- searchKeywords: Array de 5-8 palavras-chave SEO long-tail que pessoas realmente pesquisam
-- hookIdea: Conceito de gancho em 1-2 frases para thumbnail + abertura do video
-- appliedTriggers: Array de gatilhos psicologicos aplicados neste topico
-- thumbnailConcept: Descricao visual do conceito de thumbnail (expressao facial, texto overlay, cores)
+For each topic, return:
+- title: Optimized title (max 60 chars, in ${langLabel(language)})
+- angle: ID of the strategic angle used
+- angleDescription: How the angle was specifically applied
+- targetAudience: Specific and detailed target audience
+- estimatedDuration: Target duration (${targetLength})
+- richnessScore: 1-10 (how much content depth is available from the source)
+- keyPoints: Array of 5-8 main discussion points (each with enough substance for 2-3 minutes of video)
+- seriesName: Series name (in ${langLabel(language)})
+- seriesOrder: Position in series (1, 2, 3...)
+- searchKeywords: Array of 5-8 long-tail SEO keywords people actually search for
+- hookIdea: Hook concept in 1-2 sentences for thumbnail + video opening
+- appliedTriggers: Array of psychological triggers applied to this topic
+- thumbnailConcept: Visual description of thumbnail concept (facial expression, text overlay, colors)
 
-Gere entre 8 e 15 topicos organizados em 2-3 series.
+Generate between 8 and 15 topics organized in 2-3 series.
 
-Retorne JSON: { "series": [{ "name": "...", "theme": "...", "videoCount": N }], "topics": [...] }`;
+Return JSON: { "series": [{ "name": "...", "theme": "...", "videoCount": N }], "topics": [...] }`;
 
-  const user = `Material fonte:\n${sourceContent.substring(0, 15000)}${researchContext}`;
+  const user = `Source material:\n${sourceContent.substring(0, 15000)}${researchContext}`;
 
   return { system, user };
 }
@@ -242,15 +343,15 @@ Retorne JSON: { "series": [{ "name": "...", "theme": "...", "videoCount": N }], 
  */
 export function buildStoryPrompt(topic, sourceContent, research, settings) {
   const style = settings.storytelling_style || 'dramatic';
-  const styleDesc = STYLE_DESCRIPTORS[style] || STYLE_DESCRIPTORS.dramatic;
+  const language = settings.language || 'en';
+  const styleDesc = getStyleDesc(language, style);
   const tone = settings.narration_tone || 'dramatic';
-  const toneDesc = TONE_DESCRIPTORS[tone] || TONE_DESCRIPTORS.dramatic;
-  const language = settings.language || 'pt-BR';
+  const toneDesc = getToneDesc(language, tone);
   const narrativeTemplate = settings.narrative_template || '';
   const triggers = parseTriggers(settings.emotional_triggers);
-  const triggersBlock = buildTriggersBlock(triggers);
+  const triggersBlock = buildTriggersBlock(triggers, language);
   const targetMinutes = settings.target_duration_minutes || 30;
-  const targetWords = targetMinutes * 280; // ~280 palavras por minuto de narracao
+  const targetWords = targetMinutes * 280;
   const minWords = Math.round(targetWords * 0.85);
   const imageStyle = settings.image_style || 'cinematic, photorealistic';
 
@@ -259,125 +360,127 @@ export function buildStoryPrompt(topic, sourceContent, research, settings) {
     : (topic.key_points || []);
 
   const researchBlock = research.length > 0
-    ? `\n\nPesquisa complementar (use como base factual, cite dados especificos):\n${research.map(r => `- ${r.title} (${r.url}): ${r.snippet}`).join('\n')}`
+    ? `\n\nSupplementary research (use as factual base, cite specific data):\n${research.map(r => `- ${r.title} (${r.url}): ${r.snippet}`).join('\n')}`
     : '';
 
-  const system = `Voce e um roteirista de elite para YouTube com historico comprovado de videos virais (10M+ views). Voce domina storytelling cinematografico, psicologia de audiencia e o algoritmo do YouTube 2025.
+  const system = `You are an elite YouTube screenwriter with a proven track record of viral videos (10M+ views). You master cinematic storytelling, audience psychology, and the YouTube 2025 algorithm.
 
-IDENTIDADE NARRATIVA DO CANAL:
-- Estilo: ${style.toUpperCase()} — ${styleDesc.voice}
-- Ritmo: ${styleDesc.pacing}
-- Estrutura: ${styleDesc.structure}
-- Tom: ${toneDesc}
-- Idioma obrigatorio: ${language === 'pt-BR' ? 'Portugues do Brasil (pt-BR)' : language}
+CHANNEL NARRATIVE IDENTITY:
+- Style: ${style.toUpperCase()} — ${styleDesc.voice}
+- Pacing: ${styleDesc.pacing}
+- Structure: ${styleDesc.structure}
+- Tone: ${toneDesc}
+- Mandatory language: ${langLabel(language)}
 
-META DE PRODUCAO:
-- Duracao alvo do video: ${targetMinutes} minutos
-- Palavras necessarias: ${minWords}-${targetWords} palavras (${Math.round(targetWords / 280)} min a ~280 palavras/minuto de narracao)
-- Estilo visual: ${imageStyle}
+CRITICAL: Write the ENTIRE story in ${langLabel(language)}. Do NOT mix languages. Every sentence, every word must be in ${langLabel(language)}.
 
-${narrativeTemplate ? `=== TEMPLATE NARRATIVO DO CANAL (SEGUIR ESTA ESTRUTURA) ===
+PRODUCTION TARGET:
+- Target video duration: ${targetMinutes} minutes
+- Required words: ${minWords}-${targetWords} words (${Math.round(targetWords / 280)} min at ~280 words/minute narration)
+- Visual style: ${imageStyle}
 
-O usuario configurou este template narrativo. Sua historia DEVE seguir esta estrutura:
+${narrativeTemplate ? `=== CHANNEL NARRATIVE TEMPLATE (FOLLOW THIS STRUCTURE) ===
+
+The user configured this narrative template. Your story MUST follow this structure:
 
 ${narrativeTemplate}
 
-Adapte o conteudo ao template acima, mantendo a estrutura de atos/fases definida.` : `=== ESTRUTURA NARRATIVA PADRAO ===
+Adapt the content to the template above, keeping the defined act/phase structure.` : `=== DEFAULT NARRATIVE STRUCTURE ===
 
 ${styleDesc.openingTechnique}
 
-ARCO NARRATIVO (5 atos centrados em PESSOAS):
+NARRATIVE ARC (5 acts centered on PEOPLE):
 
-ATO 1 — GANCHO (0:00 a 0:30, ~150 palavras):
-55% dos espectadores abandonam no primeiro minuto. ${styleDesc.openingTechnique}
-Nos primeiros 15 segundos, a PROPOSTA DE VALOR deve estar cristalina — o espectador precisa saber POR QUE ficar.
-Use uma destas tecnicas comprovadas:
-- COLD OPEN: Comece no momento mais dramatico, depois volte no tempo
-- ESTATISTICA IMPOSSIVEL: Dado que quebra a realidade do espectador
-- CENARIO IMERSIVO: Coloque o espectador DENTRO da cena ("Imagine que voce...")
-- PERGUNTA PROIBIDA: Questione algo que ninguem ousa questionar
+ACT 1 — HOOK (0:00 to 0:30, ~150 words):
+55% of viewers abandon in the first minute. ${styleDesc.openingTechnique}
+In the first 15 seconds, the VALUE PROPOSITION must be crystal clear — the viewer needs to know WHY to stay.
+Use one of these proven techniques:
+- COLD OPEN: Start at the most dramatic moment, then jump back in time
+- IMPOSSIBLE STATISTIC: A fact that breaks the viewer's reality
+- IMMERSIVE SCENARIO: Place the viewer INSIDE the scene ("Imagine you...")
+- FORBIDDEN QUESTION: Question something no one dares to question
 
-ATO 2 — CONTEXTO E SETUP (primeiros 15%, ~${Math.round(targetWords * 0.15)} palavras):
-Apresente o protagonista, o mundo dele, e o que esta em jogo. Use detalhes sensoriais concretos.
-Estabeleca as STAKES: o que acontece se o protagonista falhar? Por que o espectador deveria se importar?
+ACT 2 — CONTEXT AND SETUP (first 15%, ~${Math.round(targetWords * 0.15)} words):
+Introduce the protagonist, their world, and what's at stake. Use concrete sensory details.
+Establish the STAKES: what happens if the protagonist fails? Why should the viewer care?
 
-ATO 3 — TENSAO CRESCENTE (50% do texto, ~${Math.round(targetWords * 0.50)} palavras):
-Obstaculos crescentes, decisoes impossíveis, consequencias inesperadas. Cada segmento termina com micro-gancho.
-Alterne MACRO (panorama geral) com MICRO (experiencia individual).
-A cada 800-1000 palavras, insira PATTERN INTERRUPT (fato contraintuitivo, mudanca de perspectiva, revelacao).
+ACT 3 — RISING TENSION (50% of text, ~${Math.round(targetWords * 0.50)} words):
+Growing obstacles, impossible decisions, unexpected consequences. Each segment ends with a micro-hook.
+Alternate MACRO (big picture) with MICRO (individual experience).
+Every 800-1000 words, insert PATTERN INTERRUPT (counterintuitive fact, perspective shift, revelation).
 
-ATO 4 — CLIMAX (20%, ~${Math.round(targetWords * 0.20)} palavras):
-O momento de maxima tensao. Decisoes irreversiveis. Use TEMPO PRESENTE para criar imediatez.
-"Ele caminha. Suas maos tremem. Ele sabe que nao ha volta."
+ACT 4 — CLIMAX (20%, ~${Math.round(targetWords * 0.20)} words):
+The moment of maximum tension. Irreversible decisions. Use PRESENT TENSE for immediacy.
+"He walks. His hands tremble. He knows there's no turning back."
 
-ATO 5 — RESOLUCAO (15%, ~${Math.round(targetWords * 0.15)} palavras):
-Consequencias, licoes, conexao com o presente. AMARRE TUDO de volta ao gancho inicial — circularidade satisfatoria.`}
+ACT 5 — RESOLUTION (15%, ~${Math.round(targetWords * 0.15)} words):
+Consequences, lessons, connection to the present. TIE EVERYTHING back to the opening hook — satisfying circularity.`}
 
-=== GATILHOS PSICOLOGICOS (INCORPORAR NA NARRATIVA) ===
+=== PSYCHOLOGICAL TRIGGERS (INCORPORATE IN NARRATIVE) ===
 
-${triggersBlock ? `Os seguintes gatilhos psicologicos foram selecionados para este canal. A cada 2-3 minutos de narracao (~600-800 palavras), PELO MENOS UM gatilho deve ser ativado:
+${triggersBlock ? `The following psychological triggers were selected for this channel. Every 2-3 minutes of narration (~600-800 words), AT LEAST ONE trigger must be activated:
 
 ${triggersBlock}
 
-Distribua os gatilhos ao longo da narrativa de forma natural. Nao force todos no mesmo trecho.` : `Ative pelo menos um gatilho emocional por secao:
-- CURIOSIDADE: misterio, informacao incompleta, "o que aconteceu depois?"
-- SURPRESA: revelacao que vira a perspectiva em 180 graus
-- MEDO: ameaca iminente, consequencias terriveis
-- ADMIRACAO: escala epica, feitos extraordinarios
-- INJUSTICA: algo errado que precisa ser exposto`}
+Distribute triggers throughout the narrative naturally. Don't force them all in the same section.` : `Activate at least one emotional trigger per section:
+- CURIOSITY: mystery, incomplete information, "what happened next?"
+- SURPRISE: revelation that flips perspective 180 degrees
+- FEAR: imminent threat, terrible consequences
+- AWE: epic scale, extraordinary feats
+- INJUSTICE: something wrong that needs to be exposed`}
 
-=== MARCADORES VISUAIS [VISUAL] ===
+=== VISUAL MARKERS [VISUAL] ===
 
-A cada 100-150 palavras, insira um marcador visual:
-[VISUAL: descricao detalhada e DINAMICA da cena]
+Every 100-150 words, insert a visual marker:
+[VISUAL: detailed and DYNAMIC scene description]
 
-Estilo visual do canal: ${imageStyle}
+Channel visual style: ${imageStyle}
 
-REGRAS para marcadores visuais:
-- SEMPRE descreva MOVIMENTO, ACAO, TRANSFORMACAO — nunca imagens estaticas
-- Use a linguagem de direcao cinematografica: "camera mergulha", "zoom lento", "time-lapse", "corte seco para"
-- 3 cenas visuais para cada ponto narrativo (aumenta tempo de visualizacao em 25-40%)
-- BOM: [VISUAL: Camera aerea mergulhando do ceu noturno ate uma fogueira solitaria onde um homem risca mapas na areia com um galho]
-- BOM: [VISUAL: Time-lapse acelerado da construcao de uma catedral — pedras se empilhando, arcos tomando forma, vitrais coloridos surgindo ao longo de decadas em 5 segundos]
-- RUIM: [VISUAL: Foto de um castelo] — NUNCA faca isso
+RULES for visual markers:
+- ALWAYS describe MOVEMENT, ACTION, TRANSFORMATION — never static images
+- Use cinematic direction language: "camera dives", "slow zoom", "time-lapse", "hard cut to"
+- 3 visual scenes for each narrative point (increases watch time by 25-40%)
+- GOOD: [VISUAL: Aerial camera diving from the night sky to a solitary campfire where a man draws maps in the sand with a stick]
+- GOOD: [VISUAL: Accelerated time-lapse of a cathedral being built — stones piling up, arches taking shape, colored stained glass appearing over decades in 5 seconds]
+- BAD: [VISUAL: Photo of a castle] — NEVER do this
 
-=== TECNICAS DE ESCRITA AVANCADAS ===
+=== ADVANCED WRITING TECHNIQUES ===
 
-1. RITMO VARIADO: Alterne frases curtas de impacto com explicativas longas. "Ele correu. Correu como nunca. As pernas queimavam, o peito ardia, cada respiracao era uma facada — mas ele sabia que parar significava morrer."
-2. SEGUNDA PESSOA: Use "voce" para puxar o espectador para dentro da narrativa
-3. ANALOGIAS MODERNAS: Explique conceitos complexos com comparacoes do dia-a-dia
-4. DADOS CONCRETOS: Numeros especificos ancoram credibilidade. "47.000 mortos em 72 horas" > "muitas mortes"
-5. OPINIAO E ANALISE: Tenha posicao. Tom Wikipedia e PROIBIDO. Mostre insight criativo genuino
-6. SHOW DON'T TELL: Descreva cenas em vez de explicar emocoes. "Suas maos tremiam enquanto segurava a carta" > "Ele estava nervoso"
+1. VARIED RHYTHM: Alternate short impactful sentences with long explanatory ones. "He ran. Ran like never before. His legs burned, his chest ached, every breath was a stab — but he knew stopping meant death."
+2. SECOND PERSON: Use "you" to pull the viewer into the narrative
+3. MODERN ANALOGIES: Explain complex concepts with everyday comparisons
+4. CONCRETE DATA: Specific numbers anchor credibility. "47,000 dead in 72 hours" > "many deaths"
+5. OPINION AND ANALYSIS: Take a position. Wikipedia tone is FORBIDDEN. Show genuine creative insight
+6. SHOW DON'T TELL: Describe scenes instead of explaining emotions. "His hands trembled as he held the letter" > "He was nervous"
 
-=== FECHAMENTO (CRITICO) ===
+=== CLOSING (CRITICAL) ===
 
-- Retome EXPLICITAMENTE o gancho da abertura, fechando o circulo
-- Ofereça reflexao ou pergunta que fica martelando na mente do espectador por dias
-- PROIBIDO: "E essa e a historia de...", "Espero que tenham gostado", "Ate o proximo video"
+- EXPLICITLY revisit the opening hook, closing the circle
+- Offer a reflection or question that hammers in the viewer's mind for days
+- FORBIDDEN: "And that's the story of...", "I hope you enjoyed", "Until next time"
 
-=== ANTI-PADROES PROIBIDOS (ZERO TOLERANCIA) ===
+=== FORBIDDEN ANTI-PATTERNS (ZERO TOLERANCE) ===
 
-NUNCA escreva nenhuma destas frases:
-- "Neste video vamos falar sobre..." / "Hoje vamos discutir..."
-- "E importante notar que..." / "Vale a pena mencionar..." / "Como todos sabemos..."
-- "Sem mais delongas..." / "Vamos direto ao ponto..."
-- "Antes de comecar, se inscreva..."
-- Repetir o mesmo ponto com palavras diferentes (filler)
-- Listar fatos sem contexto narrativo (NAO e uma redacao do ENEM)
-- Tom neutro/enciclopedico — tenha PERSONALIDADE e POSICAO
-- Filler generico para encher palavra count
-- Escrever menos que ${minWords} palavras (INACEITAVEL)`;
+NEVER write any of these phrases:
+- "In this video we're going to talk about..." / "Today we'll discuss..."
+- "It's important to note that..." / "It's worth mentioning..." / "As we all know..."
+- "Without further ado..." / "Let's get straight to the point..."
+- "Before we start, subscribe..."
+- Repeating the same point with different words (filler)
+- Listing facts without narrative context
+- Neutral/encyclopedic tone — have PERSONALITY and POSITION
+- Generic filler to pad word count
+- Writing fewer than ${minWords} words (UNACCEPTABLE)`;
 
-  const user = `Topico do video: ${topic.title}
-Angulo narrativo: ${topic.angle || 'general'}
-Publico-alvo: ${topic.target_audience || 'general'}
-${topic.hook_idea ? `Conceito de gancho: ${topic.hook_idea}` : ''}
-${topic.series_name ? `Serie: ${topic.series_name} (episodio ${topic.series_order || 1})` : ''}
+  const user = `Video topic: ${topic.title}
+Narrative angle: ${topic.angle || 'general'}
+Target audience: ${topic.target_audience || 'general'}
+${topic.hook_idea ? `Hook concept: ${topic.hook_idea}` : ''}
+${topic.series_name ? `Series: ${topic.series_name} (episode ${topic.series_order || 1})` : ''}
 
-Pontos-chave para cobrir:\n${keyPoints.map((p, i) => `${i + 1}. ${p}`).join('\n')}
+Key points to cover:\n${keyPoints.map((p, i) => `${i + 1}. ${p}`).join('\n')}
 
-Material fonte:\n${sourceContent.substring(0, 12000)}${researchBlock}`;
+Source material:\n${sourceContent.substring(0, 12000)}${researchBlock}`;
 
   return { system, user };
 }
@@ -390,52 +493,53 @@ Material fonte:\n${sourceContent.substring(0, 12000)}${researchBlock}`;
  * Build prompt for expanding a story that's too short.
  */
 export function buildStoryExpansionPrompt(story, topic, settings) {
-  const style = settings.storytelling_style || 'dramatic';
+  const language = settings.language || 'en';
   const tone = settings.narration_tone || 'dramatic';
-  const toneDesc = TONE_DESCRIPTORS[tone] || TONE_DESCRIPTORS.dramatic;
+  const toneDesc = getToneDesc(language, tone);
   const targetMinutes = settings.target_duration_minutes || 30;
   const targetWords = targetMinutes * 280;
   const triggers = parseTriggers(settings.emotional_triggers);
-  const triggersBlock = buildTriggersBlock(triggers);
+  const triggersBlock = buildTriggersBlock(triggers, language);
   const imageStyle = settings.image_style || 'cinematic, photorealistic';
-  const language = settings.language || 'pt-BR';
 
-  const system = `Voce e um roteirista de elite expandindo uma narrativa de YouTube que esta CURTA DEMAIS para atingir a duracao alvo.
+  const system = `You are an elite screenwriter expanding a YouTube narrative that is TOO SHORT to reach the target duration.
 
-PARAMETROS:
-- Tom: ${toneDesc}
-- Idioma: ${language === 'pt-BR' ? 'Portugues do Brasil (pt-BR)' : language}
-- Meta: pelo menos ${targetWords} palavras (necessario para video de ${targetMinutes}+ minutos)
-- Estilo visual: ${imageStyle}
+PARAMETERS:
+- Tone: ${toneDesc}
+- Language: ${langLabel(language)}
+- Target: at least ${targetWords} words (needed for a ${targetMinutes}+ minute video)
+- Visual style: ${imageStyle}
 
-Retorne a historia COMPLETA expandida (NAO apenas as adicoes). A historia expandida deve fluir como se tivesse sido escrita de uma vez.
+CRITICAL: Write EVERYTHING in ${langLabel(language)}. Do NOT mix languages.
 
-=== O QUE ADICIONAR ===
+Return the COMPLETE expanded story (NOT just the additions). The expanded story must flow as if it was written all at once.
 
-1. HISTORIAS PESSOAIS E ANEDOTAS: Insira 2-3 micro-narrativas de pessoas reais ou personagens concretos. Descreva experiencias sensoriais — o que viram, ouviram, sentiram. Historias de pessoas comuns geram 30-40% mais engajamento.
+=== WHAT TO ADD ===
 
-2. DADOS E ESTATISTICAS CONCRETAS: Substitua "muitos" por numeros reais. "Estima-se que 47.000 pessoas perderam a vida em 72 horas" > "muitos morreram".
+1. PERSONAL STORIES AND ANECDOTES: Insert 2-3 micro-narratives of real people or concrete characters. Describe sensory experiences — what they saw, heard, felt. Stories of ordinary people generate 30-40% more engagement.
 
-3. DETALHES SENSORIAIS: Textura da pedra, cheiro de fumaca, som de passos, frio cortante do vento. Imersao cinematografica.
+2. CONCRETE DATA AND STATISTICS: Replace "many" with real numbers. "An estimated 47,000 people lost their lives in 72 hours" > "many died".
 
-4. MOMENTOS EMOCIONAIS: Desacelere nos pontos de tensao maxima. Frases curtas. Suspense. O leitor deve SENTIR o peso de cada decisao.
+3. SENSORY DETAILS: Stone texture, smell of smoke, sound of footsteps, cutting wind cold. Cinematic immersion.
 
-5. MARCADORES VISUAIS: [VISUAL: descricao DINAMICA] a cada 100-150 palavras. Estilo: ${imageStyle}. MOVIMENTO e TRANSFORMACAO, nunca imagens estaticas.
+4. EMOTIONAL MOMENTS: Slow down at maximum tension points. Short sentences. Suspense. The reader must FEEL the weight of each decision.
 
-6. PATTERN INTERRUPTS: Pelo menos 3 ao longo do texto — fatos contraintuitivos, mudancas de perspectiva, revelacoes surpreendentes.
+5. VISUAL MARKERS: [VISUAL: DYNAMIC description] every 100-150 words. Style: ${imageStyle}. MOVEMENT and TRANSFORMATION, never static images.
 
-7. TRANSICOES NARRATIVAS: Cada paragrafo deve ter micro-gancho que puxa para o proximo.
+6. PATTERN INTERRUPTS: At least 3 throughout the text — counterintuitive facts, perspective shifts, surprising revelations.
 
-${triggersBlock ? `8. GATILHOS PSICOLOGICOS: Incorpore estes gatilhos nos trechos expandidos:\n${triggersBlock}` : ''}
+7. NARRATIVE TRANSITIONS: Each paragraph must have a micro-hook pulling to the next.
 
-=== PROIBIDO ===
-- NAO mude tom, estilo ou voz narrativa existente
-- NAO adicione introducoes genericas ou filler
-- NAO repita pontos existentes
-- NAO quebre o arco narrativo
-- NAO remova marcadores [VISUAL] existentes`;
+${triggersBlock ? `8. PSYCHOLOGICAL TRIGGERS: Incorporate these triggers in expanded sections:\n${triggersBlock}` : ''}
 
-  const user = `Topico: ${topic.title}\n\nHistoria atual (curta demais, precisa expandir para ${targetWords}+ palavras):\n${story}`;
+=== FORBIDDEN ===
+- Do NOT change existing tone, style, or narrative voice
+- Do NOT add generic introductions or filler
+- Do NOT repeat existing points
+- Do NOT break the narrative arc
+- Do NOT remove existing [VISUAL] markers`;
+
+  const user = `Topic: ${topic.title}\n\nCurrent story (too short, needs expansion to ${targetWords}+ words):\n${story}`;
 
   return { system, user };
 }
@@ -449,13 +553,13 @@ ${triggersBlock ? `8. GATILHOS PSICOLOGICOS: Incorpore estes gatilhos nos trecho
  */
 export function buildScriptPrompt(storyContent, topic, settings) {
   const style = settings.storytelling_style || 'dramatic';
-  const styleDesc = STYLE_DESCRIPTORS[style] || STYLE_DESCRIPTORS.dramatic;
+  const language = settings.language || 'en';
+  const styleDesc = getStyleDesc(language, style);
   const tone = settings.narration_tone || 'dramatic';
-  const toneDesc = TONE_DESCRIPTORS[tone] || TONE_DESCRIPTORS.dramatic;
+  const toneDesc = getToneDesc(language, tone);
   const targetMinutes = settings.target_duration_minutes || 30;
-  const language = settings.language || 'pt-BR';
   const triggers = parseTriggers(settings.emotional_triggers);
-  const triggersBlock = buildTriggersBlock(triggers);
+  const triggersBlock = buildTriggersBlock(triggers, language);
   const imageStyle = settings.image_style || 'cinematic, photorealistic';
 
   const system = `You are an elite YouTube screenplay writer who specializes in MAXIMUM RETENTION scripts. Your scripts consistently achieve 70%+ retention at 30 seconds and 50%+ average view duration on ${targetMinutes}+ minute videos. You understand YouTube's 2025 algorithm deeply: watch time, session time, and click-through rate are everything.
@@ -465,7 +569,9 @@ CHANNEL IDENTITY:
 - Narration tone: ${toneDesc}
 - Visual aesthetic: ${imageStyle}
 - Target duration: ${targetMinutes}-${targetMinutes + 10} minutes
-- Language: ${language === 'pt-BR' ? 'Brazilian Portuguese (pt-BR)' : language}
+- Language: ${langLabel(language)}
+
+CRITICAL: ALL narration text MUST be written in ${langLabel(language)}. Do NOT mix languages.
 
 Your job: convert a narrative into a segmented video script optimized for the YouTube algorithm, incorporating the channel's unique voice and psychological triggers.
 
@@ -498,21 +604,21 @@ Return ONLY valid JSON in this exact structure:
 
 2. INTRO SEGMENT (25-50 seconds, type: "intro")
    - Brief context AFTER hook grabbed attention.
-   - Explicit value promise: "Se voce ficar ate o final, vai descobrir [specific valuable thing]."
+   - Explicit value promise: ${language === 'pt-BR' ? '"Se voce ficar ate o final, vai descobrir [specific valuable thing]."' : '"If you stay until the end, you\'ll discover [specific valuable thing]."'}
    - PATTERN INTERRUPT at the 25-35 second mark (critical drop-off point): music change, dramatic visual shift, tonal change.
    - Tone: ${toneDesc}
 
 3. MAIN CONTENT SEGMENTS (bulk of the video, type: "main", "example", "data", or "transition")
    - Create 25-40 main segments, each 30-60 seconds of narration (100-180 words each).
-   - EVERY segment starts with a MINI-HOOK. Never "E entao...", "Alem disso...", "O proximo ponto..."
+   - EVERY segment starts with a MINI-HOOK. Never ${language === 'pt-BR' ? '"E entao...", "Alem disso...", "O proximo ponto..."' : '"And then...", "Furthermore...", "The next point..."'}
    - Every 3rd segment: PATTERN INTERRUPT (surprising fact, perspective shift, rhetorical question, dramatic tonal shift).
    - EMOTIONAL PEAKS every 2-3 minutes. Flat energy = death.
-   - BRIDGING PHRASES: "Mas isso nao foi nada comparado ao que veio depois...", "E aqui a historia fica realmente interessante..."
+   - BRIDGING PHRASES: ${language === 'pt-BR' ? '"Mas isso nao foi nada comparado ao que veio depois...", "E aqui a historia fica realmente interessante..."' : '"But that was nothing compared to what came next...", "And here the story gets really interesting..."'}
    - Vary segment lengths: alternate 25-second punchy with 50-second deep-dive segments.
    - TRANSITIONS (type: "transition"): 2-3 per script max, under 15 seconds each. Create anticipation, don't summarize.
 
 ${triggersBlock ? `   PSYCHOLOGICAL TRIGGERS (apply throughout main segments):
-${triggers.map(t => `   - ${TRIGGER_INSTRUCTIONS[t]?.instruction || t}`).join('\n')}` : ''}
+${triggers.map(t => `   - ${getTriggerInfo(language, t)?.instruction || t}`).join('\n')}` : ''}
 
 4. CLIMAX SEGMENT (type: "climax", 40-60 seconds)
    - MOST dramatic, surprising, emotionally intense moment.
@@ -520,13 +626,13 @@ ${triggers.map(t => `   - ${TRIGGER_INSTRUCTIONS[t]?.instruction || t}`).join('\
    - Visual: Most intense visuals of the entire script. Slow-motion, dramatic zoom-ins, impactful text overlays. Style: ${imageStyle}.
 
 5. CONCLUSION SEGMENT (type: "conclusion", 30-45 seconds)
-   - CIRCULAR STORYTELLING: Tie back to the opening hook. "Lembra do que eu falei no comeco? Agora voce entende..."
+   - CIRCULAR STORYTELLING: Tie back to the opening hook. ${language === 'pt-BR' ? '"Lembra do que eu falei no comeco? Agora voce entende..."' : '"Remember what I said at the beginning? Now you understand..."'}
    - Deliver on the value promise from intro.
    - Leave a thought-provoking final insight the viewer will want to share.
 
 6. CTA SEGMENT (last, 15-20 seconds, type: "cta")
-   - TEASE NEXT VIDEO for session time: "No proximo video, vou revelar [intriguing topic]..."
-   - SPECIFIC comment prompt: "Me conta nos comentarios: [concrete question related to content]?"
+   - TEASE NEXT VIDEO for session time: ${language === 'pt-BR' ? '"No proximo video, vou revelar [intriguing topic]..."' : '"In the next video, I\'ll reveal [intriguing topic]..."'}
+   - SPECIFIC comment prompt: ${language === 'pt-BR' ? '"Me conta nos comentarios: [concrete question related to content]?"' : '"Tell me in the comments: [concrete question related to content]?"'}
    - End screen: mention related video.
    - Visual: End screen layout with thumbnail placeholder, subscribe animation, comment prompt.
 
@@ -560,7 +666,7 @@ Visual aesthetic for this channel: ${imageStyle}
 
 === LANGUAGE ===
 
-- ALL narration in ${language === 'pt-BR' ? 'Brazilian Portuguese (pt-BR)' : language}.
+- ALL narration in ${langLabel(language)}.
 - Tone: ${toneDesc}
 - Short punchy sentences mixed with longer ones for rhythm.`;
 
@@ -637,10 +743,10 @@ Use this as a structural guide, replacing placeholders with topic-specific conte
 - Tags 2-5: Long-tail variations.
 - Tags 6-10: Related broader topics.
 - Tags 11-15: Trending/complementary keywords.
-- 10-15 tags, all lowercase ${language === 'pt-BR' ? 'Brazilian Portuguese' : language}.
+- 10-15 tags, all lowercase ${langLabel(language)}.
 
 === LANGUAGE ===
-All metadata in ${language === 'pt-BR' ? 'Brazilian Portuguese (pt-BR)' : language}.`;
+CRITICAL: ALL metadata (title, description, tags) MUST be in ${langLabel(language)}. Do NOT mix languages.`;
 
   const user = `Primary keyword (front-load in title, first tag): ${topic.title}
 Angle: ${topic.angle || 'General'}
@@ -661,10 +767,10 @@ Total video duration: ${Math.round(scriptData.totalDuration / 60)} minutes`;
  * Build prompt for enriching weak script segments.
  */
 export function buildScriptEnrichmentPrompt(topic, weakSegments, settings) {
+  const language = settings.language || 'en';
   const tone = settings.narration_tone || 'dramatic';
-  const toneDesc = TONE_DESCRIPTORS[tone] || TONE_DESCRIPTORS.dramatic;
+  const toneDesc = getToneDesc(language, tone);
   const imageStyle = settings.image_style || 'cinematic, photorealistic';
-  const language = settings.language || 'pt-BR';
   const triggers = parseTriggers(settings.emotional_triggers);
 
   const system = `You are a YouTube script enrichment specialist. Your job is to upgrade weak script segments to maximize viewer retention.
@@ -687,7 +793,7 @@ Return JSON array:
   }
 ]
 
-Write all narration in ${language === 'pt-BR' ? 'Brazilian Portuguese (pt-BR)' : language}. Tone: ${toneDesc}`;
+CRITICAL: Write all narration in ${langLabel(language)}. Do NOT mix languages. Tone: ${toneDesc}`;
 
   const user = `Topic: ${topic.title}\n\nWeak segments to enrich:\n${JSON.stringify(weakSegments)}`;
 
@@ -709,13 +815,13 @@ Write all narration in ${language === 'pt-BR' ? 'Brazilian Portuguese (pt-BR)' :
  */
 export function buildOutlinePrompt(topic, sourceContent, research, settings) {
   const style = settings.storytelling_style || 'dramatic';
-  const styleDesc = STYLE_DESCRIPTORS[style] || STYLE_DESCRIPTORS.dramatic;
+  const language = settings.language || 'en';
+  const styleDesc = getStyleDesc(language, style);
   const tone = settings.narration_tone || 'dramatic';
-  const toneDesc = TONE_DESCRIPTORS[tone] || TONE_DESCRIPTORS.dramatic;
-  const language = settings.language || 'pt-BR';
+  const toneDesc = getToneDesc(language, tone);
   const narrativeTemplate = settings.narrative_template || '';
   const triggers = parseTriggers(settings.emotional_triggers);
-  const triggersBlock = buildTriggersBlock(triggers);
+  const triggersBlock = buildTriggersBlock(triggers, language);
   const targetMinutes = settings.target_duration_minutes || 30;
   const targetWords = targetMinutes * 280;
   const imageStyle = settings.image_style || 'cinematic, photorealistic';
@@ -725,93 +831,95 @@ export function buildOutlinePrompt(topic, sourceContent, research, settings) {
     : (topic.key_points || []);
 
   const researchBlock = research.length > 0
-    ? `\n\nPesquisa complementar:\n${research.map(r => `- ${r.title}: ${r.snippet}`).join('\n')}`
+    ? `\n\nSupplementary research:\n${research.map(r => `- ${r.title}: ${r.snippet}`).join('\n')}`
     : '';
 
   // Distribute triggers across chapters
   const triggerDistribution = triggers.length > 0
-    ? `\nDistribua os gatilhos ao longo dos capitulos. Para cada capitulo, indique qual gatilho principal ativar no campo "triggerKey". Use todos: ${triggers.join(', ')}`
+    ? `\nDistribute triggers across chapters. For each chapter, indicate the primary trigger to activate in the "triggerKey" field. Use all: ${triggers.join(', ')}`
     : '';
 
-  const system = `Voce e um arquiteto narrativo de elite para YouTube. Sua tarefa: criar um OUTLINE DETALHADO de uma historia completa dividida em 30-50 capitulos curtos.
+  const system = `You are an elite narrative architect for YouTube. Your task: create a DETAILED OUTLINE of a complete story divided into 30-50 short chapters.
 
-IDENTIDADE DO CANAL:
-- Estilo: ${style.toUpperCase()} — ${styleDesc.voice}
-- Ritmo: ${styleDesc.pacing}
-- Estrutura: ${styleDesc.structure}
-- Tom: ${toneDesc}
-- Idioma: ${language === 'pt-BR' ? 'Portugues do Brasil (pt-BR)' : language}
-- Estilo visual: ${imageStyle}
+CHANNEL IDENTITY:
+- Style: ${style.toUpperCase()} — ${styleDesc.voice}
+- Pacing: ${styleDesc.pacing}
+- Structure: ${styleDesc.structure}
+- Tone: ${toneDesc}
+- Language: ${langLabel(language)}
+- Visual style: ${imageStyle}
 
-META DE PRODUCAO:
-- Duracao alvo: ${targetMinutes} minutos (~${targetWords} palavras totais)
-- Cada capitulo: 200-300 palavras (~45-65 segundos de narracao)
-- Total de capitulos: ${Math.round(targetWords / 250)} (ajuste conforme necessidade)
+CRITICAL: ALL chapter titles and contextNotes MUST be written in ${langLabel(language)}. Do NOT mix languages.
 
-${narrativeTemplate ? `=== TEMPLATE NARRATIVO (SEGUIR ESTA ESTRUTURA) ===
+PRODUCTION TARGET:
+- Target duration: ${targetMinutes} minutes (~${targetWords} total words)
+- Each chapter: 200-300 words (~45-65 seconds of narration)
+- Total chapters: ${Math.round(targetWords / 250)} (adjust as needed)
+
+${narrativeTemplate ? `=== NARRATIVE TEMPLATE (FOLLOW THIS STRUCTURE) ===
 ${narrativeTemplate}
 
-Distribua os capitulos respeitando a estrutura acima.` : `=== DISTRIBUICAO POR ARCO NARRATIVO ===
+Distribute chapters respecting the structure above.` : `=== DISTRIBUTION BY NARRATIVE ARC ===
 
-GANCHO (3% = ~${Math.round(targetWords * 0.03)} palavras, 1-2 capitulos):
+HOOK (3% = ~${Math.round(targetWords * 0.03)} words, 1-2 chapters):
 ${styleDesc.openingTechnique}
-Capitulos iniciais DEVEM prender atencao imediatamente.
+Opening chapters MUST grab attention immediately.
 
-SETUP/CONTEXTO (15% = ~${Math.round(targetWords * 0.15)} palavras, 5-8 capitulos):
-Apresente protagonista, mundo, stakes. Detalhes sensoriais concretos.
+SETUP/CONTEXT (15% = ~${Math.round(targetWords * 0.15)} words, 5-8 chapters):
+Introduce protagonist, world, stakes. Concrete sensory details.
 
-TENSAO CRESCENTE (50% = ~${Math.round(targetWords * 0.50)} palavras, 15-25 capitulos):
-Obstaculos crescentes, decisoes impossíveis. Cada capitulo termina com micro-gancho.
-A cada 5 capitulos: PATTERN INTERRUPT (fato contraintuitivo, revelacao, mudanca de perspectiva).
+RISING TENSION (50% = ~${Math.round(targetWords * 0.50)} words, 15-25 chapters):
+Growing obstacles, impossible decisions. Each chapter ends with micro-hook.
+Every 5 chapters: PATTERN INTERRUPT (counterintuitive fact, revelation, perspective shift).
 
-CLIMAX (20% = ~${Math.round(targetWords * 0.20)} palavras, 6-10 capitulos):
-Maxima tensao. Decisoes irreversiveis. Tempo presente para imediatez.
+CLIMAX (20% = ~${Math.round(targetWords * 0.20)} words, 6-10 chapters):
+Maximum tension. Irreversible decisions. Present tense for immediacy.
 
-RESOLUCAO (12% = ~${Math.round(targetWords * 0.12)} palavras, 4-6 capitulos):
-Consequencias, licoes, conexao com presente. Circularidade com gancho inicial.`}
+RESOLUTION (12% = ~${Math.round(targetWords * 0.12)} words, 4-6 chapters):
+Consequences, lessons, connection to the present. Circularity with opening hook.`}
 
-=== GATILHOS PSICOLOGICOS ===
+=== PSYCHOLOGICAL TRIGGERS ===
 
-${triggersBlock || 'Distribua gatilhos de curiosidade, surpresa, medo, e admiracao ao longo dos capitulos.'}
+${triggersBlock || 'Distribute curiosity, surprise, fear, and awe triggers across chapters.'}
 ${triggerDistribution}
 
-=== FORMATO DE SAIDA ===
+=== OUTPUT FORMAT ===
 
-Retorne APENAS JSON valido:
+Return ONLY valid JSON:
 {
   "totalChapters": number,
   "estimatedTotalWords": number,
   "chapters": [
     {
       "chapterNumber": 1,
-      "title": "Titulo evocativo do capitulo (${language})",
-      "emotionalBeat": "emocao principal (ex: curiosidade, tensao, choque, admiracao, medo, esperanca)",
+      "title": "Evocative chapter title (in ${langLabel(language)})",
+      "emotionalBeat": "primary emotion (e.g.: curiosity, tension, shock, awe, fear, hope)",
       "narrativeFunction": "hook|setup|rising_tension|pattern_interrupt|climax|falling_action|resolution",
       "targetWordCount": 250,
-      "contextNote": "Breve descricao do que acontece neste capitulo (1-2 frases)",
-      "visualHint": "Tipo de visual esperado (ex: close-up emocional, paisagem epica, time-lapse, diagrama)",
-      "triggerKey": "gatilho psicologico principal deste capitulo (ou null)"
+      "contextNote": "Brief description of what happens in this chapter (1-2 sentences, in ${langLabel(language)})",
+      "visualHint": "Expected visual type (e.g.: emotional close-up, epic landscape, time-lapse, diagram)",
+      "triggerKey": "primary psychological trigger for this chapter (or null)"
     }
   ]
 }
 
-REGRAS:
-- Minimo 25 capitulos, maximo 55
-- Cada titulo deve ser evocativo e narrativo (NAO generico como "Introducao" ou "Contexto")
-- targetWordCount varia: capitulos de gancho/transicao podem ter 150 palavras, capitulos de desenvolvimento 300+
-- A soma de todos targetWordCount deve ser ~${targetWords} (+/- 10%)
-- contextNote deve ter substancia suficiente para guiar a escrita do capitulo
-- visualHint guia o tipo de imagem/video para cada capitulo`;
+RULES:
+- Minimum 25 chapters, maximum 55
+- Each title must be evocative and narrative (NOT generic like "Introduction" or "Context")
+- targetWordCount varies: hook/transition chapters can have 150 words, development chapters 300+
+- Sum of all targetWordCount must be ~${targetWords} (+/- 10%)
+- contextNote must have enough substance to guide chapter writing
+- visualHint guides the type of image/video for each chapter`;
 
-  const user = `Topico: ${topic.title}
-Angulo: ${topic.angle || 'general'}
-Publico-alvo: ${topic.target_audience || 'general'}
-${topic.hook_idea ? `Conceito de gancho: ${topic.hook_idea}` : ''}
-${topic.series_name ? `Serie: ${topic.series_name} (episodio ${topic.series_order || 1})` : ''}
+  const user = `Topic: ${topic.title}
+Angle: ${topic.angle || 'general'}
+Target audience: ${topic.target_audience || 'general'}
+${topic.hook_idea ? `Hook concept: ${topic.hook_idea}` : ''}
+${topic.series_name ? `Series: ${topic.series_name} (episode ${topic.series_order || 1})` : ''}
 
-Pontos-chave:\n${keyPoints.map((p, i) => `${i + 1}. ${p}`).join('\n')}
+Key points:\n${keyPoints.map((p, i) => `${i + 1}. ${p}`).join('\n')}
 
-Material fonte:\n${sourceContent.substring(0, 12000)}${researchBlock}`;
+Source material:\n${sourceContent.substring(0, 12000)}${researchBlock}`;
 
   return { system, user };
 }
@@ -833,13 +941,13 @@ Material fonte:\n${sourceContent.substring(0, 12000)}${researchBlock}`;
  */
 export function buildChapterPrompt(chapter, outlineChapters, previousChapterText, runningSummary, topic, settings) {
   const style = settings.storytelling_style || 'dramatic';
-  const styleDesc = STYLE_DESCRIPTORS[style] || STYLE_DESCRIPTORS.dramatic;
+  const language = settings.language || 'en';
+  const styleDesc = getStyleDesc(language, style);
   const tone = settings.narration_tone || 'dramatic';
-  const toneDesc = TONE_DESCRIPTORS[tone] || TONE_DESCRIPTORS.dramatic;
-  const language = settings.language || 'pt-BR';
+  const toneDesc = getToneDesc(language, tone);
   const imageStyle = settings.image_style || 'cinematic, photorealistic';
   const triggerKey = chapter.triggerKey;
-  const triggerInfo = triggerKey ? TRIGGER_INSTRUCTIONS[triggerKey] : null;
+  const triggerInfo = triggerKey ? getTriggerInfo(language, triggerKey) : null;
 
   // Compact outline for context (~500 tokens)
   const outlineCompact = outlineChapters
@@ -849,94 +957,96 @@ export function buildChapterPrompt(chapter, outlineChapters, previousChapterText
   const isFirstChapter = chapter.chapterNumber === 1;
   const isLastChapter = chapter.chapterNumber === outlineChapters.length;
 
-  const system = `Voce e um roteirista de elite para YouTube. Sua tarefa: escrever UM UNICO CAPITULO de uma historia longa, com qualidade cinematografica maxima.
+  const system = `You are an elite YouTube screenwriter. Your task: write ONE SINGLE CHAPTER of a long story, with maximum cinematic quality.
 
-IDENTIDADE NARRATIVA:
-- Estilo: ${style.toUpperCase()} — ${styleDesc.voice}
-- Ritmo: ${styleDesc.pacing}
-- Tom: ${toneDesc}
-- Idioma obrigatorio: ${language === 'pt-BR' ? 'Portugues do Brasil (pt-BR)' : language}
-- Estilo visual: ${imageStyle}
+NARRATIVE IDENTITY:
+- Style: ${style.toUpperCase()} — ${styleDesc.voice}
+- Pacing: ${styleDesc.pacing}
+- Tone: ${toneDesc}
+- Mandatory language: ${langLabel(language)}
+- Visual style: ${imageStyle}
 
-=== CAPITULO ${chapter.chapterNumber}/${outlineChapters.length} ===
+CRITICAL: Write the ENTIRE chapter in ${langLabel(language)}. Do NOT mix languages. Every word of narration must be in ${langLabel(language)}.
 
-Titulo: "${chapter.title}"
-Emocao alvo: ${chapter.emotionalBeat}
-Funcao narrativa: ${chapter.narrativeFunction}
-Meta de palavras: ~${chapter.targetWordCount} palavras
-O que acontece: ${chapter.contextNote}
-Dica visual: ${chapter.visualHint || 'Definir conforme narrativa'}
+=== CHAPTER ${chapter.chapterNumber}/${outlineChapters.length} ===
 
-${isFirstChapter ? `PRIMEIRO CAPITULO — ${styleDesc.openingTechnique}
-O espectador decide se fica nos primeiros 15 segundos. PRENDA ATENCAO IMEDIATAMENTE.
-Use uma destas tecnicas:
-- COLD OPEN: Comece no momento mais dramatico
-- ESTATISTICA IMPOSSIVEL: Dado que quebra expectativas
-- CENARIO IMERSIVO: "Imagine que voce..." — coloque o espectador DENTRO da cena
-- PERGUNTA PROIBIDA: Questione algo que ninguem ousa questionar` : ''}
+Title: "${chapter.title}"
+Target emotion: ${chapter.emotionalBeat}
+Narrative function: ${chapter.narrativeFunction}
+Word target: ~${chapter.targetWordCount} words
+What happens: ${chapter.contextNote}
+Visual hint: ${chapter.visualHint || 'Define based on narrative'}
 
-${isLastChapter ? `ULTIMO CAPITULO — Fechamento circular.
-- Retome o gancho do primeiro capitulo
-- Reflexao ou pergunta que fica na mente por dias
-- PROIBIDO: "E essa e a historia...", "Espero que tenham gostado"` : ''}
+${isFirstChapter ? `FIRST CHAPTER — ${styleDesc.openingTechnique}
+The viewer decides if they stay in the first 15 seconds. GRAB ATTENTION IMMEDIATELY.
+Use one of these techniques:
+- COLD OPEN: Start at the most dramatic moment
+- IMPOSSIBLE STATISTIC: A fact that breaks expectations
+- IMMERSIVE SCENARIO: "Imagine you..." — place the viewer INSIDE the scene
+- FORBIDDEN QUESTION: Question something no one dares to question` : ''}
 
-=== GATILHO PSICOLOGICO DESTE CAPITULO ===
+${isLastChapter ? `LAST CHAPTER — Circular closing.
+- Revisit the hook from the first chapter
+- Reflection or question that stays in the mind for days
+- FORBIDDEN: "And that's the story of...", "I hope you enjoyed"` : ''}
+
+=== PSYCHOLOGICAL TRIGGER FOR THIS CHAPTER ===
 
 ${triggerInfo ? `${triggerInfo.instruction}
-Tecnica: ${triggerInfo.technique}` : 'Incorpore naturalmente: curiosidade, tensao, ou surpresa.'}
+Technique: ${triggerInfo.technique}` : 'Incorporate naturally: curiosity, tension, or surprise.'}
 
-=== MARCADORES VISUAIS + IMG_PROMPT ===
+=== VISUAL MARKERS + IMG_PROMPT ===
 
-A cada 100-150 palavras, insira DOIS marcadores consecutivos:
+Every 100-150 words, insert TWO consecutive markers:
 
-1. [VISUAL: descricao narrativa DINAMICA da cena]
-   - Descreva MOVIMENTO, ACAO, TRANSFORMACAO — nunca imagens estaticas
-   - Use linguagem cinematografica: "camera mergulha", "zoom lento", "time-lapse", "corte seco"
-   - Dica visual deste capitulo: ${chapter.visualHint || imageStyle}
+1. [VISUAL: DYNAMIC narrative scene description]
+   - Describe MOVEMENT, ACTION, TRANSFORMATION — never static images
+   - Use cinematic language: "camera dives", "slow zoom", "time-lapse", "hard cut"
+   - Visual hint for this chapter: ${chapter.visualHint || imageStyle}
 
-2. [IMG_PROMPT: prompt tecnico otimizado para geracao de imagem]
-   - Estilo: ${imageStyle}
-   - Inclua: composicao, iluminacao, angulo de camera, atmosfera, cores dominantes
-   - Formato: "descricao da cena, estilo artistico, iluminacao, composicao, aspect ratio 16:9"
-   - Seja ESPECIFICO e TECNICO — este prompt sera enviado diretamente ao provider de imagem
-   - SEMPRE em ingles (providers de imagem funcionam melhor em ingles)
+2. [IMG_PROMPT: technical prompt optimized for image generation]
+   - Style: ${imageStyle}
+   - Include: composition, lighting, camera angle, atmosphere, dominant colors
+   - Format: "scene description, artistic style, lighting, composition, aspect ratio 16:9"
+   - Be SPECIFIC and TECHNICAL — this prompt will be sent directly to the image provider
+   - ALWAYS in English (image providers work best in English)
 
-Exemplo correto:
-[VISUAL: Camera aerea mergulhando do ceu noturno ate uma fogueira solitaria onde um homem risca mapas na areia]
+Correct example:
+[VISUAL: Aerial camera diving from the night sky to a solitary campfire where a man draws maps in the sand]
 [IMG_PROMPT: aerial shot diving from dark night sky towards a solitary campfire on a sandy beach, a man drawing maps in the sand with a stick, warm orange firelight contrasting with deep blue night sky, cinematic composition, dramatic lighting, photorealistic, 16:9]
 
-=== REGRAS DE ESCRITA ===
+=== WRITING RULES ===
 
-1. RITMO VARIADO: Alterne frases curtas de impacto com frases explicativas longas
-2. SHOW DON'T TELL: Descreva cenas, nao explique emocoes
-3. MICRO-GANCHO no final: O capitulo deve terminar com tensao ou curiosidade para o proximo
-4. DADOS CONCRETOS: Numeros especificos > generalizacoes
-5. CONTINUIDADE: ${previousChapterText ? 'Continue naturalmente do texto anterior — sem repetir, sem resumir' : 'Este e o INICIO da historia'}
-6. PROIBIDO: "Neste capitulo...", "Como vimos anteriormente...", "Vamos agora...", filler generico
-7. Escreva EXATAMENTE ~${chapter.targetWordCount} palavras (nem muito menos, nem muito mais)
+1. VARIED RHYTHM: Alternate short impactful sentences with longer explanatory ones
+2. SHOW DON'T TELL: Describe scenes, don't explain emotions
+3. MICRO-HOOK at the end: The chapter must end with tension or curiosity for the next
+4. CONCRETE DATA: Specific numbers > generalizations
+5. CONTINUITY: ${previousChapterText ? 'Continue naturally from the previous text — no repeating, no summarizing' : 'This is the BEGINNING of the story'}
+6. FORBIDDEN: "In this chapter...", "As we saw previously...", "Let's now...", generic filler
+7. Write EXACTLY ~${chapter.targetWordCount} words (not much less, not much more)
 
-=== ANTI-PADROES (ZERO TOLERANCIA) ===
+=== ANTI-PATTERNS (ZERO TOLERANCE) ===
 
-- NUNCA: "E importante notar que...", "Vale a pena mencionar...", "Como todos sabemos..."
-- NUNCA: "Sem mais delongas...", "Vamos direto ao ponto..."
-- NUNCA: Repetir informacao de capitulos anteriores como filler
-- NUNCA: Tom enciclopedico/Wikipedia — tenha PERSONALIDADE e POSICAO
-- NUNCA: Marcadores visuais estaticos — SEMPRE movimento e transformacao`;
+- NEVER: "It's important to note that...", "It's worth mentioning...", "As we all know..."
+- NEVER: "Without further ado...", "Let's get straight to the point..."
+- NEVER: Repeat information from previous chapters as filler
+- NEVER: Encyclopedic/Wikipedia tone — have PERSONALITY and POSITION
+- NEVER: Static visual markers — ALWAYS movement and transformation`;
 
   // Build user prompt with context layers
-  let userParts = [`Topico geral: ${topic.title}\nAngulo: ${topic.angle || 'general'}`];
+  let userParts = [`Overall topic: ${topic.title}\nAngle: ${topic.angle || 'general'}`];
 
-  userParts.push(`\n=== OUTLINE COMPLETO (sua posicao: capitulo ${chapter.chapterNumber}) ===\n${outlineCompact}`);
+  userParts.push(`\n=== FULL OUTLINE (your position: chapter ${chapter.chapterNumber}) ===\n${outlineCompact}`);
 
   if (runningSummary) {
-    userParts.push(`\n=== RESUMO DA HISTORIA ATE AGORA ===\n${runningSummary}`);
+    userParts.push(`\n=== STORY SUMMARY SO FAR ===\n${runningSummary}`);
   }
 
   if (previousChapterText) {
-    userParts.push(`\n=== ULTIMAS PALAVRAS DO CAPITULO ANTERIOR (continue daqui) ===\n...${previousChapterText}`);
+    userParts.push(`\n=== LAST WORDS OF PREVIOUS CHAPTER (continue from here) ===\n...${previousChapterText}`);
   }
 
-  userParts.push(`\n=== ESCREVA AGORA O CAPITULO ${chapter.chapterNumber}: "${chapter.title}" ===\nEmocao: ${chapter.emotionalBeat} | Funcao: ${chapter.narrativeFunction} | ~${chapter.targetWordCount} palavras`);
+  userParts.push(`\n=== WRITE NOW CHAPTER ${chapter.chapterNumber}: "${chapter.title}" ===\nEmotion: ${chapter.emotionalBeat} | Function: ${chapter.narrativeFunction} | ~${chapter.targetWordCount} words`);
 
   return { system, user: userParts.join('\n') };
 }
@@ -954,18 +1064,18 @@ Exemplo correto:
  * @returns {{ system: string, user: string }}
  */
 export function buildRunningSummaryPrompt(storySoFar, topic, settings) {
-  const language = settings.language || 'pt-BR';
+  const language = settings.language || 'en';
 
-  const system = `Voce e um assistente de resumo narrativo. Sua tarefa: resumir a historia ate agora em 3-5 frases concisas, preservando:
-1. Principais eventos/fatos apresentados
-2. Estado emocional atual da narrativa
-3. Ultimas perguntas ou tensoes abertas (sem resposta ainda)
-4. Nomes/dados importantes mencionados
+  const system = `You are a narrative summary assistant. Your task: summarize the story so far in 3-5 concise sentences, preserving:
+1. Main events/facts presented
+2. Current emotional state of the narrative
+3. Latest open questions or tensions (unanswered yet)
+4. Important names/data mentioned
 
-Idioma: ${language === 'pt-BR' ? 'Portugues do Brasil (pt-BR)' : language}
-Seja conciso mas completo. Maximo 200 palavras.`;
+Language: ${langLabel(language)}
+Write the summary in ${langLabel(language)}. Be concise but complete. Maximum 200 words.`;
 
-  const user = `Topico: ${topic.title}\n\nHistoria ate agora:\n${storySoFar.substring(storySoFar.length - 8000)}`;
+  const user = `Topic: ${topic.title}\n\nStory so far:\n${storySoFar.substring(storySoFar.length - 8000)}`;
 
   return { system, user };
 }
@@ -973,6 +1083,44 @@ Seja conciso mas completo. Maximo 200 palavras.`;
 // ============================================================
 // UTILITY FUNCTIONS
 // ============================================================
+
+/**
+ * Resolve language key: returns 'pt-BR' or 'en' (default: 'en').
+ */
+function langKey(language) {
+  return language === 'pt-BR' ? 'pt-BR' : 'en';
+}
+
+/**
+ * Get style descriptor for language + style.
+ */
+function getStyleDesc(language, style) {
+  const lk = langKey(language);
+  return STYLE_DESCRIPTORS[lk]?.[style] || STYLE_DESCRIPTORS[lk]?.dramatic || STYLE_DESCRIPTORS.en.dramatic;
+}
+
+/**
+ * Get tone descriptor for language + tone.
+ */
+function getToneDesc(language, tone) {
+  const lk = langKey(language);
+  return TONE_DESCRIPTORS[lk]?.[tone] || TONE_DESCRIPTORS[lk]?.dramatic || TONE_DESCRIPTORS.en.dramatic;
+}
+
+/**
+ * Get trigger info for language + trigger key.
+ */
+function getTriggerInfo(language, triggerKey) {
+  const lk = langKey(language);
+  return TRIGGER_INSTRUCTIONS[lk]?.[triggerKey] || null;
+}
+
+/**
+ * Language label for prompts.
+ */
+function langLabel(language) {
+  return language === 'pt-BR' ? 'Brazilian Portuguese (pt-BR)' : 'English';
+}
 
 /**
  * Parse comma-separated trigger string into array of trigger keys.
@@ -988,17 +1136,22 @@ function parseTriggers(triggersStr) {
 /**
  * Build formatted trigger instructions block from trigger keys.
  */
-function buildTriggersBlock(triggerKeys) {
+function buildTriggersBlock(triggerKeys, language = 'en') {
   if (!triggerKeys || triggerKeys.length === 0) return '';
+
+  const lk = langKey(language);
+  const fallbackMsg = lk === 'pt-BR'
+    ? 'Incorpore este gatilho psicologico naturalmente na narrativa.'
+    : 'Incorporate this psychological trigger naturally into the narrative.';
 
   return triggerKeys
     .map(key => {
-      const info = TRIGGER_INSTRUCTIONS[key];
+      const info = getTriggerInfo(language, key);
       if (info) {
-        return `- ${info.instruction}\n  Tecnica: ${info.technique}`;
+        const techLabel = lk === 'pt-BR' ? 'Tecnica' : 'Technique';
+        return `- ${info.instruction}\n  ${techLabel}: ${info.technique}`;
       }
-      // Unknown trigger - include as generic
-      return `- ${key.toUpperCase()}: Incorpore este gatilho psicologico naturalmente na narrativa.`;
+      return `- ${key.toUpperCase()}: ${fallbackMsg}`;
     })
     .join('\n\n');
 }
