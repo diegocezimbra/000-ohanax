@@ -2,12 +2,12 @@
  * Video Assembler - Assembles final video from visuals + narration using FFmpeg.
  *
  * Architecture: ONE clip at a time to minimize memory (< 200MB per FFmpeg process).
- * - Phase 1: Render each image individually into its own MP4 with slow zoom-in
+ * - Phase 1: Render each image individually into its own MP4 (static frame)
  * - Phase 2: Concatenate all clip MP4s using concat demuxer (zero-copy, no re-encode)
  * - Phase 3: Mux narration audio onto the final video
  *
- * This approach guarantees minimal RAM usage since only 1 zoompan filter
- * runs at a time. Works reliably in 2GB containers with 80+ clips.
+ * This approach guarantees minimal RAM usage. Works reliably in 2GB containers
+ * with 80+ clips.
  */
 import { db } from '../../db.js';
 import { uploadFile, downloadFile, buildKey, uniqueFilename } from './s3.js';
@@ -21,15 +21,10 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const BGM_DIR = join(__dirname, '../../assets/bgm');
 
-// --- Effect Definitions ---
-// Slow zoom-in (Ken Burns lite): 1.0→1.05 over the clip's full duration.
-// Uses zoompan with integer-truncated x/y to prevent sub-pixel flicker.
-
+// --- Constants ---
 const FPS = 25;
 const OUTPUT_WIDTH = 1920;
 const OUTPUT_HEIGHT = 1080;
-const ZOOM_START = 1.0;
-const ZOOM_END = 1.05; // 5% zoom over full clip — subtle, cinematic
 
 /**
  * Assemble final video from visual assets + narration audio.
@@ -242,11 +237,8 @@ async function downloadAndGroupVisuals(segments, tempDir) {
 // --- Single Clip Rendering ---
 
 /**
- * Render a single image into an MP4 clip with slow zoom-in effect.
- *
- * Zoom: linear 1.0 → 1.05 across all frames, centered.
- * Zoompan runs at 960x540 (quarter pixels) for speed, then scales up to 1080p.
- * trunc() on x/y prevents sub-pixel flicker.
+ * Render a single image into an MP4 clip (static frame, no animation).
+ * Simple and fast: scale+pad to 1920x1080, encode N frames.
  */
 async function renderSingleClip(clip, outputPath) {
   if (clip.type === 'video') {
@@ -255,25 +247,10 @@ async function renderSingleClip(clip, outputPath) {
 
   const totalFrames = Math.round(clip.duration * FPS);
 
-  // Zoompan at half-res for 4x speed boost (960x540 → upscale to 1920x1080)
-  const zpW = 960;
-  const zpH = 540;
-
-  // Zoompan zoom expression: linear interpolation from ZOOM_START to ZOOM_END
-  const zExpr = `${ZOOM_START}+(${ZOOM_END}-${ZOOM_START})*on/${totalFrames}`;
-
-  // Keep zoom centered with integer pixel positions
-  const xExpr = `trunc((iw-iw/zoom)/2)`;
-  const yExpr = `trunc((ih-ih/zoom)/2)`;
-
-  // Pipeline: scale to 960x540 → zoompan → upscale to 1920x1080
   const filterGraph = [
     `[0:v]`,
-    `scale=${zpW}:${zpH}:force_original_aspect_ratio=decrease,`,
-    `pad=${zpW}:${zpH}:(ow-iw)/2:(oh-ih)/2:black,`,
-    `setsar=1,`,
-    `zoompan=z='${zExpr}':x='${xExpr}':y='${yExpr}':d=${totalFrames}:s=${zpW}x${zpH}:fps=${FPS},`,
-    `scale=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT}:flags=lanczos,`,
+    `scale=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT}:force_original_aspect_ratio=decrease,`,
+    `pad=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT}:(ow-iw)/2:(oh-ih)/2:black,`,
     `setsar=1`,
     `[vout]`,
   ].join('');
@@ -295,7 +272,7 @@ async function renderSingleClip(clip, outputPath) {
     outputPath,
   ];
 
-  return runFfmpeg(args, 300000); // 5 min timeout per clip
+  return runFfmpeg(args, 120000); // 2 min timeout per clip
 }
 
 /**
