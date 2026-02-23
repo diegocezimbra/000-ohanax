@@ -30,8 +30,6 @@ const OUTPUT_WIDTH = 1920;
 const OUTPUT_HEIGHT = 1080;
 const ZOOM_START = 1.0;
 const ZOOM_END = 1.05; // 5% zoom over full clip — subtle, cinematic
-const ZOOMPAN_INPUT_W = 1920;  // zoompan pzs internally scaled
-const ZOOMPAN_INPUT_H = 1080;
 
 /**
  * Assemble final video from visual assets + narration audio.
@@ -247,8 +245,7 @@ async function downloadAndGroupVisuals(segments, tempDir) {
  * Render a single image into an MP4 clip with slow zoom-in effect.
  *
  * Zoom: linear 1.0 → 1.05 across all frames, centered.
- * Uses zoompan with trunc() on x/y to prevent sub-pixel flicker.
- * Input image is first upscaled to 10x so zoompan has clean pixels to work with.
+ * Uses zoompan at native 1920x1080 with trunc() on x/y to prevent sub-pixel flicker.
  */
 async function renderSingleClip(clip, outputPath) {
   if (clip.type === 'video') {
@@ -268,19 +265,15 @@ async function renderSingleClip(clip, outputPath) {
   const yExpr = `trunc((ih-ih/zoom)/2)`;
 
   // Pipeline:
-  // 1. Scale source image up to zoompan input size (10x internal for clean zoom)
+  // 1. Scale source image to output resolution (1920x1080)
   // 2. zoompan with slow zoom-in, centered
-  // 3. scale output to exact 1920x1080
-  const zpW = ZOOMPAN_INPUT_W * 2;
-  const zpH = ZOOMPAN_INPUT_H * 2;
-
+  // No upscale — keeps file sizes small and avoids >2GB errors
   const filterGraph = [
     `[0:v]`,
-    `scale=${zpW}:${zpH}:force_original_aspect_ratio=decrease,`,
-    `pad=${zpW}:${zpH}:(ow-iw)/2:(oh-ih)/2:black,`,
+    `scale=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT}:force_original_aspect_ratio=decrease,`,
+    `pad=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT}:(ow-iw)/2:(oh-ih)/2:black,`,
     `setsar=1,`,
-    `zoompan=z='${zExpr}':x='${xExpr}':y='${yExpr}':d=${totalFrames}:s=${zpW}x${zpH}:fps=${FPS},`,
-    `scale=${OUTPUT_WIDTH}:${OUTPUT_HEIGHT},`,
+    `zoompan=z='${zExpr}':x='${xExpr}':y='${yExpr}':d=${totalFrames}:s=${OUTPUT_WIDTH}x${OUTPUT_HEIGHT}:fps=${FPS},`,
     `setsar=1`,
     `[vout]`,
   ].join('');
@@ -292,8 +285,8 @@ async function renderSingleClip(clip, outputPath) {
     '-map', '[vout]',
     '-frames:v', String(totalFrames),
     '-c:v', 'libx264',
-    '-preset', 'ultrafast',
-    '-crf', '18',
+    '-preset', 'fast',
+    '-crf', '23',
     '-profile:v', 'high',
     '-pix_fmt', 'yuv420p',
     '-r', String(FPS),
@@ -326,7 +319,7 @@ async function renderVideoClip(clip, outputPath) {
     '-map', '[vout]',
     '-c:v', 'libx264',
     '-preset', 'fast',
-    '-crf', '18',
+    '-crf', '23',
     '-profile:v', 'high',
     '-pix_fmt', 'yuv420p',
     '-an',
