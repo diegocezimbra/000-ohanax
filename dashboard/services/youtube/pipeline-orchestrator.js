@@ -366,18 +366,22 @@ async function createPublicationEntry(job) {
 
   if (!video.rows[0]) return;
 
+  // Calculate next publish slot based on project settings
+  const scheduledFor = await calculateNextPublishSlot(job.project_id);
+
   const scriptData = script.rows[0] || {};
   await db.analytics.query(`
     INSERT INTO yt_publications (
       project_id, topic_id, video_id,
-      youtube_title, youtube_description, youtube_tags, status
-    ) VALUES ($1, $2, $3, $4, $5, $6, 'pending_review')
+      youtube_title, youtube_description, youtube_tags, status, scheduled_for
+    ) VALUES ($1, $2, $3, $4, $5, $6, 'pending_review', $7)
     ON CONFLICT ON CONSTRAINT uq_yt_pubs_topic DO UPDATE
     SET video_id = $3, youtube_title = $4, youtube_description = $5,
-        youtube_tags = $6, status = 'pending_review'
+        youtube_tags = $6, status = 'pending_review', scheduled_for = $7
   `, [
     job.project_id, job.topic_id, video.rows[0].id,
     scriptData.youtube_title, scriptData.youtube_description,
     JSON.stringify(scriptData.youtube_tags || []),
+    scheduledFor,
   ]);
 }

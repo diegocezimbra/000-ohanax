@@ -691,7 +691,21 @@ ${storyContent.substring(0, 20000)}`;
  */
 export function buildMetadataPrompt(topic, scriptData, chapterTimestamps, narrationPreview, settings) {
   const titleTemplate = settings.title_template || '';
-  const language = settings.language || 'pt-BR';
+  const language = settings.language || 'en';
+
+  const isPt = language === 'pt-BR';
+  const powerWords = isPt
+    ? '"Chocante", "Revelado", "Secreto", "Proibido", "Incrível", "Verdade", "Misterioso", "Perigoso", "Urgente", "Impressionante"'
+    : '"Shocking", "Revealed", "Secret", "Forbidden", "Incredible", "Truth", "Mysterious", "Dangerous", "Urgent", "Stunning"';
+  const titleExamples = isPt
+    ? `  - "[Keyword]: O Segredo Que Ninguém Te Conta"
+  - "[Keyword] - A Verdade Chocante Revelada"
+  - "Por Que [Keyword] Vai Mudar Tudo"
+  - "O Que [Entity] Escondeu Sobre [Keyword]"`
+    : `  - "[Keyword]: The Secret NOBODY Tells You"
+  - "[Keyword] - The Shocking Truth Revealed"
+  - "Why [Keyword] Changes EVERYTHING"
+  - "What [Entity] Hid About [Keyword]"`;
 
   const system = `You are a YouTube SEO and metadata specialist. You understand that title and description are the two biggest levers for Click-Through Rate (CTR) and search discovery. Your metadata consistently achieves 8%+ CTR.
 
@@ -711,13 +725,10 @@ Use this as a structural guide, replacing placeholders with topic-specific conte
 
 - Maximum 60 characters total. Hard limit (YouTube truncates at ~60 chars on mobile).
 - FRONT-LOAD the primary keyword in the first 40 characters.
-- Use EXACTLY ONE emotional power word: "Chocante", "Revelado", "Secreto", "Proibido", "Incrivel", "Verdade", "Misterioso", "Perigoso", "Urgente", "Impressionante".
+- Use EXACTLY ONE emotional power word: ${powerWords}.
 - Create CURIOSITY GAP: the viewer must feel they NEED to click.
 - Proven CTR structures:
-  - "[Keyword]: O Segredo Que Ninguem Te Conta"
-  - "[Keyword] - A Verdade Chocante Revelada"
-  - "Por Que [Keyword] Vai Mudar Tudo"
-  - "O Que [Entity] Escondeu Sobre [Keyword]"
+${titleExamples}
 - No ALL CAPS entire title. Capitalize only power word/key phrase.
 - No clickbait the video can't deliver on.
 - No emojis in title.
