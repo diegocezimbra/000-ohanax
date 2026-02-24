@@ -1,4 +1,53 @@
 import 'dotenv/config';
+
+// =============================================================================
+// ENV VAR VALIDATION — fail fast if critical config is missing
+// =============================================================================
+const REQUIRED_ENV = {
+  // AWS S3 (video/image storage)
+  YT_S3_ACCESS_KEY: 'AWS Access Key for S3',
+  YT_S3_SECRET_KEY: 'AWS Secret Key for S3',
+  YT_S3_BUCKET: 'S3 bucket name',
+  // AI Providers
+  GOOGLE_API_KEY: 'Gemini API key (LLM)',
+  REPLICATE_API_TOKEN: 'Replicate API token (image generation)',
+  FISH_AUDIO_API_KEY: 'Fish Audio API key (TTS)',
+};
+
+const OPTIONAL_ENV = {
+  OPENAI_API_KEY: 'OpenAI API key (whisper, optional)',
+  SERPER_API_KEY: 'Serper API key (web search)',
+  DASHBOARD_PASSWORD: 'Dashboard login password',
+};
+
+const missing = [];
+const configured = [];
+for (const [key, desc] of Object.entries(REQUIRED_ENV)) {
+  if (!process.env[key]) {
+    missing.push(`  ✗ ${key} — ${desc}`);
+  } else {
+    configured.push(`  ✓ ${key}`);
+  }
+}
+
+if (missing.length > 0) {
+  console.error('\n╔══════════════════════════════════════════════════════════╗');
+  console.error('║  MISSING REQUIRED ENVIRONMENT VARIABLES                 ║');
+  console.error('╠══════════════════════════════════════════════════════════╣');
+  console.error(missing.join('\n'));
+  console.error('╚══════════════════════════════════════════════════════════╝');
+  console.error('\nCreate a .env file or set these variables before starting.\n');
+  process.exit(1);
+}
+
+// Log configured vars on startup
+console.log('\n[Env] Required vars OK:');
+configured.forEach(v => console.log(v));
+for (const [key, desc] of Object.entries(OPTIONAL_ENV)) {
+  console.log(`  ${process.env[key] ? '✓' : '○'} ${key} ${process.env[key] ? '' : '(not set, optional)'}`);
+}
+console.log('');
+
 import express from 'express';
 import cors from 'cors';
 import { dirname, join } from 'path';
